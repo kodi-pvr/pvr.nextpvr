@@ -10,45 +10,37 @@ msgstr ""
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: XBMC Translation Team\n"
-"Language-Team: English (http://www.transifex.com/projects/p/XBMC-Main-Frodo/language/en/)\n"
+"Language-Team: Hebrew (http://www.transifex.com/projects/p/XBMC-Main-Frodo/language/he/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: en\n"
+"Language: he\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-
-#Settings labels
 
 msgctxt "#30000"
 msgid "NextPVR Hostname"
-msgstr ""
+msgstr "NextPVR שם מארח"
 
 msgctxt "#30001"
 msgid "NextPVR Port (usually 8866 or 7799)"
-msgstr ""
+msgstr "NextPVR Port (usually 8866 or 7799)"
 
 msgctxt "#30002"
 msgid "NextPVR PinCode"
-msgstr ""
-
-#empty strings from id 30003 to 30039
-#Category labels
+msgstr "NextPVR ססמא"
 
 msgctxt "#30040"
 msgid "Connection"
-msgstr ""
-
-#empty strings from id 30041 to 30049
-#On-screen error messages
+msgstr "חיבור"
 
 msgctxt "#30050"
 msgid "NextPVR server is too old."
-msgstr ""
+msgstr "גרסת שרת NextPVR ישנה מדי."
 
 msgctxt "#30051"
 msgid "Upgrade to '2.5.8' or higher!"
-msgstr ""
+msgstr "עדכן לגרסה '2.5.8' ומעלה!"
 
 msgctxt "#30052"
 msgid "Connection failed. Incorrect PIN?"
-msgstr ""
+msgstr "התחברות נכשלה.ססמה שגויה?"
