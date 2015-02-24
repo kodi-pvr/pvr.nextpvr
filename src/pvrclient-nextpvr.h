@@ -21,11 +21,11 @@
 #include <vector>
 
 /* Master defines for client control */
-#include "xbmc_pvr_types.h"
+#include "kodi/xbmc_pvr_types.h"
 
 /* Local includes */
 #include "Socket.h"
-#include "platform/threads/mutex.h"
+#include "kodi/threads/mutex.h"
 #include "RingBuffer.h"
 #include "liveshift.h"
 
