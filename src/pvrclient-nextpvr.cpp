@@ -1532,7 +1532,7 @@ bool cPVRClientNextPVR::OpenRecordingInternal(long long seekOffset)
 
   if (seekOffset != 0)
   {
-    sprintf(line, "Range: bytes=%d-\r\n", seekOffset);
+    sprintf(line, "Range: bytes=%lld-\r\n", seekOffset);
     m_streamingclient->send(line, strlen(line));
   }
 
