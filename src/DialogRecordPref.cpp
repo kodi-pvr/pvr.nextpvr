@@ -20,7 +20,6 @@
  */
 
 #include "DialogRecordPref.h"
-#include "kodi/libXBMC_gui.h"
 
 #include <sstream>
 #include <iostream>
