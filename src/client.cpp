@@ -19,6 +19,7 @@
 
 #include "client.h"
 #include "kodi/xbmc_pvr_dll.h"
+#include "kodi/libKODI_guilib.h"
 #include "pvrclient-nextpvr.h"
 #include "uri.h"
 
@@ -42,7 +43,7 @@ std::string            g_szUserPath   = "";
 std::string            g_szClientPath = "";
 CHelper_libXBMC_addon *XBMC           = NULL;
 CHelper_libXBMC_pvr   *PVR            = NULL;
-CHelper_libXBMC_gui   *GUI            = NULL; 
+CHelper_libKODI_guilib *GUI           = NULL; 
 bool                   g_bUseTimeshift = false;
 extern "C" {
 
@@ -71,7 +72,7 @@ ADDON_STATUS ADDON_Create(void* hdl, void* props)
   }
 
   // register gui
-  GUI = new CHelper_libXBMC_gui;
+  GUI = new CHelper_libKODI_guilib;
   if (!GUI->RegisterMe(hdl))
   {
     SAFE_DELETE(GUI);
@@ -283,14 +284,12 @@ const char* GetMininumPVRAPIVersion(void)
 
 const char* GetGUIAPIVersion(void)
 {
-  static const char *strGuiApiVersion = XBMC_GUI_API_VERSION;
-  return strGuiApiVersion;
+  return KODI_GUILIB_API_VERSION;
 }
 
 const char* GetMininumGUIAPIVersion(void)
 {
-  static const char *strMinGuiApiVersion = XBMC_GUI_MIN_API_VERSION;
-  return strMinGuiApiVersion;
+  return KODI_GUILIB_MIN_API_VERSION;
 }
 
 //-- GetAddonCapabilities -----------------------------------------------------
