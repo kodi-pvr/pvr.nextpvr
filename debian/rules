@@ -16,10 +16,7 @@ override_dh_auto_configure:
 	dh_auto_configure -- -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=1 -DUSE_LTO=1
 
 override_dh_strip:
-	dh_strip --dbg-package=kodi-pvr-nextpvr-dbg
-
-override_dh_auto_install:
-	dh_auto_install --destdir=debian/kodi-pvr-nextpvr
+	dh_strip -pkodi-pvr-nextpvr --dbg-package=kodi-pvr-nextpvr-dbg
 
 override_dh_installdocs:
 	dh_installdocs --link-doc=kodi-pvr-nextpvr

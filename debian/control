@@ -1,6 +1,6 @@
 Source: kodi-pvr-nextpvr
 Priority: extra
-Maintainer: Arne Morten Kvarving <arne.morten.kvarving@sintef.no>
+Maintainer: Nobody <nobody@kodi.tv>
 Build-Depends: debhelper (>= 9.0.0), cmake, kodi-pvr-dev, libtinyxml-dev,
                libkodiplatform-dev, kodi-addon-dev
 Standards-Version: 3.9.4
