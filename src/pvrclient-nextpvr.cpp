@@ -380,8 +380,15 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, const PVR_CHANNEL &chan
         broadcast.strTitle            = title;
         broadcast.iChannelNumber      = channel.iChannelNumber;
         broadcast.startTime           = atol(start);
-        broadcast.endTime             = atol(end);        
+        broadcast.endTime             = atol(end);
+        broadcast.strPlotOutline      = NULL: //unused
         broadcast.strPlot             = description;
+        broadcast.strOriginalTitle    = NULL; // unused
+        broadcast.strCast             = NULL; // unused
+        broadcast.strDirector         = NULL; // unused
+        broadcast.strWriter           = NULL; // unused
+        broadcast.iYear               = 0;    // unused
+        broadcast.strIMDBNumber       = NULL; // unused
 
         // artwork URL 
         char artworkPath[128];
@@ -411,7 +418,14 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, const PVR_CHANNEL &chan
           }
         }
 
-        broadcast.bNotify             = false;
+        broadcast.firstAired         = 0;  // unused
+        broadcast.iParentalRating    = 0;  // unused
+        broadcast.iStarRating        = 0;  // unused
+        broadcast.bNotify            = false;
+        broadcast.iSeriesNumber      = 0;  // unused
+        broadcast.iEpisodeNumber     = 0;  // unused
+        broadcast.iEpisodePartNumber = 0;  // unused
+        broadcast.strEpisodeName     = ""; // unused
 
         PVR->TransferEpgEntry(handle, &broadcast);
       }
@@ -638,7 +652,8 @@ PVR_ERROR cPVRClientNextPVR::GetChannelGroups(ADDON_HANDLE handle, bool bRadio)
       for( pGroupNode = groupsNode->FirstChildElement("group"); pGroupNode; pGroupNode=pGroupNode->NextSiblingElement())
       {
         memset(&tag, 0, sizeof(PVR_CHANNEL_GROUP));
-        tag.bIsRadio = false;
+        tag.bIsRadio  = false;
+        tag.iPosition = 0; // groups default order, unused
         strncpy(tag.strGroupName, pGroupNode->FirstChildElement("name")->FirstChild()->Value(), sizeof tag.strGroupName);
 
         // tell XBMC about channel, ignoring "All Channels" since xbmc has an built in group with effectively the same function
