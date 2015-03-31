@@ -381,7 +381,7 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, const PVR_CHANNEL &chan
         broadcast.iChannelNumber      = channel.iChannelNumber;
         broadcast.startTime           = atol(start);
         broadcast.endTime             = atol(end);
-        broadcast.strPlotOutline      = NULL: //unused
+        broadcast.strPlotOutline      = NULL; //unused
         broadcast.strPlot             = description;
         broadcast.strOriginalTitle    = NULL; // unused
         broadcast.strCast             = NULL; // unused
