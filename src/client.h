@@ -23,7 +23,7 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
-#include "kodi/util/StdString.h"
+#include "platform/util/StdString.h"
 #include "kodi/libXBMC_addon.h"
 #include "kodi/libXBMC_pvr.h"
 #include "kodi/libKODI_guilib.h"
