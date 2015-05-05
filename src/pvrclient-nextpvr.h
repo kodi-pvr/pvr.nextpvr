@@ -25,7 +25,7 @@
 
 /* Local includes */
 #include "Socket.h"
-#include "kodi/threads/mutex.h"
+#include "platform/threads/mutex.h"
 #include "RingBuffer.h"
 #include "liveshift.h"
 

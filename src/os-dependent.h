@@ -23,7 +23,7 @@
 #define NOMINMAX                      // don't define min() and max() to prevent a clash with std::min() and std::max
 #endif
 
-#include "kodi/os.h"
+#include "platform/os.h"
 
 #if defined(TARGET_WINDOWS)
 #  include "windows/os_windows.h"
