@@ -127,7 +127,7 @@ bool CRingBuffer::ReadData(CRingBuffer &rBuf, unsigned int size)
 /* Write data to ring buffer from buffer specified in 'buf'. Amount read in is
  * specified by 'size'.
  */
-bool CRingBuffer::WriteData(char *buf, unsigned int size)
+bool CRingBuffer::WriteData(const char *buf, unsigned int size)
 {
   if (size > m_size - m_fillCount)
   {
@@ -224,7 +224,7 @@ unsigned int CRingBuffer::getSize()
   return m_size;
 }
 
-unsigned int CRingBuffer::getReadPtr()
+unsigned int CRingBuffer::getReadPtr() const
 {
   return m_readPtr;
 }
