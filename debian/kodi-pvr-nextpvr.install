@@ -1,2 +1,2 @@
-usr/lib/kodi/addons/pvr.nextpvr
+usr/lib/*/kodi/addons/pvr.nextpvr/pvr.nextpvr.so* usr/lib/kodi/addons/pvr.nextpvr
 usr/share/kodi/addons/pvr.nextpvr
