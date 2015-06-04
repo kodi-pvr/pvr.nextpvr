@@ -511,6 +511,12 @@ PVR_ERROR RenameRecording(const PVR_RECORDING &recording)
 /*******************************************/
 /** PVR Timer Functions                   **/
 
+PVR_ERROR GetTimerTypes(PVR_TIMER_TYPE types[], int *size)
+{
+  /* TODO: Implement this to get support for the timer features introduced with PVR API 1.9.7 */
+  return PVR_ERROR_NOT_IMPLEMENTED;
+}
+
 int GetTimersAmount(void)
 {
   if (!g_client)
@@ -521,6 +527,7 @@ int GetTimersAmount(void)
 
 PVR_ERROR GetTimers(ADDON_HANDLE handle)
 {
+  /* TODO: Change implementation to get support for the timer features introduced with PVR API 1.9.7 */
   if (!g_client)
     return PVR_ERROR_SERVER_ERROR;
   else
@@ -535,8 +542,9 @@ PVR_ERROR AddTimer(const PVR_TIMER &timer)
     return g_client->AddTimer(timer);
 }
 
-PVR_ERROR DeleteTimer(const PVR_TIMER &timer, bool bForceDelete)
+PVR_ERROR DeleteTimer(const PVR_TIMER &timer, bool bForceDelete, bool /*bDeleteScheduled*/)
 {
+  /* TODO: Change implementation to support bDeleteScheduled (introduced with PVR API 1.9.7 */
   if (!g_client)
     return PVR_ERROR_SERVER_ERROR;
   else
