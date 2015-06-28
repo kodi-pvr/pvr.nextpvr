@@ -1,0 +1,121 @@
+# Kodi Media Center language file
+# Addon Name: NextPVR PVR Client
+# Addon id: pvr.nextpvr
+# Addon Provider: Graeme Blackley
+msgid ""
+msgstr ""
+"Project-Id-Version: KODI Main\n"
+"Report-Msgid-Bugs-To: http://trac.kodi.tv/\n"
+"POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Kodi Translation Team\n"
+"Language-Team: Italian (Italy) (http://www.transifex.com/projects/p/kodi-main/language/it_IT/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: it_IT\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "#30000"
+msgid "NextPVR Hostname"
+msgstr "Nome Host NextPVR"
+
+msgctxt "#30001"
+msgid "NextPVR Port (usually 8866 or 7799)"
+msgstr "Porta NextPVR (di solito 8866 o 7799)"
+
+msgctxt "#30002"
+msgid "NextPVR PinCode"
+msgstr "Codice PIN NextPVR"
+
+msgctxt "#30003"
+msgid "Enable TimeShift with Live TV"
+msgstr "Abilita TimeShift su Live TV"
+
+msgctxt "#30040"
+msgid "Connection"
+msgstr "Connessione"
+
+msgctxt "#30041"
+msgid "Advanced"
+msgstr "Avanzato"
+
+msgctxt "#30050"
+msgid "NextPVR server is too old."
+msgstr "Il server NextPVR è troppo vecchio."
+
+msgctxt "#30051"
+msgid "Upgrade to '%s' or higher!"
+msgstr "Aggiornare alla '%s' o superiore!"
+
+msgctxt "#30052"
+msgid "Connection failed. Incorrect PIN?"
+msgstr "Connessione fallita. PIN non corretto?"
+
+msgctxt "#30053"
+msgid "Tuner no longer available"
+msgstr "Il tuner non è più disponibile"
+
+msgctxt "#30054"
+msgid "[RECUR]"
+msgstr "[RECUR]"
+
+msgctxt "#30100"
+msgid "Add Timer"
+msgstr "Aggiungi Timer"
+
+msgctxt "#30120"
+msgid "Recording Type"
+msgstr "Tipo di Registrazione"
+
+msgctxt "#30121"
+msgid "Record Once"
+msgstr "Registra Una Volta"
+
+msgctxt "#30122"
+msgid "Record Season (NEW episodes on this channel)"
+msgstr "Registra Stagione (NUOVI Episodi su questo Canale)"
+
+msgctxt "#30123"
+msgid "Record Season (All episodes on this channel)"
+msgstr "Registra Stagione (Tutti gli episodi su questo canale)"
+
+msgctxt "#30124"
+msgid "Record Season (Daily, this timeslot)"
+msgstr "Registra Stagione (Giornalmente, questa fascia temporale)"
+
+msgctxt "#30125"
+msgid "Record Season (Weekly, this timeslot)"
+msgstr "Registra Stagione (Settimanalmente, questa fascia temporale)"
+
+msgctxt "#30126"
+msgid "Record Season (Monday-Friday, this timeslot)"
+msgstr "Registra Stagione (Lunedì-Venerdì, questa fascia temporale)"
+
+msgctxt "#30127"
+msgid "Record Season (Weekends, this timeslot)"
+msgstr "Registra Stagione (Weekend, questa fascia temporale)"
+
+msgctxt "#30130"
+msgid "Keep"
+msgstr "Mantieni"
+
+msgctxt "#30131"
+msgid "All Recordings"
+msgstr "Tutte le Registrazioni"
+
+msgctxt "#30132"
+msgid "Pre-Padding (minutes)"
+msgstr "Anticipo Registrazione (minuti)"
+
+msgctxt "#30133"
+msgid "Pre-Padding (minutes)"
+msgstr "Anticipo Registrazione (minuti)"
+
+msgctxt "#30134"
+msgid "Recording Directory"
+msgstr "Cartella Registrazioni"
+
+msgctxt "#30135"
+msgid "Default"
+msgstr "Predefinito"
