@@ -23,7 +23,7 @@
 #ifndef LiveSlip_H
 #define LiveSlip_H
 
-#include "kodi/libXBMC_addon.h"
+#include "libXBMC_addon.h"
 #include <string>
 #include "platform/os.h"
 #include "Socket.h"
