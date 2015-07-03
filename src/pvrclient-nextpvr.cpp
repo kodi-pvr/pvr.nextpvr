@@ -1034,6 +1034,10 @@ PVR_ERROR cPVRClientNextPVR::GetTimers(ADDON_HANDLE handle)
       for( pRecurringNode = recurringsNode->FirstChildElement("recurring"); pRecurringNode; pRecurringNode=pRecurringNode->NextSiblingElement())
       {
         memset(&tag, 0, sizeof(tag));
+
+        /* TODO: Implement own timer types to get support for the timer features introduced with PVR API 1.9.7 */
+        tag.iTimerType = PVR_TIMER_TYPE_NONE;
+
         tag.iClientIndex = 0xF000000 + atoi(pRecurringNode->FirstChildElement("id")->FirstChild()->Value());
 
         tag.iClientChannelUid = 8101;
@@ -1052,8 +1056,6 @@ PVR_ERROR cPVRClientNextPVR::GetTimers(ADDON_HANDLE handle)
         tag.endTime = time(NULL) - 86000;
         
         PVR_STRCPY(tag.strSummary, "summary");
-
-        tag.bIsRepeating = true;
 
         // pass timer to xbmc
         PVR->TransferTimerEntry(handle, &tag);
@@ -1076,6 +1078,8 @@ PVR_ERROR cPVRClientNextPVR::GetTimers(ADDON_HANDLE handle)
       {
         memset(&tag, 0, sizeof(tag));
 
+        /* TODO: Implement own timer types to get support for the timer features introduced with PVR API 1.9.7 */
+        tag.iTimerType = PVR_TIMER_TYPE_NONE;
 
         tag.iClientIndex = atoi(pRecordingNode->FirstChildElement("id")->FirstChild()->Value());
         tag.iClientChannelUid = atoi(pRecordingNode->FirstChildElement("channel_id")->FirstChild()->Value());
@@ -1107,15 +1111,6 @@ PVR_ERROR cPVRClientNextPVR::GetTimers(ADDON_HANDLE handle)
         start[10] = '\0';
         tag.startTime           = atol(start);
         tag.endTime             = tag.startTime + atoi(pRecordingNode->FirstChildElement("duration_seconds")->FirstChild()->Value());
-
-        // recurring recordings
-        if (pRecordingNode->FirstChildElement("recurring") != NULL && pRecordingNode->FirstChildElement("recurring")->FirstChild() != NULL)
-        {
-          if (strcmp(pRecordingNode->FirstChildElement("recurring")->FirstChild()->Value(), "true") == 0)
-          {
-            tag.bIsRepeating = true;
-          }
-        }
 
         // pass timer to xbmc
         PVR->TransferTimerEntry(handle, &tag);
