@@ -321,7 +321,7 @@ bool cPVRClientNextPVR::IsUp()
 // Used among others for the server name string in the "Recordings" view
 const char* cPVRClientNextPVR::GetBackendName(void)
 {
-  if (!m_tcpclient->is_valid())
+  if (!m_bConnected)
   {
     return g_szHostname.c_str();
   }
