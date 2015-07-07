@@ -109,8 +109,8 @@ msgid "Pre-Padding (minutes)"
 msgstr "Pre-Padding (minutes)"
 
 msgctxt "#30133"
-msgid "Pre-Padding (minutes)"
-msgstr "Pre-Padding (minutes)"
+msgid "Post-Padding (minutes)"
+msgstr "Post-Padding (minutes)"
 
 msgctxt "#30134"
 msgid "Recording Directory"
