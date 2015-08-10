@@ -11,11 +11,7 @@
   </requires>
   <extension
     point="xbmc.pvrclient"
-    library_linux="pvr.nextpvr.so"
-    library_osx="pvr.nextpvr.dylib"
-    library_freebsd="pvr.nextpvr.so"
-    library_windx="pvr.nextpvr.dll"
-    library_android="libpvr.nextpvr.so"/>
+    library_@PLATFORM@="@LIBRARY_FILENAME@"/>
   <extension point="xbmc.addon.metadata">
     <summary lang="af_ZA">Kodi voorprogram vir die NextPVR</summary>
     <summary lang="be_BY">Kodi frontend for the NextPVR</summary>
@@ -159,6 +155,6 @@
     <disclaimer lang="vi_VN">Đây là bản thử nghiệm. Bạn phải tự chịu trách nhiệm với nó</disclaimer>
     <disclaimer lang="zh_CN">此插件仍在开发中，请自行把握试用风险。</disclaimer>
     <disclaimer lang="zh_TW">這是開發中的工作。使用上您須自行考慮到可能有的風險。</disclaimer>
-    <platform>all</platform>
+    <platform>@PLATFORM@</platform>
   </extension>
 </addon>
