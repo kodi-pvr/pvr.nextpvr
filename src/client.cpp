@@ -542,9 +542,8 @@ PVR_ERROR AddTimer(const PVR_TIMER &timer)
     return g_client->AddTimer(timer);
 }
 
-PVR_ERROR DeleteTimer(const PVR_TIMER &timer, bool bForceDelete, bool /*bDeleteScheduled*/)
+PVR_ERROR DeleteTimer(const PVR_TIMER &timer, bool bForceDelete)
 {
-  /* TODO: Change implementation to support bDeleteScheduled (introduced with PVR API 1.9.7 */
   if (!g_client)
     return PVR_ERROR_SERVER_ERROR;
   else
