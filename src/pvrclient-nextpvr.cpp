@@ -1130,15 +1130,15 @@ PVR_ERROR cPVRClientNextPVR::GetTimerInfo(unsigned int timernumber, PVR_TIMER &t
 PVR_ERROR cPVRClientNextPVR::AddTimer(const PVR_TIMER &timerinfo)
 {
   // editing recording is not supported
-  if (timerinfo.iClientIndex != -1)
+  if (timerinfo.iClientIndex != PVR_TIMER_NO_CLIENT_INDEX)
   {
     return PVR_ERROR_NOT_IMPLEMENTED;
   }
 
   std::string encodedName = UriEncode(timerinfo.strTitle);
 
-  // manual recording (iEpgUid == -1) or instant recording (timerinfo.startTime == 0)
-  if (timerinfo.startTime == 0 || timerinfo.iEpgUid == -1)
+  // manual recording (iEpgUid == PVR_TIMER_NO_EPG_UID) or instant recording (timerinfo.startTime == 0)
+  if (timerinfo.startTime == 0 || timerinfo.iEpgUid == PVR_TIMER_NO_EPG_UID)
   {
     // build request
     char request[1024]; 
