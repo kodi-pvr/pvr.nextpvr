@@ -6,7 +6,7 @@
   provider-name="Graeme Blackley">
   <requires>
     <c-pluff version="0.1"/>
-    <import addon="xbmc.pvr" version="4.0.0"/>
+    <import addon="xbmc.pvr" version="4.1.0"/>
     <import addon="xbmc.gui" version="5.8.0"/>
   </requires>
   <extension
