@@ -467,6 +467,7 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, const PVR_CHANNEL &chan
         broadcast.iEpisodeNumber     = 0;  // unused
         broadcast.iEpisodePartNumber = 0;  // unused
         broadcast.strEpisodeName     = ""; // unused
+        broadcast.iFlags             = EPG_TAG_FLAG_UNDEFINED;
 
         PVR->TransferEpgEntry(handle, &broadcast);
       }
