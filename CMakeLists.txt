@@ -17,7 +17,6 @@ include_directories(${kodiplatform_INCLUDE_DIRS}
                     ${KODI_INCLUDE_DIR})
 
 set(NEXTPVR_SOURCES src/client.cpp
-                    src/DialogRecordPref.cpp
                     src/liveshift.cpp
                     src/md5.cpp
                     src/pvrclient-nextpvr.cpp

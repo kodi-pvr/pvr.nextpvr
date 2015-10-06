@@ -31,6 +31,42 @@
 
 #define SAFE_DELETE(p)       do { delete (p);     (p)=NULL; } while (0)
 
+
+/* timer type ids */
+#define TIMER_MANUAL_MIN          (PVR_TIMER_TYPE_NONE + 1)
+#define TIMER_ONCE_MANUAL         (TIMER_MANUAL_MIN + 0)
+#define TIMER_ONCE_EPG            (TIMER_MANUAL_MIN + 1)
+#define TIMER_ONCE_KEYWORD        (TIMER_MANUAL_MIN + 2)
+#define TIMER_ONCE_MANUAL_CHILD   (TIMER_MANUAL_MIN + 3)
+#define TIMER_ONCE_EPG_CHILD      (TIMER_MANUAL_MIN + 4)
+#define TIMER_ONCE_KEYWORD_CHILD  (TIMER_MANUAL_MIN + 5)
+#define TIMER_MANUAL_MAX          (TIMER_MANUAL_MIN + 5)
+
+#define TIMER_REPEATING_MIN       (TIMER_MANUAL_MAX + 1)
+#define TIMER_REPEATING_MANUAL    (TIMER_REPEATING_MIN + 0)
+#define TIMER_REPEATING_EPG       (TIMER_REPEATING_MIN + 1)
+#define TIMER_REPEATING_KEYWORD   (TIMER_REPEATING_MIN + 2)
+#define TIMER_REPEATING_MAX       (TIMER_REPEATING_MIN + 2)
+
+typedef enum
+{
+  NEXTPVR_SHOWTYPE_ANY = 0,
+  NEXTPVR_SHOWTYPE_FIRSTRUNONLY = 1,
+} nextpvr_showtype_t;
+
+typedef enum
+{
+  NEXTPVR_LIMIT_ASMANY = 0,
+  NEXTPVR_LIMIT_1 = 1,
+  NEXTPVR_LIMIT_2 = 2,
+  NEXTPVR_LIMIT_3 = 3,
+  NEXTPVR_LIMIT_4 = 4,
+  NEXTPVR_LIMIT_5 = 5,
+  NEXTPVR_LIMIT_6 = 6,
+  NEXTPVR_LIMIT_7 = 7,
+  NEXTPVR_LIMIT_10 = 10
+} nextpvr_recordinglimit_t;
+
 class cPVRClientNextPVR
 {
 public:
@@ -73,6 +109,7 @@ public:
 
   /* Timer handling */
   int GetNumTimers(void);
+  PVR_ERROR GetTimerTypes(PVR_TIMER_TYPE types[], int *size);
   PVR_ERROR GetTimers(ADDON_HANDLE handle);
   PVR_ERROR GetTimerInfo(unsigned int timernumber, PVR_TIMER &timer);
   PVR_ERROR AddTimer(const PVR_TIMER &timer);
@@ -106,6 +143,8 @@ protected:
   NextPVR::Socket           *m_streamingclient;
 
 private:
+  CStdString GetDayString(int dayMask);
+  std::vector<CStdString> split(const CStdString& s, const CStdString& delim, const bool keep_empty);
   bool GetChannel(unsigned int number, PVR_CHANNEL &channeldata);
   bool LoadGenreXML(const std::string &filename);
   int DoRequest(const char *resource, CStdString &response);
@@ -128,8 +167,8 @@ private:
   long long               m_currentLiveLength;
   long long               m_currentLivePosition;
   int                     m_iDefaultPrePadding;
-  int                     m_iDefaultPostPadding;
-  std::string             m_recordingDirectories;
+  int                     m_iDefaultPostPadding;  
+  std::vector< std::string > m_recordingDirectories;
 
   CStdString              m_PlaybackURL;
   LiveShiftSource        *m_pLiveShiftSource;
@@ -139,5 +178,7 @@ private:
   char                    m_sid[64];
 
   int                     m_iChannelCount;  
-  
+
+  int                     m_defaultLimit;
+  int                     m_defaultShowType;
 };
