@@ -44,6 +44,7 @@ using namespace ADDON;
 
 /* Globals */
 int g_iNextPVRXBMCBuild = 0;
+extern bool g_bDownloadGuideArtwork;
 
 /* PVR client version (don't forget to update also the addon.xml and the Changelog.txt files) */
 #define PVRCLIENT_NEXTPVR_VERSION_STRING    "1.0.0.0"
@@ -463,8 +464,12 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, const PVR_CHANNEL &chan
 
         // artwork URL 
         char artworkPath[128];
-        snprintf(artworkPath, sizeof(artworkPath), "/service?method=channel.show.artwork&sid=%s&event_id=%d", m_sid, broadcast.iUniqueBroadcastId);
-        broadcast.strIconPath         = artworkPath;
+        artworkPath[0] = '\0';
+        if (g_bDownloadGuideArtwork)
+        {
+          snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=channel.show.artwork&sid=%s&event_id=%d", g_szHostname.c_str(), g_iPort, m_sid, broadcast.iUniqueBroadcastId);
+          broadcast.strIconPath         = artworkPath;
+        }
 
         char genre[128];
         genre[0] = '\0';
@@ -1079,7 +1084,22 @@ PVR_ERROR cPVRClientNextPVR::GetTimers(ADDON_HANDLE handle)
           tag.startTime = atol(pRulesNode->FirstChildElement("StartTimeTicks")->FirstChild()->Value());
           tag.endTime = atol(pRulesNode->FirstChildElement("EndTimeTicks")->FirstChild()->Value());
         }
-         
+
+        // keyword recordings
+        if (pRulesNode->FirstChildElement("AdvancedRules") != NULL)
+        {
+          CStdString advancedRulesText = pRulesNode->FirstChildElement("AdvancedRules")->FirstChild()->Value();
+          if (advancedRulesText.Find("KEYWORD: ") != -1)
+          {
+            tag.iTimerType = TIMER_REPEATING_KEYWORD;
+            tag.startTime = 0;
+            tag.endTime = 0;
+            tag.bStartAnyTime = true;
+            tag.bEndAnyTime = true;
+            strncpy(tag.strEpgSearchString, &advancedRulesText.c_str()[9], sizeof(tag.strEpgSearchString));
+          }
+        }
+
         // days
         tag.iWeekdays = PVR_WEEKDAY_ALLDAYS;
         if (pRulesNode->FirstChildElement("Days") != NULL)
@@ -1361,6 +1381,18 @@ PVR_ERROR cPVRClientNextPVR::GetTimerTypes(PVR_TIMER_TYPE types[], int *size)
       PVR_TIMER_TYPE_SUPPORTS_END_TIME |
       PVR_TIMER_TYPE_FORBIDS_NEW_INSTANCES;
 
+  static const unsigned int TIMER_KEYWORD_ATTRIBS
+    = PVR_TIMER_TYPE_SUPPORTS_CHANNELS |
+      PVR_TIMER_TYPE_SUPPORTS_TITLE_EPG_MATCH |
+      PVR_TIMER_TYPE_SUPPORTS_RECORDING_GROUP |
+      PVR_TIMER_TYPE_SUPPORTS_START_END_MARGIN;
+
+  static const unsigned int TIMER_REPEATING_KEYWORD_ATTRIBS
+      = PVR_TIMER_TYPE_IS_REPEATING |
+      PVR_TIMER_TYPE_SUPPORTS_RECORD_ONLY_NEW_EPISODES |
+      PVR_TIMER_TYPE_SUPPORTS_MAX_RECORDINGS;
+
+
   /* Timer types definition.*/
   static std::vector< std::unique_ptr< TimerType > > timerTypes;
   if (timerTypes.size() == 0)
@@ -1448,6 +1480,20 @@ PVR_ERROR cPVRClientNextPVR::GetTimerTypes(PVR_TIMER_TYPE types[], int *size)
       recordingLimitValues, m_defaultLimit,
       showTypeValues, m_defaultShowType,
       recordingGroupValues, 0)));
+
+    timerTypes.push_back(
+      /* Repeating epg based Parent*/
+      std::unique_ptr<TimerType>(new TimerType(
+      /* Type id. */
+      TIMER_REPEATING_KEYWORD,
+      /* Attributes. */
+      TIMER_KEYWORD_ATTRIBS | TIMER_REPEATING_KEYWORD_ATTRIBS,
+      /* Description. */
+      XBMC->GetLocalizedString(MSG_REPEATING_GUIDE), // "Repeating (keyword)"
+      /* Values definitions for attributes. */
+      recordingLimitValues, m_defaultLimit,
+      showTypeValues, m_defaultShowType,
+      recordingGroupValues, 0)));
   }
 
   /* Copy data to target array. */
@@ -1503,6 +1549,7 @@ PVR_ERROR cPVRClientNextPVR::AddTimer(const PVR_TIMER &timerinfo)
   char request[1024];
 
   std::string encodedName = UriEncode(timerinfo.strTitle);
+  std::string encodedKeyword = UriEncode(timerinfo.strEpgSearchString);
   CStdString days = GetDayString(timerinfo.iWeekdays);
   switch (timerinfo.iTimerType)
   {
@@ -1529,7 +1576,8 @@ PVR_ERROR cPVRClientNextPVR::AddTimer(const PVR_TIMER &timerinfo)
   case TIMER_REPEATING_EPG:
     XBMC->Log(LOG_DEBUG, "TIMER_REPEATING_EPG");
     // build recurring recording request
-    snprintf(request, sizeof(request), "/service?method=recording.recurring.save&event_id=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s",
+    snprintf(request, sizeof(request), "/service?method=recording.recurring.save&recurring_id=%d&event_id=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s",      
+      timerinfo.iClientIndex,
       timerinfo.iEpgUid,
       (int)timerinfo.iMaxRecordings,
       (int)timerinfo.iMarginStart,
@@ -1542,7 +1590,8 @@ PVR_ERROR cPVRClientNextPVR::AddTimer(const PVR_TIMER &timerinfo)
   case TIMER_REPEATING_MANUAL:
     XBMC->Log(LOG_DEBUG, "TIMER_REPEATING_EPG");
     // build manual recurring request
-    snprintf(request, sizeof(request), "/service?method=recording.recurring.save&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s",
+    snprintf(request, sizeof(request), "/service?method=recording.recurring.save&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s",
+      timerinfo.iClientIndex,
       encodedName.c_str(),
       timerinfo.iClientChannelUid,
       (int)timerinfo.startTime,
@@ -1552,6 +1601,23 @@ PVR_ERROR cPVRClientNextPVR::AddTimer(const PVR_TIMER &timerinfo)
       (int)timerinfo.iMarginEnd,
       days.c_str(),
       m_recordingDirectories[timerinfo.iRecordingGroup].c_str()
+      );
+    break;
+
+  case TIMER_REPEATING_KEYWORD:
+    XBMC->Log(LOG_DEBUG, "TIMER_REPEATING_KEYWORD");
+    // build manual recurring request
+    snprintf(request, sizeof(request), "/service?method=recording.recurring.save&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&directory_id=%s&keyword=%s",
+      timerinfo.iClientIndex,
+      encodedName.c_str(),
+      timerinfo.iClientChannelUid,
+      (int)timerinfo.startTime,
+      (int)timerinfo.endTime,
+      (int)timerinfo.iMaxRecordings,
+      (int)timerinfo.iMarginStart,
+      (int)timerinfo.iMarginEnd,
+      m_recordingDirectories[timerinfo.iRecordingGroup].c_str(),
+      encodedKeyword.c_str()
       );
     break;
   }
@@ -1597,7 +1663,7 @@ PVR_ERROR cPVRClientNextPVR::DeleteTimer(const PVR_TIMER &timer, bool bForceDele
 PVR_ERROR cPVRClientNextPVR::UpdateTimer(const PVR_TIMER &timerinfo)
 {
   // not supported
-  return PVR_ERROR_NO_ERROR;
+  return AddTimer(timerinfo);
 }
 
 

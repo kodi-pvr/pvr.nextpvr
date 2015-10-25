@@ -39,6 +39,7 @@ enum eStreamingMethod
 #define DEFAULT_PIN                   "0000"
 #define DEFAULT_RADIO                 true
 #define DEFAULT_USE_TIMESHIFT         false
+#define DEFAULT_GUIDE_ARTWORK         false
 
 extern std::string      g_szUserPath;         ///< The Path to the user directory inside user profile
 extern std::string      g_szClientPath;       ///< The Path where this driver is located

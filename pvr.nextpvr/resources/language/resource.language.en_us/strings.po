@@ -32,6 +32,10 @@ msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
 msgstr "Enable TimeShift with Live TV"
 
+msgctxt "#30004"
+msgid "Download TV Guide Artwork"
+msgstr "Download TV Guide Artwork"
+
 msgctxt "#30040"
 msgid "Connection"
 msgstr "Connection"
