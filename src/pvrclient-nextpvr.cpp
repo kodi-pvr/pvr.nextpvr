@@ -1096,7 +1096,7 @@ PVR_ERROR cPVRClientNextPVR::GetTimers(ADDON_HANDLE handle)
             tag.endTime = 0;
             tag.bStartAnyTime = true;
             tag.bEndAnyTime = true;
-            strncpy(tag.strEpgSearchString, &advancedRulesText.c_str()[9], sizeof(tag.strEpgSearchString));
+            strncpy(tag.strEpgSearchString, &advancedRulesText.c_str()[9], sizeof(tag.strEpgSearchString) - 1);
           }
         }
 
