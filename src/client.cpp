@@ -45,6 +45,8 @@ CHelper_libXBMC_addon *XBMC           = NULL;
 CHelper_libXBMC_pvr   *PVR            = NULL;
 CHelper_libKODI_guilib *GUI           = NULL; 
 bool                   g_bUseTimeshift = false;
+bool                   g_bDownloadGuideArtwork = false;
+
 extern "C" {
 
 void ADDON_ReadSettings(void);
@@ -198,6 +200,14 @@ void ADDON_ReadSettings(void)
     g_bUseTimeshift = DEFAULT_USE_TIMESHIFT;
   }
 
+  /* Read setting "guideartwork" from settings.xml */
+  if (!XBMC->GetSetting("guideartwork", &g_bDownloadGuideArtwork))
+  {
+    /* If setting is unknown fallback to defaults */
+    XBMC->Log(LOG_ERROR, "Couldn't get 'guideartwork' setting, falling back to 'true' as default");
+    g_bDownloadGuideArtwork = DEFAULT_GUIDE_ARTWORK;
+  }
+
   /* Log the current settings for debugging purposes */
   XBMC->Log(LOG_DEBUG, "settings: host='%s', port=%i", g_szHostname.c_str(), g_iPort);
 }
@@ -247,6 +257,11 @@ ADDON_STATUS ADDON_SetSetting(const char *settingName, const void *settingValue)
   {
     XBMC->Log(LOG_INFO, "Changed setting 'usetimeshift' from %u to %u", g_bUseTimeshift, *(bool*) settingValue);
     g_bUseTimeshift = *(bool*) settingValue;
+  }
+  else if (str == "guideartwork")
+  {
+    XBMC->Log(LOG_INFO, "Changed setting 'guideartwork' from %u to %u", g_bDownloadGuideArtwork, *(bool*)settingValue);
+    g_bDownloadGuideArtwork = *(bool*)settingValue;
   }
 
   return ADDON_STATUS_OK;
