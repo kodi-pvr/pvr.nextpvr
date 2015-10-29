@@ -236,7 +236,7 @@ bool cPVRClientNextPVR::Connect()
                   XBMC->Log(LOG_DEBUG, "NextPVR version: %d", version);
 
                   // is the server new enough
-                  if (version < 30500)
+                  if (version < 30600)
                   {
                     XBMC->Log(LOG_ERROR, "Your NextPVR version '%d' is too old. Please upgrade to '%s' or higher!", version, NEXTPVRC_MIN_VERSION_STRING);
                     XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30050));
@@ -1138,15 +1138,19 @@ PVR_ERROR cPVRClientNextPVR::GetTimers(ADDON_HANDLE handle)
         // recordings directory ID
         if (pRulesNode->FirstChildElement("RecordingDirectoryID") != NULL)
         {
-          CStdString recordingDirectoryID = pRulesNode->FirstChildElement("RecordingDirectoryID")->FirstChild()->Value();          
-          int i = 0;
-          for (auto it = m_recordingDirectories.begin(); it != m_recordingDirectories.end(); ++it, i++)
+          tag.iRecordingGroup = 0;
+          if (pRulesNode->FirstChildElement("RecordingDirectoryID")->FirstChild() != NULL)
           {
-            CStdString bracketed = "[" + m_recordingDirectories[i] + "]";
-            if (bracketed == recordingDirectoryID)
+            CStdString recordingDirectoryID = pRulesNode->FirstChildElement("RecordingDirectoryID")->FirstChild()->Value();
+            int i = 0;
+            for (auto it = m_recordingDirectories.begin(); it != m_recordingDirectories.end(); ++it, i++)
             {
-              tag.iRecordingGroup = i;
-              break;
+              CStdString bracketed = "[" + m_recordingDirectories[i] + "]";
+              if (bracketed == recordingDirectoryID)
+              {
+                tag.iRecordingGroup = i;
+                break;
+              }
             }
           }
         }
