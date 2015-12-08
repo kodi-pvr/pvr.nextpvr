@@ -106,11 +106,11 @@ msgstr "所有录像"
 
 msgctxt "#30132"
 msgid "Pre-Padding (minutes)"
-msgstr "提前量（分）"
+msgstr "首部提前量（分）"
 
 msgctxt "#30133"
-msgid "Pre-Padding (minutes)"
-msgstr "提前量（分）"
+msgid "Post-Padding (minutes)"
+msgstr "尾部延迟量（分）"
 
 msgctxt "#30134"
 msgid "Recording Directory"

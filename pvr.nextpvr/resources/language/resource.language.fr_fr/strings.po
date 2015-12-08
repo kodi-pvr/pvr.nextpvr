@@ -30,7 +30,7 @@ msgstr "Code PIN NextPVR"
 
 msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
-msgstr "Activer les sauts dans le temps avec la télé en directe"
+msgstr "Activer le différé avec la TV en directe"
 
 msgctxt "#30040"
 msgid "Connection"
@@ -38,7 +38,7 @@ msgstr "Connexion"
 
 msgctxt "#30041"
 msgid "Advanced"
-msgstr "Avancés"
+msgstr "Avancé"
 
 msgctxt "#30050"
 msgid "NextPVR server is too old."
@@ -46,7 +46,7 @@ msgstr "Le serveur NextPVR est périmé."
 
 msgctxt "#30051"
 msgid "Upgrade to '%s' or higher!"
-msgstr "Mettre à niveau vers '%s' ou supérieur !"
+msgstr "Mettre à niveau vers « %s » ou supérieur !"
 
 msgctxt "#30052"
 msgid "Connection failed. Incorrect PIN?"
@@ -54,7 +54,7 @@ msgstr "Connexion impossible. Code Pin incorrect ?"
 
 msgctxt "#30053"
 msgid "Tuner no longer available"
-msgstr "Le tuner n'est plus disponible"
+msgstr "Le tuner n'est plus disponible."
 
 msgctxt "#30054"
 msgid "[RECUR]"
@@ -62,7 +62,7 @@ msgstr "[RECUR]"
 
 msgctxt "#30100"
 msgid "Add Timer"
-msgstr "Ajouter une minuterie"
+msgstr "Ajouter une programmation"
 
 msgctxt "#30120"
 msgid "Recording Type"
@@ -109,13 +109,13 @@ msgid "Pre-Padding (minutes)"
 msgstr "Délai avant (minutes)"
 
 msgctxt "#30133"
-msgid "Pre-Padding (minutes)"
-msgstr "Délai avant (minutes)"
+msgid "Post-Padding (minutes)"
+msgstr "Délai après (minutes)"
 
 msgctxt "#30134"
 msgid "Recording Directory"
-msgstr "Répertoire des enregistrements"
+msgstr "Dossier des enregistrements"
 
 msgctxt "#30135"
 msgid "Default"
-msgstr "Prédéfini"
+msgstr "Par défaut"

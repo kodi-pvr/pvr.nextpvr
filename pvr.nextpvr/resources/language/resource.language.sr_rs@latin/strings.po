@@ -16,9 +16,105 @@ msgstr ""
 "Language: sr_RS@latin\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
+msgctxt "#30000"
+msgid "NextPVR Hostname"
+msgstr "NextPVR Hostname"
+
+msgctxt "#30001"
+msgid "NextPVR Port (usually 8866 or 7799)"
+msgstr "NextPVR Port (obično 8866 ili 7799)"
+
+msgctxt "#30002"
+msgid "NextPVR PinCode"
+msgstr "NextPVR PinKod"
+
+msgctxt "#30003"
+msgid "Enable TimeShift with Live TV"
+msgstr "Omogući pomeraj vremena kod TV Uživo"
+
+msgctxt "#30040"
+msgid "Connection"
+msgstr "Veza"
+
 msgctxt "#30041"
 msgid "Advanced"
 msgstr "Napredno"
+
+msgctxt "#30050"
+msgid "NextPVR server is too old."
+msgstr "NextPVR server je previše star."
+
+msgctxt "#30051"
+msgid "Upgrade to '%s' or higher!"
+msgstr "Ažurirajte na '%s' ili više!"
+
+msgctxt "#30052"
+msgid "Connection failed. Incorrect PIN?"
+msgstr "Neuspelo povezivanje. Netačan PIN?"
+
+msgctxt "#30053"
+msgid "Tuner no longer available"
+msgstr "Prijemnik više nije dostupan"
+
+msgctxt "#30054"
+msgid "[RECUR]"
+msgstr "[RECUR]"
+
+msgctxt "#30100"
+msgid "Add Timer"
+msgstr "Dodaj tajmer"
+
+msgctxt "#30120"
+msgid "Recording Type"
+msgstr "Vrsta Snimka"
+
+msgctxt "#30121"
+msgid "Record Once"
+msgstr "Snimi Jednom"
+
+msgctxt "#30122"
+msgid "Record Season (NEW episodes on this channel)"
+msgstr "Snimi Sezonu (NOVE epizode na ovom kanalu)"
+
+msgctxt "#30123"
+msgid "Record Season (All episodes on this channel)"
+msgstr "Snimi Sezonu (Sve epizode na ovom kanalu)"
+
+msgctxt "#30124"
+msgid "Record Season (Daily, this timeslot)"
+msgstr "Snimi Sezonu (Dnevno, ovaj vremenski slot)"
+
+msgctxt "#30125"
+msgid "Record Season (Weekly, this timeslot)"
+msgstr "Snimi Sezonu (Nedeljno, ovaj vremenski slot)"
+
+msgctxt "#30126"
+msgid "Record Season (Monday-Friday, this timeslot)"
+msgstr "Snimi Sezonu (Ponedeljak-Petak, ovaj vremenski slot)"
+
+msgctxt "#30127"
+msgid "Record Season (Weekends, this timeslot)"
+msgstr "Snimi Sezonu (Vikendi, ovaj vremenski slot)"
+
+msgctxt "#30130"
+msgid "Keep"
+msgstr "Zadržati"
+
+msgctxt "#30131"
+msgid "All Recordings"
+msgstr "Sva snimanja"
+
+msgctxt "#30132"
+msgid "Pre-Padding (minutes)"
+msgstr "Pre-Popunjavanje (minuta)"
+
+msgctxt "#30133"
+msgid "Post-Padding (minutes)"
+msgstr "Posle-Popunjavanje (minuta)"
+
+msgctxt "#30134"
+msgid "Recording Directory"
+msgstr "Fascikla za snimanje"
 
 msgctxt "#30135"
 msgid "Default"

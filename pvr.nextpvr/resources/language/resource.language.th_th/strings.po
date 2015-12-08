@@ -16,13 +16,105 @@ msgstr ""
 "Language: th_TH\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
+msgctxt "#30000"
+msgid "NextPVR Hostname"
+msgstr "ชื่อโฮสต์ NextPVR"
+
+msgctxt "#30001"
+msgid "NextPVR Port (usually 8866 or 7799)"
+msgstr "พอร์ต NextPVR (โดยปกติ 8866 หรือ 7799)"
+
+msgctxt "#30002"
+msgid "NextPVR PinCode"
+msgstr "รหัสพิน NextPVR"
+
+msgctxt "#30003"
+msgid "Enable TimeShift with Live TV"
+msgstr "เปิดใช้งานเลื่อนเวลากับทีวี สด"
+
+msgctxt "#30040"
+msgid "Connection"
+msgstr "การเชื่อมต่อ"
+
 msgctxt "#30041"
 msgid "Advanced"
 msgstr "ขั้นสูง"
 
+msgctxt "#30050"
+msgid "NextPVR server is too old."
+msgstr "แม่ข่าย NextPVR เก่าเกินไป"
+
+msgctxt "#30051"
+msgid "Upgrade to '%s' or higher!"
+msgstr "ปรับรุ่นเป็น '%s' หรือสูงกว่า!"
+
+msgctxt "#30052"
+msgid "Connection failed. Incorrect PIN?"
+msgstr "การเชื่อมต่อล้มเหลว PIN ไม่ถูกต้อง?"
+
+msgctxt "#30053"
+msgid "Tuner no longer available"
+msgstr "ตัวรับไม่สามารถใช้ได้"
+
+msgctxt "#30054"
+msgid "[RECUR]"
+msgstr "[เกิดขึ้นอีก]"
+
+msgctxt "#30100"
+msgid "Add Timer"
+msgstr "เพิ่มตัวตั้งเวลา"
+
+msgctxt "#30120"
+msgid "Recording Type"
+msgstr "รูปแบบการบันทึก"
+
+msgctxt "#30121"
+msgid "Record Once"
+msgstr "บันทึกทันที"
+
+msgctxt "#30122"
+msgid "Record Season (NEW episodes on this channel)"
+msgstr "บันทึกฤดู (ตอนใหม่ในช่องนี้)"
+
+msgctxt "#30123"
+msgid "Record Season (All episodes on this channel)"
+msgstr "บันทึกฤดู (ทุกตอนในช่องนี้)"
+
+msgctxt "#30124"
+msgid "Record Season (Daily, this timeslot)"
+msgstr "บันทึกฤดู (รายวัน, ตารางเวลานี้)"
+
+msgctxt "#30125"
+msgid "Record Season (Weekly, this timeslot)"
+msgstr "บันทึกฤดู (รายสัปดาห์, ตารางเวลานี้)"
+
+msgctxt "#30126"
+msgid "Record Season (Monday-Friday, this timeslot)"
+msgstr "บันทึกฤดู (วันจันทร์-วันศุกร์, ตารางเวลานี้)"
+
+msgctxt "#30127"
+msgid "Record Season (Weekends, this timeslot)"
+msgstr "บันทึกฤดู (สุดสัปดาห์, ตารางเวลานี้)"
+
 msgctxt "#30130"
 msgid "Keep"
 msgstr "คงไว้"
+
+msgctxt "#30131"
+msgid "All Recordings"
+msgstr "ทุกการบันทึก"
+
+msgctxt "#30132"
+msgid "Pre-Padding (minutes)"
+msgstr "ล่วงหน้า-ช่วงขยาย (นาที)"
+
+msgctxt "#30133"
+msgid "Post-Padding (minutes)"
+msgstr "หลัง-ช่วงขยาย (นาที)"
+
+msgctxt "#30134"
+msgid "Recording Directory"
+msgstr "ไดเรกทอรีการบันทึก"
 
 msgctxt "#30135"
 msgid "Default"

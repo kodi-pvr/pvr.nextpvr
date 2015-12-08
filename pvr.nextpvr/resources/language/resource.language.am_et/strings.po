@@ -32,9 +32,17 @@ msgctxt "#30052"
 msgid "Connection failed. Incorrect PIN?"
 msgstr "ግንኙነቱ አልተሳካም የተሳሳተ PIN?"
 
+msgctxt "#30120"
+msgid "Recording Type"
+msgstr "የ መቅረጫው አይነት "
+
 msgctxt "#30130"
 msgid "Keep"
 msgstr "ማስቀመጫ"
+
+msgctxt "#30131"
+msgid "All Recordings"
+msgstr "ሁሉንም መቅረጫ "
 
 msgctxt "#30135"
 msgid "Default"

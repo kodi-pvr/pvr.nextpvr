@@ -109,8 +109,8 @@ msgid "Pre-Padding (minutes)"
 msgstr "시작전 여유 (분)"
 
 msgctxt "#30133"
-msgid "Pre-Padding (minutes)"
-msgstr "시작전 여유 (분)"
+msgid "Post-Padding (minutes)"
+msgstr "종료후 여유 (분)"
 
 msgctxt "#30134"
 msgid "Recording Directory"

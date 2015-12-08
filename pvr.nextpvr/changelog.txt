@@ -1,3 +1,6 @@
+v1.12.5
+- updated language files from Transifex
+
 v1.12.4
 - Updated to GUI API v5.10.0
 

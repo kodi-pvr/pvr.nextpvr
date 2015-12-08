@@ -109,8 +109,8 @@ msgid "Pre-Padding (minutes)"
 msgstr "Prieš pradžią (minutės)"
 
 msgctxt "#30133"
-msgid "Pre-Padding (minutes)"
-msgstr "Prieš pradžią (minutės)"
+msgid "Post-Padding (minutes)"
+msgstr "Po pabaigos (minutės)"
 
 msgctxt "#30134"
 msgid "Recording Directory"

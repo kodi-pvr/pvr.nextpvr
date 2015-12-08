@@ -109,7 +109,7 @@ msgid "Pre-Padding (minutes)"
 msgstr "Začít nahrávání dříve (minuty)"
 
 msgctxt "#30133"
-msgid "Pre-Padding (minutes)"
+msgid "Post-Padding (minutes)"
 msgstr "Ukončit nahrávání později (minuty)"
 
 msgctxt "#30134"

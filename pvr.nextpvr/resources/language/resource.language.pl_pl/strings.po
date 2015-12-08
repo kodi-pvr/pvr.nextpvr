@@ -54,7 +54,7 @@ msgstr "Nieudane połączenie. Nieprawidłowy PIN?"
 
 msgctxt "#30053"
 msgid "Tuner no longer available"
-msgstr "Tuner nie jest niedostępny"
+msgstr "Tuner jest niedostępny"
 
 msgctxt "#30054"
 msgid "[RECUR]"
@@ -109,8 +109,8 @@ msgid "Pre-Padding (minutes)"
 msgstr "Nagrywaj przed zaplanowanym czasem początku (minuty)"
 
 msgctxt "#30133"
-msgid "Pre-Padding (minutes)"
-msgstr "Nagrywaj po zaplanowanym czasie końca (minuty)"
+msgid "Post-Padding (minutes)"
+msgstr "Nagrywaj po zaplanowanym czasie zakończenia (minuty)"
 
 msgctxt "#30134"
 msgid "Recording Directory"

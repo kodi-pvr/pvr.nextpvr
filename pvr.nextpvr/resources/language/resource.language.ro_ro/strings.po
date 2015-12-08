@@ -106,11 +106,11 @@ msgstr "Toate înregistrările"
 
 msgctxt "#30132"
 msgid "Pre-Padding (minutes)"
-msgstr "Spațiere înainte (minute)"
+msgstr "Pre-umplere (minute)"
 
 msgctxt "#30133"
-msgid "Pre-Padding (minutes)"
-msgstr "Spațiere înainte (minute)"
+msgid "Post-Padding (minutes)"
+msgstr "Post-uplere (minute)"
 
 msgctxt "#30134"
 msgid "Recording Directory"

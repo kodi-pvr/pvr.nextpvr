@@ -109,8 +109,8 @@ msgid "Pre-Padding (minutes)"
 msgstr "Elő hosszabbítás (perc)"
 
 msgctxt "#30133"
-msgid "Pre-Padding (minutes)"
-msgstr "Elő hosszabbítás (perc)"
+msgid "Post-Padding (minutes)"
+msgstr "Utóhosszabbítás (perc)"
 
 msgctxt "#30134"
 msgid "Recording Directory"

@@ -109,8 +109,8 @@ msgid "Pre-Padding (minutes)"
 msgstr "For-upptaka (mínútur)"
 
 msgctxt "#30133"
-msgid "Pre-Padding (minutes)"
-msgstr "For-upptaka (mínútur)"
+msgid "Post-Padding (minutes)"
+msgstr "Eftirá-upptaka (mínútur)"
 
 msgctxt "#30134"
 msgid "Recording Directory"

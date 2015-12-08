@@ -109,8 +109,8 @@ msgid "Pre-Padding (minutes)"
 msgstr "Πρώιμη Έναρξη Εγγραφής (λεπτά)"
 
 msgctxt "#30133"
-msgid "Pre-Padding (minutes)"
-msgstr "Καθυστερημένη Λήξη Εγγραφής (λεπτά)"
+msgid "Post-Padding (minutes)"
+msgstr "Μετα-έναρξη Εγγραφής (λεπτά)"
 
 msgctxt "#30134"
 msgid "Recording Directory"

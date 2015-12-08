@@ -106,11 +106,11 @@ msgstr "Todas las grabaciones"
 
 msgctxt "#30132"
 msgid "Pre-Padding (minutes)"
-msgstr "Margen (minutos)"
+msgstr "Margen inicial (minutos)"
 
 msgctxt "#30133"
-msgid "Pre-Padding (minutes)"
-msgstr "Margen (minutos)"
+msgid "Post-Padding (minutes)"
+msgstr "Margen al final (minutos)"
 
 msgctxt "#30134"
 msgid "Recording Directory"

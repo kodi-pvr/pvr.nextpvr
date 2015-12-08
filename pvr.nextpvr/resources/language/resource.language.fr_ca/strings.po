@@ -106,11 +106,11 @@ msgstr "Tous les enregistrements"
 
 msgctxt "#30132"
 msgid "Pre-Padding (minutes)"
-msgstr "Pré-remplissage (minutes)"
+msgstr "Enregistrement avant le début prévu (en minutes)"
 
 msgctxt "#30133"
-msgid "Pre-Padding (minutes)"
-msgstr "Pré-remplissage (minutes)"
+msgid "Post-Padding (minutes)"
+msgstr "Enregistrement après le début prévu (en minutes)"
 
 msgctxt "#30134"
 msgid "Recording Directory"

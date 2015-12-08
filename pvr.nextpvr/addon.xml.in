@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon
   id="pvr.nextpvr"
-  version="1.12.4"
+  version="1.12.5"
   name="NextPVR PVR Client"
   provider-name="Graeme Blackley">
   <requires>
@@ -29,8 +29,9 @@
     <summary lang="es_AR">Front-end de Kodi para NextPVR</summary>
     <summary lang="es_ES">Front-end de Kodi para NextPVR</summary>
     <summary lang="et_EE">Kodi esi NextPVR'ile</summary>
+    <summary lang="fi_FI">Kodi:n NextPVR-tuki</summary>
     <summary lang="fr_CA">Frontal Kodi pour NextPVR</summary>
-    <summary lang="fr_FR">Interface logicielle pour l'enregistreur NextPVR</summary>
+    <summary lang="fr_FR">Interface logicielle pour l'enregistreur vidéo NextPVR</summary>
     <summary lang="gl_ES">Interface de Kodi para NextPVR</summary>
     <summary lang="he_IL">לקוח טלוויזיה חיה עבור NextPVR</summary>
     <summary lang="hr_HR">Kodi sučelje za NextPVR</summary>
@@ -47,14 +48,17 @@
     <summary lang="my_MM">Kodi ၏ frontend အတွက် NextPVR</summary>
     <summary lang="nb_NO">Kodi sitt frontend for NextPVR</summary>
     <summary lang="nl_NL">Kodi frontend voor de NextPVR</summary>
-    <summary lang="pl_PL">Klient TV dla NextPVR</summary>
+    <summary lang="pl_PL">Klient telewizyjny dla NextPVR</summary>
     <summary lang="pt_BR">Kodi Frontend para o NextPVR</summary>
     <summary lang="pt_PT">Frontend Kodi para NextPVR</summary>
     <summary lang="ro_RO">Interfața Kodi pentru NextPVR</summary>
     <summary lang="ru_RU">Интерфейс Kodi для NextPVR</summary>
     <summary lang="sk_SK">Kodi rozhranie pre NextPVR</summary>
     <summary lang="sl_SI">Kodijev vmesnik za NextPVR</summary>
+    <summary lang="sr_RS">Kodi-јев интерфејс за NextPVR</summary>
+    <summary lang="sr_RS@latin">Kodijev interfejs za NextPVR</summary>
     <summary lang="sv_SE">Kodi-frontend för NextPVR</summary>
+    <summary lang="th_TH">ส่วนหน้า Kodi สำหรับ NextPVR</summary>
     <summary lang="tr_TR">NextPVR için Kodi ön ucu</summary>
     <summary lang="uk_UA">Накладка Kodi для NextPVR</summary>
     <summary lang="vi_VN">Giao tiếp Kodi cho NextPVR</summary>
@@ -63,11 +67,11 @@
     <description lang="af_ZA">NextPVR voorprogram. Ondersteun stroom van Lewendige TV &amp; Opnames, luister na Radio kanale en EPG.</description>
     <description lang="be_BY">NextPVR frontend. Supports streaming of Live TV &amp; Recordings, listening to Radio channels and EPG.</description>
     <description lang="bg_BG">NextPVR клиент. Поддържа поточна телевизия и записване, слушане на радио канали и електронен програмен справочник.</description>
-    <description lang="ca_ES">Interfície per el NextPVR. Suporta fluxes de TV en directe i enregistraments,  escolta de canals de ràdio i EPG.</description>
+    <description lang="ca_ES">Interfície del NextPVR. Suporta fluxos de TV en directe i enregistraments,  escolta de canals de ràdio i EPG.</description>
     <description lang="cs_CZ">Rozhraní NextPVR. Podporuje proudové vysílání živého vysílání a nahrávek, poslech kanálů rádia a EPG.</description>
     <description lang="cy_GB">Blaen NextPVR. Mae'n cynnal ffrydio Teledu Byw a Recordiadau, gwrando ar sianeli Radio ac Amserlenni Rhaglenni Electronig.</description>
     <description lang="da_DK">NextPVR frontend; understøtter streaming af TV og Optagelser, Radiokanaler og EPG.</description>
-    <description lang="de_DE">NextPVR Oberfläche. Unterstützt Live TV &amp; Aufnahmen, Radioknaäle und EPG.</description>
+    <description lang="de_DE">NextPVR Oberfläche. Unterstützt Live TV &amp; Aufnahmen, Radiokanäle und EPG.</description>
     <description lang="el_GR">Frontend για το NextPVR. Υποστηρίζει ροές Live TV &amp; Εγγραφές, ακρόαση Ραδιοφώνου και EPG.</description>
     <description lang="en_AU">NextPVR frontend. Supports streaming of Live TV &amp; Recordings, listening to Radio channels and EPG.</description>
     <description lang="en_GB">NextPVR frontend. Supports streaming of Live TV &amp; Recordings, listening to Radio channels and EPG.</description>
@@ -76,8 +80,9 @@
     <description lang="es_AR">Front-end de NextPVR. Soporta transmisiones de TV en Vivo y Grabaciones, escuchar canales de Radio y Guía Electrónica de Programas (GEP).</description>
     <description lang="es_ES">Front-end de NextPVR. Soporta transmisiones de TV en Vivo y Grabaciones, escuchar canales de Radio y Guía Electrónica de Programas (EPG).</description>
     <description lang="et_EE">NextPVR esi. Toetab telekanalite striimimist ja salvestamist, raadio kuulamist ja elektroonilist saatekava.</description>
+    <description lang="fi_FI">NextPVR frontend. Tukee livelähetysten sekä tallenteiden toistoa, radiokanavia ja ohjelmaopasta. </description>
     <description lang="fr_CA">Frontal de numériscope pour NextPVR, prenant en charge la lecture en transit des télés en direct  &amp; les enregistrements, l'écoute de chaînes radio, et le GÉP.</description>
-    <description lang="fr_FR">Interface logicielle pour l'enregistreur NextPVR. Supporte la lecture en continu de direct TV et l'enregistrement, l'écoute de radios et les guides de programmes.</description>
+    <description lang="fr_FR">Interface logicielle pour l'enregistreur vidéo (PVR) NextPVR. Gère la diffusion de la TV et des enregistrements en direct, l'écoute de chaînes de radios et le guide électronique des programmes TV.</description>
     <description lang="gl_ES">Interface de NextPVR. Compatíbel coa transmisión de TV en directo, gravacións, escoita de canles de radio e Guía.</description>
     <description lang="he_IL">לקוח טלוויזיה חיה של NextPVR. תומך בהזרמת שידורים חיים והקלטות, האזנה לרדיו, הצגת לוח שידורים ותזמון הקלטות.</description>
     <description lang="hr_HR">NextPVR sučelje. Podržava stremanje i snimanje TV programa, slušanje radio programa i elektronski programski vodič (EPG).</description>
@@ -94,14 +99,17 @@
     <description lang="my_MM">NextPVR frontend. Live TV နှင့် Recordings ၊ ရေဒီယိုလှိုင်းများကို နားဆင်ခြင်း ၊ EPG စသည်တို့ကို ထောက်ပံ့ပေးသည်။</description>
     <description lang="nb_NO">NextPVR frontend. Støtter visning av direkte TV og opptak, lytting til radiokanaler og EPG.</description>
     <description lang="nl_NL">NextPVR frontend. Ondersteunt streaming van Live TV &amp; Recordings, het luisteren naar Radio kanalen en EPG.</description>
-    <description lang="pl_PL">Klient NextPVR obsługuje strumieniowanie kanałów radiowych i telewizyjnych, nagrywanie oraz funkcje przewodnika telewizyjnego.</description>
+    <description lang="pl_PL">Klient telewizyjny dla NextPVR obsługuje strumieniowanie kanałów radiowych i telewizyjnych, nagrywanie oraz funkcje przewodnika telewizyjnego.</description>
     <description lang="pt_BR">NextPVR Frontend. Suporta streaming de TV ao Vivo e Gravações, ouvir canais de rádio e EPG.</description>
-    <description lang="pt_PT">Frontend NextPVR. Suporta transmissão de Live TV e Gravações, ouvir estações de Rádio e EPG.</description>
+    <description lang="pt_PT">Frontend NextPVR. Suporta transmissão de TV em directo e Gravações, ouvir estações de Rádio e EPG.</description>
     <description lang="ro_RO">Interfața NextPVR. Suporta streaming Live TV și inregistrari, radio și ghid electronic de programe (EPG)</description>
     <description lang="ru_RU">Интерфейс для NextPVR. Поддерживает просмотр и запись ТВ, прослушивание радио и EPG.</description>
     <description lang="sk_SK">NextPVR rozhranie. Podporuje streamovanie živého televízneho vysielania a nahrávok, počúvanie rozhlasových kanálov a EPG.</description>
     <description lang="sl_SI">Vmesnik za NextPVR; podpira pretakanje televizije v živo &amp; posnetkov, poslušanje radia in EPG.</description>
+    <description lang="sr_RS">NextPVR интерфејс. Подржава стримовање ТВ Уживо &amp; Снимака, слушање Радио канала и EPG.</description>
+    <description lang="sr_RS@latin">NextPVR interfejs. Podržava strimovanje TV Uživo &amp; Snimaka, slušanje Radio kanala i EPG.</description>
     <description lang="sv_SE">NextPVR-frontend. Stödjer strömning av direktsänd TV &amp; inspelningar, lyssna på radiokanaler och EPG.</description>
+    <description lang="th_TH">ส่วนหน้า NextPVR รองรับการส่งกระแสของทีวี สด &amp; การบันทึก, ฟังช่องรายการวิทยุ และ EPG</description>
     <description lang="tr_TR">NextPVR ön ucu. Canlı TV akışı ve kayıt yapabilme, radyo kanallarını dinleme ve EPG destekler.</description>
     <description lang="uk_UA">Накладка для NextPVR. Підтримує потокове Live TV &amp; запис, прослуховування радіо каналів і телегід.</description>
     <description lang="vi_VN">Giao tiếp NextPVR. Hỗ trợ truyền phát và thu chương trình Live TV, nghe Radio và hiển thị lịch trình chiếu (EPG).</description>
@@ -124,6 +132,7 @@
     <disclaimer lang="es_ES">Este es un trabajo en desarrollo. Úsalo bajo tu responsabilidad.</disclaimer>
     <disclaimer lang="es_MX">Este es un trabajo en curso. Úsalo bajo tu propio riesgo.</disclaimer>
     <disclaimer lang="et_EE">See on pooleliolev töö. Kasutada omal vastutusel.</disclaimer>
+    <disclaimer lang="fi_FI">Kehitystyö käynnissä. Käytä omalla vastuulla.</disclaimer>
     <disclaimer lang="fr_CA">Ceci est un travail en cours. Utilisez à vos propres risques.</disclaimer>
     <disclaimer lang="fr_FR">Logiciel en cours d'élaboration. À utiliser à vos risques et périls.</disclaimer>
     <disclaimer lang="gl_ES">Aínda está en desenvolvemento. Usar baixo o seu propio risco.</disclaimer>
@@ -142,14 +151,17 @@
     <disclaimer lang="my_MM">အသုံးပြုရန် လုပ်ဆောင်နေခြင်းဖြစ်သည်။ ကိုယ့်တာဝန်ကိုယ်ယူပြီး အသုံးပြုပါ။</disclaimer>
     <disclaimer lang="nb_NO">Dette er fortsatt under utvikling. Bruk på eget ansvar.</disclaimer>
     <disclaimer lang="nl_NL">Hier wordt aan gewerkt, Gebruik op eigen risico.</disclaimer>
-    <disclaimer lang="pl_PL">Oprogramowanie nadal jest w fazie rozwoju i jest niestabilne! Autorzy w żaden sposób nie są odpowiedzialni za nieudane nagrania, błędy w planie nagrań, zmarnowany czas ani jakiekolwiek inne niepożądane efekty.</disclaimer>
+    <disclaimer lang="pl_PL">Oprogramowanie nadal jest w fazie rozwoju i jest niestabilne! Autorzy w żaden sposób nie są odpowiedzialni za nieudane nagrania, błędy w harmonogramie nagrań, zmarnowany czas ani jakiekolwiek inne niepożądane efekty.</disclaimer>
     <disclaimer lang="pt_BR">Este é um trabalho em progresso. Use a seu próprio risco</disclaimer>
     <disclaimer lang="pt_PT">Isto é um projecto em curso. Use-o por sua conta e risco.</disclaimer>
     <disclaimer lang="ro_RO">Aceasta este un proiect în lucru. Utilizați pe propriul risc.</disclaimer>
     <disclaimer lang="ru_RU">Разработка программы не окончена. Используйте на свой страх и риск.</disclaimer>
     <disclaimer lang="sk_SK">Práca na tomto rozhraní stále prebieha. Používajte ho preto na vlastné riziko.</disclaimer>
     <disclaimer lang="sl_SI">Dodatek je še v izdelavi. Uporaba na lastno odgovornost.</disclaimer>
+    <disclaimer lang="sr_RS">На овоме се тренутно ради. Користити на свој ризик.</disclaimer>
+    <disclaimer lang="sr_RS@latin">Na ovome se trenutno radi. Koristiti na svoj rizik.</disclaimer>
     <disclaimer lang="sv_SE">Detta är ett pågående arbete. Använd på egen risk.</disclaimer>
+    <disclaimer lang="th_TH">นี่คืองานที่ยังดำเนินการอยู่ ใช้ด้วยการเสี่ยงของคุณเอง</disclaimer>
     <disclaimer lang="tr_TR">Bu devam eden bir çalışmadır. Kendiniz risk kullanın.</disclaimer>
     <disclaimer lang="uk_UA">Роботи все ще тривають. Використовуйте на власний розсуд.</disclaimer>
     <disclaimer lang="vi_VN">Đây là bản thử nghiệm. Bạn phải tự chịu trách nhiệm với nó</disclaimer>

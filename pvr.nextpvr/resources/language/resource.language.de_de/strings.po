@@ -22,7 +22,7 @@ msgstr "NextPVR Hostname"
 
 msgctxt "#30001"
 msgid "NextPVR Port (usually 8866 or 7799)"
-msgstr "NextPVR Port (nomalerweise 8866 oder 7799)"
+msgstr "NextPVR Port (normalerweise 8866 oder 7799)"
 
 msgctxt "#30002"
 msgid "NextPVR PinCode"
@@ -42,7 +42,7 @@ msgstr "Erweitert"
 
 msgctxt "#30050"
 msgid "NextPVR server is too old."
-msgstr "NextPVR server ist zu alt."
+msgstr "NextPVR-Server ist zu alt."
 
 msgctxt "#30051"
 msgid "Upgrade to '%s' or higher!"
@@ -50,7 +50,7 @@ msgstr "Upgrade auf '%s' oder höher!"
 
 msgctxt "#30052"
 msgid "Connection failed. Incorrect PIN?"
-msgstr "Verbindung fehlgeschlagen. Ist der PIN richtig?"
+msgstr "Verbindung fehlgeschlagen. Ist die PIN richtig?"
 
 msgctxt "#30053"
 msgid "Tuner no longer available"
@@ -109,8 +109,8 @@ msgid "Pre-Padding (minutes)"
 msgstr "Vorlaufzeit (Minuten)"
 
 msgctxt "#30133"
-msgid "Pre-Padding (minutes)"
-msgstr "Vorlaufzeit (Minuten)"
+msgid "Post-Padding (minutes)"
+msgstr "Nachlaufzeit (Minuten)"
 
 msgctxt "#30134"
 msgid "Recording Directory"

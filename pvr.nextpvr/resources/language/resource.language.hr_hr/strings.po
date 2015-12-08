@@ -106,11 +106,11 @@ msgstr "Sve snimke"
 
 msgctxt "#30132"
 msgid "Pre-Padding (minutes)"
-msgstr "Predpostavljanje (minute)"
+msgstr "Dodatno vrijeme početka snimanja (minute)"
 
 msgctxt "#30133"
-msgid "Pre-Padding (minutes)"
-msgstr "Predpostavljanje (minute)"
+msgid "Post-Padding (minutes)"
+msgstr "Dodatno vrijeme prije završetka snimanja (minute)"
 
 msgctxt "#30134"
 msgid "Recording Directory"

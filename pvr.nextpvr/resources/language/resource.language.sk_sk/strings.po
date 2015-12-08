@@ -109,8 +109,8 @@ msgid "Pre-Padding (minutes)"
 msgstr "Doba nahrávania pred stanoveným časom (minúty)"
 
 msgctxt "#30133"
-msgid "Pre-Padding (minutes)"
-msgstr "Doba nahrávania pred stanoveným časom začiatku (minúty)"
+msgid "Post-Padding (minutes)"
+msgstr "Doba nahrávania po stanovenom čase (minúty)"
 
 msgctxt "#30134"
 msgid "Recording Directory"
