@@ -50,7 +50,7 @@ msgstr "Mettre à niveau vers « %s » ou ultérieure!"
 
 msgctxt "#30052"
 msgid "Connection failed. Incorrect PIN?"
-msgstr "Échec lors de la connexion. NIP erroné?"
+msgstr "Échec de connexion. NIP erroné?"
 
 msgctxt "#30053"
 msgid "Tuner no longer available"
@@ -82,7 +82,7 @@ msgstr "Enregistrer la saison (tous les épisodes sur cette chaîne)"
 
 msgctxt "#30124"
 msgid "Record Season (Daily, this timeslot)"
-msgstr "Enregistrer la saison (tous les jours, cette tranche horaire)"
+msgstr "Enregistrer la saison (quotidiennement, cette tranche horaire)"
 
 msgctxt "#30125"
 msgid "Record Season (Weekly, this timeslot)"
@@ -106,11 +106,11 @@ msgstr "Tous les enregistrements"
 
 msgctxt "#30132"
 msgid "Pre-Padding (minutes)"
-msgstr "Enregistrement avant le début prévu (en minutes)"
+msgstr "Enregistrement avant la diffusion prévue (en minutes)"
 
 msgctxt "#30133"
 msgid "Post-Padding (minutes)"
-msgstr "Enregistrement après le début prévu (en minutes)"
+msgstr "Enregistrement après la diffusion prévue (en minutes)"
 
 msgctxt "#30134"
 msgid "Recording Directory"

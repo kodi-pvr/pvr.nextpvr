@@ -30,7 +30,7 @@ msgstr "Code PIN NextPVR"
 
 msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
-msgstr "Activer le différé avec la TV en directe"
+msgstr "Activer le différé avec la TV en direct"
 
 msgctxt "#30040"
 msgid "Connection"

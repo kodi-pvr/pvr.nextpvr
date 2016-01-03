@@ -30,7 +30,7 @@ msgstr "NextPVR cod PIN"
 
 msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
-msgstr "Activează TimeShift cu Live TV"
+msgstr "Activează decalajul temporal cu televiziunea în direct"
 
 msgctxt "#30040"
 msgid "Connection"

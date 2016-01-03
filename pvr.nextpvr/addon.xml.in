@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon
   id="pvr.nextpvr"
-  version="1.12.5"
+  version="1.12.6"
   name="NextPVR PVR Client"
   provider-name="Graeme Blackley">
   <requires>
@@ -35,7 +35,7 @@
     <summary lang="gl_ES">Interface de Kodi para NextPVR</summary>
     <summary lang="he_IL">לקוח טלוויזיה חיה עבור NextPVR</summary>
     <summary lang="hr_HR">Kodi sučelje za NextPVR</summary>
-    <summary lang="hu_HU">Kodi NextPVR előtér-kiszolgáló</summary>
+    <summary lang="hu_HU">Kodi előtét a NextPVR-hez</summary>
     <summary lang="id_ID">Frontend Kodi untuk NextPVR</summary>
     <summary lang="is_IS">Kodi framendi fyrir NextPVR</summary>
     <summary lang="it_IT">Frontend Kodi per NextPVR</summary>
@@ -55,8 +55,8 @@
     <summary lang="ru_RU">Интерфейс Kodi для NextPVR</summary>
     <summary lang="sk_SK">Kodi rozhranie pre NextPVR</summary>
     <summary lang="sl_SI">Kodijev vmesnik za NextPVR</summary>
-    <summary lang="sr_RS">Kodi-јев интерфејс за NextPVR</summary>
-    <summary lang="sr_RS@latin">Kodijev interfejs za NextPVR</summary>
+    <summary lang="sr_RS">Kodi интерфејс за NextPVR</summary>
+    <summary lang="sr_RS@latin">Kodi interfejs za NextPVR</summary>
     <summary lang="sv_SE">Kodi-frontend för NextPVR</summary>
     <summary lang="th_TH">ส่วนหน้า Kodi สำหรับ NextPVR</summary>
     <summary lang="tr_TR">NextPVR için Kodi ön ucu</summary>
@@ -86,7 +86,7 @@
     <description lang="gl_ES">Interface de NextPVR. Compatíbel coa transmisión de TV en directo, gravacións, escoita de canles de radio e Guía.</description>
     <description lang="he_IL">לקוח טלוויזיה חיה של NextPVR. תומך בהזרמת שידורים חיים והקלטות, האזנה לרדיו, הצגת לוח שידורים ותזמון הקלטות.</description>
     <description lang="hr_HR">NextPVR sučelje. Podržava stremanje i snimanje TV programa, slušanje radio programa i elektronski programski vodič (EPG).</description>
-    <description lang="hu_HU">NextPVR előtér-kiszolgáló. Élő adások, felvételek és rádió csatornák sugárzásának támogatása EPG-vel</description>
+    <description lang="hu_HU">NextPVR előtét. Élő adások, felvételek és rádiócsatornák támogatása EPG-vel.</description>
     <description lang="id_ID">Frontend NextPVR. Mendukung pengaliran Siaran TV langsung dan perekaman, mendengarkan radio dan EPG.</description>
     <description lang="is_IS">Framendi fyrir NextPVR. Styður straum á Live TV og upptökum, hlustun á útvarpsrásir og rafræna sjónvarpsvísa. (EGP).</description>
     <description lang="it_IT">Frontend NextPVR. Supporta lo streaming di Live TV, le Registrazioni, l'ascolto dei Canali Radio e l'EPG.</description>
