@@ -18,8 +18,8 @@
  */
 #include "kodi/libXBMC_addon.h"
 #include <string>
-#include "platform/os.h"
-#include "platform/util/timeutils.h"
+#include "p8-platform/os.h"
+#include "p8-platform/util/timeutils.h"
 #include "client.h"
 #include "Socket.h"
 

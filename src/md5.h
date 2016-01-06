@@ -22,7 +22,7 @@
 #ifndef _MD5_H_
 #define _MD5_H_ 1
 
-#include "platform/util/StdString.h"
+#include "p8-platform/util/StdString.h"
 
 
 struct MD5Context {

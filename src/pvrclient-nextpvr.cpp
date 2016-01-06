@@ -22,8 +22,8 @@
 #include <stdlib.h>
 #include <memory>
 
-#include "platform/os.h"
-#include "platform/util/timeutils.h"
+#include "p8-platform/os.h"
+#include "p8-platform/util/timeutils.h"
 
 #include "client.h"
 #include "pvrclient-nextpvr.h"
@@ -1907,7 +1907,7 @@ void cPVRClientNextPVR::CloseLiveStream(void)
 
 long long cPVRClientNextPVR::SeekLiveStream(long long iPosition, int iWhence)
 {
-  PLATFORM::CLockObject lock(m_mutex);
+  P8PLATFORM::CLockObject lock(m_mutex);
 
   if (m_pLiveShiftSource != NULL)
   {
@@ -2105,7 +2105,7 @@ void cPVRClientNextPVR::CloseRecordedStream(void)
 
 int cPVRClientNextPVR::ReadRecordedStream(unsigned char *pBuffer, unsigned int iBufferSize)
 {
-  PLATFORM::CLockObject lock(m_mutex);
+  P8PLATFORM::CLockObject lock(m_mutex);
   XBMC->Log(LOG_DEBUG, "ReadRecordedStream(%d bytes from offset %d)", iBufferSize, (int)m_currentRecordingPosition);
 
   // do we have enough data to fill this buffer? 
@@ -2130,7 +2130,7 @@ int cPVRClientNextPVR::ReadRecordedStream(unsigned char *pBuffer, unsigned int i
 
 long long cPVRClientNextPVR::SeekRecordedStream(long long iPosition, int iWhence)
 {
-  PLATFORM::CLockObject lock(m_mutex);
+  P8PLATFORM::CLockObject lock(m_mutex);
 
   if (m_currentRecordingLength != 0)
   {
@@ -2199,7 +2199,7 @@ const char* cPVRClientNextPVR::GetLiveStreamURL(const PVR_CHANNEL &channelinfo)
 /** http handling */
 int cPVRClientNextPVR::DoRequest(const char *resource, CStdString &response)
 {
-  PLATFORM::CLockObject lock(m_mutex);
+  P8PLATFORM::CLockObject lock(m_mutex);
 
   // build request string, adding SID if requred
   CStdString strURL;
