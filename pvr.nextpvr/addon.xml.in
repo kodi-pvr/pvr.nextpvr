@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon
   id="pvr.nextpvr"
-  version="2.0.0"
+  version="2.0.1"
   name="NextPVR PVR Client"
   provider-name="Graeme Blackley">
   <requires>
@@ -81,7 +81,7 @@
     <description lang="es_ES">Front-end de NextPVR. Soporta transmisiones de TV en Vivo y Grabaciones, escuchar canales de Radio y Guía Electrónica de Programas (EPG).</description>
     <description lang="et_EE">NextPVR esi. Toetab telekanalite striimimist ja salvestamist, raadio kuulamist ja elektroonilist saatekava.</description>
     <description lang="fi_FI">NextPVR frontend. Tukee livelähetysten sekä tallenteiden toistoa, radiokanavia ja ohjelmaopasta. </description>
-    <description lang="fr_CA">Frontal de numériscope pour NextPVR, prenant en charge la lecture en transit des télés en direct  &amp; les enregistrements, l'écoute de chaînes radio, et le GÉP.</description>
+    <description lang="fr_CA">Frontal de numériscope pour NextPVR, prenant en charge la diffusion en continu des télés en direct  &amp; les enregistrements, l'écoute de chaînes radio, et le GÉP.</description>
     <description lang="fr_FR">Interface logicielle pour l'enregistreur vidéo (PVR) NextPVR. Gère la diffusion de la TV et des enregistrements en direct, l'écoute de chaînes de radios et le guide électronique des programmes TV.</description>
     <description lang="gl_ES">Interface de NextPVR. Compatíbel coa transmisión de TV en directo, gravacións, escoita de canles de radio e Guía.</description>
     <description lang="he_IL">לקוח טלוויזיה חיה של NextPVR. תומך בהזרמת שידורים חיים והקלטות, האזנה לרדיו, הצגת לוח שידורים ותזמון הקלטות.</description>
