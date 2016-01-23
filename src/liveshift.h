@@ -25,7 +25,7 @@
 
 #include "kodi/libXBMC_addon.h"
 #include <string>
-#include "platform/os.h"
+#include "p8-platform/os.h"
 #include "Socket.h"
 
 class LiveShiftSource

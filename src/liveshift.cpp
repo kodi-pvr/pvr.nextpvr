@@ -19,7 +19,7 @@
  *
  */
 #include "liveshift.h"
-#include "platform/util/timeutils.h"
+#include "p8-platform/util/timeutils.h"
 
 const int MAX_WINDOW_SIZE = 6;
 const int STARTUP_CACHE_SIZE = 5000000;

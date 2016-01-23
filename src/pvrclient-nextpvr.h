@@ -25,7 +25,7 @@
 
 /* Local includes */
 #include "Socket.h"
-#include "platform/threads/mutex.h"
+#include "p8-platform/threads/mutex.h"
 #include "RingBuffer.h"
 #include "liveshift.h"
 
@@ -155,7 +155,7 @@ private:
   int                     m_iCurrentChannel;
   bool                    m_bConnected;  
   std::string             m_BackendName;
-  PLATFORM::CMutex        m_mutex;
+  P8PLATFORM::CMutex        m_mutex;
 
   CRingBuffer             m_incomingStreamBuffer;
 
