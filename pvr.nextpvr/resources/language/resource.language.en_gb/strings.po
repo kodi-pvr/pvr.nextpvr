@@ -16,126 +16,118 @@ msgstr ""
 "Language: en_GB\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#Settings labels
-
 msgctxt "#30000"
 msgid "NextPVR Hostname"
-msgstr ""
+msgstr "NextPVR Hostname"
 
 msgctxt "#30001"
 msgid "NextPVR Port (usually 8866 or 7799)"
-msgstr ""
+msgstr "NextPVR Port (usually 8866 or 7799)"
 
 msgctxt "#30002"
 msgid "NextPVR PinCode"
-msgstr ""
+msgstr "NextPVR PinCode"
 
 msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
-msgstr ""
+msgstr "Enable TimeShift with Live TV"
 
-#empty strings from id 30004 to 30039
-#Category labels
+msgctxt "#30004"
+msgid "Download TV Guide Artwork"
+msgstr "Download TV Guide Artwork"
 
 msgctxt "#30040"
 msgid "Connection"
-msgstr ""
+msgstr "Connection"
 
 msgctxt "#30041"
 msgid "Advanced"
-msgstr ""
-
-#empty strings from id 30042 to 30049
-#On-screen error messages
+msgstr "Advanced"
 
 msgctxt "#30050"
 msgid "NextPVR server is too old."
-msgstr ""
+msgstr "NextPVR server is too old."
 
 msgctxt "#30051"
 msgid "Upgrade to '%s' or higher!"
-msgstr ""
+msgstr "Upgrade to '%s' or higher!"
 
 msgctxt "#30052"
 msgid "Connection failed. Incorrect PIN?"
-msgstr ""
+msgstr "Connection failed. Incorrect PIN?"
 
 msgctxt "#30053"
 msgid "Tuner no longer available"
-msgstr ""
+msgstr "Tuner no longer available"
 
-msgctxt "#30054"
-msgid "[RECUR]"
-msgstr ""
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "One time (manual)"
 
-#empty strings from id 30055 to 30099
+msgctxt "#30141"
+msgid "One time (guide)"
+msgstr "One time (guide)"
 
-msgctxt "#30100"
-msgid "Add Timer"
-msgstr ""
+msgctxt "#30142"
+msgid "Repeating (manual)"
+msgstr "Repeating (manual)"
 
-#empty strings from id 30101 to 30119
-#Recording type
+msgctxt "#30143"
+msgid "Repeating (guide)"
+msgstr "Repeating (guide)"
 
-msgctxt "#30120"
-msgid "Recording Type"
-msgstr ""
+msgctxt "#30144"
+msgid "Child Recording"
+msgstr "Child Recording"
 
-msgctxt "#30121"
-msgid "Record Once"
-msgstr ""
+msgctxt "#30145"
+msgid "Repeating (keyword)"
+msgstr "Repeating (keyword)"
 
-msgctxt "#30122"
-msgid "Record Season (NEW episodes on this channel)"
-msgstr ""
-
-msgctxt "#30123"
-msgid "Record Season (All episodes on this channel)"
-msgstr ""
-
-msgctxt "#30124"
-msgid "Record Season (Daily, this timeslot)"
-msgstr ""
-
-msgctxt "#30125"
-msgid "Record Season (Weekly, this timeslot)"
-msgstr ""
-
-msgctxt "#30126"
-msgid "Record Season (Monday-Friday, this timeslot)"
-msgstr ""
-
-msgctxt "#30127"
-msgid "Record Season (Weekends, this timeslot)"
-msgstr ""
-
-#empty strings from id 30128 to 30129
-#Keep count
-
-msgctxt "#30130"
-msgid "Keep"
-msgstr ""
-
-msgctxt "#30131"
+msgctxt "#30150"
 msgid "All Recordings"
-msgstr ""
+msgstr "All Recordings"
 
-#Padding
+msgctxt "#30151"
+msgid "1 Recording"
+msgstr "1 Recording"
 
-msgctxt "#30132"
-msgid "Pre-Padding (minutes)"
-msgstr ""
+msgctxt "#30152"
+msgid "2 Recordings"
+msgstr "2 Recordings"
 
-msgctxt "#30133"
-msgid "Post-Padding (minutes)"
-msgstr ""
+msgctxt "#30153"
+msgid "3 Recordings"
+msgstr "3 Recordings"
 
-#Recording directory
+msgctxt "#30154"
+msgid "4 Recordings"
+msgstr "4 Recordings"
 
-msgctxt "#30134"
-msgid "Recording Directory"
-msgstr ""
+msgctxt "#30155"
+msgid "5 Recordings"
+msgstr "5 Recordings"
 
-msgctxt "#30135"
-msgid "Default"
-msgstr ""
+msgctxt "#30156"
+msgid "6 Recordings"
+msgstr "6 Recordings"
+
+msgctxt "#30157"
+msgid "7 Recordings"
+msgstr "7 Recordings"
+
+msgctxt "#30158"
+msgid "10 Recordings"
+msgstr "10 Recordings"
+
+msgctxt "#30160"
+msgid "New Only"
+msgstr "New Only"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "All"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "All"
