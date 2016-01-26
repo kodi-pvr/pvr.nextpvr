@@ -1,3 +1,7 @@
+v1.12.8
+- fixed issue with Transifex overwritting strings
+- added extra string 'Repeating (keyword)" string to correct duplicate recording type entry
+
 v1.12.7
 - updated language files from Transifex
 

@@ -1307,6 +1307,7 @@ PVR_ERROR cPVRClientNextPVR::GetTimerTypes(PVR_TIMER_TYPE types[], int *size)
   static const int MSG_REPEATING_MANUAL = 30142;
   static const int MSG_REPEATING_GUIDE = 30143;
   static const int MSG_REPEATING_CHILD = 30144;
+  static const int MSG_REPEATING_KEYWORD = 30145;
 
   static const int MSG_KEEPALL = 30150;
   static const int MSG_KEEP1 = 30151;
@@ -1493,7 +1494,7 @@ PVR_ERROR cPVRClientNextPVR::GetTimerTypes(PVR_TIMER_TYPE types[], int *size)
       /* Attributes. */
       TIMER_KEYWORD_ATTRIBS | TIMER_REPEATING_KEYWORD_ATTRIBS,
       /* Description. */
-      XBMC->GetLocalizedString(MSG_REPEATING_GUIDE), // "Repeating (keyword)"
+      XBMC->GetLocalizedString(MSG_REPEATING_KEYWORD), // "Repeating (keyword)"
       /* Values definitions for attributes. */
       recordingLimitValues, m_defaultLimit,
       showTypeValues, m_defaultShowType,
