@@ -757,6 +757,9 @@ unsigned int GetChannelSwitchDelay(void) { return 0; }
 bool SeekTime(int,bool,double*) { return false; }
 void SetSpeed(int) {};
 bool IsTimeshifting(void) { return false; }
+/* Minimum support for API 4.2.0 */
+/* This add-on supports some form of timeshifting and needs to be adapted to cope with that */
+bool IsRealTimeStream(void) { return true; }
 time_t GetPlayingTime() { return 0; }
 time_t GetBufferTimeStart() { return 0; }
 time_t GetBufferTimeEnd() { return 0; }
