@@ -1,0 +1,23 @@
+# build artifacts
+build/
+debian/changelog
+debian/files
+debian/kodi-pvr-nextpvr-dbg.debhelper.log
+debian/kodi-pvr-nextpvr-dbg.substvars
+debian/kodi-pvr-nextpvr-dbg/
+debian/kodi-pvr-nextpvr.debhelper.log
+debian/kodi-pvr-nextpvr.postinst.debhelper
+debian/kodi-pvr-nextpvr.postrm.debhelper
+debian/kodi-pvr-nextpvr.substvars
+debian/kodi-pvr-nextpvr/
+debian/tmp/
+obj-x86_64-linux-gnu/
+pvr.nextpvr/addon.xml
+
+# clion
+.idea/
+
+# Eclipse/CDT
+.cproject
+.project
+.settings/
