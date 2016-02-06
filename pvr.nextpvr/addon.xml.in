@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon
   id="pvr.nextpvr"
-  version="2.0.2"
+  version="2.0.3"
   name="NextPVR PVR Client"
   provider-name="Graeme Blackley">
   <requires>
     <c-pluff version="0.1"/>
-    <import addon="xbmc.pvr" version="4.1.0"/>
+    <import addon="xbmc.pvr" version="4.2.0"/>
     <import addon="kodi.guilib" version="5.10.0"/>
   </requires>
   <extension
