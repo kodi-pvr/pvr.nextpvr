@@ -120,7 +120,6 @@ public:
   bool OpenLiveStream(const PVR_CHANNEL &channel);
   void CloseLiveStream();
   int ReadLiveStream(unsigned char *pBuffer, unsigned int iBufferSize);
-  int GetCurrentClientChannel();
   bool SwitchChannel(const PVR_CHANNEL &channel);
   PVR_ERROR SignalStatus(PVR_SIGNAL_STATUS &signalStatus);
   const char* GetLiveStreamURL(const PVR_CHANNEL &channel);

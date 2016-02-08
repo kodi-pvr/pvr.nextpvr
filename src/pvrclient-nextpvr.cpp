@@ -1956,12 +1956,6 @@ bool cPVRClientNextPVR::SwitchChannel(const PVR_CHANNEL &channel)
 }
 
 
-int cPVRClientNextPVR::GetCurrentClientChannel()
-{
-  XBMC->Log(LOG_DEBUG, "GetCurrentClientChannel: uid=%i", m_iCurrentChannel);
-  return m_iCurrentChannel;
-}
-
 PVR_ERROR cPVRClientNextPVR::SignalStatus(PVR_SIGNAL_STATUS &signalStatus)
 {
   // Not supported yet
