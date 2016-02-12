@@ -864,6 +864,8 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
         strStream.Format("http://%s:%d/live?recording=%s", g_szHostname, g_iPort, tag.strRecordingId);
         strncpy(tag.strStreamURL, strStream.c_str(), sizeof(tag.strStreamURL)); 
 
+	/* TODO: PVR API 5.0.0: Implement this */
+	tag.iChannelUid = PVR_CHANNEL_INVALID_UID;
 
         PVR->TransferRecordingEntry(handle, &tag);
       }
@@ -900,6 +902,9 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
         CStdString strStream;
         strStream.Format("http://%s:%d/live?recording=%s", g_szHostname, g_iPort, tag.strRecordingId);
         strncpy(tag.strStreamURL, strStream.c_str(), sizeof(tag.strStreamURL)); 
+
+	/* TODO: PVR API 5.0.0: Implement this */
+	tag.iChannelUid = PVR_CHANNEL_INVALID_UID;
 
         if (tag.recordingTime <= time(NULL) && (tag.recordingTime + tag.iDuration) >= time(NULL))
         {
