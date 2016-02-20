@@ -55,7 +55,3 @@ msgstr "Không thể kết nối được. Kiểm tra lại mã Pin?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Dò kênh không được hỗ trợ"
-
-msgctxt "#30135"
-msgid "Default"
-msgstr "Mặc định"

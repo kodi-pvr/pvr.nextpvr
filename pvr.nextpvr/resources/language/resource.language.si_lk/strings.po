@@ -19,7 +19,3 @@ msgstr ""
 msgctxt "#30041"
 msgid "Advanced"
 msgstr "උසස්"
-
-msgctxt "#30135"
-msgid "Default"
-msgstr "නියත "

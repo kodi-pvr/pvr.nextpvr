@@ -55,11 +55,3 @@ msgstr "Connection failed. Incorrect PIN?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Tuner no longer available"
-
-msgctxt "#30130"
-msgid "Keep"
-msgstr "Keep"
-
-msgctxt "#30135"
-msgid "Default"
-msgstr "Стандартны"
