@@ -1135,6 +1135,15 @@ PVR_ERROR cPVRClientNextPVR::GetTimers(ADDON_HANDLE handle)
           tag.iMaxRecordings = atoi(pRulesNode->FirstChildElement("Keep")->FirstChild()->Value());
         }
 
+        // prevent duplicates
+        if (pRulesNode->FirstChildElement("OnlyNewEpisodes") != NULL)
+        {
+          if (strcmp(pRulesNode->FirstChildElement("OnlyNewEpisodes")->FirstChild()->Value(), "true") == 0)
+          {
+            tag.iPreventDuplicateEpisodes = 1;
+          }
+        }
+
         // recordings directory ID
         if (pRulesNode->FirstChildElement("RecordingDirectoryID") != NULL)
         {
@@ -1194,14 +1203,29 @@ PVR_ERROR cPVRClientNextPVR::GetTimers(ADDON_HANDLE handle)
         if (pRecordingNode->FirstChildElement("recurring_parent") != NULL)
         {
           tag.iParentClientIndex = atoi(pRecordingNode->FirstChildElement("recurring_parent")->FirstChild()->Value());
-          if (tag.iTimerType == TIMER_ONCE_EPG)
+          if (tag.iParentClientIndex != 0)
           {
-            tag.iTimerType = TIMER_ONCE_EPG_CHILD;
+            if (tag.iTimerType == TIMER_ONCE_EPG)
+            {
+              tag.iTimerType = TIMER_ONCE_EPG_CHILD;
+            }
+            else
+            {
+              tag.iTimerType = TIMER_ONCE_MANUAL_CHILD;
+            }
           }
-          else
-          {
-            tag.iTimerType = TIMER_ONCE_MANUAL_CHILD;
-          }
+        }
+
+        // pre-padding
+        if (pRecordingNode->FirstChildElement("pre_padding") != NULL)
+        {
+          tag.iMarginStart = atoi(pRecordingNode->FirstChildElement("pre_padding")->FirstChild()->Value());
+        }
+
+        // post-padding
+        if (pRecordingNode->FirstChildElement("post_padding") != NULL)
+        {
+          tag.iMarginEnd = atoi(pRecordingNode->FirstChildElement("post_padding")->FirstChild()->Value());
         }
 
         // name
@@ -1379,6 +1403,7 @@ PVR_ERROR cPVRClientNextPVR::GetTimerTypes(PVR_TIMER_TYPE types[], int *size)
       PVR_TIMER_TYPE_SUPPORTS_START_END_MARGIN |
       PVR_TIMER_TYPE_SUPPORTS_WEEKDAYS |
       PVR_TIMER_TYPE_SUPPORTS_RECORDING_GROUP |
+      PVR_TIMER_TYPE_SUPPORTS_RECORD_ONLY_NEW_EPISODES |
       PVR_TIMER_TYPE_SUPPORTS_MAX_RECORDINGS;
 
   static const unsigned int TIMER_CHILD_ATTRIBUTES
@@ -1553,6 +1578,12 @@ PVR_ERROR cPVRClientNextPVR::AddTimer(const PVR_TIMER &timerinfo)
 
   char request[1024];
 
+  char preventDuplicates[16];
+  if (timerinfo.iPreventDuplicateEpisodes)
+    strcpy(preventDuplicates, "true");
+  else
+    strcpy(preventDuplicates, "false");
+
   std::string encodedName = UriEncode(timerinfo.strTitle);
   std::string encodedKeyword = UriEncode(timerinfo.strEpgSearchString);
   CStdString days = GetDayString(timerinfo.iWeekdays);
@@ -1575,20 +1606,26 @@ PVR_ERROR cPVRClientNextPVR::AddTimer(const PVR_TIMER &timerinfo)
   case TIMER_ONCE_EPG:
     XBMC->Log(LOG_DEBUG, "TIMER_ONCE_EPG");
     // build one-off recording request
-    snprintf(request, sizeof(request), "/service?method=recording.save&event_id=%d", timerinfo.iEpgUid);
+    snprintf(request, sizeof(request), "/service?method=recording.save&recording_id=%d&event_id=%d&pre_padding=%d&post_padding=%d&directory_id=%s",
+      timerinfo.iClientIndex,
+      timerinfo.iEpgUid,
+      (int)timerinfo.iMarginStart,
+      (int)timerinfo.iMarginEnd,
+      m_recordingDirectories[timerinfo.iRecordingGroup].c_str());
     break;
 
   case TIMER_REPEATING_EPG:
     XBMC->Log(LOG_DEBUG, "TIMER_REPEATING_EPG");
     // build recurring recording request
-    snprintf(request, sizeof(request), "/service?method=recording.recurring.save&recurring_id=%d&event_id=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s",      
+    snprintf(request, sizeof(request), "/service?method=recording.recurring.save&recurring_id=%d&event_id=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s&only_new=%s",
       timerinfo.iClientIndex,
       timerinfo.iEpgUid,
       (int)timerinfo.iMaxRecordings,
       (int)timerinfo.iMarginStart,
       (int)timerinfo.iMarginEnd,
       days.c_str(),
-      m_recordingDirectories[timerinfo.iRecordingGroup].c_str()
+      m_recordingDirectories[timerinfo.iRecordingGroup].c_str(),
+      preventDuplicates
       );
     break;
 
@@ -1612,7 +1649,7 @@ PVR_ERROR cPVRClientNextPVR::AddTimer(const PVR_TIMER &timerinfo)
   case TIMER_REPEATING_KEYWORD:
     XBMC->Log(LOG_DEBUG, "TIMER_REPEATING_KEYWORD");
     // build manual recurring request
-    snprintf(request, sizeof(request), "/service?method=recording.recurring.save&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&directory_id=%s&keyword=%s",
+    snprintf(request, sizeof(request), "/service?method=recording.recurring.save&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&directory_id=%s&keyword=%s&only_new=%s",
       timerinfo.iClientIndex,
       encodedName.c_str(),
       timerinfo.iClientChannelUid,
@@ -1622,7 +1659,8 @@ PVR_ERROR cPVRClientNextPVR::AddTimer(const PVR_TIMER &timerinfo)
       (int)timerinfo.iMarginStart,
       (int)timerinfo.iMarginEnd,
       m_recordingDirectories[timerinfo.iRecordingGroup].c_str(),
-      encodedKeyword.c_str()
+      encodedKeyword.c_str(),
+      preventDuplicates
       );
     break;
   }
