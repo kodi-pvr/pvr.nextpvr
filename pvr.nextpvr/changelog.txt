@@ -1,3 +1,8 @@
+v2.1.1
+-Fixed issue where user couldn't select to only record new episodes
+-Fixed issue with updating one-off recordings
+-Fixed issue where pre/post padding was not being loaded with recording list
+
 v2.1.0
 - Updated to PVR addon API v5.0.0
 
