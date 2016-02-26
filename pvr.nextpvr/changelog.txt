@@ -1,3 +1,8 @@
+v1.12.10
+-Fixed issue where user couldn't select to only record new episodes
+-Fixed issue with updating one-off recordings
+-Fixed issue where pre/post padding was not being loaded with recording list
+
 v1.12.9
 - updated language files from Transifex
 
