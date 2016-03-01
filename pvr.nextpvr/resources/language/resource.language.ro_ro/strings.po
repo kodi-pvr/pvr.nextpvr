@@ -55,3 +55,31 @@ msgstr "Conexiune nereușită. Cod PIN incorect?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Tuner-ul nu mai este disponibil"
+
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "O dată (manual)"
+
+msgctxt "#30141"
+msgid "One time (guide)"
+msgstr "O dată (ghid)"
+
+msgctxt "#30142"
+msgid "Repeating (manual)"
+msgstr "Repetant (manual)"
+
+msgctxt "#30143"
+msgid "Repeating (guide)"
+msgstr "Repetant (ghid)"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "Toate înregistrările"
+
+msgctxt "#30160"
+msgid "New Only"
+msgstr "Doar cele noi"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Toate"

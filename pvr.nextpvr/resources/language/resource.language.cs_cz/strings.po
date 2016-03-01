@@ -55,3 +55,27 @@ msgstr "Spojení selhalo. Špatný PIN?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Tuner již není dostupný"
+
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "Jednou (manuálně)"
+
+msgctxt "#30141"
+msgid "One time (guide)"
+msgstr "Jednou (podle programu)"
+
+msgctxt "#30142"
+msgid "Repeating (manual)"
+msgstr "Opakovaný (manuální)"
+
+msgctxt "#30143"
+msgid "Repeating (guide)"
+msgstr "Opakovaný (podle programu)"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "Všechny nahrávky"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Vše"

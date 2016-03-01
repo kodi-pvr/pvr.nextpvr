@@ -55,3 +55,11 @@ msgstr "Počas pripájania nastala chyba. Nesprávny PIN-kód?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Tuner už nie je k dispozícii"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "Všetky nahrávky"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Všetky"

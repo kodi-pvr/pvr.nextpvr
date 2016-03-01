@@ -55,3 +55,11 @@ msgstr "Αποτυχία σύνδεσης. Λανθασμένο PIN;"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Ο δέκτης (tuner) δεν είναι πλέον διαθέσιμος"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "Όλες οι Εγγραφές"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Όλα"

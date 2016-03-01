@@ -1,3 +1,6 @@
+v1.12.11
+- updated language files from Transifex
+
 v1.12.10
 -Fixed issue where user couldn't select to only record new episodes
 -Fixed issue with updating one-off recordings

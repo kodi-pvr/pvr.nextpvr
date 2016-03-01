@@ -55,3 +55,11 @@ msgstr "Неуспешно свързване. Неправилен код?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Тунера вече не е наличен"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "Всички записи"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Всички"

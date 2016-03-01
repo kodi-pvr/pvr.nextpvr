@@ -55,3 +55,11 @@ msgstr "Koneksi gagal. PIN salah?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Tuner tidak lagi tersedia"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "Semua rekaman"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Semua"

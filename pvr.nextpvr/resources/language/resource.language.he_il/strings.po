@@ -55,3 +55,23 @@ msgstr "התחברות נכשלה. אולי הסיסמה שגויה?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "מקלט אינו זמין יותר"
+
+msgctxt "#30141"
+msgid "One time (guide)"
+msgstr "חד פעמי (לוח שידורים)"
+
+msgctxt "#30142"
+msgid "Repeating (manual)"
+msgstr "חוזר (ידני)"
+
+msgctxt "#30143"
+msgid "Repeating (guide)"
+msgstr "חוזר (לוח שידורים)"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "כל ההקלטות"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "הכל"

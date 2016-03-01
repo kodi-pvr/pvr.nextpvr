@@ -19,3 +19,7 @@ msgstr ""
 msgctxt "#30041"
 msgid "Advanced"
 msgstr "منقدم"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "الكل"

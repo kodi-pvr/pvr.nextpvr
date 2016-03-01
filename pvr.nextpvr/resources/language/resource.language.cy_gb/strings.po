@@ -55,3 +55,11 @@ msgstr "Methodd y cysylltiad. PIN anghywir?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Tiwniwr ddim ar gael"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "Pob Recordiad"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Pob un"

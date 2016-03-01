@@ -55,3 +55,27 @@ msgstr "Connectie Gefaald. Verkeerde Pincode?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Tuner niet langer beschikbaar"
+
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "Eén keer (handmatig)"
+
+msgctxt "#30141"
+msgid "One time (guide)"
+msgstr "Eën tijd (gids)"
+
+msgctxt "#30142"
+msgid "Repeating (manual)"
+msgstr "Herhaling (handmatig)"
+
+msgctxt "#30143"
+msgid "Repeating (guide)"
+msgstr "Herhaling (gids)"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "Alle opnames"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Alles"

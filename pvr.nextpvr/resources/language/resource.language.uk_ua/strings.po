@@ -55,3 +55,11 @@ msgstr "Зв’язок не вдався. Неправильний пін?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Тюнер більше не доступний"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "Усі записи"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Усі треки"

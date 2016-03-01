@@ -55,3 +55,63 @@ msgstr "Anslutning misslyckades. Ogiltig PIN?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Mottagaren är inte tillgänglig"
+
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "En gång (manuell)"
+
+msgctxt "#30141"
+msgid "One time (guide)"
+msgstr "En gång (guide)"
+
+msgctxt "#30142"
+msgid "Repeating (manual)"
+msgstr "Upprepat (manuell)"
+
+msgctxt "#30143"
+msgid "Repeating (guide)"
+msgstr "Upprepat (guide)"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "Alla inspelningar"
+
+msgctxt "#30151"
+msgid "1 Recording"
+msgstr "1 Inspelning"
+
+msgctxt "#30152"
+msgid "2 Recordings"
+msgstr "2 Inspelningar"
+
+msgctxt "#30153"
+msgid "3 Recordings"
+msgstr "3 Inspelningar"
+
+msgctxt "#30154"
+msgid "4 Recordings"
+msgstr "4 Inspelningar"
+
+msgctxt "#30155"
+msgid "5 Recordings"
+msgstr "5 Inspelningar"
+
+msgctxt "#30156"
+msgid "6 Recordings"
+msgstr "6 Inspelningar"
+
+msgctxt "#30157"
+msgid "7 Recordings"
+msgstr "7 Inspelningar"
+
+msgctxt "#30158"
+msgid "10 Recordings"
+msgstr "10 Inspelningar"
+
+msgctxt "#30160"
+msgid "New Only"
+msgstr "Endast Nya"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Alla"

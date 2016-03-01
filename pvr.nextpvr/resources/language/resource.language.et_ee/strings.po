@@ -55,3 +55,7 @@ msgstr "Ühendus nurjus. Vale PIN?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Tüüner ei ole enam saadaval"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Kõik"

@@ -55,3 +55,67 @@ msgstr "Neuspješno povezivanje. Pogrešan PIN?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Prijemnik više nije dostupan"
+
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "Jednom (ručno)"
+
+msgctxt "#30141"
+msgid "One time (guide)"
+msgstr "Jednom (EPG vodič)"
+
+msgctxt "#30142"
+msgid "Repeating (manual)"
+msgstr "Ponavljajuće (ručno)"
+
+msgctxt "#30143"
+msgid "Repeating (guide)"
+msgstr "Ponavljajuće (EPG vodič)"
+
+msgctxt "#30145"
+msgid "Repeating (keyword)"
+msgstr "Ponavljajuće zakazano snimanje (ključnom riječi)"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "Sve snimke"
+
+msgctxt "#30151"
+msgid "1 Recording"
+msgstr "1 snimka"
+
+msgctxt "#30152"
+msgid "2 Recordings"
+msgstr "2 snimke"
+
+msgctxt "#30153"
+msgid "3 Recordings"
+msgstr "3 snimke"
+
+msgctxt "#30154"
+msgid "4 Recordings"
+msgstr "4 snimke"
+
+msgctxt "#30155"
+msgid "5 Recordings"
+msgstr "5 snimka"
+
+msgctxt "#30156"
+msgid "6 Recordings"
+msgstr "6 snimka"
+
+msgctxt "#30157"
+msgid "7 Recordings"
+msgstr "7 snimka"
+
+msgctxt "#30158"
+msgid "10 Recordings"
+msgstr "10 snimka"
+
+msgctxt "#30160"
+msgid "New Only"
+msgstr "Samo nove"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Sve"

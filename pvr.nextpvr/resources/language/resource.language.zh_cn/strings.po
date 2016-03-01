@@ -55,3 +55,27 @@ msgstr "连接失败，错误 PIN 码？"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "电视接收设备不可用"
+
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "一次（手动）"
+
+msgctxt "#30141"
+msgid "One time (guide)"
+msgstr "一次（指南）"
+
+msgctxt "#30142"
+msgid "Repeating (manual)"
+msgstr "重复（手动）"
+
+msgctxt "#30143"
+msgid "Repeating (guide)"
+msgstr "重复（指南）"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "所有录像"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "全部"

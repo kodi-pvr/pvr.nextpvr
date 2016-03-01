@@ -55,3 +55,11 @@ msgstr "Savienojums neizdevās. Vai nepareizs PIN?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Uztvērējs vairs nav pieejams"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "Visi ieraksti"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Visi"

@@ -55,3 +55,27 @@ msgstr "A kapcsolódás sikertelen. Helyes PIN kódot adott meg?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "A vevőkártya már nem elérhető"
+
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "Egyszeri (kézi)"
+
+msgctxt "#30141"
+msgid "One time (guide)"
+msgstr "Egyszeri (műsorújság)"
+
+msgctxt "#30142"
+msgid "Repeating (manual)"
+msgstr "Ismétlődő (kézi)"
+
+msgctxt "#30143"
+msgid "Repeating (guide)"
+msgstr "Ismétlődő (műsorújság)"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "Minden felvétel"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Mind"

@@ -39,3 +39,7 @@ msgstr "El servidor de NextPVR es muy antiguo"
 msgctxt "#30052"
 msgid "Connection failed. Incorrect PIN?"
 msgstr "Conexión fallida. ¿PIN incorrecto?"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Todos"

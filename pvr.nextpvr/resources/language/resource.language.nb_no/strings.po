@@ -55,3 +55,11 @@ msgstr "Tilkobling feilet. Feil PIN?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Tuner er ikke lengre tilgjengelig"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "Alle opptak"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Alle"

@@ -55,3 +55,27 @@ msgstr "Konneksie het gefaal. Verkeerde PIN?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Instemmer nie meer beskikbaar"
+
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "Een keer (handrolies)"
+
+msgctxt "#30141"
+msgid "One time (guide)"
+msgstr "Een keer (gids)"
+
+msgctxt "#30142"
+msgid "Repeating (manual)"
+msgstr "Herhalend (handrolies)"
+
+msgctxt "#30143"
+msgid "Repeating (guide)"
+msgstr "Herhalend (gids)"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "Alle opnames"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Almal"

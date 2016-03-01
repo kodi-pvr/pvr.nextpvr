@@ -32,6 +32,10 @@ msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
 msgstr "Activer le différé avec la TV en direct"
 
+msgctxt "#30004"
+msgid "Download TV Guide Artwork"
+msgstr "Télécharger les illustrations du guide TV"
+
 msgctxt "#30040"
 msgid "Connection"
 msgstr "Connexion"
@@ -50,8 +54,76 @@ msgstr "Mettre à niveau vers « %s » ou supérieur !"
 
 msgctxt "#30052"
 msgid "Connection failed. Incorrect PIN?"
-msgstr "Connexion impossible. Code Pin incorrect ?"
+msgstr "Connexion échouée. Code Pin incorrect ?"
 
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Le tuner n'est plus disponible."
+
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "Unique (manuelle)"
+
+msgctxt "#30141"
+msgid "One time (guide)"
+msgstr "Unique (guide)"
+
+msgctxt "#30142"
+msgid "Repeating (manual)"
+msgstr "Répétée (manuelle)"
+
+msgctxt "#30143"
+msgid "Repeating (guide)"
+msgstr "Répétée (guide)"
+
+msgctxt "#30144"
+msgid "Child Recording"
+msgstr "Enregistrement enfant"
+
+msgctxt "#30145"
+msgid "Repeating (keyword)"
+msgstr "Répétée (mot clé)"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "Tous les enregistrements"
+
+msgctxt "#30151"
+msgid "1 Recording"
+msgstr "1 enregistrement"
+
+msgctxt "#30152"
+msgid "2 Recordings"
+msgstr "2 enregistrements"
+
+msgctxt "#30153"
+msgid "3 Recordings"
+msgstr "3 enregistrements"
+
+msgctxt "#30154"
+msgid "4 Recordings"
+msgstr "4 enregistrements"
+
+msgctxt "#30155"
+msgid "5 Recordings"
+msgstr "5 enregistrements"
+
+msgctxt "#30156"
+msgid "6 Recordings"
+msgstr "6 enregistrements"
+
+msgctxt "#30157"
+msgid "7 Recordings"
+msgstr "7 enregistrements"
+
+msgctxt "#30158"
+msgid "10 Recordings"
+msgstr "8 enregistrements"
+
+msgctxt "#30160"
+msgid "New Only"
+msgstr "Nouveaux seulement"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Tout"

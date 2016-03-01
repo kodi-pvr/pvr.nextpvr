@@ -55,3 +55,11 @@ msgstr "Conexión fallida. ¿PIN incorrecto?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Sintonizador ya no está disponible"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "Todas las grabaciones"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Todos"

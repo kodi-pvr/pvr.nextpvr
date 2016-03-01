@@ -55,3 +55,11 @@ msgstr "Povezava ni uspela. Napačen PIN?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Sprejemnik ni več na voljo"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "Vsi posnetki"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Vse"

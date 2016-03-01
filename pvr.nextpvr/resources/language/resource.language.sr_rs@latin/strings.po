@@ -32,6 +32,10 @@ msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
 msgstr "Omogući pomeraj vremena kod TV Uživo"
 
+msgctxt "#30004"
+msgid "Download TV Guide Artwork"
+msgstr "Preuzmi Slike TV Vodiča"
+
 msgctxt "#30040"
 msgid "Connection"
 msgstr "Veza"
@@ -55,3 +59,71 @@ msgstr "Neuspelo povezivanje. Netačan PIN?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Prijemnik više nije dostupan"
+
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "Jednom (ručno)"
+
+msgctxt "#30141"
+msgid "One time (guide)"
+msgstr "Jednom (vodič)"
+
+msgctxt "#30142"
+msgid "Repeating (manual)"
+msgstr "Ponavljajuće (ručno)"
+
+msgctxt "#30143"
+msgid "Repeating (guide)"
+msgstr "Ponavljajuće (vodič)"
+
+msgctxt "#30144"
+msgid "Child Recording"
+msgstr "Snimak Dece"
+
+msgctxt "#30145"
+msgid "Repeating (keyword)"
+msgstr "Ponavljaj (ključna reč)"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "Sva snimanja"
+
+msgctxt "#30151"
+msgid "1 Recording"
+msgstr "1 Snimak"
+
+msgctxt "#30152"
+msgid "2 Recordings"
+msgstr "2 Snimka"
+
+msgctxt "#30153"
+msgid "3 Recordings"
+msgstr "3 Snimka"
+
+msgctxt "#30154"
+msgid "4 Recordings"
+msgstr "4 Snimaka"
+
+msgctxt "#30155"
+msgid "5 Recordings"
+msgstr "5 Snimaka"
+
+msgctxt "#30156"
+msgid "6 Recordings"
+msgstr "6 Snimaka"
+
+msgctxt "#30157"
+msgid "7 Recordings"
+msgstr "7 Snimaka"
+
+msgctxt "#30158"
+msgid "10 Recordings"
+msgstr "10 Snimaka"
+
+msgctxt "#30160"
+msgid "New Only"
+msgstr "Samo Novi"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Sve"

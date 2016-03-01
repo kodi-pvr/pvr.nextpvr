@@ -19,3 +19,7 @@ msgstr ""
 msgctxt "#30041"
 msgid "Advanced"
 msgstr "Иловагӣ"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Ҳама"

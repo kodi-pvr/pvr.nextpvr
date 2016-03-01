@@ -32,6 +32,10 @@ msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
 msgstr "Ativar TimeShift com Tv ao Vivo"
 
+msgctxt "#30004"
+msgid "Download TV Guide Artwork"
+msgstr "Transferir artes Guia de TV"
+
 msgctxt "#30040"
 msgid "Connection"
 msgstr "Conexão"
@@ -55,3 +59,71 @@ msgstr "A conexão falhou. PIN incorreto?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Sintonizador não está disponível"
+
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "Uma vez (manual)"
+
+msgctxt "#30141"
+msgid "One time (guide)"
+msgstr "Uma vez (guia)"
+
+msgctxt "#30142"
+msgid "Repeating (manual)"
+msgstr "Recorrente (manual)"
+
+msgctxt "#30143"
+msgid "Repeating (guide)"
+msgstr "Recorrente (guia)"
+
+msgctxt "#30144"
+msgid "Child Recording"
+msgstr "Gravações Aninhadas"
+
+msgctxt "#30145"
+msgid "Repeating (keyword)"
+msgstr "Recorrente (palavra chave)"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "Todas as gravações"
+
+msgctxt "#30151"
+msgid "1 Recording"
+msgstr "1 Gravação"
+
+msgctxt "#30152"
+msgid "2 Recordings"
+msgstr "2 Gravações"
+
+msgctxt "#30153"
+msgid "3 Recordings"
+msgstr "3 Gravações"
+
+msgctxt "#30154"
+msgid "4 Recordings"
+msgstr "4 Gravações"
+
+msgctxt "#30155"
+msgid "5 Recordings"
+msgstr "5 Gravações"
+
+msgctxt "#30156"
+msgid "6 Recordings"
+msgstr "6 Gravações"
+
+msgctxt "#30157"
+msgid "7 Recordings"
+msgstr "7 Gravações"
+
+msgctxt "#30158"
+msgid "10 Recordings"
+msgstr "10 Gravações"
+
+msgctxt "#30160"
+msgid "New Only"
+msgstr "Somente Novo"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Todos os Add-ons"

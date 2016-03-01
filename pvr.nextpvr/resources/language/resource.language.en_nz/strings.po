@@ -55,3 +55,27 @@ msgstr "Connection failed. Incorrect PIN?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Tuner no longer available"
+
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "One time (manual)"
+
+msgctxt "#30141"
+msgid "One time (guide)"
+msgstr "One time (guide)"
+
+msgctxt "#30142"
+msgid "Repeating (manual)"
+msgstr "Repeating (manual)"
+
+msgctxt "#30143"
+msgid "Repeating (guide)"
+msgstr "Repeating (guide)"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "All Recordings"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "All"

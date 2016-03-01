@@ -55,3 +55,11 @@ msgstr "接続に失敗。PIN が間違っていませんか？"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "チューナーがみつかりません"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "全録画"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "すべて"

@@ -55,3 +55,27 @@ msgstr "Не удалось подключиться. Возможно, непр
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Тюнер более недоступен"
+
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "Одноразовый (вручную)"
+
+msgctxt "#30141"
+msgid "One time (guide)"
+msgstr "Одноразовый (программа)"
+
+msgctxt "#30142"
+msgid "Repeating (manual)"
+msgstr "Повторяющийся (ручной)"
+
+msgctxt "#30143"
+msgid "Repeating (guide)"
+msgstr "Повторяющийся (программа)"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "Все Записи"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Все треки"

@@ -55,3 +55,7 @@ msgstr "連接失敗。不正確的PIN碼？"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "調諧器已無法使用"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "全部"

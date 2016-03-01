@@ -55,3 +55,11 @@ msgstr "Forbindelse mislykkedes.  Forkert Pinkode?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Tuneren er ikke længere tilgængelig"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "Alle Optagelser"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Alle"

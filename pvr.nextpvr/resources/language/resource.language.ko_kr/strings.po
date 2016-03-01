@@ -55,3 +55,11 @@ msgstr "연결 실패. 틀린 암호?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "튜너 사용할 수 없음"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "모든 녹화영상"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "전체"

@@ -31,3 +31,11 @@ msgstr "ማሻሻያ ወደ '%s' ወይንም ከፍተኛ!"
 msgctxt "#30052"
 msgid "Connection failed. Incorrect PIN?"
 msgstr "ግንኙነቱ አልተሳካም የተሳሳተ PIN?"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "ሁሉንም መቅረጫ "
+
+msgctxt "#30161"
+msgid "All"
+msgstr "ሁሉንም"

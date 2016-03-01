@@ -55,3 +55,11 @@ msgstr "Tenging mistókst. Rangt PIN?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Móttakari ekki lengur tiltækur"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "Allar Upptökur"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Allt"

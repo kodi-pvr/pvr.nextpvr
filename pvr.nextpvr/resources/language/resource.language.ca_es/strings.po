@@ -55,3 +55,11 @@ msgstr "Ha fallat la connexió. PIN incorrecte?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "El sintonitzador ja no està disponible"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "Tots els enregistraments"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Totes"
