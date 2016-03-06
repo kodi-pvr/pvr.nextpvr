@@ -56,9 +56,21 @@ msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Ο δέκτης (tuner) δεν είναι πλέον διαθέσιμος"
 
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "Μία φορά (χειροποίητα)"
+
+msgctxt "#30145"
+msgid "Repeating (keyword)"
+msgstr "επαναλαμβάνοντας    (λέξη κλειδί)"
+
 msgctxt "#30150"
 msgid "All Recordings"
 msgstr "Όλες οι Εγγραφές"
+
+msgctxt "#30160"
+msgid "New Only"
+msgstr "Μόνον νεα  (καινούργια)"
 
 msgctxt "#30161"
 msgid "All"

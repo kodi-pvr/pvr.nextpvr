@@ -32,6 +32,10 @@ msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
 msgstr "Activează decalajul temporal cu televiziunea în direct"
 
+msgctxt "#30004"
+msgid "Download TV Guide Artwork"
+msgstr "Descarcă creație artistică ghid tv"
+
 msgctxt "#30040"
 msgid "Connection"
 msgstr "Conexiune"
@@ -72,9 +76,49 @@ msgctxt "#30143"
 msgid "Repeating (guide)"
 msgstr "Repetant (ghid)"
 
+msgctxt "#30144"
+msgid "Child Recording"
+msgstr "Înregistrare pentru copii"
+
+msgctxt "#30145"
+msgid "Repeating (keyword)"
+msgstr "Repetat (cuvânt cheie)"
+
 msgctxt "#30150"
 msgid "All Recordings"
 msgstr "Toate înregistrările"
+
+msgctxt "#30151"
+msgid "1 Recording"
+msgstr "1 Înregistrare"
+
+msgctxt "#30152"
+msgid "2 Recordings"
+msgstr "2 Înregistrări"
+
+msgctxt "#30153"
+msgid "3 Recordings"
+msgstr "3 Înregistrări"
+
+msgctxt "#30154"
+msgid "4 Recordings"
+msgstr "4 Înregistrări"
+
+msgctxt "#30155"
+msgid "5 Recordings"
+msgstr "5 Înregistrări"
+
+msgctxt "#30156"
+msgid "6 Recordings"
+msgstr "6 Înregistrări"
+
+msgctxt "#30157"
+msgid "7 Recordings"
+msgstr "7 Înregistrări"
+
+msgctxt "#30158"
+msgid "10 Recordings"
+msgstr "10 Înregistrări"
 
 msgctxt "#30160"
 msgid "New Only"

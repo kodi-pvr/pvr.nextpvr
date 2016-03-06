@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon
   id="pvr.nextpvr"
-  version="1.12.11"
+  version="1.12.12"
   name="NextPVR PVR Client"
   provider-name="Graeme Blackley">
   <requires>
@@ -50,7 +50,7 @@
     <summary lang="nl_NL">Kodi frontend voor de NextPVR</summary>
     <summary lang="pl_PL">Klient telewizyjny dla NextPVR</summary>
     <summary lang="pt_BR">Kodi Frontend para o NextPVR</summary>
-    <summary lang="pt_PT">Frontend Kodi para NextPVR</summary>
+    <summary lang="pt_PT">Inteface Kodi para NextPVR</summary>
     <summary lang="ro_RO">Interfața Kodi pentru NextPVR</summary>
     <summary lang="ru_RU">Интерфейс Kodi для NextPVR</summary>
     <summary lang="sk_SK">Kodi rozhranie pre NextPVR</summary>
@@ -82,7 +82,7 @@
     <description lang="et_EE">NextPVR esi. Toetab telekanalite striimimist ja salvestamist, raadio kuulamist ja elektroonilist saatekava.</description>
     <description lang="fi_FI">NextPVR frontend. Tukee livelähetysten sekä tallenteiden toistoa, radiokanavia ja ohjelmaopasta. </description>
     <description lang="fr_CA">Frontal de numériscope pour NextPVR, prenant en charge la diffusion en continu des télés en direct  &amp; les enregistrements, l'écoute de chaînes radio, et le GÉP.</description>
-    <description lang="fr_FR">Interface logicielle pour l'enregistreur vidéo (PVR) NextPVR. Gère la diffusion de la TV et des enregistrements en direct, l'écoute de chaînes de radios et le guide électronique des programmes TV.</description>
+    <description lang="fr_FR">Interface logicielle pour l'enregistreur vidéo (PVR) NextPVR. Gère la diffusion de la TV en direct et des enregistrements en direct, l'écoute de chaînes de radios et le guide électronique des programmes TV.</description>
     <description lang="gl_ES">Interface de NextPVR. Compatíbel coa transmisión de TV en directo, gravacións, escoita de canles de radio e Guía.</description>
     <description lang="he_IL">לקוח טלוויזיה חיה של NextPVR. תומך בהזרמת שידורים חיים והקלטות, האזנה לרדיו, הצגת לוח שידורים ותזמון הקלטות.</description>
     <description lang="hr_HR">NextPVR sučelje. Podržava stremanje i snimanje TV programa, slušanje radio programa i elektronski programski vodič (EPG).</description>
@@ -101,7 +101,7 @@
     <description lang="nl_NL">NextPVR frontend. Ondersteunt streaming van Live TV &amp; Recordings, het luisteren naar Radio kanalen en EPG.</description>
     <description lang="pl_PL">Klient telewizyjny dla NextPVR obsługuje strumieniowanie kanałów radiowych i telewizyjnych, nagrywanie oraz funkcje przewodnika telewizyjnego.</description>
     <description lang="pt_BR">NextPVR Frontend. Suporta streaming de TV ao Vivo e Gravações, ouvir canais de rádio e EPG.</description>
-    <description lang="pt_PT">Frontend NextPVR. Suporta transmissão de TV em directo e Gravações, ouvir estações de Rádio e EPG.</description>
+    <description lang="pt_PT">Interface NextPVR. Suporta transmissão de TV em direto, gravações, estações de rádio e EPG.</description>
     <description lang="ro_RO">Interfața NextPVR. Suporta streaming Live TV și inregistrari, radio și ghid electronic de programe (EPG)</description>
     <description lang="ru_RU">Интерфейс для NextPVR. Поддерживает просмотр и запись ТВ, прослушивание радио и EPG.</description>
     <description lang="sk_SK">NextPVR rozhranie. Podporuje streamovanie živého televízneho vysielania a nahrávok, počúvanie rozhlasových kanálov a EPG.</description>
@@ -153,7 +153,7 @@
     <disclaimer lang="nl_NL">Hier wordt aan gewerkt, Gebruik op eigen risico.</disclaimer>
     <disclaimer lang="pl_PL">Oprogramowanie nadal jest w fazie rozwoju i jest niestabilne! Autorzy w żaden sposób nie są odpowiedzialni za nieudane nagrania, błędy w harmonogramie nagrań, zmarnowany czas ani jakiekolwiek inne niepożądane efekty.</disclaimer>
     <disclaimer lang="pt_BR">Este é um trabalho em progresso. Use a seu próprio risco</disclaimer>
-    <disclaimer lang="pt_PT">Isto é um projecto em curso. Use-o por sua conta e risco.</disclaimer>
+    <disclaimer lang="pt_PT">Este é um trabalho em curso. Use-o por sua conta e risco.</disclaimer>
     <disclaimer lang="ro_RO">Aceasta este un proiect în lucru. Utilizați pe propriul risc.</disclaimer>
     <disclaimer lang="ru_RU">Разработка программы не окончена. Используйте на свой страх и риск.</disclaimer>
     <disclaimer lang="sk_SK">Práca na tomto rozhraní stále prebieha. Používajte ho preto na vlastné riziko.</disclaimer>

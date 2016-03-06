@@ -76,6 +76,10 @@ msgctxt "#30150"
 msgid "All Recordings"
 msgstr "Všechny nahrávky"
 
+msgctxt "#30160"
+msgid "New Only"
+msgstr "Pouze nové"
+
 msgctxt "#30161"
 msgid "All"
 msgstr "Vše"
