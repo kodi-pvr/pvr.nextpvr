@@ -32,6 +32,10 @@ msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
 msgstr "Povoliť časový posun v režime Živé TV vysielanie"
 
+msgctxt "#30004"
+msgid "Download TV Guide Artwork"
+msgstr "Prevziať predlohu TV programu"
+
 msgctxt "#30040"
 msgid "Connection"
 msgstr "Pripojenie"
@@ -56,9 +60,69 @@ msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Tuner už nie je k dispozícii"
 
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "Iba raz (ručne)"
+
+msgctxt "#30141"
+msgid "One time (guide)"
+msgstr "Iba raz (TV program)"
+
+msgctxt "#30142"
+msgid "Repeating (manual)"
+msgstr "Opakovanie (ručne)"
+
+msgctxt "#30143"
+msgid "Repeating (guide)"
+msgstr "Opakovanie (TV program)"
+
+msgctxt "#30144"
+msgid "Child Recording"
+msgstr "Nahrávky pre deti"
+
+msgctxt "#30145"
+msgid "Repeating (keyword)"
+msgstr "Opakovanie (kľúčové slovo)"
+
 msgctxt "#30150"
 msgid "All Recordings"
 msgstr "Všetky nahrávky"
+
+msgctxt "#30151"
+msgid "1 Recording"
+msgstr "1 nahrávka"
+
+msgctxt "#30152"
+msgid "2 Recordings"
+msgstr "2 nahrávky"
+
+msgctxt "#30153"
+msgid "3 Recordings"
+msgstr "3 nahrávky"
+
+msgctxt "#30154"
+msgid "4 Recordings"
+msgstr "4 nahrávky"
+
+msgctxt "#30155"
+msgid "5 Recordings"
+msgstr "5 nahrávok"
+
+msgctxt "#30156"
+msgid "6 Recordings"
+msgstr "6 nahrávok"
+
+msgctxt "#30157"
+msgid "7 Recordings"
+msgstr "7 nahrávok"
+
+msgctxt "#30158"
+msgid "10 Recordings"
+msgstr "10 nahrávok"
+
+msgctxt "#30160"
+msgid "New Only"
+msgstr "Iba nové"
 
 msgctxt "#30161"
 msgid "All"

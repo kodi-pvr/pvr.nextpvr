@@ -32,6 +32,10 @@ msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
 msgstr "Benarkan Anjak Masa dengan TV Langsung"
 
+msgctxt "#30004"
+msgid "Download TV Guide Artwork"
+msgstr "Muat Turun Kerja Seni Panduan TV"
+
 msgctxt "#30040"
 msgid "Connection"
 msgstr "Sambungan"
@@ -72,9 +76,53 @@ msgctxt "#30143"
 msgid "Repeating (guide)"
 msgstr "Pengulangan (panduan)"
 
+msgctxt "#30144"
+msgid "Child Recording"
+msgstr "Rakaman Kanak-Kanak"
+
+msgctxt "#30145"
+msgid "Repeating (keyword)"
+msgstr "Pengulangan (kata kunci)"
+
 msgctxt "#30150"
 msgid "All Recordings"
 msgstr "Semua Rakaman"
+
+msgctxt "#30151"
+msgid "1 Recording"
+msgstr "1 Rakaman"
+
+msgctxt "#30152"
+msgid "2 Recordings"
+msgstr "2 Rakaman"
+
+msgctxt "#30153"
+msgid "3 Recordings"
+msgstr "3 Rakaman"
+
+msgctxt "#30154"
+msgid "4 Recordings"
+msgstr "4 Rakaman"
+
+msgctxt "#30155"
+msgid "5 Recordings"
+msgstr "5 Rakaman"
+
+msgctxt "#30156"
+msgid "6 Recordings"
+msgstr "6 Rakaman"
+
+msgctxt "#30157"
+msgid "7 Recordings"
+msgstr "7 Rakaman"
+
+msgctxt "#30158"
+msgid "10 Recordings"
+msgstr "10 Rakaman"
+
+msgctxt "#30160"
+msgid "New Only"
+msgstr "Baharu Sahaja"
 
 msgctxt "#30161"
 msgid "All"

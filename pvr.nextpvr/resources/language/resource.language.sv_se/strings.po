@@ -72,6 +72,10 @@ msgctxt "#30143"
 msgid "Repeating (guide)"
 msgstr "Upprepat (guide)"
 
+msgctxt "#30145"
+msgid "Repeating (keyword)"
+msgstr "Återupprepande (nyckelord)"
+
 msgctxt "#30150"
 msgid "All Recordings"
 msgstr "Alla inspelningar"

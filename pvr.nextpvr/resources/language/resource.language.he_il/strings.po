@@ -32,6 +32,10 @@ msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
 msgstr "אפשר טיימשיפט לשידור חי"
 
+msgctxt "#30004"
+msgid "Download TV Guide Artwork"
+msgstr "הורד גרפיקת מדריך טלוויזיה"
+
 msgctxt "#30040"
 msgid "Connection"
 msgstr "חיבור"
@@ -56,6 +60,10 @@ msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "מקלט אינו זמין יותר"
 
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "פעם אחת (ידני)"
+
 msgctxt "#30141"
 msgid "One time (guide)"
 msgstr "חד פעמי (לוח שידורים)"
@@ -68,9 +76,53 @@ msgctxt "#30143"
 msgid "Repeating (guide)"
 msgstr "חוזר (לוח שידורים)"
 
+msgctxt "#30144"
+msgid "Child Recording"
+msgstr "הקלטה לילדים"
+
+msgctxt "#30145"
+msgid "Repeating (keyword)"
+msgstr "חוזר (מילת מפתח)"
+
 msgctxt "#30150"
 msgid "All Recordings"
 msgstr "כל ההקלטות"
+
+msgctxt "#30151"
+msgid "1 Recording"
+msgstr "1 הקלטה"
+
+msgctxt "#30152"
+msgid "2 Recordings"
+msgstr "2 הקלטות"
+
+msgctxt "#30153"
+msgid "3 Recordings"
+msgstr "3 הקלטות"
+
+msgctxt "#30154"
+msgid "4 Recordings"
+msgstr "4 הקלטות"
+
+msgctxt "#30155"
+msgid "5 Recordings"
+msgstr "5 הקלטות"
+
+msgctxt "#30156"
+msgid "6 Recordings"
+msgstr "6 הקלטות"
+
+msgctxt "#30157"
+msgid "7 Recordings"
+msgstr "7 הקלטות"
+
+msgctxt "#30158"
+msgid "10 Recordings"
+msgstr "10 הקלטות"
+
+msgctxt "#30160"
+msgid "New Only"
+msgstr "חדש בלבד"
 
 msgctxt "#30161"
 msgid "All"
