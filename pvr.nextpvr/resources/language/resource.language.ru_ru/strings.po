@@ -32,6 +32,10 @@ msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
 msgstr "Включить таймшифт LIveTV"
 
+msgctxt "#30004"
+msgid "Download TV Guide Artwork"
+msgstr "Загрузить фон для телепрограммы"
+
 msgctxt "#30040"
 msgid "Connection"
 msgstr "Соединение"
@@ -75,6 +79,42 @@ msgstr "Повторяющийся (программа)"
 msgctxt "#30150"
 msgid "All Recordings"
 msgstr "Все Записи"
+
+msgctxt "#30151"
+msgid "1 Recording"
+msgstr "1 запись"
+
+msgctxt "#30152"
+msgid "2 Recordings"
+msgstr "2 записи"
+
+msgctxt "#30153"
+msgid "3 Recordings"
+msgstr "3 записи"
+
+msgctxt "#30154"
+msgid "4 Recordings"
+msgstr "4 записи"
+
+msgctxt "#30155"
+msgid "5 Recordings"
+msgstr "5 записей"
+
+msgctxt "#30156"
+msgid "6 Recordings"
+msgstr "6 записей"
+
+msgctxt "#30157"
+msgid "7 Recordings"
+msgstr "7 записей"
+
+msgctxt "#30158"
+msgid "10 Recordings"
+msgstr "10 записей"
+
+msgctxt "#30160"
+msgid "New Only"
+msgstr "Только новые"
 
 msgctxt "#30161"
 msgid "All"
