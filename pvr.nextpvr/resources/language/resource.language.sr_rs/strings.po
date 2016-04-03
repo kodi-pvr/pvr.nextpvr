@@ -34,7 +34,7 @@ msgstr "Омогући померај времена код ТВ Уживо"
 
 msgctxt "#30004"
 msgid "Download TV Guide Artwork"
-msgstr "Преузми Слике ТВ Водича"
+msgstr "Преузми Илустрације ТВ Водича"
 
 msgctxt "#30040"
 msgid "Connection"
@@ -78,7 +78,7 @@ msgstr "Понављајуће (водич)"
 
 msgctxt "#30144"
 msgid "Child Recording"
-msgstr "Снимак деце"
+msgstr "Снимак Деце"
 
 msgctxt "#30145"
 msgid "Repeating (keyword)"
@@ -86,7 +86,7 @@ msgstr "Понављај (кључна реч)"
 
 msgctxt "#30150"
 msgid "All Recordings"
-msgstr "Сва снимања"
+msgstr "Сва Снимања"
 
 msgctxt "#30151"
 msgid "1 Recording"

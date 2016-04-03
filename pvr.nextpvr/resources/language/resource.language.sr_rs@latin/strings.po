@@ -34,7 +34,7 @@ msgstr "Omogući pomeraj vremena kod TV Uživo"
 
 msgctxt "#30004"
 msgid "Download TV Guide Artwork"
-msgstr "Preuzmi Slike TV Vodiča"
+msgstr "Preuzmi Ilustracije TV Vodiča"
 
 msgctxt "#30040"
 msgid "Connection"
