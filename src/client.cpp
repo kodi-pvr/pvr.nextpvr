@@ -18,7 +18,7 @@
  */
 
 #include "client.h"
-#include "kodi/xbmc_pvr_dll.h"
+#include "xbmc_pvr_dll.h"
 #include "pvrclient-nextpvr.h"
 #include "uri.h"
 
