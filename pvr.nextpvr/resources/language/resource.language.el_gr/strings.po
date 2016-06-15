@@ -68,6 +68,38 @@ msgctxt "#30150"
 msgid "All Recordings"
 msgstr "Όλες οι Εγγραφές"
 
+msgctxt "#30151"
+msgid "1 Recording"
+msgstr "1 Εγγραφή"
+
+msgctxt "#30152"
+msgid "2 Recordings"
+msgstr "2 Εγγραφές"
+
+msgctxt "#30153"
+msgid "3 Recordings"
+msgstr "3 Εγγραφές"
+
+msgctxt "#30154"
+msgid "4 Recordings"
+msgstr "4 Εγγραφές"
+
+msgctxt "#30155"
+msgid "5 Recordings"
+msgstr "5 Εγγραφές"
+
+msgctxt "#30156"
+msgid "6 Recordings"
+msgstr "6 Εγγραφές"
+
+msgctxt "#30157"
+msgid "7 Recordings"
+msgstr "7 Εγγραφές"
+
+msgctxt "#30158"
+msgid "10 Recordings"
+msgstr "10 Εγγραφές"
+
 msgctxt "#30160"
 msgid "New Only"
 msgstr "Μόνον νεα  (καινούργια)"
