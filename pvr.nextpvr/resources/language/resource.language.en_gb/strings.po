@@ -18,116 +18,122 @@ msgstr ""
 
 msgctxt "#30000"
 msgid "NextPVR Hostname"
-msgstr "NextPVR Hostname"
+msgstr ""
 
 msgctxt "#30001"
 msgid "NextPVR Port (usually 8866 or 7799)"
-msgstr "NextPVR Port (usually 8866 or 7799)"
+msgstr ""
 
 msgctxt "#30002"
 msgid "NextPVR PinCode"
-msgstr "NextPVR PinCode"
+msgstr ""
 
 msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
-msgstr "Enable TimeShift with Live TV"
+msgstr ""
 
 msgctxt "#30004"
 msgid "Download TV Guide Artwork"
-msgstr "Download TV Guide Artwork"
+msgstr ""
+
+#empty strings from id 30005 to 30039
 
 msgctxt "#30040"
 msgid "Connection"
-msgstr "Connection"
+msgstr ""
 
 msgctxt "#30041"
 msgid "Advanced"
-msgstr "Advanced"
+msgstr ""
+
+#empty strings from id 30042 to 30049
 
 msgctxt "#30050"
 msgid "NextPVR server is too old."
-msgstr "NextPVR server is too old."
+msgstr ""
 
 msgctxt "#30051"
 msgid "Upgrade to '%s' or higher!"
-msgstr "Upgrade to '%s' or higher!"
+msgstr ""
 
 msgctxt "#30052"
 msgid "Connection failed. Incorrect PIN?"
-msgstr "Connection failed. Incorrect PIN?"
+msgstr ""
 
 msgctxt "#30053"
 msgid "Tuner no longer available"
-msgstr "Tuner no longer available"
+msgstr ""
+
+#empty strings from id 30054 to 30139
 
 msgctxt "#30140"
 msgid "One time (manual)"
-msgstr "One time (manual)"
+msgstr ""
 
 msgctxt "#30141"
 msgid "One time (guide)"
-msgstr "One time (guide)"
+msgstr ""
 
 msgctxt "#30142"
 msgid "Repeating (manual)"
-msgstr "Repeating (manual)"
+msgstr ""
 
 msgctxt "#30143"
 msgid "Repeating (guide)"
-msgstr "Repeating (guide)"
+msgstr ""
 
 msgctxt "#30144"
 msgid "Child Recording"
-msgstr "Child Recording"
+msgstr ""
 
 msgctxt "#30145"
 msgid "Repeating (keyword)"
-msgstr "Repeating (keyword)"
+msgstr ""
+
+#empty strings from id 30146 to 30149
 
 msgctxt "#30150"
 msgid "All Recordings"
-msgstr "All Recordings"
+msgstr ""
 
 msgctxt "#30151"
 msgid "1 Recording"
-msgstr "1 Recording"
+msgstr ""
 
 msgctxt "#30152"
 msgid "2 Recordings"
-msgstr "2 Recordings"
+msgstr ""
 
 msgctxt "#30153"
 msgid "3 Recordings"
-msgstr "3 Recordings"
+msgstr ""
 
 msgctxt "#30154"
 msgid "4 Recordings"
-msgstr "4 Recordings"
+msgstr ""
 
 msgctxt "#30155"
 msgid "5 Recordings"
-msgstr "5 Recordings"
+msgstr ""
 
 msgctxt "#30156"
 msgid "6 Recordings"
-msgstr "6 Recordings"
+msgstr ""
 
 msgctxt "#30157"
 msgid "7 Recordings"
-msgstr "7 Recordings"
+msgstr ""
 
 msgctxt "#30158"
 msgid "10 Recordings"
-msgstr "10 Recordings"
+msgstr ""
+
+#empty string with id 30159
 
 msgctxt "#30160"
 msgid "New Only"
-msgstr "New Only"
+msgstr ""
 
 msgctxt "#30161"
 msgid "All"
-msgstr "All"
-
-msgctxt "#30161"
-msgid "All"
-msgstr "All"
+msgstr ""
