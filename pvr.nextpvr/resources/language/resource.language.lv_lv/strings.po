@@ -56,62 +56,10 @@ msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Uztvērējs vairs nav pieejams"
 
-msgctxt "#30054"
-msgid "[RECUR]"
-msgstr "[RECUR]"
-
-msgctxt "#30100"
-msgid "Add Timer"
-msgstr "Uzlikt taimeri"
-
-msgctxt "#30120"
-msgid "Recording Type"
-msgstr "Ierakstīšanas veids"
-
-msgctxt "#30121"
-msgid "Record Once"
-msgstr "Ierakstīt vienreiz"
-
-msgctxt "#30122"
-msgid "Record Season (NEW episodes on this channel)"
-msgstr "Ierakstīt sezonu (JAUNAS sērijas šajā kanālā)"
-
-msgctxt "#30123"
-msgid "Record Season (All episodes on this channel)"
-msgstr "Ierakstīt sezonu (visas sērijas šajā kanālā)"
-
-msgctxt "#30124"
-msgid "Record Season (Daily, this timeslot)"
-msgstr "Ierakstīt sezonu (katru dienu šajā laikā)"
-
-msgctxt "#30125"
-msgid "Record Season (Weekly, this timeslot)"
-msgstr "Ierakstīt sezonu (katru nedēļu šajā laikā)"
-
-msgctxt "#30126"
-msgid "Record Season (Monday-Friday, this timeslot)"
-msgstr "Ierakstīt sezonu (pirmdien-piektdien šajā laikā)"
-
-msgctxt "#30127"
-msgid "Record Season (Weekends, this timeslot)"
-msgstr "Ierakstīt sezonu (brīvdienās šajā laikā)"
-
-msgctxt "#30130"
-msgid "Keep"
-msgstr "Paturēt"
-
-msgctxt "#30131"
+msgctxt "#30150"
 msgid "All Recordings"
 msgstr "Visi ieraksti"
 
-msgctxt "#30132"
-msgid "Pre-Padding (minutes)"
-msgstr "Pirms-papildinājums (minūtes)"
-
-msgctxt "#30134"
-msgid "Recording Directory"
-msgstr "Ierakstīšanas direktorija"
-
-msgctxt "#30135"
-msgid "Default"
-msgstr "Noklusējums"
+msgctxt "#30161"
+msgid "All"
+msgstr "Visi"

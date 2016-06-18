@@ -56,66 +56,54 @@ msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Ο δέκτης (tuner) δεν είναι πλέον διαθέσιμος"
 
-msgctxt "#30054"
-msgid "[RECUR]"
-msgstr "[ΕΠΑΝΑΛΗΨΗ]"
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "Μία φορά (χειροποίητα)"
 
-msgctxt "#30100"
-msgid "Add Timer"
-msgstr "Προσθήκη Χρονοδιακόπτη"
+msgctxt "#30145"
+msgid "Repeating (keyword)"
+msgstr "επαναλαμβάνοντας    (λέξη κλειδί)"
 
-msgctxt "#30120"
-msgid "Recording Type"
-msgstr "Τύπος Εγγραφής"
-
-msgctxt "#30121"
-msgid "Record Once"
-msgstr "Εγγραφή Μία Φορά"
-
-msgctxt "#30122"
-msgid "Record Season (NEW episodes on this channel)"
-msgstr "Εγγραφή Κύκλου (ΝΕΑ επεισόδια σε αυτό το κανάλι)"
-
-msgctxt "#30123"
-msgid "Record Season (All episodes on this channel)"
-msgstr "Εγγραφή Κύκλου (Όλα τα επεισόδια σε αυτό το κανάλι)"
-
-msgctxt "#30124"
-msgid "Record Season (Daily, this timeslot)"
-msgstr "Εγγραφή Κύκλου (Καθημερινά, τέτοια ώρα)"
-
-msgctxt "#30125"
-msgid "Record Season (Weekly, this timeslot)"
-msgstr "Εγγραφή Κύκλου (Εβδομαδιαία, τέτοια ώρα)"
-
-msgctxt "#30126"
-msgid "Record Season (Monday-Friday, this timeslot)"
-msgstr "Εγγραφή Κύκλου (Δευτέρα-Παρασκευή, τέτοια ώρα)"
-
-msgctxt "#30127"
-msgid "Record Season (Weekends, this timeslot)"
-msgstr "Εγγραφή Κύκλου (Σαββατοκύριακα, τέτοια ώρα)"
-
-msgctxt "#30130"
-msgid "Keep"
-msgstr "Διατήρηση"
-
-msgctxt "#30131"
+msgctxt "#30150"
 msgid "All Recordings"
 msgstr "Όλες οι Εγγραφές"
 
-msgctxt "#30132"
-msgid "Pre-Padding (minutes)"
-msgstr "Πρώιμη Έναρξη Εγγραφής (λεπτά)"
+msgctxt "#30151"
+msgid "1 Recording"
+msgstr "1 Εγγραφή"
 
-msgctxt "#30133"
-msgid "Post-Padding (minutes)"
-msgstr "Μετα-έναρξη Εγγραφής (λεπτά)"
+msgctxt "#30152"
+msgid "2 Recordings"
+msgstr "2 Εγγραφές"
 
-msgctxt "#30134"
-msgid "Recording Directory"
-msgstr "Φάκελος Εγγραφών"
+msgctxt "#30153"
+msgid "3 Recordings"
+msgstr "3 Εγγραφές"
 
-msgctxt "#30135"
-msgid "Default"
-msgstr "Προεπιλογή"
+msgctxt "#30154"
+msgid "4 Recordings"
+msgstr "4 Εγγραφές"
+
+msgctxt "#30155"
+msgid "5 Recordings"
+msgstr "5 Εγγραφές"
+
+msgctxt "#30156"
+msgid "6 Recordings"
+msgstr "6 Εγγραφές"
+
+msgctxt "#30157"
+msgid "7 Recordings"
+msgstr "7 Εγγραφές"
+
+msgctxt "#30158"
+msgid "10 Recordings"
+msgstr "10 Εγγραφές"
+
+msgctxt "#30160"
+msgid "New Only"
+msgstr "Μόνον νεα  (καινούργια)"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Όλα"

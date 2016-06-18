@@ -56,66 +56,26 @@ msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Instemmer nie meer beskikbaar"
 
-msgctxt "#30054"
-msgid "[RECUR]"
-msgstr "[HERHAAL]"
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "Een keer (handrolies)"
 
-msgctxt "#30100"
-msgid "Add Timer"
-msgstr "Voeg tydhouer by"
+msgctxt "#30141"
+msgid "One time (guide)"
+msgstr "Een keer (gids)"
 
-msgctxt "#30120"
-msgid "Recording Type"
-msgstr "Opname tipe"
+msgctxt "#30142"
+msgid "Repeating (manual)"
+msgstr "Herhalend (handrolies)"
 
-msgctxt "#30121"
-msgid "Record Once"
-msgstr "Neem een keer op"
+msgctxt "#30143"
+msgid "Repeating (guide)"
+msgstr "Herhalend (gids)"
 
-msgctxt "#30122"
-msgid "Record Season (NEW episodes on this channel)"
-msgstr "Neem seisoen op (NUWE episodes op hierdie kanaal)"
-
-msgctxt "#30123"
-msgid "Record Season (All episodes on this channel)"
-msgstr "Neem seisoen op (Alle episodes op hierdie kanaal)"
-
-msgctxt "#30124"
-msgid "Record Season (Daily, this timeslot)"
-msgstr "Neem seisoen op (Daagliks, hierdie tydgleuf)"
-
-msgctxt "#30125"
-msgid "Record Season (Weekly, this timeslot)"
-msgstr "Neem seisoen op (Weekliks, hierdie tydgleuf)"
-
-msgctxt "#30126"
-msgid "Record Season (Monday-Friday, this timeslot)"
-msgstr "Neem seisoen op (Maandag-Vrydag, hierdie tydgleuf)"
-
-msgctxt "#30127"
-msgid "Record Season (Weekends, this timeslot)"
-msgstr "Neem seisoen op (Naweke, hierdie tydgleuf)"
-
-msgctxt "#30130"
-msgid "Keep"
-msgstr "Hou"
-
-msgctxt "#30131"
+msgctxt "#30150"
 msgid "All Recordings"
 msgstr "Alle opnames"
 
-msgctxt "#30132"
-msgid "Pre-Padding (minutes)"
-msgstr "Voor-vul (minute)"
-
-msgctxt "#30133"
-msgid "Post-Padding (minutes)"
-msgstr "Na-vul (minute)"
-
-msgctxt "#30134"
-msgid "Recording Directory"
-msgstr "Opname gids"
-
-msgctxt "#30135"
-msgid "Default"
-msgstr "Verstek"
+msgctxt "#30161"
+msgid "All"
+msgstr "Almal"

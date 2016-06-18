@@ -56,10 +56,6 @@ msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "調諧器已無法使用"
 
-msgctxt "#30130"
-msgid "Keep"
-msgstr "保留"
-
-msgctxt "#30135"
-msgid "Default"
-msgstr "預設"
+msgctxt "#30161"
+msgid "All"
+msgstr "全部"

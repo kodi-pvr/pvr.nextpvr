@@ -20,10 +20,6 @@ msgctxt "#30041"
 msgid "Advanced"
 msgstr "Иловагӣ"
 
-msgctxt "#30130"
-msgid "Keep"
-msgstr "Нигоҳ доштан"
-
-msgctxt "#30135"
-msgid "Default"
-msgstr "Пешфарз"
+msgctxt "#30161"
+msgid "All"
+msgstr "Ҳама"

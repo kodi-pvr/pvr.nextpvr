@@ -56,46 +56,62 @@ msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Viritin ei enään saatavilla"
 
-msgctxt "#30100"
-msgid "Add Timer"
-msgstr "Lisää ajastus"
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "Kerran (manuaalinen)"
 
-msgctxt "#30120"
-msgid "Recording Type"
-msgstr "Tallennustyyppi"
+msgctxt "#30141"
+msgid "One time (guide)"
+msgstr "Kerran (opas)"
 
-msgctxt "#30121"
-msgid "Record Once"
-msgstr "Tallenna kerran"
+msgctxt "#30142"
+msgid "Repeating (manual)"
+msgstr "Toistuva (manuaalinen)"
 
-msgctxt "#30122"
-msgid "Record Season (NEW episodes on this channel)"
-msgstr "Tallenna kausi (UUDET jaksot tällä kanavalla)"
+msgctxt "#30143"
+msgid "Repeating (guide)"
+msgstr "Toistuva (opas)"
 
-msgctxt "#30123"
-msgid "Record Season (All episodes on this channel)"
-msgstr "Tallenna kausi (KAIKKI jaksot tällä kanavalla)"
-
-msgctxt "#30124"
-msgid "Record Season (Daily, this timeslot)"
-msgstr "Tallenna kausi (Päivittäin samaan aikaan)"
-
-msgctxt "#30125"
-msgid "Record Season (Weekly, this timeslot)"
-msgstr "Tallenna kausi (viikottain samaan aikaan )"
-
-msgctxt "#30130"
-msgid "Keep"
-msgstr "Säilytä"
-
-msgctxt "#30131"
+msgctxt "#30150"
 msgid "All Recordings"
 msgstr "Kaikki tallennukset"
 
-msgctxt "#30134"
-msgid "Recording Directory"
-msgstr "Tallennuskansio"
+msgctxt "#30151"
+msgid "1 Recording"
+msgstr "1 tallennus"
 
-msgctxt "#30135"
-msgid "Default"
-msgstr "Oletus"
+msgctxt "#30152"
+msgid "2 Recordings"
+msgstr "2 tallennusta"
+
+msgctxt "#30153"
+msgid "3 Recordings"
+msgstr "3 tallennusta"
+
+msgctxt "#30154"
+msgid "4 Recordings"
+msgstr "4 tallennusta"
+
+msgctxt "#30155"
+msgid "5 Recordings"
+msgstr "5 tallennusta"
+
+msgctxt "#30156"
+msgid "6 Recordings"
+msgstr "6 tallennusta"
+
+msgctxt "#30157"
+msgid "7 Recordings"
+msgstr "7 tallennusta"
+
+msgctxt "#30158"
+msgid "10 Recordings"
+msgstr "10 tallennusta"
+
+msgctxt "#30160"
+msgid "New Only"
+msgstr "Vain uudet"
+
+msgctxt "#30161"
+msgid "All"
+msgstr "Kaikki"

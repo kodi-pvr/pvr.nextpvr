@@ -56,10 +56,6 @@ msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Tüüner ei ole enam saadaval"
 
-msgctxt "#30130"
-msgid "Keep"
-msgstr "Jäta alles"
-
-msgctxt "#30135"
-msgid "Default"
-msgstr "Vaikimisi"
+msgctxt "#30161"
+msgid "All"
+msgstr "Kõik"
