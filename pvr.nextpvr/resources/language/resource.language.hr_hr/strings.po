@@ -32,6 +32,10 @@ msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
 msgstr "Omogućiti vremensko premotavanje za TV programe"
 
+msgctxt "#30004"
+msgid "Download TV Guide Artwork"
+msgstr "Preuzmi poster TV vodiča"
+
 msgctxt "#30040"
 msgid "Connection"
 msgstr "Povezivanje"

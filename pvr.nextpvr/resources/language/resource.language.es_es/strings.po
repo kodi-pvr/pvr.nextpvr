@@ -32,6 +32,10 @@ msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
 msgstr "Activar TimeShift con TV en vivo"
 
+msgctxt "#30004"
+msgid "Download TV Guide Artwork"
+msgstr "Descargar artwork para la guía"
+
 msgctxt "#30040"
 msgid "Connection"
 msgstr "Conexión"
@@ -72,9 +76,53 @@ msgctxt "#30143"
 msgid "Repeating (guide)"
 msgstr "Repetición (Guía)"
 
+msgctxt "#30144"
+msgid "Child Recording"
+msgstr "Grabación para niños"
+
+msgctxt "#30145"
+msgid "Repeating (keyword)"
+msgstr "Repetición (palabra clave)"
+
 msgctxt "#30150"
 msgid "All Recordings"
 msgstr "Todas las grabaciones"
+
+msgctxt "#30151"
+msgid "1 Recording"
+msgstr "1 Grabación"
+
+msgctxt "#30152"
+msgid "2 Recordings"
+msgstr "2 Grabaciones"
+
+msgctxt "#30153"
+msgid "3 Recordings"
+msgstr "3 Grabaciones"
+
+msgctxt "#30154"
+msgid "4 Recordings"
+msgstr "4 Grabaciones"
+
+msgctxt "#30155"
+msgid "5 Recordings"
+msgstr "5 Grabaciones"
+
+msgctxt "#30156"
+msgid "6 Recordings"
+msgstr "6 Grabaciones"
+
+msgctxt "#30157"
+msgid "7 Recordings"
+msgstr "7 Grabaciones"
+
+msgctxt "#30158"
+msgid "10 Recordings"
+msgstr "10 Grabaciones"
+
+msgctxt "#30160"
+msgid "New Only"
+msgstr "Sólo Nuevos"
 
 msgctxt "#30161"
 msgid "All"
