@@ -32,6 +32,10 @@ msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
 msgstr "Käytä ajansiirtoa Live TV:ssä"
 
+msgctxt "#30004"
+msgid "Download TV Guide Artwork"
+msgstr "Lataa ohjelmaoppaan kuvat"
+
 msgctxt "#30040"
 msgid "Connection"
 msgstr "Yhteys"
@@ -71,6 +75,10 @@ msgstr "Toistuva (manuaalinen)"
 msgctxt "#30143"
 msgid "Repeating (guide)"
 msgstr "Toistuva (opas)"
+
+msgctxt "#30145"
+msgid "Repeating (keyword)"
+msgstr "Toistuva (avainsana)"
 
 msgctxt "#30150"
 msgid "All Recordings"
