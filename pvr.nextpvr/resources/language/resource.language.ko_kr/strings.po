@@ -32,6 +32,10 @@ msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
 msgstr "라이브 TV에서 타임시프트 사용"
 
+msgctxt "#30004"
+msgid "Download TV Guide Artwork"
+msgstr "TV 가이드 아트 다운로드"
+
 msgctxt "#30040"
 msgid "Connection"
 msgstr "연결"
@@ -56,9 +60,69 @@ msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "튜너 사용할 수 없음"
 
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "한 번 (수동)"
+
+msgctxt "#30141"
+msgid "One time (guide)"
+msgstr "한 번 (가이드)"
+
+msgctxt "#30142"
+msgid "Repeating (manual)"
+msgstr "반복 (수동)"
+
+msgctxt "#30143"
+msgid "Repeating (guide)"
+msgstr "반복 (가이드)"
+
+msgctxt "#30144"
+msgid "Child Recording"
+msgstr "파생된 녹화"
+
+msgctxt "#30145"
+msgid "Repeating (keyword)"
+msgstr "반복 (키워드)"
+
 msgctxt "#30150"
 msgid "All Recordings"
 msgstr "모든 녹화영상"
+
+msgctxt "#30151"
+msgid "1 Recording"
+msgstr "녹화 1편"
+
+msgctxt "#30152"
+msgid "2 Recordings"
+msgstr "녹화 2편"
+
+msgctxt "#30153"
+msgid "3 Recordings"
+msgstr "녹화 3편"
+
+msgctxt "#30154"
+msgid "4 Recordings"
+msgstr "녹화 4편"
+
+msgctxt "#30155"
+msgid "5 Recordings"
+msgstr "녹화 5편"
+
+msgctxt "#30156"
+msgid "6 Recordings"
+msgstr "녹화 6편"
+
+msgctxt "#30157"
+msgid "7 Recordings"
+msgstr "녹화 7편"
+
+msgctxt "#30158"
+msgid "10 Recordings"
+msgstr "녹화 10편"
+
+msgctxt "#30160"
+msgid "New Only"
+msgstr "최신만"
 
 msgctxt "#30161"
 msgid "All"
