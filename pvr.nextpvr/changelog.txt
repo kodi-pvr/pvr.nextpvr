@@ -1,3 +1,9 @@
+v2.4.5
+- fix Travis CI build on XCode 6.1
+- fix compilation with GCC 5
+- always include "NextPVR" in the backend name
+- fix GetLiveStreamURL() for channels with subchannel number
+
 v2.4.4
 - updated language files from Transifex
 
