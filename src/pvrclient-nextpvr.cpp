@@ -1822,7 +1822,10 @@ bool cPVRClientNextPVR::OpenLiveStream(const PVR_CHANNEL &channelinfo)
         // long blocking from now on
         m_streamingclient->set_non_blocking(1);
 
-        snprintf(line, sizeof(line), "http://%s:%d/live?channel=%d&client=XBMC", g_szHostname.c_str(), g_iPort, channelinfo.iChannelNumber);
+        if (channelinfo.iSubChannelNumber == 0)
+          snprintf(line, sizeof(line), "http://%s:%d/live?channel=%d&client=XBMC", g_szHostname.c_str(), g_iPort, channelinfo.iChannelNumber);
+        else
+          snprintf(line, sizeof(line), "http://%s:%d/live?channel=%d.%d&client=XBMC", g_szHostname.c_str(), g_iPort, channelinfo.iChannelNumber, channelinfo.iSubChannelNumber);
         m_PlaybackURL = line;
 
 
