@@ -52,6 +52,7 @@ extern bool g_bDownloadGuideArtwork;
 
 #define HTTP_OK 200
 #define HTTP_NOTFOUND 404
+#define HTTP_BADREQUEST 400
 
 
 const char SAFE[256] =
@@ -2265,6 +2266,11 @@ int cPVRClientNextPVR::DoRequest(const char *resource, CStdString &response)
       response.append(buffer);
     XBMC->CloseFile(fileHandle);
     resultCode = HTTP_OK;
+    if (response.empty() || strstr(response.c_str(), "<rsp stat=\"ok\">") == NULL)
+    {
+      XBMC->Log(LOG_DEBUG, "DoRequest failed, response=\n%s", response.c_str());
+      resultCode = HTTP_BADREQUEST;
+    }
   }
   
   return resultCode;
