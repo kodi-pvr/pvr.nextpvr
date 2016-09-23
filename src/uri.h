@@ -21,13 +21,13 @@
 namespace uri
 {
   /// Char class.
-  enum char_class_e
+  typedef enum char_class_e : signed char
   {
     CINV = -2, ///< invalid
     CEND = -1, ///< end delimitor
     CVAL = 0,  ///< valid any position
     CVA2 = 1,  ///< valid anywhere but 1st position
-  };
+  } char_class_e_type;
 
   /// Traits used for parsing and encoding components.
   struct traits
@@ -35,7 +35,7 @@ namespace uri
     const char* begin_cstring; ///< begin cstring (or 0 if none)
     const char begin_char;     ///< begin char (or 0 if none)
     const char end_char;       ///< end char (or 0 if none)
-    char char_class[256];      ///< map of char to class
+    const char_class_e_type char_class[256];      ///< map of char to class
   };
 
   /**
