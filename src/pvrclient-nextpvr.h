@@ -26,6 +26,7 @@
 /* Local includes */
 #include "Socket.h"
 #include "p8-platform/threads/mutex.h"
+#include "p8-platform/threads/threads.h"
 #include "RingBuffer.h"
 #include "liveshift.h"
 
@@ -67,7 +68,7 @@ typedef enum
   NEXTPVR_LIMIT_10 = 10
 } nextpvr_recordinglimit_t;
 
-class cPVRClientNextPVR
+class cPVRClientNextPVR : P8PLATFORM::CThread
 {
 public:
   /* Class interface */
@@ -136,6 +137,9 @@ public:
   long long SeekRecordedStream(long long iPosition, int iWhence = SEEK_SET);
   long long LengthRecordedStream(void);
   long long PositionRecordedStream(void);
+
+  /* background connection monitoring */
+  void *Process(void);
 
 protected:
   NextPVR::Socket           *m_tcpclient;

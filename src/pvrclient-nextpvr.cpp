@@ -133,10 +133,14 @@ cPVRClientNextPVR::cPVRClientNextPVR()
 
   m_lastRecordingUpdateTime = MAXINT64;  // time of last recording check - force forever
   m_incomingStreamBuffer.Create(188*2000);
+  
+  CreateThread(false);
 }
 
 cPVRClientNextPVR::~cPVRClientNextPVR()
 {
+  StopThread();
+
   XBMC->Log(LOG_DEBUG, "->~cPVRClientNextPVR()");
   if (m_bConnected)
     Disconnect();
@@ -343,9 +347,15 @@ bool cPVRClientNextPVR::IsUp()
   return m_bConnected;
 }
 
-
-
-
+void *cPVRClientNextPVR::Process(void)
+{
+  while (!IsStopped())
+  {    
+    IsUp();
+    Sleep(2500);
+  }
+  return NULL;
+}
 
 /************************************************************/
 /** General handling */

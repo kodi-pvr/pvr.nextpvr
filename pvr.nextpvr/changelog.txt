@@ -1,3 +1,6 @@
+v2.4.7
+- fixed issue where the recording/timers lists were no longer automatically updating
+
 v2.4.6
 - prevent crash if invalid or missing XML is received
 
