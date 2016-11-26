@@ -747,7 +747,7 @@ void DemuxFlush(void) {}
 PVR_ERROR SetRecordingPlayCount(const PVR_RECORDING &recording, int count) { return PVR_ERROR_NOT_IMPLEMENTED; }
 unsigned int GetChannelSwitchDelay(void) { return 0; }
 
-bool SeekTime(int,bool,double*) { return false; }
+bool SeekTime(double,bool,double*) { return false; }
 void SetSpeed(int) {};
 bool IsTimeshifting(void) { return false; }
 bool IsRealTimeStream(void) { return true; }
