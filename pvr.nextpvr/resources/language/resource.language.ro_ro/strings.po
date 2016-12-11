@@ -34,7 +34,7 @@ msgstr "Activează decalajul temporal cu televiziunea în direct"
 
 msgctxt "#30004"
 msgid "Download TV Guide Artwork"
-msgstr "Descarcă creație artistică ghid tv"
+msgstr "Descarcă lucrare de artă ghid tv"
 
 msgctxt "#30040"
 msgid "Connection"
@@ -46,7 +46,7 @@ msgstr "Avansat"
 
 msgctxt "#30050"
 msgid "NextPVR server is too old."
-msgstr "Serverul NextPVR este prea vechi."
+msgstr "Servitorul NextPVR este prea vechi."
 
 msgctxt "#30051"
 msgid "Upgrade to '%s' or higher!"

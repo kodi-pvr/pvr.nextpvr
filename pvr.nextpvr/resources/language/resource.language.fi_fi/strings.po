@@ -30,7 +30,7 @@ msgstr "NextPVR-PIN-koodi"
 
 msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
-msgstr "Käytä ajansiirtoa tv-lähetyksissä"
+msgstr "Käytä ajansiirtoa"
 
 msgctxt "#30004"
 msgid "Download TV Guide Artwork"

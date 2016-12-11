@@ -16,9 +16,113 @@ msgstr ""
 "Language: szl\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
+msgctxt "#30000"
+msgid "NextPVR Hostname"
+msgstr "Miano lebo adresa serwera"
+
+msgctxt "#30001"
+msgid "NextPVR Port (usually 8866 or 7799)"
+msgstr "Port (zaôbycz 8866 lebo 7799)"
+
+msgctxt "#30002"
+msgid "NextPVR PinCode"
+msgstr "Kod PIN"
+
+msgctxt "#30003"
+msgid "Enable TimeShift with Live TV"
+msgstr "Aktywuj funkcyjõ timeshift"
+
+msgctxt "#30004"
+msgid "Download TV Guide Artwork"
+msgstr "Sebiyrej grafiki do EPG"
+
+msgctxt "#30040"
+msgid "Connection"
+msgstr "Skuplowanie"
+
 msgctxt "#30041"
 msgid "Advanced"
 msgstr "Zaawansowane"
+
+msgctxt "#30050"
+msgid "NextPVR server is too old."
+msgstr "Serwer NextPVR je w za staryj wersyje. "
+
+msgctxt "#30051"
+msgid "Upgrade to '%s' or higher!"
+msgstr "Zainstaluj wersyjõ '%s' lebo nowszõ!"
+
+msgctxt "#30052"
+msgid "Connection failed. Incorrect PIN?"
+msgstr "Niypodarzōne skuplowanie. Niynŏleżny PIN?"
+
+msgctxt "#30053"
+msgid "Tuner no longer available"
+msgstr "Tuner je niydostympny"
+
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "Jednorazowo (manualnie)"
+
+msgctxt "#30141"
+msgid "One time (guide)"
+msgstr "Jednorazowo (ôkludzŏcz)"
+
+msgctxt "#30142"
+msgid "Repeating (manual)"
+msgstr "Cyklicznie (manualnie)"
+
+msgctxt "#30143"
+msgid "Repeating (guide)"
+msgstr "Cyklicznie (ôkludzŏcz)"
+
+msgctxt "#30144"
+msgid "Child Recording"
+msgstr "Nagrowanie potōmne"
+
+msgctxt "#30145"
+msgid "Repeating (keyword)"
+msgstr "Cyklicznie (słowo iste)"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "Wszyjske nagrania"
+
+msgctxt "#30151"
+msgid "1 Recording"
+msgstr "1 Nagranie"
+
+msgctxt "#30152"
+msgid "2 Recordings"
+msgstr "2 Nagrania"
+
+msgctxt "#30153"
+msgid "3 Recordings"
+msgstr "3 Nagrania"
+
+msgctxt "#30154"
+msgid "4 Recordings"
+msgstr "4 Nagrania"
+
+msgctxt "#30155"
+msgid "5 Recordings"
+msgstr "5 Nagrań"
+
+msgctxt "#30156"
+msgid "6 Recordings"
+msgstr "6 Nagrań"
+
+msgctxt "#30157"
+msgid "7 Recordings"
+msgstr "7 Nagrań"
+
+msgctxt "#30158"
+msgid "10 Recordings"
+msgstr "10 Nagrań"
+
+msgctxt "#30160"
+msgid "New Only"
+msgstr "Ino nowe"
 
 msgctxt "#30161"
 msgid "All"

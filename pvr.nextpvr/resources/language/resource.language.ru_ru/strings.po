@@ -76,6 +76,10 @@ msgctxt "#30143"
 msgid "Repeating (guide)"
 msgstr "Повторяющийся (программа)"
 
+msgctxt "#30145"
+msgid "Repeating (keyword)"
+msgstr "Повторяющийся (ключевое слово)"
+
 msgctxt "#30150"
 msgid "All Recordings"
 msgstr "Все Записи"
