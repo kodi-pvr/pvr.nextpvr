@@ -18,7 +18,7 @@ msgstr ""
 
 msgctxt "#30000"
 msgid "NextPVR Hostname"
-msgstr "Nom de màquina del NextPVR"
+msgstr "Nom d'amfitrió de NextPVR"
 
 msgctxt "#30001"
 msgid "NextPVR Port (usually 8866 or 7799)"
@@ -30,7 +30,7 @@ msgstr "Codi PIN del NextPVR"
 
 msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
-msgstr "Habilita els salts en el temps amb la televisió en directe"
+msgstr "Habilita els salts en el temps amb la TV en directe"
 
 msgctxt "#30040"
 msgid "Connection"
@@ -56,10 +56,62 @@ msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "El sintonitzador ja no està disponible"
 
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "Un cop (manual)"
+
+msgctxt "#30141"
+msgid "One time (guide)"
+msgstr "Un cop (guia)"
+
+msgctxt "#30142"
+msgid "Repeating (manual)"
+msgstr "Repetició (manual)"
+
+msgctxt "#30143"
+msgid "Repeating (guide)"
+msgstr "Repetició (guia)"
+
+msgctxt "#30145"
+msgid "Repeating (keyword)"
+msgstr "Repetició (paraula clau)"
+
 msgctxt "#30150"
 msgid "All Recordings"
 msgstr "Tots els enregistraments"
 
+msgctxt "#30151"
+msgid "1 Recording"
+msgstr "1 enregistrament"
+
+msgctxt "#30152"
+msgid "2 Recordings"
+msgstr "2 enregistraments"
+
+msgctxt "#30153"
+msgid "3 Recordings"
+msgstr "3 enregistraments"
+
+msgctxt "#30154"
+msgid "4 Recordings"
+msgstr "4 enregistraments"
+
+msgctxt "#30155"
+msgid "5 Recordings"
+msgstr "5 enregistraments"
+
+msgctxt "#30156"
+msgid "6 Recordings"
+msgstr "6 enregistraments"
+
+msgctxt "#30157"
+msgid "7 Recordings"
+msgstr "7 enregistraments"
+
+msgctxt "#30158"
+msgid "10 Recordings"
+msgstr "10 enregistraments"
+
 msgctxt "#30161"
 msgid "All"
-msgstr "Totes"
+msgstr "Tot"

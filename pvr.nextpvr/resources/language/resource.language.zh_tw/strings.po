@@ -32,6 +32,10 @@ msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
 msgstr "直播電視啟用時光平移（TimeShift）"
 
+msgctxt "#30004"
+msgid "Download TV Guide Artwork"
+msgstr "下載電視節目指南的美術圖"
+
 msgctxt "#30040"
 msgid "Connection"
 msgstr "連接"
@@ -42,7 +46,7 @@ msgstr "進階"
 
 msgctxt "#30050"
 msgid "NextPVR server is too old."
-msgstr "NextPVR服務器太舊了"
+msgstr "NextPVR伺服器太舊了"
 
 msgctxt "#30051"
 msgid "Upgrade to '%s' or higher!"
@@ -54,7 +58,71 @@ msgstr "連接失敗。不正確的PIN碼？"
 
 msgctxt "#30053"
 msgid "Tuner no longer available"
-msgstr "調諧器已無法使用"
+msgstr "選台器已無法使用"
+
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "單次 (首動)"
+
+msgctxt "#30141"
+msgid "One time (guide)"
+msgstr "單次 (節目指南)"
+
+msgctxt "#30142"
+msgid "Repeating (manual)"
+msgstr "重複 (手動)"
+
+msgctxt "#30143"
+msgid "Repeating (guide)"
+msgstr "重複 (節目指南)"
+
+msgctxt "#30144"
+msgid "Child Recording"
+msgstr "錄影子集"
+
+msgctxt "#30145"
+msgid "Repeating (keyword)"
+msgstr "重複 (關鍵字)"
+
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr "所有錄影檔"
+
+msgctxt "#30151"
+msgid "1 Recording"
+msgstr "1個錄影檔"
+
+msgctxt "#30152"
+msgid "2 Recordings"
+msgstr "2個錄影檔"
+
+msgctxt "#30153"
+msgid "3 Recordings"
+msgstr "3個錄影檔"
+
+msgctxt "#30154"
+msgid "4 Recordings"
+msgstr "4個錄影檔"
+
+msgctxt "#30155"
+msgid "5 Recordings"
+msgstr "5個錄影檔"
+
+msgctxt "#30156"
+msgid "6 Recordings"
+msgstr "6個錄影檔"
+
+msgctxt "#30157"
+msgid "7 Recordings"
+msgstr "7個錄影檔"
+
+msgctxt "#30158"
+msgid "10 Recordings"
+msgstr "10個錄影檔"
+
+msgctxt "#30160"
+msgid "New Only"
+msgstr "僅新番"
 
 msgctxt "#30161"
 msgid "All"
