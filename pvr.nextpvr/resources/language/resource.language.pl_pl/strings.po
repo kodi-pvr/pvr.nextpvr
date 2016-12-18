@@ -78,7 +78,7 @@ msgstr "Cyklicznie (przewodnik)"
 
 msgctxt "#30144"
 msgid "Child Recording"
-msgstr "Nagrywanie dzieci"
+msgstr "Nagrywanie potomków"
 
 msgctxt "#30145"
 msgid "Repeating (keyword)"
