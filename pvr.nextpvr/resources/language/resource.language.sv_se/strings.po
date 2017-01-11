@@ -46,11 +46,11 @@ msgstr "Avancerad"
 
 msgctxt "#30050"
 msgid "NextPVR server is too old."
-msgstr "NextPVR-server är för gammal"
+msgstr "NextPVR-servern är för gammal"
 
 msgctxt "#30051"
 msgid "Upgrade to '%s' or higher!"
-msgstr "Uppgradera till '%s' eller nyare"
+msgstr "Uppgradera till '%s' eller nyare!"
 
 msgctxt "#30052"
 msgid "Connection failed. Incorrect PIN?"
@@ -70,15 +70,19 @@ msgstr "En gång (guide)"
 
 msgctxt "#30142"
 msgid "Repeating (manual)"
-msgstr "Upprepat (manuell)"
+msgstr "Upprepande (manuell)"
 
 msgctxt "#30143"
 msgid "Repeating (guide)"
-msgstr "Upprepat (guide)"
+msgstr "Upprepande (guide)"
+
+msgctxt "#30144"
+msgid "Child Recording"
+msgstr "Spela in barn"
 
 msgctxt "#30145"
 msgid "Repeating (keyword)"
-msgstr "Återupprepande (nyckelord)"
+msgstr "Upprepande (nyckelord)"
 
 msgctxt "#30150"
 msgid "All Recordings"
