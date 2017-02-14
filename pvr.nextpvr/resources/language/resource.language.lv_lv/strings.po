@@ -34,7 +34,7 @@ msgstr "Ieslēgt laika nobīdi tiešraides TV"
 
 msgctxt "#30040"
 msgid "Connection"
-msgstr "Savienojums"
+msgstr "Pieslēgums"
 
 msgctxt "#30041"
 msgid "Advanced"
@@ -50,7 +50,7 @@ msgstr "Janiniet uz '%s' vai augstāku!"
 
 msgctxt "#30052"
 msgid "Connection failed. Incorrect PIN?"
-msgstr "Savienojums neizdevās. Vai nepareizs PIN?"
+msgstr "Pieslēgums neizdevās. Vai nepareizs PIN?"
 
 msgctxt "#30053"
 msgid "Tuner no longer available"
