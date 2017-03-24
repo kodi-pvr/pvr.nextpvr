@@ -112,6 +112,10 @@ msgctxt "#30158"
 msgid "10 Recordings"
 msgstr "10 enregistraments"
 
+msgctxt "#30160"
+msgid "New Only"
+msgstr "Només nous"
+
 msgctxt "#30161"
 msgid "All"
 msgstr "Tot"
