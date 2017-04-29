@@ -128,19 +128,6 @@ ADDON_STATUS ADDON_GetStatus()
   return m_CurStatus;
 }
 
-//-- HasSettings --------------------------------------------------------------
-// Report "true", yes this AddOn have settings
-//-----------------------------------------------------------------------------
-bool ADDON_HasSettings()
-{
-  return true;
-}
-
-unsigned int ADDON_GetSettings(ADDON_StructSetting ***sSet)
-{
-  return 0;
-}
-
 void ADDON_ReadSettings(void)
 {
   /* Read setting "host" from settings.xml */
@@ -259,11 +246,6 @@ ADDON_STATUS ADDON_SetSetting(const char *settingName, const void *settingValue)
 void ADDON_Stop()
 {
   ADDON_Destroy();
-}
-
-void ADDON_FreeSettings()
-{
-
 }
 
 /***********************************************************
