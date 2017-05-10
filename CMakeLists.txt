@@ -24,6 +24,16 @@ set(NEXTPVR_SOURCES src/client.cpp
                     src/Socket.cpp
                     src/uri.cpp)
 
+set(NEXTPVR_HEADERS src/client.h
+                    src/FileUtils.h
+                    src/liveshift.h
+                    src/md5.h
+                    src/os-dependent.h
+                    src/pvrclient-nextpvr.h
+                    src/RingBuffer.h
+                    src/Socket.h
+                    src/uri.h)
+
 SET(DEPLIBS ${p8-platform_LIBRARIES}
             ${TINYXML_LIBRARIES})
 if(WIN32)
