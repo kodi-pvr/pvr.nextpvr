@@ -26,11 +26,11 @@ msgstr "Gátt fyrir NextPVR (vanalega 8866 eða 7799)"
 
 msgctxt "#30002"
 msgid "NextPVR PinCode"
-msgstr "NextPVR Pinkóði"
+msgstr "PIN-kóði NextPVR"
 
 msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
-msgstr "Virkja Tímahliðrun með Live TV"
+msgstr "Virkja tímahliðrun með beinum útsendingum"
 
 msgctxt "#30040"
 msgid "Connection"
@@ -42,7 +42,7 @@ msgstr "Ítarlegt"
 
 msgctxt "#30050"
 msgid "NextPVR server is too old."
-msgstr "NextPVR miðlari er of gamall."
+msgstr "NextPVR-miðlari er of gamall."
 
 msgctxt "#30051"
 msgid "Upgrade to '%s' or higher!"
@@ -55,6 +55,26 @@ msgstr "Tenging mistókst. Rangt PIN?"
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Móttakari ekki lengur tiltækur"
+
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "Eitt skipti (handvirkt)"
+
+msgctxt "#30141"
+msgid "One time (guide)"
+msgstr "Eitt skipti (dagskrárvísir)"
+
+msgctxt "#30142"
+msgid "Repeating (manual)"
+msgstr "Endurtekið (handvirkt)"
+
+msgctxt "#30143"
+msgid "Repeating (guide)"
+msgstr "Endurtekið (dagskrá)"
+
+msgctxt "#30145"
+msgid "Repeating (keyword)"
+msgstr "Endurtekið (stikkorð)"
 
 msgctxt "#30150"
 msgid "All Recordings"
