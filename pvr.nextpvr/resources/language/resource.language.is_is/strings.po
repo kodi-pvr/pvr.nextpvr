@@ -32,6 +32,10 @@ msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
 msgstr "Virkja tímahliðrun með beinum útsendingum"
 
+msgctxt "#30004"
+msgid "Download TV Guide Artwork"
+msgstr "Sækja myndefni dagskrár"
+
 msgctxt "#30040"
 msgid "Connection"
 msgstr "Tenging"
@@ -46,7 +50,7 @@ msgstr "NextPVR-miðlari er of gamall."
 
 msgctxt "#30051"
 msgid "Upgrade to '%s' or higher!"
-msgstr "Uppfærðu uppí '%s' eða nýrri!"
+msgstr "Uppfærðu í '%s' eða nýrri!"
 
 msgctxt "#30052"
 msgid "Connection failed. Incorrect PIN?"
@@ -72,13 +76,53 @@ msgctxt "#30143"
 msgid "Repeating (guide)"
 msgstr "Endurtekið (dagskrá)"
 
+msgctxt "#30144"
+msgid "Child Recording"
+msgstr "Afleidd upptaka"
+
 msgctxt "#30145"
 msgid "Repeating (keyword)"
 msgstr "Endurtekið (stikkorð)"
 
 msgctxt "#30150"
 msgid "All Recordings"
-msgstr "Allar Upptökur"
+msgstr "Allar upptökur"
+
+msgctxt "#30151"
+msgid "1 Recording"
+msgstr "1 upptaka"
+
+msgctxt "#30152"
+msgid "2 Recordings"
+msgstr "2 upptökur"
+
+msgctxt "#30153"
+msgid "3 Recordings"
+msgstr "3 upptökur"
+
+msgctxt "#30154"
+msgid "4 Recordings"
+msgstr "4 upptökur"
+
+msgctxt "#30155"
+msgid "5 Recordings"
+msgstr "5 upptökur"
+
+msgctxt "#30156"
+msgid "6 Recordings"
+msgstr "6 upptökur"
+
+msgctxt "#30157"
+msgid "7 Recordings"
+msgstr "7 upptökur"
+
+msgctxt "#30158"
+msgid "10 Recordings"
+msgstr "10 upptökur"
+
+msgctxt "#30160"
+msgid "New Only"
+msgstr "Einungis nýtt"
 
 msgctxt "#30161"
 msgid "All"
