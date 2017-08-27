@@ -76,6 +76,10 @@ msgctxt "#30143"
 msgid "Repeating (guide)"
 msgstr "Repetición (guía)"
 
+msgctxt "#30145"
+msgid "Repeating (keyword)"
+msgstr "Repetición (palabra chave)"
+
 msgctxt "#30150"
 msgid "All Recordings"
 msgstr "Todas as gravacións"

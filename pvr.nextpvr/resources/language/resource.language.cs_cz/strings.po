@@ -18,11 +18,11 @@ msgstr ""
 
 msgctxt "#30000"
 msgid "NextPVR Hostname"
-msgstr "Název počítače NextPVR"
+msgstr "Název hostitele NextPVR"
 
 msgctxt "#30001"
 msgid "NextPVR Port (usually 8866 or 7799)"
-msgstr "Port NextPVR (většinou 8866, nebo 7799)"
+msgstr "Port NextPVR (obvykle 8866 nebo 7799)"
 
 msgctxt "#30002"
 msgid "NextPVR PinCode"
@@ -34,7 +34,7 @@ msgstr "Povolit časový posun u živého visílání"
 
 msgctxt "#30004"
 msgid "Download TV Guide Artwork"
-msgstr "Stáhni artwork pro EPG"
+msgstr "Stáhnout artwork pro televizní program"
 
 msgctxt "#30040"
 msgid "Connection"
@@ -42,7 +42,7 @@ msgstr "Spojení"
 
 msgctxt "#30041"
 msgid "Advanced"
-msgstr "Pokročilé"
+msgstr "Rozšířené"
 
 msgctxt "#30050"
 msgid "NextPVR server is too old."
@@ -50,11 +50,11 @@ msgstr "Server NextPVR je příliš starý."
 
 msgctxt "#30051"
 msgid "Upgrade to '%s' or higher!"
-msgstr "Aktualizujte na '%s', nebo novější."
+msgstr "Upgradujte na '%s' nebo vyšší!"
 
 msgctxt "#30052"
 msgid "Connection failed. Incorrect PIN?"
-msgstr "Spojení selhalo. Špatný PIN?"
+msgstr "Spojení selhalo. Nesprávný PIN?"
 
 msgctxt "#30053"
 msgid "Tuner no longer available"
@@ -62,19 +62,19 @@ msgstr "Tuner již není dostupný"
 
 msgctxt "#30140"
 msgid "One time (manual)"
-msgstr "Jednou (manuálně)"
+msgstr "Jednou (ručně)"
 
 msgctxt "#30141"
 msgid "One time (guide)"
-msgstr "Jednou (podle programu)"
+msgstr "Jednou (program)"
 
 msgctxt "#30142"
 msgid "Repeating (manual)"
-msgstr "Opakovaný (manuální)"
+msgstr "Opakovaný (ručně)"
 
 msgctxt "#30143"
 msgid "Repeating (guide)"
-msgstr "Opakovaný (podle programu)"
+msgstr "Opakovaný (program)"
 
 msgctxt "#30144"
 msgid "Child Recording"
@@ -82,7 +82,7 @@ msgstr "Dětské nahrávky"
 
 msgctxt "#30145"
 msgid "Repeating (keyword)"
-msgstr "Opakování(klíčové slovo)"
+msgstr "Opakovaný (klíčové slovo)"
 
 msgctxt "#30150"
 msgid "All Recordings"
@@ -90,35 +90,35 @@ msgstr "Všechny nahrávky"
 
 msgctxt "#30151"
 msgid "1 Recording"
-msgstr "1 Nahrávka"
+msgstr "1 nahrávka"
 
 msgctxt "#30152"
 msgid "2 Recordings"
-msgstr "2 Nahrávky"
+msgstr "2 nahrávky"
 
 msgctxt "#30153"
 msgid "3 Recordings"
-msgstr "3 Nahrávky"
+msgstr "3 nahrávky"
 
 msgctxt "#30154"
 msgid "4 Recordings"
-msgstr "4 Nahrávky"
+msgstr "4 nahrávky"
 
 msgctxt "#30155"
 msgid "5 Recordings"
-msgstr "5 Nahrávek"
+msgstr "5 nahrávek"
 
 msgctxt "#30156"
 msgid "6 Recordings"
-msgstr "6 Nahrávek"
+msgstr "6 nahrávek"
 
 msgctxt "#30157"
 msgid "7 Recordings"
-msgstr "7 Nahrávek"
+msgstr "7 nahrávek"
 
 msgctxt "#30158"
 msgid "10 Recordings"
-msgstr "10 Nahrávek"
+msgstr "10 nahrávek"
 
 msgctxt "#30160"
 msgid "New Only"
