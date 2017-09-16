@@ -93,7 +93,8 @@ public:
   /* Channel handling */
   int GetNumChannels(void);
   PVR_ERROR GetChannels(ADDON_HANDLE handle, bool bRadio);  
-
+  PVR_ERROR GetChannelStreamProperties(const PVR_CHANNEL*, PVR_NAMED_VALUE*, unsigned int*);
+  
   /* Channel group handling */
   int GetChannelGroupsAmount(void);
   PVR_ERROR GetChannelGroups(ADDON_HANDLE handle, bool bRadio);
@@ -107,7 +108,8 @@ public:
   PVR_ERROR SetRecordingLastPlayedPosition(const PVR_RECORDING &recording, int lastplayedposition);
   int GetRecordingLastPlayedPosition(const PVR_RECORDING &recording);
   PVR_ERROR GetRecordingEdl(const PVR_RECORDING& recording, PVR_EDL_ENTRY[], int *size);
-
+  PVR_ERROR GetRecordingStreamProperties(const PVR_RECORDING*, PVR_NAMED_VALUE*, unsigned int*);
+  
   /* Timer handling */
   int GetNumTimers(void);
   PVR_ERROR GetTimerTypes(PVR_TIMER_TYPE types[], int *size);
@@ -121,9 +123,7 @@ public:
   bool OpenLiveStream(const PVR_CHANNEL &channel);
   void CloseLiveStream();
   int ReadLiveStream(unsigned char *pBuffer, unsigned int iBufferSize);
-  bool SwitchChannel(const PVR_CHANNEL &channel);
   PVR_ERROR SignalStatus(PVR_SIGNAL_STATUS &signalStatus);
-  const char* GetLiveStreamURL(const PVR_CHANNEL &channel);
   long long SeekLiveStream(long long iPosition, int iWhence = SEEK_SET);
   long long LengthLiveStream(void);
   long long PositionLiveStream(void);
@@ -175,6 +175,7 @@ private:
 
   CStdString              m_PlaybackURL;
   LiveShiftSource        *m_pLiveShiftSource;
+  unsigned int            m_iLiveStreamUID;
 
   int64_t                 m_lastRecordingUpdateTime;
 

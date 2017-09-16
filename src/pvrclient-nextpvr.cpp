@@ -461,7 +461,7 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, const PVR_CHANNEL &chan
 
         broadcast.iUniqueBroadcastId  = atoi(pListingNode->FirstChildElement("id")->FirstChild()->Value());
         broadcast.strTitle            = title;
-        broadcast.iChannelNumber      = channel.iChannelNumber;
+        broadcast.iUniqueChannelId    = channel.iUniqueId;
         broadcast.startTime           = atol(start);
         broadcast.endTime             = atol(end);
         broadcast.strPlotOutline      = NULL; //unused
@@ -754,7 +754,22 @@ PVR_ERROR cPVRClientNextPVR::GetChannelGroups(ADDON_HANDLE handle, bool bRadio)
   return PVR_ERROR_NO_ERROR;
 }
 
+PVR_ERROR cPVRClientNextPVR::GetChannelStreamProperties(const PVR_CHANNEL* channel, PVR_NAMED_VALUE* props, unsigned int* prop_size)
+{
+  if (OpenLiveStream(*channel) == true)
+  {
+    if (!m_PlaybackURL.empty())
+    {
+      PVR_STRCPY(props[0].strName, PVR_STREAM_PROPERTY_STREAMURL);
+      PVR_STRCPY(props[0].strValue, m_PlaybackURL.c_str());
+      *prop_size = 1;
+      return PVR_ERROR_NO_ERROR;
+    }
+    return PVR_ERROR_UNKNOWN;
+  }
 
+  return PVR_ERROR_FAILED;
+}
 
 PVR_ERROR cPVRClientNextPVR::GetChannelGroupMembers(ADDON_HANDLE handle, const PVR_CHANNEL_GROUP &group)
 {
@@ -871,10 +886,6 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
         snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=recording.fanart&sid=%s&recording_id=%s", g_szHostname.c_str(), g_iPort, m_sid, tag.strRecordingId);
         PVR_STRCPY(tag.strFanartPath, artworkPath);
 
-        CStdString strStream;
-        strStream.Format("http://%s:%d/live?recording=%s", g_szHostname, g_iPort, tag.strRecordingId);
-        strncpy(tag.strStreamURL, strStream.c_str(), sizeof(tag.strStreamURL)); 
-
         /* TODO: PVR API 5.0.0: Implement this */
         tag.iChannelUid = PVR_CHANNEL_INVALID_UID;
 
@@ -912,10 +923,6 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
 
         tag.recordingTime = atoi(pRecordingNode->FirstChildElement("start_time_ticks")->FirstChild()->Value());
         tag.iDuration = atoi(pRecordingNode->FirstChildElement("duration_seconds")->FirstChild()->Value());
-
-        CStdString strStream;
-        strStream.Format("http://%s:%d/live?recording=%s", g_szHostname, g_iPort, tag.strRecordingId);
-        strncpy(tag.strStreamURL, strStream.c_str(), sizeof(tag.strStreamURL)); 
 
         /* TODO: PVR API 5.0.0: Implement this */
         tag.iChannelUid = PVR_CHANNEL_INVALID_UID;
@@ -1025,6 +1032,17 @@ PVR_ERROR cPVRClientNextPVR::GetRecordingEdl(const PVR_RECORDING& recording, PVR
   }
   return PVR_ERROR_FAILED;
 }
+
+PVR_ERROR cPVRClientNextPVR::GetRecordingStreamProperties(const PVR_RECORDING* recording, PVR_NAMED_VALUE* props, unsigned int* prop_size)
+{
+  char line[256];
+  snprintf(line, sizeof(line), "http://%s:%d/live?recording=%s", g_szHostname.c_str(), g_iPort, recording->strRecordingId);
+  PVR_STRCPY(props[0].strName, PVR_STREAM_PROPERTY_STREAMURL);
+  PVR_STRCPY(props[0].strValue, line);
+  *prop_size = 1;
+  return PVR_ERROR_NO_ERROR;
+}
+
 
 /************************************************************/
 /** Timer handling */
@@ -1734,121 +1752,125 @@ PVR_ERROR cPVRClientNextPVR::UpdateTimer(const PVR_TIMER &timerinfo)
 
 /************************************************************/
 /** Live stream handling */
-
 bool cPVRClientNextPVR::OpenLiveStream(const PVR_CHANNEL &channelinfo)
 {
+  if (channelinfo.iUniqueId == m_iLiveStreamUID)
+  {
+    XBMC->Log(LOG_NOTICE, "New channel uid equal to the already streaming channel. Skip re-tune.");
+    return true;
+  }
+  
   m_PlaybackURL = "";
+  m_iLiveStreamUID = 0;
 
   XBMC->Log(LOG_DEBUG, "OpenLiveStream(%d:%s) (oid=%d)", channelinfo.iChannelNumber, channelinfo.strChannelName, channelinfo.iUniqueId);
-  if (strstr(channelinfo.strStreamURL, "live?channel") == NULL)
+  if (m_pLiveShiftSource != NULL)
   {
-    if (m_pLiveShiftSource != NULL)
-    {
-      XBMC->Log(LOG_DEBUG, "OpenLiveStream() informing NextPVR of existing channel stream closing");
+    XBMC->Log(LOG_DEBUG, "OpenLiveStream() informing NextPVR of existing channel stream closing");
 
-      char request[512];
-      sprintf(request, "/service?method=channel.stop");
-      CStdString response;
-      DoRequest(request, response);
+    char request[512];
+    sprintf(request, "/service?method=channel.stop");
+    CStdString response;
+    DoRequest(request, response);
 
-      m_pLiveShiftSource->Close();
-      delete m_pLiveShiftSource;
-      m_pLiveShiftSource = NULL;
-    }
+    m_pLiveShiftSource->Close();
+    delete m_pLiveShiftSource;
+    m_pLiveShiftSource = NULL;
+  }
 
-    if (!m_streamingclient->create())
-    {
-      XBMC->Log(LOG_ERROR, "Could not connect create streaming socket");
-      return false;
-    }
+  if (!m_streamingclient->create())
+  {
+    XBMC->Log(LOG_ERROR, "Could not connect create streaming socket");
+    return false;
+  }
 
-    m_incomingStreamBuffer.Clear();
+  m_incomingStreamBuffer.Clear();
 
-    if (!m_streamingclient->connect(g_szHostname, g_iPort))
-    {
-      XBMC->Log(LOG_ERROR, "Could not connect to NextPVR backend for streaming");
-      return false;
-    }
+  if (!m_streamingclient->connect(g_szHostname, g_iPort))
+  {
+    XBMC->Log(LOG_ERROR, "Could not connect to NextPVR backend for streaming");
+    return false;
+  }
 
-    if (m_pLiveShiftSource != NULL)
-    {
-      delete m_pLiveShiftSource;
-      m_pLiveShiftSource = NULL;
-    }
-    
-    char mode[32];
-    memset(mode, 0, sizeof(mode));
-    if (channelinfo.bIsRadio == false && m_supportsLiveTimeshift && g_bUseTimeshift)
-      strcpy(mode, "&mode=liveshift");
-
-    char line[256];
-    if (channelinfo.iSubChannelNumber == 0)
-      sprintf(line, "GET /live?channel=%d%s&client=XBMC-%s HTTP/1.0\r\n", channelinfo.iChannelNumber, mode, m_sid);
-    else
-      sprintf(line, "GET /live?channel=%d.%d%s&client=XBMC-%s HTTP/1.0\r\n", channelinfo.iChannelNumber, channelinfo.iSubChannelNumber, mode, m_sid);
-
-    m_streamingclient->send(line, strlen(line));
-
-    sprintf(line, "Connection: close\r\n");
-    m_streamingclient->send(line, strlen(line));
-
-    sprintf(line, "\r\n");
-    m_streamingclient->send(line, strlen(line));
-
-    m_currentLivePosition = 0;
+  if (m_pLiveShiftSource != NULL)
+  {
+    delete m_pLiveShiftSource;
+    m_pLiveShiftSource = NULL;
+  }
   
-    XBMC->Log(LOG_DEBUG, "OpenLiveStream()@1");
+  char mode[32];
+  memset(mode, 0, sizeof(mode));
+  if (channelinfo.bIsRadio == false && m_supportsLiveTimeshift && g_bUseTimeshift)
+    strcpy(mode, "&mode=liveshift");
 
-    char buf[1024];
-    int read = m_streamingclient->receive(buf, sizeof buf, 0);
+  char line[256];
+  if (channelinfo.iSubChannelNumber == 0)
+    sprintf(line, "GET /live?channel=%d%s&client=XBMC-%s HTTP/1.0\r\n", channelinfo.iChannelNumber, mode, m_sid);
+  else
+    sprintf(line, "GET /live?channel=%d.%d%s&client=XBMC-%s HTTP/1.0\r\n", channelinfo.iChannelNumber, channelinfo.iSubChannelNumber, mode, m_sid);
 
-    XBMC->Log(LOG_DEBUG, "OpenLiveStream()@2");
+  m_streamingclient->send(line, strlen(line));
 
-    for (int i=0; i<read; i++)
+  sprintf(line, "Connection: close\r\n");
+  m_streamingclient->send(line, strlen(line));
+
+  sprintf(line, "\r\n");
+  m_streamingclient->send(line, strlen(line));
+
+  m_currentLivePosition = 0;
+
+  XBMC->Log(LOG_DEBUG, "OpenLiveStream()@1");
+
+  char buf[1024];
+  int read = m_streamingclient->receive(buf, sizeof buf, 0);
+
+  XBMC->Log(LOG_DEBUG, "OpenLiveStream()@2");
+
+  for (int i=0; i<read; i++)
+  {
+    if (buf[i] == '\r' && buf[i+1] == '\n' && buf[i+2] == '\r' && buf[i+3] == '\n')
     {
-      if (buf[i] == '\r' && buf[i+1] == '\n' && buf[i+2] == '\r' && buf[i+3] == '\n')
+      int remainder = read - (i+4);
+      if (remainder > 0)
       {
-        int remainder = read - (i+4);
-        if (remainder > 0)
-        {
-          m_incomingStreamBuffer.WriteData((char *)&buf[i+4], remainder);
-        }
-
-        char header[256];
-        if (i < sizeof(header))
-        {
-          memset(header, 0, sizeof(header));
-          memcpy(header, buf, i);
-          XBMC->Log(LOG_DEBUG, "%s", header);
-
-          if (strstr(header, "HTTP/1.1 404") != NULL)
-          {
-            XBMC->Log(LOG_DEBUG, "Unable to start channel. 404");
-            XBMC->QueueNotification(QUEUE_INFO, "Tuner not available");
-            return false;
-          }
-
-        }
-
-        // long blocking from now on
-        m_streamingclient->set_non_blocking(1);
-
-        if (channelinfo.iSubChannelNumber == 0)
-          snprintf(line, sizeof(line), "http://%s:%d/live?channel=%d&client=XBMC", g_szHostname.c_str(), g_iPort, channelinfo.iChannelNumber);
-        else
-          snprintf(line, sizeof(line), "http://%s:%d/live?channel=%d.%d&client=XBMC", g_szHostname.c_str(), g_iPort, channelinfo.iChannelNumber, channelinfo.iSubChannelNumber);
-        m_PlaybackURL = line;
-
-
-        if (channelinfo.bIsRadio == false && m_supportsLiveTimeshift && g_bUseTimeshift)
-        {
-          m_streamingclient->set_non_blocking(0); 
-          m_pLiveShiftSource = new LiveShiftSource(m_streamingclient);
-        }
-
-        XBMC->Log(LOG_DEBUG, "OpenLiveStream()@exit");
-        return true;
+        m_incomingStreamBuffer.WriteData((char *)&buf[i+4], remainder);
       }
+
+      char header[256];
+      if (i < sizeof(header))
+      {
+        memset(header, 0, sizeof(header));
+        memcpy(header, buf, i);
+        XBMC->Log(LOG_DEBUG, "%s", header);
+
+        if (strstr(header, "HTTP/1.1 404") != NULL)
+        {
+          XBMC->Log(LOG_DEBUG, "Unable to start channel. 404");
+          XBMC->QueueNotification(QUEUE_INFO, "Tuner not available");
+          return false;
+        }
+
+      }
+
+      // long blocking from now on
+      m_streamingclient->set_non_blocking(1);
+
+      if (channelinfo.iSubChannelNumber == 0)
+        snprintf(line, sizeof(line), "http://%s:%d/live?channel=%d&client=XBMC", g_szHostname.c_str(), g_iPort, channelinfo.iChannelNumber);
+      else
+        snprintf(line, sizeof(line), "http://%s:%d/live?channel=%d.%d&client=XBMC", g_szHostname.c_str(), g_iPort, channelinfo.iChannelNumber, channelinfo.iSubChannelNumber);
+      m_PlaybackURL = line;
+      m_iLiveStreamUID = channelinfo.iUniqueId;
+
+
+      if (channelinfo.bIsRadio == false && m_supportsLiveTimeshift && g_bUseTimeshift)
+      {
+        m_streamingclient->set_non_blocking(0); 
+        m_pLiveShiftSource = new LiveShiftSource(m_streamingclient);
+      }
+
+      XBMC->Log(LOG_DEBUG, "OpenLiveStream()@exit");
+      return true;
     }
   }
 
@@ -2005,20 +2027,6 @@ long long cPVRClientNextPVR::PositionLiveStream(void)
   return m_currentLivePosition;
 }
 
-bool cPVRClientNextPVR::SwitchChannel(const PVR_CHANNEL &channel)
-{
-  XBMC->Log(LOG_DEBUG, "SwitchChannel(%d:%s)", channel.iChannelNumber, channel.strChannelName);
-
-  // if we're already on the correct channel, then dont do anything
-  if (((int)channel.iUniqueId) == m_iCurrentChannel)
-    return true;
-
-  // open new stream
-  bool result = OpenLiveStream(channel);
-  return result;
-}
-
-
 PVR_ERROR cPVRClientNextPVR::SignalStatus(PVR_SIGNAL_STATUS &signalStatus)
 {
   // Not supported yet
@@ -2144,13 +2152,8 @@ bool cPVRClientNextPVR::OpenRecordedStream(const PVR_RECORDING &recording)
   m_currentRecordingPosition = 0;
   PVR_STRCLR(m_currentRecordingID);
 
-  if (strstr(recording.strStreamURL, "live?recording") == NULL)
-  {
-    PVR_STRCPY(m_currentRecordingID, recording.strRecordingId);
-    return OpenRecordingInternal(0);
-  }
-
-  return true;
+  PVR_STRCPY(m_currentRecordingID, recording.strRecordingId);
+  return OpenRecordingInternal(0);
 }
 
 void cPVRClientNextPVR::CloseRecordedStream(void)
@@ -2236,22 +2239,6 @@ long long  cPVRClientNextPVR::LengthRecordedStream(void)
   // not supported
   return -1;
 }
-
-const char* cPVRClientNextPVR::GetLiveStreamURL(const PVR_CHANNEL &channelinfo)
-{
-  string result;
-  XBMC->Log(LOG_DEBUG, "GetLiveStreamURL(uid=%i)", channelinfo.iUniqueId);
-  if (!OpenLiveStream(channelinfo))
-  {
-    return "";
-  }
-  else
-  {
-    return m_PlaybackURL.c_str();
-  }
-}
-
-
 
 /************************************************************/
 /** http handling */
