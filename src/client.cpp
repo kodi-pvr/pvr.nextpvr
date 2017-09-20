@@ -582,14 +582,6 @@ long long LengthLiveStream(void)
     return g_client->LengthLiveStream();
 }
 
-bool SwitchChannel(const PVR_CHANNEL &channelinfo)
-{
-  if (!g_client)
-    return false;
-  else
-    return g_client->SwitchChannel(channelinfo);
-}
-
 PVR_ERROR SignalStatus(PVR_SIGNAL_STATUS &signalStatus)
 {
   if (!g_client)
@@ -647,14 +639,6 @@ long long LengthRecordedStream(void)
     return g_client->LengthRecordedStream();
 }
 
-const char * GetLiveStreamURL(const PVR_CHANNEL &channel)
-{
-  if (!g_client)
-    return "";
-  else
-    return g_client->GetLiveStreamURL(channel);
-}
-
 bool CanPauseStream(void)
 {
   if (g_client)
@@ -694,6 +678,24 @@ PVR_ERROR GetRecordingEdl(const PVR_RECORDING &recording, PVR_EDL_ENTRY entries[
   return PVR_ERROR_SERVER_ERROR;
 }
 
+PVR_ERROR GetChannelStreamProperties(const PVR_CHANNEL* channel, PVR_NAMED_VALUE* props, unsigned int* prop_size)
+{
+  if ((!channel) || (!props) || (!prop_size))
+    return PVR_ERROR_FAILED;
+  if (g_client)
+    return g_client->GetChannelStreamProperties(channel, props, prop_size);
+  return PVR_ERROR_SERVER_ERROR; 
+}
+
+PVR_ERROR GetRecordingStreamProperties(const PVR_RECORDING* recording, PVR_NAMED_VALUE* props, unsigned int* prop_size)
+{ 
+  if ((!recording) || (!props) || (!prop_size))
+    return PVR_ERROR_FAILED;
+  if (g_client)
+    return g_client->GetRecordingStreamProperties(recording, props, prop_size);
+  return PVR_ERROR_SERVER_ERROR; 
+}
+
 
 /** UNUSED API FUNCTIONS */
 PVR_ERROR MoveChannel(const PVR_CHANNEL &channel) { return PVR_ERROR_NOT_IMPLEMENTED; }
@@ -703,7 +705,6 @@ void DemuxReset(void) {}
 void DemuxFlush(void) {}
 
 PVR_ERROR SetRecordingPlayCount(const PVR_RECORDING &recording, int count) { return PVR_ERROR_NOT_IMPLEMENTED; }
-unsigned int GetChannelSwitchDelay(void) { return 0; }
 
 bool SeekTime(double,bool,double*) { return false; }
 void SetSpeed(int) {};
@@ -712,9 +713,13 @@ bool IsRealTimeStream(void) { return true; }
 time_t GetPlayingTime() { return 0; }
 time_t GetBufferTimeStart() { return 0; }
 time_t GetBufferTimeEnd() { return 0; }
+PVR_ERROR GetStreamTimes(PVR_STREAM_TIMES *) { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR UndeleteRecording(const PVR_RECORDING& recording) { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR DeleteAllRecordingsFromTrash() { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR SetEPGTimeFrame(int) { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR GetDescrambleInfo(PVR_DESCRAMBLE_INFO*) { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR SetRecordingLifetime(const PVR_RECORDING*) { return PVR_ERROR_NOT_IMPLEMENTED; }
+PVR_ERROR IsEPGTagRecordable(const EPG_TAG*, bool*) { return PVR_ERROR_NOT_IMPLEMENTED; }
+PVR_ERROR IsEPGTagPlayable(const EPG_TAG*, bool*) { return PVR_ERROR_NOT_IMPLEMENTED; }
+PVR_ERROR GetEPGTagStreamProperties(const EPG_TAG*, PVR_NAMED_VALUE*, unsigned int*) { return PVR_ERROR_NOT_IMPLEMENTED; }
 } //end extern "C"
