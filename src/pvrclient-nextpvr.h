@@ -93,7 +93,6 @@ public:
   /* Channel handling */
   int GetNumChannels(void);
   PVR_ERROR GetChannels(ADDON_HANDLE handle, bool bRadio);  
-  PVR_ERROR GetChannelStreamProperties(const PVR_CHANNEL*, PVR_NAMED_VALUE*, unsigned int*);
   
   /* Channel group handling */
   int GetChannelGroupsAmount(void);
