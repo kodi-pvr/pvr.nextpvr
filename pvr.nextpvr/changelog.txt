@@ -1,3 +1,6 @@
+v3.2.1
+- Remove unneeded code added in last revision
+
 v3.2.0
 - Updated to PVR addon API 5.7.0
 

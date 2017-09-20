@@ -754,23 +754,6 @@ PVR_ERROR cPVRClientNextPVR::GetChannelGroups(ADDON_HANDLE handle, bool bRadio)
   return PVR_ERROR_NO_ERROR;
 }
 
-PVR_ERROR cPVRClientNextPVR::GetChannelStreamProperties(const PVR_CHANNEL* channel, PVR_NAMED_VALUE* props, unsigned int* prop_size)
-{
-  if (OpenLiveStream(*channel) == true)
-  {
-    if (!m_PlaybackURL.empty())
-    {
-      PVR_STRCPY(props[0].strName, PVR_STREAM_PROPERTY_STREAMURL);
-      PVR_STRCPY(props[0].strValue, m_PlaybackURL.c_str());
-      *prop_size = 1;
-      return PVR_ERROR_NO_ERROR;
-    }
-    return PVR_ERROR_UNKNOWN;
-  }
-
-  return PVR_ERROR_FAILED;
-}
-
 PVR_ERROR cPVRClientNextPVR::GetChannelGroupMembers(ADDON_HANDLE handle, const PVR_CHANNEL_GROUP &group)
 {
   std::string encodedGroupName = UriEncode(group.strGroupName);
