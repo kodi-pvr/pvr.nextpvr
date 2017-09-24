@@ -536,52 +536,6 @@ PVR_ERROR UpdateTimer(const PVR_TIMER &timer)
 /*******************************************/
 /** PVR Live Stream Functions             **/
 
-bool OpenLiveStream(const PVR_CHANNEL &channelinfo)
-{
-  if (!g_client)
-    return false;
-  else
-    return g_client->OpenLiveStream(channelinfo);
-}
-
-void CloseLiveStream()
-{
-  if (g_client)
-    g_client->CloseLiveStream();
-}
-
-int ReadLiveStream(unsigned char *pBuffer, unsigned int iBufferSize)
-{
-  if (!g_client)
-    return 0;
-  else
-    return g_client->ReadLiveStream(pBuffer, iBufferSize);
-}
-
-long long SeekLiveStream(long long iPosition, int iWhence)
-{
-  if (!g_client)
-    return -1;
-  else
-    return g_client->SeekLiveStream(iPosition, iWhence);
-}
-
-long long PositionLiveStream(void)
-{
-  if (!g_client)
-    return -1;
-  else
-    return g_client->PositionLiveStream();
-}
-
-long long LengthLiveStream(void)
-{
-  if (!g_client)
-    return -1;
-  else
-    return g_client->LengthLiveStream();
-}
-
 PVR_ERROR SignalStatus(PVR_SIGNAL_STATUS &signalStatus)
 {
   if (!g_client)
@@ -592,52 +546,6 @@ PVR_ERROR SignalStatus(PVR_SIGNAL_STATUS &signalStatus)
 
 /*******************************************/
 /** PVR Recording Stream Functions        **/
-
-bool OpenRecordedStream(const PVR_RECORDING &recording)
-{
-  if (!g_client)
-    return false;
-  else
-    return g_client->OpenRecordedStream(recording);
-}
-
-void CloseRecordedStream(void)
-{
-  if (g_client)
-    g_client->CloseRecordedStream();
-}
-
-int ReadRecordedStream(unsigned char *pBuffer, unsigned int iBufferSize)
-{
-  if (!g_client)
-    return 0;
-  else
-    return g_client->ReadRecordedStream(pBuffer, iBufferSize);
-}
-
-long long SeekRecordedStream(long long iPosition, int iWhence)
-{
-  if (!g_client)
-    return -1;
-  else
-    return g_client->SeekRecordedStream(iPosition, iWhence);
-}
-
-long long PositionRecordedStream(void)
-{
-  if (!g_client)
-    return -1;
-  else
-    return g_client->PositionRecordedStream();
-}
-
-long long LengthRecordedStream(void)
-{
-  if (!g_client)
-    return -1;
-  else
-    return g_client->LengthRecordedStream();
-}
 
 bool CanPauseStream(void)
 {
@@ -687,6 +595,15 @@ PVR_ERROR GetRecordingStreamProperties(const PVR_RECORDING* recording, PVR_NAMED
   return PVR_ERROR_SERVER_ERROR; 
 }
 
+PVR_ERROR GetChannelStreamProperties(const PVR_CHANNEL* channel, PVR_NAMED_VALUE* props, unsigned int* prop_size)
+{ 
+  if ((!channel) || (!props) || (!prop_size))
+    return PVR_ERROR_FAILED;
+  if (g_client)
+    return g_client->GetChannelStreamProperties(channel, props, prop_size);
+  return PVR_ERROR_SERVER_ERROR; 
+}
+
 
 /** UNUSED API FUNCTIONS */
 PVR_ERROR MoveChannel(const PVR_CHANNEL &channel) { return PVR_ERROR_NOT_IMPLEMENTED; }
@@ -710,8 +627,23 @@ PVR_ERROR DeleteAllRecordingsFromTrash() { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR SetEPGTimeFrame(int) { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR GetDescrambleInfo(PVR_DESCRAMBLE_INFO*) { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR SetRecordingLifetime(const PVR_RECORDING*) { return PVR_ERROR_NOT_IMPLEMENTED; }
-PVR_ERROR GetChannelStreamProperties(const PVR_CHANNEL*, PVR_NAMED_VALUE*, unsigned int*)  { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR IsEPGTagRecordable(const EPG_TAG*, bool*) { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR IsEPGTagPlayable(const EPG_TAG*, bool*) { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR GetEPGTagStreamProperties(const EPG_TAG*, PVR_NAMED_VALUE*, unsigned int*) { return PVR_ERROR_NOT_IMPLEMENTED; }
+
+bool OpenLiveStream(const PVR_CHANNEL &channelinfo) { return PVR_ERROR_NOT_IMPLEMENTED; }
+void CloseLiveStream() { return; }
+int ReadLiveStream(unsigned char *pBuffer, unsigned int iBufferSize) { return 0; }
+long long SeekLiveStream(long long iPosition, int iWhence) { return -1; }
+long long PositionLiveStream(void) { return -1; }
+long long LengthLiveStream(void) { return -1; }
+
+bool OpenRecordedStream(const PVR_RECORDING &recording) { return PVR_ERROR_NOT_IMPLEMENTED; }
+void CloseRecordedStream(void) { return; }
+int ReadRecordedStream(unsigned char *pBuffer, unsigned int iBufferSize) { return 0; }
+long long SeekRecordedStream(long long iPosition, int iWhence) { return -1; }
+long long PositionRecordedStream(void) { return -1; }
+long long LengthRecordedStream(void) { return -1; }
+
 } //end extern "C"
+

@@ -92,7 +92,8 @@ public:
 
   /* Channel handling */
   int GetNumChannels(void);
-  PVR_ERROR GetChannels(ADDON_HANDLE handle, bool bRadio);  
+  PVR_ERROR GetChannels(ADDON_HANDLE handle, bool bRadio);
+  PVR_ERROR GetChannelStreamProperties(const PVR_CHANNEL*, PVR_NAMED_VALUE*, unsigned int*);
   
   /* Channel group handling */
   int GetChannelGroupsAmount(void);
@@ -119,23 +120,9 @@ public:
   PVR_ERROR UpdateTimer(const PVR_TIMER &timer);
 
   /* Live stream handling */
-  bool OpenLiveStream(const PVR_CHANNEL &channel);
-  void CloseLiveStream();
-  int ReadLiveStream(unsigned char *pBuffer, unsigned int iBufferSize);
   PVR_ERROR SignalStatus(PVR_SIGNAL_STATUS &signalStatus);
-  long long SeekLiveStream(long long iPosition, int iWhence = SEEK_SET);
-  long long LengthLiveStream(void);
-  long long PositionLiveStream(void);
   bool CanPauseStream(void);
   bool CanSeekStream(void);
-
-  /* Record stream handling */
-  bool OpenRecordedStream(const PVR_RECORDING &recording);
-  void CloseRecordedStream(void);
-  int ReadRecordedStream(unsigned char *pBuffer, unsigned int iBufferSize);
-  long long SeekRecordedStream(long long iPosition, int iWhence = SEEK_SET);
-  long long LengthRecordedStream(void);
-  long long PositionRecordedStream(void);
 
   /* background connection monitoring */
   void *Process(void);
