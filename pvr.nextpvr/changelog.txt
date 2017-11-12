@@ -1,3 +1,4 @@
+v3.2.3
 - Remove StdString usage
 
 v3.2.1
