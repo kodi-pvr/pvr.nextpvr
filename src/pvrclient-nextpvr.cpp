@@ -23,6 +23,7 @@
 #include <memory>
 
 #include "p8-platform/os.h"
+#include <p8-platform/util/StringUtils.h>
 #include "p8-platform/util/timeutils.h"
 
 #include "client.h"
@@ -37,6 +38,8 @@
 #else
   #define MAXINT64 ULONG_MAX
 #endif 
+
+#include <algorithm>
 
 
 using namespace std;
@@ -147,19 +150,19 @@ cPVRClientNextPVR::~cPVRClientNextPVR()
   SAFE_DELETE(m_tcpclient);  
 }
 
-std::vector<CStdString> cPVRClientNextPVR::split(const CStdString& s, const CStdString& delim, const bool keep_empty)
+std::vector<std::string> cPVRClientNextPVR::split(const std::string& s, const std::string& delim, const bool keep_empty)
 {
-  std::vector<CStdString> result;
+  std::vector<std::string> result;
   if (delim.empty()) 
   {
     result.push_back(s);
     return result;
   }
-  CStdString::const_iterator substart = s.begin(), subend;
+  std::string::const_iterator substart = s.begin(), subend;
   while (true)
   {
     subend = search(substart, s.end(), delim.begin(), delim.end());
-    CStdString temp(substart, subend);
+    std::string temp(substart, subend);
     if (keep_empty || !temp.empty())
     {
       result.push_back(temp);
@@ -178,11 +181,11 @@ bool cPVRClientNextPVR::Connect()
   string result;
 
   // initiate session
-  CStdString response;
+  std::string response;
   if (DoRequest("/service?method=session.initiate&ver=1.0&device=xbmc", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response) != NULL)
+    if (doc.Parse(response.c_str()) != NULL)
     {
       TiXmlElement* saltNode = doc.RootElement()->FirstChildElement("salt");
       TiXmlElement* sidNode = doc.RootElement()->FirstChildElement("sid");
@@ -200,34 +203,34 @@ bool cPVRClientNextPVR::Connect()
         XBMC->Log(LOG_DEBUG, "session.initiate returns: sid=%s salt=%s", m_sid, salt);
         
 
-        CStdString pinMD5 = PVRXBMC::XBMC_MD5::GetMD5(g_szPin);
-        pinMD5.ToLower();
+        std::string pinMD5 = PVRXBMC::XBMC_MD5::GetMD5(g_szPin);
+        StringUtils::ToLower(pinMD5);
 
         // calculate combined MD5
-        CStdString combinedMD5;
+        std::string combinedMD5;
         combinedMD5.append(":");
         combinedMD5.append(pinMD5);
         combinedMD5.append(":");
         combinedMD5.append(salt);
 
         // get digest
-        CStdString md5 = PVRXBMC::XBMC_MD5::GetMD5(combinedMD5);
+        std::string md5 = PVRXBMC::XBMC_MD5::GetMD5(combinedMD5);
 
         // login session
-        CStdString loginResponse;
+        std::string loginResponse;
         char request[512];
         sprintf(request, "/service?method=session.login&sid=%s&md5=%s", m_sid, md5.c_str());
         if (DoRequest(request, loginResponse) == HTTP_OK)
         {
-          if (strstr(loginResponse, "<rsp stat=\"ok\">"))
+          if (strstr(loginResponse.c_str(), "<rsp stat=\"ok\">"))
           {
             // check server version
-            CStdString settings;
+            std::string settings;
             if (DoRequest("/service?method=setting.list", settings) == HTTP_OK)
             {
               // if it's a NextPVR server, check the verions. WinTV Extend servers work a slightly different way.
               TiXmlDocument settingsDoc;
-              if (settingsDoc.Parse(settings) != NULL)
+              if (settingsDoc.Parse(settings.c_str()) != NULL)
               {
                 TiXmlElement* versionNode = settingsDoc.RootElement()->FirstChildElement("NextPVRVersion");
                 if (versionNode == NULL)
@@ -266,7 +269,7 @@ bool cPVRClientNextPVR::Connect()
                 
                 if ( settingsDoc.RootElement()->FirstChildElement("RecordingDirectories") != NULL &&  settingsDoc.RootElement()->FirstChildElement("RecordingDirectories")->FirstChild() != NULL)
                 {
-                  vector<CStdString> directories = split(settingsDoc.RootElement()->FirstChildElement("RecordingDirectories")->FirstChild()->Value(), ",", false);
+                  vector<std::string> directories = split(settingsDoc.RootElement()->FirstChildElement("RecordingDirectories")->FirstChild()->Value(), ",", false);
                   for (int i = 0; i < directories.size(); i++)
                   {
                     m_recordingDirectories.push_back(directories[i]);
@@ -312,10 +315,10 @@ bool cPVRClientNextPVR::IsUp()
     TiXmlDocument doc;
     char request[512];
     sprintf(request, "/service?method=recording.lastupdated");
-    CStdString response;
+    std::string response;
     if (DoRequest(request, response) == HTTP_OK)
     {
-      if (doc.Parse(response) != NULL)
+      if (doc.Parse(response.c_str()) != NULL)
       {
         TiXmlElement* last_update = doc.RootElement()->FirstChildElement("last_update");
         if (last_update != NULL)
@@ -390,7 +393,7 @@ const char* cPVRClientNextPVR::GetBackendVersion(void)
 
 const char* cPVRClientNextPVR::GetConnectionString(void)
 {
-  static CStdString strConnectionString = "connected";
+  static std::string strConnectionString = "connected";
   return strConnectionString.c_str();
 }
 
@@ -424,13 +427,13 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, const PVR_CHANNEL &chan
 {
   EPG_TAG broadcast;
 
-  CStdString response;
+  std::string response;
   char request[512];
   sprintf(request, "/service?method=channel.listings&channel_id=%d&start=%d&end=%d", channel.iUniqueId, (int)iStart, (int)iEnd);
   if (DoRequest(request, response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response) != NULL)
+    if (doc.Parse(response.c_str()) != NULL)
     {
       TiXmlElement* listingsNode = doc.RootElement()->FirstChildElement("listings");
       TiXmlElement* pListingNode;
@@ -534,11 +537,11 @@ int cPVRClientNextPVR::GetNumChannels(void)
 
   // need something more optimal, but this will do for now...
   m_iChannelCount = 0;
-  CStdString response;
+  std::string response;
   if (DoRequest("/service?method=channel.list", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response) != NULL)
+    if (doc.Parse(response.c_str()) != NULL)
     {
       TiXmlElement* channelsNode = doc.RootElement()->FirstChildElement("channels");
       TiXmlElement* pChannelNode;
@@ -552,16 +555,16 @@ int cPVRClientNextPVR::GetNumChannels(void)
   return m_iChannelCount;
 }
 
-CStdString cPVRClientNextPVR::GetChannelIcon(int channelID)
+std::string cPVRClientNextPVR::GetChannelIcon(int channelID)
 {
   char filename[64];
   snprintf(filename, sizeof(filename), "nextpvr-ch%d.png", channelID);
 
-  CStdString iconFilename("special://userdata/addon_data/pvr.nextpvr/");
+  std::string iconFilename("special://userdata/addon_data/pvr.nextpvr/");
   iconFilename += filename;
 
   // do we already have the icon file?
-  if (XBMC->FileExists(iconFilename, false))
+  if (XBMC->FileExists(iconFilename.c_str(), false))
   {        
     return iconFilename;    
   } 
@@ -584,7 +587,7 @@ CStdString cPVRClientNextPVR::GetChannelIcon(int channelID)
       int read = m_tcpclient->receive(buf, sizeof buf, 0);
       if (read > 0)
       {
-        void* fileHandle = XBMC->OpenFileForWrite(iconFilename, true);
+        void* fileHandle = XBMC->OpenFileForWrite(iconFilename.c_str(), true);
         if (fileHandle != NULL)
         {
           int written = 0;
@@ -634,15 +637,15 @@ CStdString cPVRClientNextPVR::GetChannelIcon(int channelID)
 PVR_ERROR cPVRClientNextPVR::GetChannels(ADDON_HANDLE handle, bool bRadio)
 {
   PVR_CHANNEL     tag;
-  CStdString      stream;  
+  std::string      stream;  
   
   m_iChannelCount = 0;
 
-  CStdString response;
+  std::string response;
   if (DoRequest("/service?method=channel.list", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response) != NULL)
+    if (doc.Parse(response.c_str()) != NULL)
     {
       TiXmlElement* channelsNode = doc.RootElement()->FirstChildElement("channels");
       TiXmlElement* pChannelNode;
@@ -663,10 +666,10 @@ PVR_ERROR cPVRClientNextPVR::GetChannels(ADDON_HANDLE handle, bool bRadio)
         // check if we need to download a channel icon
         if (pChannelNode->FirstChildElement("icon"))
         {
-          CStdString iconFile = GetChannelIcon(tag.iUniqueId);
+          std::string iconFile = GetChannelIcon(tag.iUniqueId);
           if (iconFile.length() > 0)
           {
-            PVR_STRCPY(tag.strIconPath, iconFile);
+            PVR_STRCPY(tag.strIconPath, iconFile.c_str());
           }
         }
 
@@ -701,11 +704,11 @@ int cPVRClientNextPVR::GetChannelGroupsAmount(void)
 
   int groups = 0;
 
-  CStdString response;
+  std::string response;
   if (DoRequest("/service?method=channel.groups", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response) != NULL)
+    if (doc.Parse(response.c_str()) != NULL)
     {
       TiXmlElement* groupsNode = doc.RootElement()->FirstChildElement("groups");
       TiXmlElement* pGroupNode;
@@ -728,11 +731,11 @@ PVR_ERROR cPVRClientNextPVR::GetChannelGroups(ADDON_HANDLE handle, bool bRadio)
     return PVR_ERROR_NO_ERROR;
 
   // for tv, use the groups returned by nextpvr
-  CStdString response;
+  std::string response;
   if (DoRequest("/service?method=channel.groups", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response) != NULL)
+    if (doc.Parse(response.c_str()) != NULL)
     {
       TiXmlElement* groupsNode = doc.RootElement()->FirstChildElement("groups");
       TiXmlElement* pGroupNode;
@@ -761,13 +764,13 @@ PVR_ERROR cPVRClientNextPVR::GetChannelGroupMembers(ADDON_HANDLE handle, const P
   char request[512];
   sprintf(request, "/service?method=channel.list&group_id=%s", encodedGroupName.c_str());
 
-  CStdString response;
+  std::string response;
   if (DoRequest(request, response) == HTTP_OK)
   {
     PVR_CHANNEL_GROUP_MEMBER tag;
 
     TiXmlDocument doc;
-    if (doc.Parse(response) != NULL)
+    if (doc.Parse(response.c_str()) != NULL)
     {
       TiXmlElement* channelsNode = doc.RootElement()->FirstChildElement("channels");
       TiXmlElement* pChannelNode;
@@ -794,11 +797,11 @@ int cPVRClientNextPVR::GetNumRecordings(void)
   // need something more optimal, but this will do for now...
   int recordingCount = 0;
 
-  CStdString response;
+  std::string response;
   if (DoRequest("/service?method=recording.list&filter=ready", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response) != NULL)
+    if (doc.Parse(response.c_str()) != NULL)
     {
       TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
       if (recordingsNode != NULL)
@@ -818,11 +821,11 @@ int cPVRClientNextPVR::GetNumRecordings(void)
 PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
 {
   // include already-completed recordings
-  CStdString response;
+  std::string response;
   if (DoRequest("/service?method=recording.list&filter=ready", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response) != NULL)
+    if (doc.Parse(response.c_str()) != NULL)
     {
       PVR_RECORDING   tag;
 
@@ -885,7 +888,7 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
   if (DoRequest("/service?method=recording.list&filter=pending", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response) != NULL)
+    if (doc.Parse(response.c_str()) != NULL)
     {
       PVR_RECORDING   tag;
 
@@ -930,10 +933,10 @@ PVR_ERROR cPVRClientNextPVR::DeleteRecording(const PVR_RECORDING &recording)
   char request[512];
   sprintf(request, "/service?method=recording.delete&recording_id=%s", recording.strRecordingId);
 
-  CStdString response;
+  std::string response;
   if (DoRequest(request, response) == HTTP_OK)
   {
-    if (strstr(response, "<rsp stat=\"ok\">"))
+    if (strstr(response.c_str(), "<rsp stat=\"ok\">"))
     {
       PVR->TriggerRecordingUpdate();
       XBMC->Log(LOG_DEBUG, "DeleteRecording failed. Returning PVR_ERROR_NO_ERROR");
@@ -964,10 +967,10 @@ PVR_ERROR cPVRClientNextPVR::SetRecordingLastPlayedPosition(const PVR_RECORDING 
   char request[512];
   sprintf(request, "/service?method=recording.watched.set&recording_id=%s&position=%d", recording.strRecordingId, lastplayedposition);
 
-  CStdString response;
+  std::string response;
   if (DoRequest(request, response) == HTTP_OK)
   {
-    if (strstr(response, "<rsp stat=\"ok\">") == NULL)
+    if (strstr(response.c_str(), "<rsp stat=\"ok\">") == NULL)
     {
       XBMC->Log(LOG_DEBUG, "SetRecordingLastPlayedPosition failed");
       return PVR_ERROR_FAILED;
@@ -988,13 +991,13 @@ PVR_ERROR cPVRClientNextPVR::GetRecordingEdl(const PVR_RECORDING& recording, PVR
   char request[512];
   sprintf(request, "/service?method=recording.edl&recording_id=%s", recording.strRecordingId);
 
-  CStdString response;
+  std::string response;
   if (DoRequest(request, response) == HTTP_OK)
   {
-    if (strstr(response, "<rsp stat=\"ok\">") != NULL)
+    if (strstr(response.c_str(), "<rsp stat=\"ok\">") != NULL)
     {
       TiXmlDocument doc;
-      if (doc.Parse(response) != NULL)
+      if (doc.Parse(response.c_str()) != NULL)
       {
         int index = 0;
         TiXmlElement* commercialsNode = doc.RootElement()->FirstChildElement("commercials");
@@ -1033,13 +1036,13 @@ PVR_ERROR cPVRClientNextPVR::GetRecordingStreamProperties(const PVR_RECORDING* r
 int cPVRClientNextPVR::GetNumTimers(void)
 {
   int timerCount = 0;
-  CStdString response;
+  std::string response;
 
   // get list of recurring recordings
   if (DoRequest("/service?method=recording.recurring.list", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response) != NULL)
+    if (doc.Parse(response.c_str()) != NULL)
     {
       TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recurrings");
       if (recordingsNode != NULL)
@@ -1059,7 +1062,7 @@ int cPVRClientNextPVR::GetNumTimers(void)
   if (DoRequest("/service?method=recording.list&filter=pending", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response) != NULL)
+    if (doc.Parse(response.c_str()) != NULL)
     {
       TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
       if (recordingsNode != NULL)
@@ -1078,13 +1081,13 @@ int cPVRClientNextPVR::GetNumTimers(void)
 
 PVR_ERROR cPVRClientNextPVR::GetTimers(ADDON_HANDLE handle)
 {
-  CStdString response;
+  std::string response;
 
   // first add the recurring recordings
   if (DoRequest("/service?method=recording.recurring.list&filter=pending", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response) != NULL)
+    if (doc.Parse(response.c_str()) != NULL)
     {
       PVR_TIMER tag;
       TiXmlElement* recurringsNode = doc.RootElement()->FirstChildElement("recurrings");
@@ -1111,8 +1114,8 @@ PVR_ERROR cPVRClientNextPVR::GetTimers(ADDON_HANDLE handle)
         // keyword recordings
         if (pRulesNode->FirstChildElement("AdvancedRules") != NULL)
         {
-          CStdString advancedRulesText = pRulesNode->FirstChildElement("AdvancedRules")->FirstChild()->Value();
-          if (advancedRulesText.Find("KEYWORD: ") != -1)
+          std::string advancedRulesText = pRulesNode->FirstChildElement("AdvancedRules")->FirstChild()->Value();
+          if (advancedRulesText.find("KEYWORD: ") != string::npos)
           {
             tag.iTimerType = TIMER_REPEATING_KEYWORD;
             tag.startTime = 0;
@@ -1127,21 +1130,21 @@ PVR_ERROR cPVRClientNextPVR::GetTimers(ADDON_HANDLE handle)
         tag.iWeekdays = PVR_WEEKDAY_ALLDAYS;
         if (pRulesNode->FirstChildElement("Days") != NULL)
         {
-          CStdString daysText = pRulesNode->FirstChildElement("Days")->FirstChild()->Value();
+          std::string daysText = pRulesNode->FirstChildElement("Days")->FirstChild()->Value();
           tag.iWeekdays = PVR_WEEKDAY_NONE;
-          if (daysText.Find("SUN") != -1)
+          if (daysText.find("SUN") != string::npos)
             tag.iWeekdays |= PVR_WEEKDAY_SUNDAY;
-          if (daysText.Find("MON") != -1)
+          if (daysText.find("MON") != string::npos)
             tag.iWeekdays |= PVR_WEEKDAY_MONDAY;
-          if (daysText.Find("TUE") != -1)
+          if (daysText.find("TUE") != string::npos)
             tag.iWeekdays |= PVR_WEEKDAY_TUESDAY;
-          if (daysText.Find("WED") != -1)
+          if (daysText.find("WED") != string::npos)
             tag.iWeekdays |= PVR_WEEKDAY_WEDNESDAY;
-          if (daysText.Find("THU") != -1)
+          if (daysText.find("THU") != string::npos)
             tag.iWeekdays |= PVR_WEEKDAY_THURSDAY;
-          if (daysText.Find("FRI") != -1)
+          if (daysText.find("FRI") != string::npos)
             tag.iWeekdays |= PVR_WEEKDAY_FRIDAY;
-          if (daysText.Find("SAT") != -1)
+          if (daysText.find("SAT") != string::npos)
             tag.iWeekdays |= PVR_WEEKDAY_SATURDAY;
         }
 
@@ -1173,11 +1176,11 @@ PVR_ERROR cPVRClientNextPVR::GetTimers(ADDON_HANDLE handle)
           tag.iRecordingGroup = 0;
           if (pRulesNode->FirstChildElement("RecordingDirectoryID")->FirstChild() != NULL)
           {
-            CStdString recordingDirectoryID = pRulesNode->FirstChildElement("RecordingDirectoryID")->FirstChild()->Value();
+            std::string recordingDirectoryID = pRulesNode->FirstChildElement("RecordingDirectoryID")->FirstChild()->Value();
             int i = 0;
             for (auto it = m_recordingDirectories.begin(); it != m_recordingDirectories.end(); ++it, i++)
             {
-              CStdString bracketed = "[" + m_recordingDirectories[i] + "]";
+              std::string bracketed = "[" + m_recordingDirectories[i] + "]";
               if (bracketed == recordingDirectoryID)
               {
                 tag.iRecordingGroup = i;
@@ -1208,7 +1211,7 @@ PVR_ERROR cPVRClientNextPVR::GetTimers(ADDON_HANDLE handle)
   if (DoRequest("/service?method=recording.list&filter=pending", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response) != NULL)
+    if (doc.Parse(response.c_str()) != NULL)
     {
       PVR_TIMER tag;
 
@@ -1559,9 +1562,9 @@ PVR_ERROR cPVRClientNextPVR::GetTimerTypes(PVR_TIMER_TYPE types[], int *size)
   return PVR_ERROR_NO_ERROR;
 }
 
-CStdString cPVRClientNextPVR::GetDayString(int dayMask)
+std::string cPVRClientNextPVR::GetDayString(int dayMask)
 {
-  CStdString days;
+  std::string days;
   if (dayMask == (PVR_WEEKDAY_SATURDAY | PVR_WEEKDAY_SUNDAY))
   {
     days = "WEEKENDS";
@@ -1609,7 +1612,7 @@ PVR_ERROR cPVRClientNextPVR::AddTimer(const PVR_TIMER &timerinfo)
 
   std::string encodedName = UriEncode(timerinfo.strTitle);
   std::string encodedKeyword = UriEncode(timerinfo.strEpgSearchString);
-  CStdString days = GetDayString(timerinfo.iWeekdays);
+  std::string days = GetDayString(timerinfo.iWeekdays);
   switch (timerinfo.iTimerType)
   {
   case TIMER_ONCE_MANUAL:
@@ -1689,10 +1692,10 @@ PVR_ERROR cPVRClientNextPVR::AddTimer(const PVR_TIMER &timerinfo)
   }
 
   // send request to NextPVR
-  CStdString response;
+  std::string response;
   if (DoRequest(request, response) == HTTP_OK)
   {
-    if (strstr(response, "<rsp stat=\"ok\">"))
+    if (strstr(response.c_str(), "<rsp stat=\"ok\">"))
     {
       PVR->TriggerTimerUpdate();
       return PVR_ERROR_NO_ERROR;
@@ -1713,10 +1716,10 @@ PVR_ERROR cPVRClientNextPVR::DeleteTimer(const PVR_TIMER &timer, bool bForceDele
     sprintf(request, "/service?method=recording.recurring.delete&recurring_id=%d", timer.iClientIndex);
   }
 
-  CStdString response;
+  std::string response;
   if (DoRequest(request, response) == HTTP_OK)
   {
-    if (strstr(response, "<rsp stat=\"ok\">"))
+    if (strstr(response.c_str(), "<rsp stat=\"ok\">"))
     {
       PVR->TriggerTimerUpdate();
       return PVR_ERROR_NO_ERROR;
@@ -1753,7 +1756,7 @@ bool cPVRClientNextPVR::OpenLiveStream(const PVR_CHANNEL &channelinfo)
 
     char request[512];
     sprintf(request, "/service?method=channel.stop");
-    CStdString response;
+    std::string response;
     DoRequest(request, response);
 
     m_pLiveShiftSource->Close();
@@ -1960,7 +1963,7 @@ void cPVRClientNextPVR::CloseLiveStream(void)
 
     char request[512];
     sprintf(request, "/service?method=channel.stop");
-    CStdString response;
+    std::string response;
     DoRequest(request, response);
     
     m_pLiveShiftSource->Close();
@@ -2225,16 +2228,16 @@ long long  cPVRClientNextPVR::LengthRecordedStream(void)
 
 /************************************************************/
 /** http handling */
-int cPVRClientNextPVR::DoRequest(const char *resource, CStdString &response)
+int cPVRClientNextPVR::DoRequest(const char *resource, std::string &response)
 {
   P8PLATFORM::CLockObject lock(m_mutex);
 
   // build request string, adding SID if requred
-  CStdString strURL;
+  std::string strURL;
   if (strstr(resource, "method=session") == NULL)
-    strURL.Format("http://%s:%d%s&sid=%s", g_szHostname, g_iPort, resource, m_sid);
+    strURL = StringUtils::Format("http://%s:%d%s&sid=%s", g_szHostname.c_str(), g_iPort, resource, m_sid);
   else
-    strURL.Format("http://%s:%d%s", g_szHostname, g_iPort, resource);
+    strURL = StringUtils::Format("http://%s:%d%s", g_szHostname.c_str(), g_iPort, resource);
 
   // ask XBMC to read the URL for us
   int resultCode = HTTP_NOTFOUND;

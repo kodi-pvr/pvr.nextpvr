@@ -23,7 +23,6 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
-#include "p8-platform/util/StdString.h"
 #include "libXBMC_addon.h"
 #include "libXBMC_pvr.h"
 #include "libKODI_guilib.h"

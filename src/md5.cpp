@@ -21,11 +21,13 @@
 
 #include "md5.h"
 
+#include <p8-platform/util/StringUtils.h>
+
 typedef unsigned char md5byte;
 
 static void MD5Init(struct MD5Context *context);
 static void MD5Update(struct MD5Context *context, md5byte const *buf, unsigned len);
-static void MD5Final(unsigned char digest[16], struct MD5Context *context);
+static void MD5Final(md5byte digest[16], struct MD5Context *context);
 static void MD5Transform(uint32_t buf[4], uint32_t const in[16]);
 
 
@@ -42,7 +44,7 @@ void PVRXBMC::XBMC_MD5::append(const void *inBuf, size_t inLen)
   MD5Update(&m_ctx, (md5byte*)inBuf, inLen);
 }
 
-void PVRXBMC::XBMC_MD5::append(const CStdString& str)
+void PVRXBMC::XBMC_MD5::append(const std::string& str)
 {
   append((unsigned char*) str.c_str(), (unsigned int) str.length());
 }
@@ -52,23 +54,23 @@ void PVRXBMC::XBMC_MD5::getDigest(unsigned char digest[16])
   MD5Final(digest, &m_ctx);
 }
 
-void PVRXBMC::XBMC_MD5::getDigest(CStdString& digest)
+void PVRXBMC::XBMC_MD5::getDigest(std::string& digest)
 {
   unsigned char szBuf[16] = {'\0'};
   getDigest(szBuf);
-  digest.Format("%02X%02X%02X%02X%02X%02X%02X%02X"\
+  digest = StringUtils::Format("%02X%02X%02X%02X%02X%02X%02X%02X"\
       "%02X%02X%02X%02X%02X%02X%02X%02X", szBuf[0], szBuf[1], szBuf[2],
       szBuf[3], szBuf[4], szBuf[5], szBuf[6], szBuf[7], szBuf[8],
       szBuf[9], szBuf[10], szBuf[11], szBuf[12], szBuf[13], szBuf[14],
       szBuf[15]);
 }
 
-CStdString PVRXBMC::XBMC_MD5::GetMD5(const CStdString &text)
+std::string PVRXBMC::XBMC_MD5::GetMD5(const std::string &text)
 {
-  if (text.IsEmpty())
+  if (text.empty())
     return "";
   XBMC_MD5 state;
-  CStdString digest;
+  std::string digest;
   state.append(text);
   state.getDigest(digest);
   return digest;
