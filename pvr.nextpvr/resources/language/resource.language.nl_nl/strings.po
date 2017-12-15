@@ -18,23 +18,23 @@ msgstr ""
 
 msgctxt "#30000"
 msgid "NextPVR Hostname"
-msgstr "NextPVR Hostnaam"
+msgstr "NextPVR-hostnaam"
 
 msgctxt "#30001"
 msgid "NextPVR Port (usually 8866 or 7799)"
-msgstr "NextPVR Poort (aangeraden 8866 of 7799)"
+msgstr "NextPVR-poort (meestal 8866 of 7799)"
 
 msgctxt "#30002"
 msgid "NextPVR PinCode"
-msgstr "NextPVR Pincode"
+msgstr "NextPVR-pincode"
 
 msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
-msgstr "Gebruik TimeShift met Live TV"
+msgstr "Gebruik TimeShift met Live-TV"
 
 msgctxt "#30004"
 msgid "Download TV Guide Artwork"
-msgstr "Download TV Gids Artwork"
+msgstr "Download TV-gidsillustraties"
 
 msgctxt "#30040"
 msgid "Connection"
@@ -46,7 +46,7 @@ msgstr "Geavanceerd"
 
 msgctxt "#30050"
 msgid "NextPVR server is too old."
-msgstr "NextPVR server is te oud."
+msgstr "NextPVR-server is te oud."
 
 msgctxt "#30051"
 msgid "Upgrade to '%s' or higher!"
@@ -54,7 +54,7 @@ msgstr "Voer upgrade uit naar '%s' of hoger!"
 
 msgctxt "#30052"
 msgid "Connection failed. Incorrect PIN?"
-msgstr "Connectie Gefaald. Verkeerde Pincode?"
+msgstr "Verbinding is mislukt. Verkeerde pincode?"
 
 msgctxt "#30053"
 msgid "Tuner no longer available"
@@ -66,7 +66,7 @@ msgstr "Eén keer (handmatig)"
 
 msgctxt "#30141"
 msgid "One time (guide)"
-msgstr "Eën tijd (gids)"
+msgstr "Eén tijd (gids)"
 
 msgctxt "#30142"
 msgid "Repeating (manual)"
@@ -78,7 +78,7 @@ msgstr "Herhaling (gids)"
 
 msgctxt "#30144"
 msgid "Child Recording"
-msgstr "Kind Opname"
+msgstr "Kinderopname"
 
 msgctxt "#30145"
 msgid "Repeating (keyword)"
