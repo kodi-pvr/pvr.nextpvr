@@ -31,9 +31,10 @@ using namespace ADDON;
  * Default values are defined inside client.h
  * and exported to the other source files.
  */
-std::string      g_szHostname           = DEFAULT_HOST;                  ///< The Host name or IP of the NextPVR server
-std::string      g_szPin                = DEFAULT_HOST;                  ///< The Host name or IP of the NextPVR server
-int              g_iPort                = DEFAULT_PORT;                  ///< The web listening port (default: 8866) 
+std::string      g_szHostname             = DEFAULT_HOST;                  ///< The Host name or IP of the NextPVR server
+std::string      g_szPin                  = DEFAULT_HOST;                  ///< The Host name or IP of the NextPVR server
+int              g_iPort                  = DEFAULT_PORT;                  ///< The web listening port (default: 8866)
+int16_t          g_timeShiftBufferSeconds = 0;
 
 /* Client member variables */
 ADDON_STATUS           m_CurStatus    = ADDON_STATUS_UNKNOWN;
@@ -231,8 +232,11 @@ ADDON_STATUS ADDON_SetSetting(const char *settingName, const void *settingValue)
   }
   else if (str == "usetimeshift")
   {
-    XBMC->Log(LOG_INFO, "Changed setting 'usetimeshift' from %u to %u", g_bUseTimeshift, *(bool*) settingValue);
-    g_bUseTimeshift = *(bool*) settingValue;
+    if (g_bUseTimeshift != *(bool *)settingValue)
+    {
+      XBMC->Log(LOG_INFO, "Changed setting 'usetimeshift' from %u to %u", g_bUseTimeshift, *(bool*) settingValue);
+      return ADDON_STATUS_NEED_RESTART;
+    }
   }
   else if (str == "guideartwork")
   {
@@ -566,14 +570,6 @@ long long SeekLiveStream(long long iPosition, int iWhence)
     return g_client->SeekLiveStream(iPosition, iWhence);
 }
 
-long long PositionLiveStream(void)
-{
-  if (!g_client)
-    return -1;
-  else
-    return g_client->PositionLiveStream();
-}
-
 long long LengthLiveStream(void)
 {
   if (!g_client)
@@ -623,14 +619,6 @@ long long SeekRecordedStream(long long iPosition, int iWhence)
     return g_client->SeekRecordedStream(iPosition, iWhence);
 }
 
-long long PositionRecordedStream(void)
-{
-  if (!g_client)
-    return -1;
-  else
-    return g_client->PositionRecordedStream();
-}
-
 long long LengthRecordedStream(void)
 {
   if (!g_client)
@@ -678,18 +666,50 @@ PVR_ERROR GetRecordingEdl(const PVR_RECORDING &recording, PVR_EDL_ENTRY entries[
   return PVR_ERROR_SERVER_ERROR;
 }
 
-PVR_ERROR GetRecordingStreamProperties(const PVR_RECORDING* recording, PVR_NAMED_VALUE* props, unsigned int* prop_size)
-{ 
-  if ((!recording) || (!props) || (!prop_size))
-    return PVR_ERROR_FAILED;
+time_t GetBufferTimeStart(void) 
+{
   if (g_client)
-    return g_client->GetRecordingStreamProperties(recording, props, prop_size);
+    return g_client->GetBufferTimeStart();
+  return PVR_ERROR_SERVER_ERROR;
+}
+
+time_t GetBufferTimeEnd(void)
+{
+  if (g_client)
+    return g_client->GetBufferTimeEnd();
+  return PVR_ERROR_SERVER_ERROR;
+}
+
+time_t GetPlayingTime()
+{
+  if (g_client)
+    return g_client->GetPlayingTime();
+  return PVR_ERROR_SERVER_ERROR;
+}
+
+bool IsTimeshifting(void)
+{ 
+  if (g_client)
+    return g_client->IsTimeshifting();
+  return PVR_ERROR_SERVER_ERROR;
+}
+
+bool IsRealTimeStream(void)
+{ 
+  if (g_client)
+    return g_client->IsRealTimeStream();
+  return PVR_ERROR_SERVER_ERROR;
+}
+
+PVR_ERROR GetStreamTimes(PVR_STREAM_TIMES *stimes)
+{
+  if (g_client)
+    return g_client->GetStreamTimes(stimes);
   return PVR_ERROR_SERVER_ERROR; 
 }
 
 
 /** UNUSED API FUNCTIONS */
-PVR_ERROR MoveChannel(const PVR_CHANNEL &channel) { return PVR_ERROR_NOT_IMPLEMENTED; }
 DemuxPacket* DemuxRead(void) { return NULL; }
 void DemuxAbort(void) {}
 void DemuxReset(void) {}
@@ -699,18 +719,13 @@ PVR_ERROR SetRecordingPlayCount(const PVR_RECORDING &recording, int count) { ret
 
 bool SeekTime(double,bool,double*) { return false; }
 void SetSpeed(int) {};
-bool IsTimeshifting(void) { return false; }
-bool IsRealTimeStream(void) { return true; }
-time_t GetPlayingTime() { return 0; }
-time_t GetBufferTimeStart() { return 0; }
-time_t GetBufferTimeEnd() { return 0; }
-PVR_ERROR GetStreamTimes(PVR_STREAM_TIMES *) { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR UndeleteRecording(const PVR_RECORDING& recording) { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR DeleteAllRecordingsFromTrash() { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR SetEPGTimeFrame(int) { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR GetDescrambleInfo(PVR_DESCRAMBLE_INFO*) { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR SetRecordingLifetime(const PVR_RECORDING*) { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR GetChannelStreamProperties(const PVR_CHANNEL*, PVR_NAMED_VALUE*, unsigned int*)  { return PVR_ERROR_NOT_IMPLEMENTED; }
+PVR_ERROR GetRecordingStreamProperties(const PVR_RECORDING*, PVR_NAMED_VALUE*, unsigned int*) { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR IsEPGTagRecordable(const EPG_TAG*, bool*) { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR IsEPGTagPlayable(const EPG_TAG*, bool*) { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR GetEPGTagStreamProperties(const EPG_TAG*, PVR_NAMED_VALUE*, unsigned int*) { return PVR_ERROR_NOT_IMPLEMENTED; }

@@ -1,5 +1,11 @@
+v3.2.7
+- Implement GetStreamTimes() so live tv timeshift will work.
+
 v3.2.6
 - Updated to PVR addon API 5.9.0
+
+v3.2.5 
+- Change buffer management, using pvr.vbox model/code as a starting point.
 
 v3.2.3
 - Remove StdString usage
