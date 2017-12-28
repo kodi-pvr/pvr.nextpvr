@@ -17,22 +17,30 @@ include_directories(${kodiplatform_INCLUDE_DIRS}
                     ${KODI_INCLUDE_DIR})
 
 set(NEXTPVR_SOURCES src/client.cpp
-                    src/liveshift.cpp
                     src/md5.cpp
                     src/pvrclient-nextpvr.cpp
-                    src/RingBuffer.cpp
                     src/Socket.cpp
-                    src/uri.cpp)
+                    src/uri.cpp
+                    src/buffers/Buffer.cpp
+                    src/buffers/DummyBuffer.cpp
+                    src/buffers/TimeshiftBuffer.cpp
+                    src/buffers/RecordingBuffer.cpp
+                    src/buffers/CircularBuffer.cpp
+                    src/buffers/Seeker.cpp)
 
 set(NEXTPVR_HEADERS src/client.h
                     src/FileUtils.h
-                    src/liveshift.h
                     src/md5.h
                     src/os-dependent.h
                     src/pvrclient-nextpvr.h
-                    src/RingBuffer.h
                     src/Socket.h
-                    src/uri.h)
+                    src/uri.h
+                    src/buffers/Buffer.h
+                    src/buffers/DummyBuffer.h
+                    src/buffers/TimeshiftBuffer.h
+                    src/buffers/RecordingBuffer.h
+                    src/buffers/CircularBuffer.h
+                    src/buffers/Seeker.h)
 
 SET(DEPLIBS ${p8-platform_LIBRARIES}
             ${TINYXML_LIBRARIES})

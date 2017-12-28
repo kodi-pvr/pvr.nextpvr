@@ -1,3 +1,6 @@
+v3.2.5 
+- Change buffer management, using pvr.vbox model/code as a starting point.
+
 v3.2.3
 - Remove StdString usage
 

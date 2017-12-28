@@ -57,6 +57,10 @@ extern bool g_bDownloadGuideArtwork;
 #define HTTP_NOTFOUND 404
 #define HTTP_BADREQUEST 400
 
+#define DEBUGGING_XML 0
+#if DEBUGGING_XML
+void dump_to_log( TiXmlNode* pParent, unsigned int indent );
+#endif
 
 const char SAFE[256] =
 {
@@ -129,13 +133,12 @@ cPVRClientNextPVR::cPVRClientNextPVR()
   m_currentLiveLength      = 0;
   m_currentLivePosition    = 0;
 
-  m_pLiveShiftSource       = NULL;
-
   m_defaultLimit = NEXTPVR_LIMIT_ASMANY;
   m_defaultShowType = NEXTPVR_SHOWTYPE_ANY;
 
   m_lastRecordingUpdateTime = MAXINT64;  // time of last recording check - force forever
-  m_incomingStreamBuffer.Create(188*2000);
+  m_timeshiftBuffer = new timeshift::DummyBuffer();
+  m_recordingBuffer = new timeshift::RecordingBuffer();
   
   CreateThread(false);
 }
@@ -232,6 +235,8 @@ bool cPVRClientNextPVR::Connect()
               TiXmlDocument settingsDoc;
               if (settingsDoc.Parse(settings.c_str()) != NULL)
               {
+                //XBMC->Log(LOG_NOTICE, "Settings:\n");
+                //dump_to_log(&settingsDoc, 0);
                 TiXmlElement* versionNode = settingsDoc.RootElement()->FirstChildElement("NextPVRVersion");
                 if (versionNode == NULL)
                 {
@@ -256,6 +261,14 @@ bool cPVRClientNextPVR::Connect()
                 if (liveTimeshiftNode != NULL)
                 {
                   m_supportsLiveTimeshift = true;
+                  if (g_bUseTimeshift)
+                  {
+                    XBMC->Log(LOG_NOTICE, "g_bUseTimeshift is true!!");
+                    delete m_timeshiftBuffer;
+                    m_timeshiftBuffer = new timeshift::TimeshiftBuffer();
+                  }
+                  g_timeShiftBufferSeconds = atoi(settingsDoc.RootElement()->FirstChildElement("SlipSeconds")->FirstChild()->Value());
+                  XBMC->Log(LOG_NOTICE, "time shift buffer in seconds == %d\n", g_timeShiftBufferSeconds);
                 }
 
                 // load padding defaults
@@ -647,6 +660,9 @@ PVR_ERROR cPVRClientNextPVR::GetChannels(ADDON_HANDLE handle, bool bRadio)
     TiXmlDocument doc;
     if (doc.Parse(response.c_str()) != NULL)
     {
+      //XBMC->Log(LOG_NOTICE, "Channels:\n");
+      //dump_to_log(&doc, 0);
+
       TiXmlElement* channelsNode = doc.RootElement()->FirstChildElement("channels");
       TiXmlElement* pChannelNode;
       for( pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode=pChannelNode->NextSiblingElement())
@@ -827,6 +843,8 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
     TiXmlDocument doc;
     if (doc.Parse(response.c_str()) != NULL)
     {
+      //XBMC->Log(LOG_NOTICE, "Recordings [ready:%d]:\n", __LINE__);
+      //dump_to_log(&doc, 0);
       PVR_RECORDING   tag;
 
       TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
@@ -890,6 +908,8 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
     TiXmlDocument doc;
     if (doc.Parse(response.c_str()) != NULL)
     {
+      //XBMC->Log(LOG_NOTICE, "Recordings [pending:%d]:", __LINE__);
+      //dump_to_log(&doc, 0);
       PVR_RECORDING   tag;
 
       TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
@@ -1018,17 +1038,6 @@ PVR_ERROR cPVRClientNextPVR::GetRecordingEdl(const PVR_RECORDING& recording, PVR
   }
   return PVR_ERROR_FAILED;
 }
-
-PVR_ERROR cPVRClientNextPVR::GetRecordingStreamProperties(const PVR_RECORDING* recording, PVR_NAMED_VALUE* props, unsigned int* prop_size)
-{
-  char line[256];
-  snprintf(line, sizeof(line), "http://%s:%d/live?recording=%s", g_szHostname.c_str(), g_iPort, recording->strRecordingId);
-  PVR_STRCPY(props[0].strName, PVR_STREAM_PROPERTY_STREAMURL);
-  PVR_STRCPY(props[0].strValue, line);
-  *prop_size = 1;
-  return PVR_ERROR_NO_ERROR;
-}
-
 
 /************************************************************/
 /** Timer handling */
@@ -1740,277 +1749,57 @@ PVR_ERROR cPVRClientNextPVR::UpdateTimer(const PVR_TIMER &timerinfo)
 /** Live stream handling */
 bool cPVRClientNextPVR::OpenLiveStream(const PVR_CHANNEL &channelinfo)
 {
-  if (channelinfo.iUniqueId == m_iLiveStreamUID)
+  char line[256];
+  if (channelinfo.bIsRadio == false && m_supportsLiveTimeshift && g_bUseTimeshift)
   {
-    XBMC->Log(LOG_NOTICE, "New channel uid equal to the already streaming channel. Skip re-tune.");
+    if (channelinfo.iSubChannelNumber == 0)
+      sprintf(line, "GET /live?channel=%d&mode=liveshift&client=XBMC-%s HTTP/1.0\r\n", channelinfo.iChannelNumber, m_sid);
+    else
+      sprintf(line, "GET /live?channel=%d.%d&mode=liveshift&client=XBMC-%s HTTP/1.0\r\n", channelinfo.iChannelNumber, channelinfo.iSubChannelNumber, m_sid);
+  }
+  else
+  {
+    if (channelinfo.iSubChannelNumber == 0)
+      sprintf(line, "http://%s:%d/live?channel=%d&client=XBMC-%s", g_szHostname.c_str(), g_iPort, channelinfo.iChannelNumber, m_sid);
+    else
+      sprintf(line, "http://%s:%d/live?channel=%d.%d&client=XBMC-%s", g_szHostname.c_str(), g_iPort, channelinfo.iChannelNumber, channelinfo.iSubChannelNumber, m_sid);
+  }
+  XBMC->Log(LOG_NOTICE, "Calling Open(%s) on tsb!", line);
+  if (m_timeshiftBuffer->Open(line))
+  {
     return true;
   }
-  
-  m_PlaybackURL = "";
-  m_iLiveStreamUID = 0;
-
-  XBMC->Log(LOG_DEBUG, "OpenLiveStream(%d:%s) (oid=%d)", channelinfo.iChannelNumber, channelinfo.strChannelName, channelinfo.iUniqueId);
-  if (m_pLiveShiftSource != NULL)
-  {
-    XBMC->Log(LOG_DEBUG, "OpenLiveStream() informing NextPVR of existing channel stream closing");
-
-    char request[512];
-    sprintf(request, "/service?method=channel.stop");
-    std::string response;
-    DoRequest(request, response);
-
-    m_pLiveShiftSource->Close();
-    delete m_pLiveShiftSource;
-    m_pLiveShiftSource = NULL;
-  }
-
-  if (!m_streamingclient->create())
-  {
-    XBMC->Log(LOG_ERROR, "Could not connect create streaming socket");
-    return false;
-  }
-
-  m_incomingStreamBuffer.Clear();
-
-  if (!m_streamingclient->connect(g_szHostname, g_iPort))
-  {
-    XBMC->Log(LOG_ERROR, "Could not connect to NextPVR backend for streaming");
-    return false;
-  }
-
-  if (m_pLiveShiftSource != NULL)
-  {
-    delete m_pLiveShiftSource;
-    m_pLiveShiftSource = NULL;
-  }
-  
-  char mode[32];
-  memset(mode, 0, sizeof(mode));
-  if (channelinfo.bIsRadio == false && m_supportsLiveTimeshift && g_bUseTimeshift)
-    strcpy(mode, "&mode=liveshift");
-
-  char line[256];
-  if (channelinfo.iSubChannelNumber == 0)
-    sprintf(line, "GET /live?channel=%d%s&client=XBMC-%s HTTP/1.0\r\n", channelinfo.iChannelNumber, mode, m_sid);
-  else
-    sprintf(line, "GET /live?channel=%d.%d%s&client=XBMC-%s HTTP/1.0\r\n", channelinfo.iChannelNumber, channelinfo.iSubChannelNumber, mode, m_sid);
-
-  m_streamingclient->send(line, strlen(line));
-
-  sprintf(line, "Connection: close\r\n");
-  m_streamingclient->send(line, strlen(line));
-
-  sprintf(line, "\r\n");
-  m_streamingclient->send(line, strlen(line));
-
-  m_currentLivePosition = 0;
-
-  XBMC->Log(LOG_DEBUG, "OpenLiveStream()@1");
-
-  char buf[1024];
-  int read = m_streamingclient->receive(buf, sizeof buf, 0);
-
-  XBMC->Log(LOG_DEBUG, "OpenLiveStream()@2");
-
-  for (int i=0; i<read; i++)
-  {
-    if (buf[i] == '\r' && buf[i+1] == '\n' && buf[i+2] == '\r' && buf[i+3] == '\n')
-    {
-      int remainder = read - (i+4);
-      if (remainder > 0)
-      {
-        m_incomingStreamBuffer.WriteData((char *)&buf[i+4], remainder);
-      }
-
-      char header[256];
-      if (i < sizeof(header))
-      {
-        memset(header, 0, sizeof(header));
-        memcpy(header, buf, i);
-        XBMC->Log(LOG_DEBUG, "%s", header);
-
-        if (strstr(header, "HTTP/1.1 404") != NULL)
-        {
-          XBMC->Log(LOG_DEBUG, "Unable to start channel. 404");
-          XBMC->QueueNotification(QUEUE_INFO, "Tuner not available");
-          return false;
-        }
-
-      }
-
-      // long blocking from now on
-      m_streamingclient->set_non_blocking(1);
-
-      if (channelinfo.iSubChannelNumber == 0)
-        snprintf(line, sizeof(line), "http://%s:%d/live?channel=%d&client=XBMC", g_szHostname.c_str(), g_iPort, channelinfo.iChannelNumber);
-      else
-        snprintf(line, sizeof(line), "http://%s:%d/live?channel=%d.%d&client=XBMC", g_szHostname.c_str(), g_iPort, channelinfo.iChannelNumber, channelinfo.iSubChannelNumber);
-      m_PlaybackURL = line;
-      m_iLiveStreamUID = channelinfo.iUniqueId;
-
-
-      if (channelinfo.bIsRadio == false && m_supportsLiveTimeshift && g_bUseTimeshift)
-      {
-        m_streamingclient->set_non_blocking(0); 
-        m_pLiveShiftSource = new LiveShiftSource(m_streamingclient);
-      }
-
-      XBMC->Log(LOG_DEBUG, "OpenLiveStream()@exit");
-      return true;
-    }
-  }
-
-  XBMC->Log(LOG_DEBUG, "OpenLiveStream()@exit (failed)");
   return false;
 }
 
 int cPVRClientNextPVR::ReadLiveStream(unsigned char *pBuffer, unsigned int iBufferSize)
 {
-  //XBMC->Log(LOG_DEBUG, "ReadLiveStream");
-
-  int read = iBufferSize;
-
-  if (m_supportsLiveTimeshift && m_pLiveShiftSource != NULL)
-  {
-    int rc = m_pLiveShiftSource->Read(pBuffer, iBufferSize);
-    if (rc < 0)
-    {
-      m_streamingclient->close();
-      XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30053));
-    }
-
-    static int total = 0;
-    total += rc;
-    //XBMC->Log(LOG_DEBUG, "ReadLiveStream read %d bytes. (total %d)", rc, total);
-
-    return rc;
-  }
-  else
-  {
-    bool bufferWasEmpty = (m_incomingStreamBuffer.getMaxReadSize() == 0);
-
-    // do we have enough data to fill this buffer? 
-    int read_timeouts = 0;
-    bool bufferMore = true;
-    unsigned char buf[188*100];
-    while (bufferMore)
-    {
-      if (m_incomingStreamBuffer.getMaxWriteSize() < sizeof(buf))
-        bufferMore = false;
-
-      if (bufferMore)
-      {
-        int read = m_streamingclient->receive((char *)buf, sizeof buf, 0);
-        if (read > 0)
-        {
-          //XBMC->Log(LOG_DEBUG, "ReadLiveStream() added %d bytes to buffer. (now at %d bytes)", read, m_incomingStreamBuffer.getMaxReadSize());
-          // write it to incoming ring buffer
-          m_incomingStreamBuffer.WriteData((char *)buf, read);
-        }
-        else
-        {
-          if (bufferWasEmpty && m_incomingStreamBuffer.getMaxReadSize() < (188*400))
-          {
-            usleep(50000);
-            read_timeouts++;
-          }
-          else if (m_incomingStreamBuffer.getMaxReadSize() >= iBufferSize)
-          {
-            // got enough data to continue
-            bufferMore = false;
-          }
-          else
-          {
-            usleep(50000);
-            read_timeouts++;
-          }
-        }
-      }
-
-      // is it taking too long?
-      if (read_timeouts > 200)
-      {
-        char *str = XBMC->GetLocalizedString(30053);
-        bufferMore = false;
-        if (str != NULL)
-        {
-          XBMC->QueueNotification(QUEUE_ERROR, str);
-        }
-        return -1;
-      }
-    }
-
-    // read from buffer to return for XBMC
-    if (m_incomingStreamBuffer.getMaxReadSize() < read)
-      read = m_incomingStreamBuffer.getMaxReadSize();
-    m_incomingStreamBuffer.ReadData((char *)pBuffer, read);
-
-    m_currentLivePosition += read;
-  }
-
-  //XBMC->Log(LOG_DEBUG, "ReadLiveStream return %d bytes (%d bytes remaining in buffer)", read, m_incomingStreamBuffer.getMaxReadSize());
-
-  return read;
+  XBMC->Log(LOG_DEBUG, "ReadLiveStream:%d bufsize: %d", __LINE__, iBufferSize);
+  return m_timeshiftBuffer->Read(pBuffer, iBufferSize);
 }
 
 void cPVRClientNextPVR::CloseLiveStream(void)
 {
   XBMC->Log(LOG_DEBUG, "CloseLiveStream");
-
-  if (m_pLiveShiftSource)
-  {
-    XBMC->Log(LOG_DEBUG, "Telling backend of live session closure");
-
-    char request[512];
-    sprintf(request, "/service?method=channel.stop");
-    std::string response;
-    DoRequest(request, response);
-    
-    m_pLiveShiftSource->Close();
-    delete m_pLiveShiftSource;
-    m_pLiveShiftSource = NULL;
-  }
-
-  // Socket no longer required. Server will clean up when socket is closed.
-  m_streamingclient->close(); 
+  m_timeshiftBuffer->Close();
   XBMC->Log(LOG_DEBUG, "CloseLiveStream@exit");
 }
 
 
 long long cPVRClientNextPVR::SeekLiveStream(long long iPosition, int iWhence)
 {
-  P8PLATFORM::CLockObject lock(m_mutex);
-
-  if (m_pLiveShiftSource != NULL)
-  {
-    m_pLiveShiftSource->Seek(iPosition);
-    return iPosition;
-  }
-
-  // not supported
-  return -1;
+  return m_timeshiftBuffer->Seek(iPosition, iWhence);
 }
 
 
 long long cPVRClientNextPVR::LengthLiveStream(void)
 {
-  if (m_pLiveShiftSource != NULL)
-  {
-    return m_pLiveShiftSource->GetLength();
-  }
-
-  // not supported
-  return -1;
+  return m_timeshiftBuffer->Length();
 }
 
 long long cPVRClientNextPVR::PositionLiveStream(void)
 {
-  if (m_pLiveShiftSource != NULL)
-  {
-    return m_pLiveShiftSource->GetPosition();
-  }
-
-  return m_currentLivePosition;
+  return m_timeshiftBuffer->Position();
 }
 
 PVR_ERROR cPVRClientNextPVR::SignalStatus(PVR_SIGNAL_STATUS &signalStatus)
@@ -2022,12 +1811,12 @@ PVR_ERROR cPVRClientNextPVR::SignalStatus(PVR_SIGNAL_STATUS &signalStatus)
 
 bool cPVRClientNextPVR::CanPauseStream(void)
 {
-  return (m_supportsLiveTimeshift && g_bUseTimeshift);
+  return m_timeshiftBuffer->CanPauseStream();
 }
 
 bool cPVRClientNextPVR::CanSeekStream(void)
 {
-  return (m_supportsLiveTimeshift && g_bUseTimeshift);
+  return m_timeshiftBuffer->CanSeekStream();
 }
 
 void Tokenize(const string& str, vector<string>& tokens, const string& delimiters = " ")
@@ -2049,181 +1838,48 @@ void Tokenize(const string& str, vector<string>& tokens, const string& delimiter
 /** Record stream handling */
 
 
-bool cPVRClientNextPVR::OpenRecordingInternal(long long seekOffset)
-{
-  if (!m_streamingclient->create())
-  {
-    XBMC->Log(LOG_ERROR, "Could not connect create streaming socket");
-    return false;
-  }
-
-  if (!m_streamingclient->connect(g_szHostname, g_iPort))
-  {
-    XBMC->Log(LOG_ERROR, "Could not connect to NextPVR backend for streaming");
-    return false;
-  }
-
-  
-  char line[256];
-  sprintf(line, "GET /live?recording=%s&client=XBMC HTTP/1.0\r\n", m_currentRecordingID);
-  m_streamingclient->send(line, strlen(line));
-
-  if (seekOffset != 0)
-  {
-    sprintf(line, "Range: bytes=%lld-\r\n", seekOffset);
-    m_streamingclient->send(line, strlen(line));
-  }
-
-  sprintf(line, "Connection: close\r\n");
-  m_streamingclient->send(line, strlen(line));
-
-  sprintf(line, "\r\n");
-  m_streamingclient->send(line, strlen(line));
-  
-  char buf[1024];
-  int read = m_streamingclient->receive(buf, sizeof buf, 0);
-
-  for (int i=0; i<read; i++)
-  {
-    if (buf[i] == '\r' && buf[i+1] == '\n' && buf[i+2] == '\r' && buf[i+3] == '\n')
-    {
-      int remainder = read - (i+4);
-      if (remainder > 0)
-      {
-        m_incomingStreamBuffer.WriteData((char *)&buf[i+4], remainder);
-      }
-
-      // extract recording length from HTTP headers
-      if (seekOffset == 0 && m_currentRecordingLength == 0)
-      {
-        char tempHeader[256];
-        if (i < sizeof(tempHeader))
-        {
-          memset(tempHeader, 0, sizeof(tempHeader));
-          memcpy(tempHeader, buf, i);
-          XBMC->Log(LOG_DEBUG, "%s", tempHeader);
-
-          std::string header(tempHeader);
-          std::vector<string> lines;
-          Tokenize(header, lines, "\r\n");
-          for (vector<string>::iterator it = lines.begin(); it < lines.end(); ++it)
-          {
-            std::string& line(*it);
-            if (line.find("Content-Length") != std::string::npos)
-            {
-              m_currentRecordingLength = atoll(&line[line.find(":")] + 2);
-              break;
-            }
-          }
-        }
-      }
-
-      // long blocking from now on
-      m_streamingclient->set_non_blocking(1);
-        
-      XBMC->Log(LOG_DEBUG, "OpenRecordingInternal returning 'true'");
-      return true;
-    }
-  }
-
-  XBMC->Log(LOG_DEBUG, "OpenRecordingInternal returning 'false'");
-  return false;
-}
-
 bool cPVRClientNextPVR::OpenRecordedStream(const PVR_RECORDING &recording)
 {
-  XBMC->Log(LOG_DEBUG, "OpenRecordedStream(%s:%s)", recording.strRecordingId, recording.strTitle);
   
+  XBMC->Log(LOG_DEBUG, "OpenRecordedStream(%s:%s)", recording.strRecordingId, recording.strTitle);
   m_currentRecordingLength = 0;
   m_currentRecordingPosition = 0;
   PVR_STRCLR(m_currentRecordingID);
 
   PVR_STRCPY(m_currentRecordingID, recording.strRecordingId);
-  return OpenRecordingInternal(0);
+  char line[1024];
+  sprintf(line, "http://%s:%d/live?recording=%s&client=XBMC", g_szHostname.c_str(), g_iPort, m_currentRecordingID);
+  return m_recordingBuffer->Open(line);
 }
 
 void cPVRClientNextPVR::CloseRecordedStream(void)
 {
-  m_streamingclient->close();
-
+  m_recordingBuffer->Close();
   m_currentRecordingLength = 0;
   m_currentRecordingPosition = 0;
 }
 
 int cPVRClientNextPVR::ReadRecordedStream(unsigned char *pBuffer, unsigned int iBufferSize)
 {
-  P8PLATFORM::CLockObject lock(m_mutex);
   XBMC->Log(LOG_DEBUG, "ReadRecordedStream(%d bytes from offset %d)", iBufferSize, (int)m_currentRecordingPosition);
-
-  // do we have enough data to fill this buffer? 
-  unsigned char buf[188*100];
-  while (m_incomingStreamBuffer.getMaxReadSize() < iBufferSize)
-  {
-    // no, then read more
-    int read = m_streamingclient->receive((char *)buf, sizeof buf, 0);
-    if (read > 0)
-    {
-      // write it to incoming ring buffer
-      m_incomingStreamBuffer.WriteData((char *)buf, read);
-    }
-  }
-
-  // read from buffer to return for XBMC
-  m_incomingStreamBuffer.ReadData((char *)pBuffer, iBufferSize);
-  m_currentRecordingPosition += iBufferSize;
-  XBMC->Log(LOG_DEBUG, "ReadRecordedStream return %d bytes", iBufferSize);
+  iBufferSize = m_recordingBuffer->Read(pBuffer, iBufferSize);
   return iBufferSize;
+
 }
 
 long long cPVRClientNextPVR::SeekRecordedStream(long long iPosition, int iWhence)
 {
-  P8PLATFORM::CLockObject lock(m_mutex);
-
-  if (m_currentRecordingLength != 0)
-  {
-    m_streamingclient->close();
-    if (iWhence == SEEK_END)
-      iPosition = m_currentRecordingPosition - iPosition;
-
-    XBMC->Log(LOG_DEBUG, "SeekRecordedStream(%d, %d)", (int)iPosition, iWhence);
-
-    OpenRecordingInternal(iPosition);
-    m_currentRecordingPosition = iPosition;
-    return iPosition;
-  }
-
-  XBMC->Log(LOG_DEBUG, "SeekRecordedStream returning -1");
-
-  // not supported
-  return -1;  
+  return m_recordingBuffer->Seek(iPosition, iWhence);
 }
 
 long long cPVRClientNextPVR::PositionRecordedStream(void)
 {
-  if (m_currentRecordingLength != 0)
-  {
-    XBMC->Log(LOG_DEBUG, "PositionRecordedStream returning %d", (int)m_currentRecordingPosition);
-    return m_currentRecordingPosition;
-  }
-
-  XBMC->Log(LOG_DEBUG, "PositionRecordedStream returning -1");
-
-  // not supported
-  return -1;
+  return m_recordingBuffer->Position();
 }
 
 long long  cPVRClientNextPVR::LengthRecordedStream(void)
 {
-  if (m_currentRecordingLength != 0)
-  {
-    XBMC->Log(LOG_DEBUG, "LengthRecordedStream returning %d", (int)m_currentRecordingLength);
-    return m_currentRecordingLength;
-  }
-
-  XBMC->Log(LOG_DEBUG, "LengthRecordedStream returning -1");
-
-  // not supported
-  return -1;
+  return m_recordingBuffer->Length();
 }
 
 /************************************************************/
@@ -2258,3 +1914,160 @@ int cPVRClientNextPVR::DoRequest(const char *resource, std::string &response)
   
   return resultCode;
 }
+
+time_t cPVRClientNextPVR::GetBufferTimeStart(void)
+{
+  return m_timeshiftBuffer->GetStartTime();
+}
+
+time_t cPVRClientNextPVR::GetBufferTimeEnd(void)
+{ 
+  return m_timeshiftBuffer->GetEndTime();
+}
+
+time_t cPVRClientNextPVR::GetPlayingTime()
+{
+  return m_timeshiftBuffer->GetPlayingTime();
+}
+
+bool cPVRClientNextPVR::IsTimeshifting()
+{
+  return m_timeshiftBuffer->IsTimeshifting();
+}
+
+bool cPVRClientNextPVR::IsRealTimeStream()
+{
+  return m_timeshiftBuffer->IsRealTimeStream();
+}
+
+#if DEBUGGING_XML
+
+// ----------------------------------------------------------------------
+// LOG dump and indenting utility functions
+// ----------------------------------------------------------------------
+const unsigned int NUM_INDENTS_PER_SPACE=2;
+
+const char * getIndent( unsigned int numIndents )
+{
+  static const char * pINDENT="                                      + ";
+  static const unsigned int LENGTH=strlen( pINDENT );
+  unsigned int n=numIndents*NUM_INDENTS_PER_SPACE;
+  if ( n > LENGTH ) n = LENGTH;
+
+  return &pINDENT[ LENGTH-n ];
+}
+
+// same as getIndent but no "+" at the end
+const char * getIndentAlt( unsigned int numIndents )
+{
+  static const char * pINDENT="                                        ";
+  static const unsigned int LENGTH=strlen( pINDENT );
+  unsigned int n=numIndents*NUM_INDENTS_PER_SPACE;
+  if ( n > LENGTH ) n = LENGTH;
+
+  return &pINDENT[ LENGTH-n ];
+}
+
+int dump_attribs_to_stdout(TiXmlElement* pElement, unsigned int indent)
+{
+  if ( !pElement ) return 0;
+
+  TiXmlAttribute* pAttrib=pElement->FirstAttribute();
+  int i=0;
+  int ival;
+  double dval;
+  const char* pIndent=getIndent(indent);
+  // XBMC->Log(LOG_NOTICE, "\n");
+  while (pAttrib)
+  {
+    char buf[1024];
+    sprintf(buf, "%s%s: value=[%s]", pIndent, pAttrib->Name(), pAttrib->Value());
+    // XBMC->Log(LOG_NOTICE,  "%s%s: value=[%s]", pIndent, pAttrib->Name(), pAttrib->Value());
+
+    if (pAttrib->QueryIntValue(&ival)==TIXML_SUCCESS)    
+    {
+      sprintf(buf + strlen(buf), " int=%d", ival);
+      // XBMC->Log(LOG_NOTICE,  " int=%d", ival);
+    }
+    if (pAttrib->QueryDoubleValue(&dval)==TIXML_SUCCESS)
+    {
+      sprintf(buf + strlen(buf), " d=%1.1f", dval);
+      // XBMC->Log(LOG_NOTICE,  " d=%1.1f", dval);
+    }
+    XBMC->Log(LOG_NOTICE,  "%s\n", buf );
+    i++;
+    pAttrib=pAttrib->Next();
+  }
+  return i; 
+}
+
+void dump_to_log( TiXmlNode* pParent, unsigned int indent)
+{
+  if ( !pParent ) return;
+
+  char buf[2048];
+  TiXmlNode* pChild;
+  TiXmlText* pText;
+  int t = pParent->Type();
+  sprintf(buf, "%s", getIndent(indent));
+  // XBMC->Log(LOG_NOTICE,  "%s", getIndent(indent));
+  int num;
+
+  switch ( t )
+  {
+  case TiXmlNode::TINYXML_DOCUMENT:
+    sprintf(buf + strlen(buf), "Document");
+    // XBMC->Log(LOG_NOTICE,  "Document" );
+    break;
+
+  case TiXmlNode::TINYXML_ELEMENT:
+    sprintf(buf + strlen(buf), "Element [%s]", pParent->Value());
+    // XBMC->Log(LOG_NOTICE,  "Element [%s]", pParent->Value() );
+    num=dump_attribs_to_stdout(pParent->ToElement(), indent+1);
+    switch(num)
+    {
+      case 0:
+        sprintf(buf + strlen(buf), " (No attributes)");
+        // XBMC->Log(LOG_NOTICE,  " (No attributes)"); 
+        break;
+      case 1:
+        sprintf(buf + strlen(buf), "%s1 attribute", getIndentAlt(indent));
+        // XBMC->Log(LOG_NOTICE,  "%s1 attribute", getIndentAlt(indent)); 
+        break;
+      default:
+        sprintf(buf + strlen(buf), "%s%d attributes", getIndentAlt(indent), num);
+        // XBMC->Log(LOG_NOTICE,  "%s%d attributes", getIndentAlt(indent), num);
+        break;
+    }
+    break;
+
+  case TiXmlNode::TINYXML_COMMENT:
+    sprintf(buf + strlen(buf), "Comment: [%s]", pParent->Value());
+    //XBMC->Log(LOG_NOTICE,  "Comment: [%s]", pParent->Value());
+    break;
+
+  case TiXmlNode::TINYXML_UNKNOWN:
+    sprintf(buf + strlen(buf), "Unknown");
+    // XBMC->Log(LOG_NOTICE,  "Unknown" );
+    break;
+
+  case TiXmlNode::TINYXML_TEXT:
+    pText = pParent->ToText();
+    sprintf(buf + strlen(buf), "Text: [%s]", pText->Value());
+    // XBMC->Log(LOG_NOTICE,  "Text: [%s]", pText->Value() );
+    break;
+
+  case TiXmlNode::TINYXML_DECLARATION:
+    sprintf(buf + strlen(buf), "Declaration");
+    // XBMC->Log(LOG_NOTICE,  "Declaration" );
+    break;
+  default:
+    break;
+  }
+  XBMC->Log(LOG_NOTICE,  "%s\n", buf );
+  for ( pChild = pParent->FirstChild(); pChild != 0; pChild = pChild->NextSibling()) 
+  {
+    dump_to_log( pChild, indent+1 );
+  }
+}
+#endif // DEBUGGING_XML
