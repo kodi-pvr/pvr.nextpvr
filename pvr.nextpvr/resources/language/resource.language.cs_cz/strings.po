@@ -50,7 +50,7 @@ msgstr "Server NextPVR je příliš starý."
 
 msgctxt "#30051"
 msgid "Upgrade to '%s' or higher!"
-msgstr "Upgradujte na '%s' nebo vyšší!"
+msgstr "Přejděte na verzi „%s“ nebo novější!"
 
 msgctxt "#30052"
 msgid "Connection failed. Incorrect PIN?"
@@ -58,15 +58,15 @@ msgstr "Spojení selhalo. Nesprávný PIN?"
 
 msgctxt "#30053"
 msgid "Tuner no longer available"
-msgstr "Tuner již není dostupný"
+msgstr "Tuner už není dostupný"
 
 msgctxt "#30140"
 msgid "One time (manual)"
-msgstr "Jednou (ručně)"
+msgstr "Jednorázově (ručně)"
 
 msgctxt "#30141"
 msgid "One time (guide)"
-msgstr "Jednou (program)"
+msgstr "Jednorázově (program)"
 
 msgctxt "#30142"
 msgid "Repeating (manual)"
