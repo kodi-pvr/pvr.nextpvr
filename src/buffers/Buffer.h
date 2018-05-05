@@ -121,6 +121,7 @@ namespace timeshift {
       stimes->ptsStart = 0;
       stimes->ptsBegin = 0;
       stimes->ptsEnd = time(nullptr) * DVD_TIME_BASE;
+      return PVR_ERROR_NO_ERROR;
     }
     
     virtual time_t GetPlayingTime()

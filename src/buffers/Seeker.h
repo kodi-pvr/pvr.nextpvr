@@ -19,6 +19,9 @@
 *  http://www.gnu.org/copyleft/gpl.html
 *
 */
+#if defined(TARGET_WINDOWS)
+#include <algorithm>
+#endif
 #include "../client.h"
 #include "CircularBuffer.h"
 #include "session.h"
