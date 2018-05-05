@@ -691,14 +691,14 @@ bool IsTimeshifting(void)
 { 
   if (g_client)
     return g_client->IsTimeshifting();
-  return PVR_ERROR_SERVER_ERROR;
+  return false;
 }
 
 bool IsRealTimeStream(void)
 { 
   if (g_client)
     return g_client->IsRealTimeStream();
-  return PVR_ERROR_SERVER_ERROR;
+  return false;
 }
 
 PVR_ERROR GetStreamTimes(PVR_STREAM_TIMES *stimes)

@@ -74,7 +74,7 @@ bool Seeker::PreprocessSeek()
       int64_t seekTarget = m_xStreamOffset + m_iBlockOffset;
       if (m_xStreamOffset < m_pSd->lastBlockBuffered)
       { // Seeking forward in buffer.
-        int seekDiff = curStreamPtr - seekTarget;
+        int seekDiff = (int )(curStreamPtr - seekTarget);
         m_pSd->streamPosition.store(seekTarget);
         m_cirBuf->AdjustBytes(seekDiff);
       }
@@ -83,7 +83,7 @@ bool Seeker::PreprocessSeek()
         m_bSeekBlockRequested = true;
         m_cirBuf->Reset();
         XBMC->Log(LOG_DEBUG, "%s:%d: currentWindowSize = %d", __FUNCTION__, __LINE__, m_pSd->currentWindowSize);
-        m_pSd->currentWindowSize -= (curBlock - m_pSd->lastBlockBuffered) / m_pSd->inputBlockSize;
+        m_pSd->currentWindowSize -= (int )((curBlock - m_pSd->lastBlockBuffered) / m_pSd->inputBlockSize);
         m_pSd->currentWindowSize = std::min(0,  m_pSd->currentWindowSize);
         XBMC->Log(LOG_DEBUG, "%s:%d: currentWindowSize = %d", __FUNCTION__, __LINE__, m_pSd->currentWindowSize);
       }

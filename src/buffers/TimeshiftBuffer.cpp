@@ -26,8 +26,6 @@
 */
 
 #include "TimeshiftBuffer.h"
-#include <cstring>
-#include "p8-platform/os.h"
 
 using namespace timeshift;
 using namespace ADDON;
@@ -218,7 +216,7 @@ int TimeshiftBuffer::Read(byte *buffer, size_t length)
   m_reader.wait_for(lock, std::chrono::seconds(m_readTimeout),
     [this, length]()
   {
-    return m_circularBuffer.BytesAvailable() >= length;
+    return m_circularBuffer.BytesAvailable() >= (int )length;
   });
   
   bytesRead = m_circularBuffer.ReadBytes(buffer, length);
@@ -267,7 +265,7 @@ time_t TimeshiftBuffer::GetStartTime()
       m_sd.tsbStartTime = Buffer::GetStartTime();
     }
     time_t now = time(nullptr);
-    int time_diff = now - m_sd.tsbStartTime;
+    time_t time_diff = now - m_sd.tsbStartTime;
     XBMC->Log(LOG_DEBUG, "time_diff: %d, m_tsbStartTime: %d", time_diff, m_sd.tsbStartTime);
     if (time_diff > g_timeShiftBufferSeconds)
     {
@@ -319,10 +317,10 @@ time_t TimeshiftBuffer::GetPlayingTime()
     int64_t tsb_len = end - local_tsb_start;
     uint64_t pos = Position();
     uint64_t temp = (now - start) * (pos - local_tsb_start);
-    int  viewPos = temp ? (temp / tsb_len) : 0;
+    int64_t  viewPos = temp ? (temp / tsb_len) : 0;
     XBMC->Log(LOG_DEBUG, "tsb_start: %lli, end: %llu, tsb_len: %lli, viewPos: %d B/sec: %d", 
               local_tsb_start, end, tsb_len, viewPos, m_sd.iBytesPerSecond);
-    return start + viewPos;
+    return (time_t )(start + viewPos);
   }
   return 0;
 }
@@ -347,7 +345,6 @@ void TimeshiftBuffer::internalRequestBlocks()
     char request[48];
     memset(request, 0, sizeof(request));
     snprintf(request, sizeof(request), "Range: bytes=%llu-%llu-%d", blockOffset, (blockOffset+INPUT_READ_LENGTH), m_sd.requestNumber);
-    int sent;
     XBMC->Log(LOG_DEBUG, "sending request: %s\n", request);
     if (m_streamingclient->send(request, sizeof(request)) != sizeof(request))
     {
@@ -407,7 +404,11 @@ uint32_t TimeshiftBuffer::WatchForBlock(byte *buffer, uint64_t *block)
       else if (responseByteCount < 0 && errno == EAGAIN)
   #endif
       {
+#if defined(TARGET_WINDOWS)
+		Sleep(50);
+#else
         usleep(50000);
+#endif
         XBMC->Log(LOG_DEBUG, "got: %d", errno);
         retries--;
         continue;
@@ -424,7 +425,7 @@ uint32_t TimeshiftBuffer::WatchForBlock(byte *buffer, uint64_t *block)
         XBMC->Log(LOG_DEBUG, "Adjust lastKnownLength, and reset m_sd.lastBufferTime!");
         m_sd.lastBufferTime = time(NULL);
         time_t elapsed = m_sd.lastBufferTime - m_sd.sessionStartTime;
-        m_sd.iBytesPerSecond = elapsed ? fileSize / elapsed : fileSize; // Running estimate of 1 second worth of stream bytes.
+        m_sd.iBytesPerSecond = (int )(elapsed ? fileSize / elapsed : fileSize); // Running estimate of 1 second worth of stream bytes.
         m_sd.lastKnownLength.store(fileSize);
       }
       

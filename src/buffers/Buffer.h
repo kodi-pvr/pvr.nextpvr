@@ -19,7 +19,10 @@
 *  http://www.gnu.org/copyleft/gpl.html
 *
 */
-
+#if defined(TARGET_WINDOWS)
+  #include <windows.h>
+  #include <Synchapi.h>
+#endif
 #include <string>
 #include <ctime>
 #include <atomic>

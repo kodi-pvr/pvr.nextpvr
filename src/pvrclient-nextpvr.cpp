@@ -293,7 +293,7 @@ bool cPVRClientNextPVR::Connect()
                 if ( settingsDoc.RootElement()->FirstChildElement("RecordingDirectories") != NULL &&  settingsDoc.RootElement()->FirstChildElement("RecordingDirectories")->FirstChild() != NULL)
                 {
                   vector<std::string> directories = split(settingsDoc.RootElement()->FirstChildElement("RecordingDirectories")->FirstChild()->Value(), ",", false);
-                  for (int i = 0; i < directories.size(); i++)
+                  for (size_t i = 0; i < directories.size(); i++)
                   {
                     m_recordingDirectories.push_back(directories[i]);
                   }
