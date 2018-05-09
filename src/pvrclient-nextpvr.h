@@ -27,8 +27,9 @@
 #include "Socket.h"
 #include "p8-platform/threads/mutex.h"
 #include "p8-platform/threads/threads.h"
-#include "RingBuffer.h"
-#include "liveshift.h"
+#include "buffers/DummyBuffer.h"
+#include "buffers/TimeshiftBuffer.h"
+#include "buffers/RecordingBuffer.h"
 
 #define SAFE_DELETE(p)       do { delete (p);     (p)=NULL; } while (0)
 
@@ -86,6 +87,7 @@ public:
   const char* GetConnectionString(void);
   PVR_ERROR GetDriveSpace(long long *iTotal, long long *iUsed);
   PVR_ERROR GetBackendTime(time_t *localTime, int *gmtOffset);
+  PVR_ERROR GetStreamTimes(PVR_STREAM_TIMES *stimes);
 
   /* EPG handling */
   PVR_ERROR GetEpg(ADDON_HANDLE handle, const PVR_CHANNEL &channel, time_t iStart = 0, time_t iEnd = 0);
@@ -125,9 +127,13 @@ public:
   PVR_ERROR SignalStatus(PVR_SIGNAL_STATUS &signalStatus);
   long long SeekLiveStream(long long iPosition, int iWhence = SEEK_SET);
   long long LengthLiveStream(void);
-  long long PositionLiveStream(void);
   bool CanPauseStream(void);
   bool CanSeekStream(void);
+  time_t GetBufferTimeStart(void);
+  time_t GetBufferTimeEnd(void);
+  time_t GetPlayingTime(void);
+  bool IsTimeshifting(void);
+  bool IsRealTimeStream(void);
 
   /* Record stream handling */
   bool OpenRecordedStream(const PVR_RECORDING &recording);
@@ -135,7 +141,6 @@ public:
   int ReadRecordedStream(unsigned char *pBuffer, unsigned int iBufferSize);
   long long SeekRecordedStream(long long iPosition, int iWhence = SEEK_SET);
   long long LengthRecordedStream(void);
-  long long PositionRecordedStream(void);
 
   /* background connection monitoring */
   void *Process(void);
@@ -150,7 +155,6 @@ private:
   bool GetChannel(unsigned int number, PVR_CHANNEL &channeldata);
   bool LoadGenreXML(const std::string &filename);
   int DoRequest(const char *resource, std::string &response);
-  bool OpenRecordingInternal(long long seekOffset);
   std::string GetChannelIcon(int channelID);
   void Close();
 
@@ -158,8 +162,6 @@ private:
   bool                    m_bConnected;  
   std::string             m_BackendName;
   P8PLATFORM::CMutex        m_mutex;
-
-  CRingBuffer             m_incomingStreamBuffer;
 
   char                    m_currentRecordingID[1024];
   long long               m_currentRecordingLength;
@@ -172,10 +174,6 @@ private:
   int                     m_iDefaultPostPadding;  
   std::vector< std::string > m_recordingDirectories;
 
-  std::string             m_PlaybackURL;
-  LiveShiftSource        *m_pLiveShiftSource;
-  unsigned int            m_iLiveStreamUID;
-
   int64_t                 m_lastRecordingUpdateTime;
 
   char                    m_sid[64];
@@ -184,4 +182,8 @@ private:
 
   int                     m_defaultLimit;
   int                     m_defaultShowType;
+  time_t                  m_tsbStartTime;
+  int                     m_timeShiftBufferSeconds;
+  timeshift::Buffer      *m_timeshiftBuffer;
+  timeshift::RecordingBuffer *m_recordingBuffer;
 };
