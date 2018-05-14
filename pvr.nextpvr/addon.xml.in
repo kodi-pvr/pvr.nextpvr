@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon
   id="pvr.nextpvr"
-  version="3.2.7"
+  version="3.2.8"
   name="NextPVR PVR Client"
   provider-name="Graeme Blackley">
   <requires>@ADDON_DEPENDS@</requires>
@@ -11,7 +11,7 @@
   <extension point="xbmc.addon.metadata">
     <summary lang="af_ZA">Kodi voorprogram vir die NextPVR</summary>
     <summary lang="be_BY">Kodi frontend for the NextPVR</summary>
-    <summary lang="bg_BG">Kodi клиент за NextPVR</summary>
+    <summary lang="bg_BG">Клиент за „NextPVR“</summary>
     <summary lang="ca_ES">Frontal de Kodi per a NextPVR</summary>
     <summary lang="cs_CZ">Rozhraní Kodi pro NextPVR</summary>
     <summary lang="cy_GB">Blaen Kodi ar gyfer NextPVR</summary>
@@ -64,7 +64,7 @@
     <summary lang="zh_TW">NextPVR的Kodi前端</summary>
     <description lang="af_ZA">NextPVR voorprogram. Ondersteun stroom van Lewendige TV &amp; Opnames, luister na Radio kanale en EPG.</description>
     <description lang="be_BY">NextPVR frontend. Supports streaming of Live TV &amp; Recordings, listening to Radio channels and EPG.</description>
-    <description lang="bg_BG">NextPVR клиент. Поддържа поточна телевизия и записване, слушане на радио канали и електронен програмен справочник.</description>
+    <description lang="bg_BG">Клиент за „NextPVR“. Поддържа телевизия на живо и записване, слушане на радио канали и електронен програмен справочник.</description>
     <description lang="ca_ES">Frontal de NextPVR. És compatible amb les transmissions en línia de TV en directe i enregistraments, escolta d'emissores de ràdio i guia electrònica de programació (EPG).</description>
     <description lang="cs_CZ">Rozhraní NextPVR. Podporuje streamování živého vysílání a nahrávek, poslech kanálů rádia a televizní program.</description>
     <description lang="cy_GB">Blaen NextPVR. Mae'n cynnal ffrydio Teledu Byw a Recordiadau, gwrando ar sianeli Radio ac Amserlenni Rhaglenni Electronig.</description>

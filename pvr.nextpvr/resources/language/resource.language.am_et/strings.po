@@ -32,6 +32,14 @@ msgctxt "#30052"
 msgid "Connection failed. Incorrect PIN?"
 msgstr "ግንኙነቱ አልተሳካም የተሳሳተ PIN?"
 
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "አንድ ጊዜ (በ እጅ)"
+
+msgctxt "#30141"
+msgid "One time (guide)"
+msgstr "አንድ ጊዜ (መምሪያ)"
+
 msgctxt "#30150"
 msgid "All Recordings"
 msgstr "ሁሉንም መቅረጫ "
