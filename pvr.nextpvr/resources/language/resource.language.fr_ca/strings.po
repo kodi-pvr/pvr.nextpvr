@@ -50,11 +50,11 @@ msgstr "Le serveur NextPVR est trop ancien."
 
 msgctxt "#30051"
 msgid "Upgrade to '%s' or higher!"
-msgstr "Mettre à niveau vers « %s » ou ultérieure!"
+msgstr "Mettre à niveau vers « %s » ou ultérieure !"
 
 msgctxt "#30052"
 msgid "Connection failed. Incorrect PIN?"
-msgstr "Échec de connexion. NIP erroné?"
+msgstr "Échec de connexion. NIP erroné ?"
 
 msgctxt "#30053"
 msgid "Tuner no longer available"
