@@ -68,8 +68,10 @@ void dump_to_log( TiXmlNode* pParent, unsigned int indent);
 #define DEBUGGING_API 0
 #if DEBUGGING_API
 #define LOG_API_CALL(f) XBMC->Log(LOG_ERROR, "%s:  called!", f)
+#define LOG_API_IRET(f,i) XBMC->Log(LOG_ERROR, "%s: returns %d", f, i)
 #else
 #define LOG_API_CALL(f)
+#define LOG_API_IRET(f,i)
 #endif
 
 const char SAFE[256] =
@@ -831,7 +833,8 @@ PVR_ERROR cPVRClientNextPVR::GetChannelGroupMembers(ADDON_HANDLE handle, const P
 int cPVRClientNextPVR::GetNumRecordings(void)
 {
   // need something more optimal, but this will do for now...
-  int recordingCount = 0;
+  // Return -1 on error.
+  int recordingCount = -1;
   LOG_API_CALL(__FUNCTION__);
 
   std::string response;
@@ -844,6 +847,7 @@ int cPVRClientNextPVR::GetNumRecordings(void)
       if (recordingsNode != NULL)
       {
         TiXmlElement* pRecordingNode;
+        recordingCount = 0;
         for( pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode=pRecordingNode->NextSiblingElement())
         {
           recordingCount++;
@@ -851,13 +855,14 @@ int cPVRClientNextPVR::GetNumRecordings(void)
       }
     }
   }
-  
+  LOG_API_IRET(__FUNCTION__, recordingCount);
   return recordingCount;
 }
 
 PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
 {
   // include already-completed recordings
+  PVR_ERROR returnValue = PVR_ERROR_NO_ERROR;
   LOG_API_CALL(__FUNCTION__);
   std::string response;
   if (DoRequest("/service?method=recording.list&filter=ready", response) == HTTP_OK)
@@ -921,52 +926,56 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
         PVR->TransferRecordingEntry(handle, &tag);
       }
     }
-  XBMC->Log(LOG_DEBUG, "Updated recordings %lld", m_lastRecordingUpdateTime);
-  }
-
-  // ...and any in-progress recordings
-  if (DoRequest("/service?method=recording.list&filter=pending", response) == HTTP_OK)
-  {
-    TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != NULL)
+    XBMC->Log(LOG_DEBUG, "Updated recordings %lld", m_lastRecordingUpdateTime);
+    // ...and any in-progress recordings
+    if (DoRequest("/service?method=recording.list&filter=pending", response) == HTTP_OK)
     {
-      //XBMC->Log(LOG_NOTICE, "Recordings [pending:%d]:", __LINE__);
-      //dump_to_log(&doc, 0);
-      PVR_RECORDING   tag;
-
-      TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
-      TiXmlElement* pRecordingNode;
-      for( pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode=pRecordingNode->NextSiblingElement())
+      TiXmlDocument doc;
+      if (doc.Parse(response.c_str()) != NULL)
       {
-        memset(&tag, 0, sizeof(PVR_RECORDING));
-        
-        PVR_STRCPY(tag.strRecordingId, pRecordingNode->FirstChildElement("id")->FirstChild()->Value());
-        PVR_STRCPY(tag.strTitle, pRecordingNode->FirstChildElement("name")->FirstChild()->Value());
-        PVR_STRCPY(tag.strDirectory, pRecordingNode->FirstChildElement("name")->FirstChild()->Value());
+        //XBMC->Log(LOG_NOTICE, "Recordings [pending:%d]:", __LINE__);
+        //dump_to_log(&doc, 0);
+        PVR_RECORDING   tag;
 
-        if (pRecordingNode->FirstChildElement("desc") != NULL && pRecordingNode->FirstChildElement("desc")->FirstChild() != NULL)
+        TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
+        TiXmlElement* pRecordingNode;
+        for( pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode=pRecordingNode->NextSiblingElement())
         {
-          PVR_STRCPY(tag.strPlot, pRecordingNode->FirstChildElement("desc")->FirstChild()->Value());
-        }
+          memset(&tag, 0, sizeof(PVR_RECORDING));
+          
+          PVR_STRCPY(tag.strRecordingId, pRecordingNode->FirstChildElement("id")->FirstChild()->Value());
+          PVR_STRCPY(tag.strTitle, pRecordingNode->FirstChildElement("name")->FirstChild()->Value());
+          PVR_STRCPY(tag.strDirectory, pRecordingNode->FirstChildElement("name")->FirstChild()->Value());
 
-        tag.recordingTime = atoi(pRecordingNode->FirstChildElement("start_time_ticks")->FirstChild()->Value());
-        tag.iDuration = atoi(pRecordingNode->FirstChildElement("duration_seconds")->FirstChild()->Value());
+          if (pRecordingNode->FirstChildElement("desc") != NULL && pRecordingNode->FirstChildElement("desc")->FirstChild() != NULL)
+          {
+            PVR_STRCPY(tag.strPlot, pRecordingNode->FirstChildElement("desc")->FirstChild()->Value());
+          }
 
-        /* TODO: PVR API 5.0.0: Implement this */
-        tag.iChannelUid = PVR_CHANNEL_INVALID_UID;
+          tag.recordingTime = atoi(pRecordingNode->FirstChildElement("start_time_ticks")->FirstChild()->Value());
+          tag.iDuration = atoi(pRecordingNode->FirstChildElement("duration_seconds")->FirstChild()->Value());
 
-        /* TODO: PVR API 5.1.0: Implement this */
-        tag.channelType = PVR_RECORDING_CHANNEL_TYPE_UNKNOWN;
+          /* TODO: PVR API 5.0.0: Implement this */
+          tag.iChannelUid = PVR_CHANNEL_INVALID_UID;
 
-        if (tag.recordingTime <= time(NULL) && (tag.recordingTime + tag.iDuration) >= time(NULL))
-        {
-          PVR->TransferRecordingEntry(handle, &tag);
+          /* TODO: PVR API 5.1.0: Implement this */
+          tag.channelType = PVR_RECORDING_CHANNEL_TYPE_UNKNOWN;
+
+          if (tag.recordingTime <= time(NULL) && (tag.recordingTime + tag.iDuration) >= time(NULL))
+          {
+            PVR->TransferRecordingEntry(handle, &tag);
+          }
         }
       }
     }
+    m_lastRecordingUpdateTime = time(0);
   }
-  m_lastRecordingUpdateTime = time(0);
-  return PVR_ERROR_NO_ERROR;
+  else
+  {
+    returnValue = PVR_ERROR_SERVER_ERROR;
+  }
+  LOG_API_IRET(__FUNCTION__, returnValue);
+  return returnValue;
 }
 
 PVR_ERROR cPVRClientNextPVR::DeleteRecording(const PVR_RECORDING &recording)
@@ -1069,10 +1078,12 @@ PVR_ERROR cPVRClientNextPVR::GetRecordingEdl(const PVR_RECORDING& recording, PVR
 /************************************************************/
 /** Timer handling */
 
+
 int cPVRClientNextPVR::GetNumTimers(void)
 {
   LOG_API_CALL(__FUNCTION__);
-  int timerCount = 0;
+  // Return -1 in case of error.
+  int timerCount = -1;
   std::string response;
 
   // get list of recurring recordings
@@ -1085,6 +1096,7 @@ int cPVRClientNextPVR::GetNumTimers(void)
       if (recordingsNode != NULL)
       {
         TiXmlElement* pRecordingNode;
+        timerCount = 0;
         for( pRecordingNode = recordingsNode->FirstChildElement("recurring"); pRecordingNode; pRecordingNode=pRecordingNode->NextSiblingElement())
         {
           timerCount++;
@@ -1105,6 +1117,8 @@ int cPVRClientNextPVR::GetNumTimers(void)
       if (recordingsNode != NULL)
       {
         TiXmlElement* pRecordingNode;
+        if (timerCount == -1)
+          timerCount = 0;
         for( pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode=pRecordingNode->NextSiblingElement())
         {
           timerCount++;
@@ -1112,13 +1126,14 @@ int cPVRClientNextPVR::GetNumTimers(void)
       }
     }
   }
-  
+  LOG_API_IRET(__FUNCTION__, timerCount);
   return timerCount;
 }
 
 PVR_ERROR cPVRClientNextPVR::GetTimers(ADDON_HANDLE handle)
 {
   std::string response;
+  PVR_ERROR returnValue = PVR_ERROR_NO_ERROR;
   LOG_API_CALL(__FUNCTION__);
 
   // first add the recurring recordings
@@ -1242,100 +1257,96 @@ PVR_ERROR cPVRClientNextPVR::GetTimers(ADDON_HANDLE handle)
         PVR->TransferTimerEntry(handle, &tag);
       }
     }
-  }
-
-  // next add the one-off recordings.
-  response = "";
-  if (DoRequest("/service?method=recording.list&filter=pending", response) == HTTP_OK)
-  {
-    TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != NULL)
+    // next add the one-off recordings.
+    response = "";
+    if (DoRequest("/service?method=recording.list&filter=pending", response) == HTTP_OK)
     {
-      PVR_TIMER tag;
-
-      TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
-      TiXmlElement* pRecordingNode;
-      for( pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode=pRecordingNode->NextSiblingElement())
+      TiXmlDocument doc;
+      if (doc.Parse(response.c_str()) != NULL)
       {
-        memset(&tag, 0, sizeof(tag));
+        PVR_TIMER tag;
 
-        tag.iTimerType = pRecordingNode->FirstChildElement("epg_event_oid") ? TIMER_ONCE_EPG : TIMER_ONCE_MANUAL;
-
-        tag.iClientIndex = atoi(pRecordingNode->FirstChildElement("id")->FirstChild()->Value());
-        tag.iClientChannelUid = atoi(pRecordingNode->FirstChildElement("channel_id")->FirstChild()->Value());
-
-        if (pRecordingNode->FirstChildElement("recurring_parent") != NULL)
+        TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
+        TiXmlElement* pRecordingNode;
+        for( pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode=pRecordingNode->NextSiblingElement())
         {
-          tag.iParentClientIndex = atoi(pRecordingNode->FirstChildElement("recurring_parent")->FirstChild()->Value());
-          if (tag.iParentClientIndex != PVR_TIMER_NO_PARENT)
+          memset(&tag, 0, sizeof(tag));
+
+          tag.iTimerType = pRecordingNode->FirstChildElement("epg_event_oid") ? TIMER_ONCE_EPG : TIMER_ONCE_MANUAL;
+
+          tag.iClientIndex = atoi(pRecordingNode->FirstChildElement("id")->FirstChild()->Value());
+          tag.iClientChannelUid = atoi(pRecordingNode->FirstChildElement("channel_id")->FirstChild()->Value());
+
+          if (pRecordingNode->FirstChildElement("recurring_parent") != NULL)
           {
-            if (tag.iTimerType == TIMER_ONCE_EPG)
+            tag.iParentClientIndex = atoi(pRecordingNode->FirstChildElement("recurring_parent")->FirstChild()->Value());
+            if (tag.iParentClientIndex != PVR_TIMER_NO_PARENT)
             {
-              tag.iTimerType = TIMER_ONCE_EPG_CHILD;
-            }
-            else
-            {
-              tag.iTimerType = TIMER_ONCE_MANUAL_CHILD;
+              if (tag.iTimerType == TIMER_ONCE_EPG)
+              {
+                tag.iTimerType = TIMER_ONCE_EPG_CHILD;
+              }
+              else
+              {
+                tag.iTimerType = TIMER_ONCE_MANUAL_CHILD;
+              }
             }
           }
-        }
 
-        // pre-padding
-        if (pRecordingNode->FirstChildElement("pre_padding") != NULL)
-        {
-          tag.iMarginStart = atoi(pRecordingNode->FirstChildElement("pre_padding")->FirstChild()->Value());
-        }
-
-        // post-padding
-        if (pRecordingNode->FirstChildElement("post_padding") != NULL)
-        {
-          tag.iMarginEnd = atoi(pRecordingNode->FirstChildElement("post_padding")->FirstChild()->Value());
-        }
-
-        // name
-        PVR_STRCPY(tag.strTitle, pRecordingNode->FirstChildElement("name")->FirstChild()->Value());
-
-        // description
-        if (pRecordingNode->FirstChildElement("desc") != NULL && pRecordingNode->FirstChildElement("desc")->FirstChild() != NULL)
-        {
-          PVR_STRCPY(tag.strSummary, pRecordingNode->FirstChildElement("desc")->FirstChild()->Value());
-        }
-
-        tag.state = PVR_TIMER_STATE_SCHEDULED;
-        if (pRecordingNode->FirstChildElement("status") != NULL && pRecordingNode->FirstChildElement("status")->FirstChild() != NULL)
-        {
-          char status[32];
-          PVR_STRCPY(status, pRecordingNode->FirstChildElement("status")->FirstChild()->Value());
-          if (strcmp(status, "Recording") == 0)
+          // pre-padding
+          if (pRecordingNode->FirstChildElement("pre_padding") != NULL)
           {
-            tag.state = PVR_TIMER_STATE_RECORDING;
+            tag.iMarginStart = atoi(pRecordingNode->FirstChildElement("pre_padding")->FirstChild()->Value());
           }
+
+          // post-padding
+          if (pRecordingNode->FirstChildElement("post_padding") != NULL)
+          {
+            tag.iMarginEnd = atoi(pRecordingNode->FirstChildElement("post_padding")->FirstChild()->Value());
+          }
+
+          // name
+          PVR_STRCPY(tag.strTitle, pRecordingNode->FirstChildElement("name")->FirstChild()->Value());
+
+          // description
+          if (pRecordingNode->FirstChildElement("desc") != NULL && pRecordingNode->FirstChildElement("desc")->FirstChild() != NULL)
+          {
+            PVR_STRCPY(tag.strSummary, pRecordingNode->FirstChildElement("desc")->FirstChild()->Value());
+          }
+
+          tag.state = PVR_TIMER_STATE_SCHEDULED;
+          if (pRecordingNode->FirstChildElement("status") != NULL && pRecordingNode->FirstChildElement("status")->FirstChild() != NULL)
+          {
+            char status[32];
+            PVR_STRCPY(status, pRecordingNode->FirstChildElement("status")->FirstChild()->Value());
+            if (strcmp(status, "Recording") == 0)
+            {
+              tag.state = PVR_TIMER_STATE_RECORDING;
+            }
+          }
+
+
+          // start/end time
+          char start[32];
+          strncpy(start, pRecordingNode->FirstChildElement("start_time_ticks")->FirstChild()->Value(), sizeof start);
+          start[10] = '\0';
+          tag.startTime           = atol(start);
+          tag.endTime             = tag.startTime + atoi(pRecordingNode->FirstChildElement("duration_seconds")->FirstChild()->Value());
+
+          // pass timer to xbmc
+          PVR->TransferTimerEntry(handle, &tag);
         }
-
-
-        // start/end time
-        char start[32];
-        strncpy(start, pRecordingNode->FirstChildElement("start_time_ticks")->FirstChild()->Value(), sizeof start);
-        start[10] = '\0';
-        tag.startTime           = atol(start);
-        tag.endTime             = tag.startTime + atoi(pRecordingNode->FirstChildElement("duration_seconds")->FirstChild()->Value());
-
-        // pass timer to xbmc
-        PVR->TransferTimerEntry(handle, &tag);
       }
     }
   }
+  else
+  {
+    returnValue = PVR_ERROR_SERVER_ERROR;
+  }
 
-  return PVR_ERROR_NO_ERROR;  
+  LOG_API_IRET(__FUNCTION__, returnValue);
+  return returnValue;  
 }
-
-PVR_ERROR cPVRClientNextPVR::GetTimerInfo(unsigned int timernumber, PVR_TIMER &timerinfo)
-{
-  LOG_API_CALL(__FUNCTION__);
-  // not supported 
-  return PVR_ERROR_NO_ERROR;
-}
-
 
 namespace
 {
@@ -1845,7 +1856,7 @@ PVR_ERROR cPVRClientNextPVR::SignalStatus(PVR_SIGNAL_STATUS &signalStatus)
 
 bool cPVRClientNextPVR::CanPauseStream(void)
 {
-  LOG_API_CALL(__FUNCTION__);
+//  LOG_API_CALL(__FUNCTION__);
   if (m_recordingBuffer->GetDuration())
     return true;
   else
@@ -1939,6 +1950,10 @@ int cPVRClientNextPVR::DoRequest(const char *resource, std::string &response)
     strURL = StringUtils::Format("http://%s:%d%s&sid=%s", g_szHostname.c_str(), g_iPort, resource, m_sid);
   else
     strURL = StringUtils::Format("http://%s:%d%s", g_szHostname.c_str(), g_iPort, resource);
+  
+#if DEBUGGING_API
+  XBMC->Log(LOG_ERROR, "%s: %s", __FUNCTION__, strURL.c_str());
+#endif
 
   // ask XBMC to read the URL for us
   int resultCode = HTTP_NOTFOUND;
@@ -1952,11 +1967,11 @@ int cPVRClientNextPVR::DoRequest(const char *resource, std::string &response)
     resultCode = HTTP_OK;
     if (response.empty() || strstr(response.c_str(), "<rsp stat=\"ok\">") == NULL)
     {
-      XBMC->Log(LOG_DEBUG, "DoRequest failed, response=\n%s", response.c_str());
+      XBMC->Log(LOG_ERROR, "DoRequest failed, response=\n%s", response.c_str());
       resultCode = HTTP_BADREQUEST;
     }
   }
-  
+  LOG_API_IRET(__FUNCTION__, resultCode);
   return resultCode;
 }
 
@@ -1980,7 +1995,7 @@ time_t cPVRClientNextPVR::GetPlayingTime()
 
 bool cPVRClientNextPVR::IsTimeshifting()
 {
-  LOG_API_CALL(__FUNCTION__);
+  //LOG_API_CALL(__FUNCTION__);
   return m_timeshiftBuffer->IsTimeshifting();
 }
 
@@ -2007,6 +2022,17 @@ PVR_ERROR cPVRClientNextPVR::GetStreamTimes(PVR_STREAM_TIMES *stimes)
   XBMC->Log(LOG_ERROR, "             ptsBegin: %lld", stimes->ptsBegin);
   XBMC->Log(LOG_ERROR, "               ptsEnd: %lld", stimes->ptsEnd);
 #endif
+  return rez;
+}
+
+PVR_ERROR cPVRClientNextPVR::GetStreamReadChunkSize(int* chunksize)
+{
+  PVR_ERROR rez;
+  if (m_recordingBuffer->GetDuration())
+    rez = m_recordingBuffer->GetStreamReadChunkSize(chunksize);
+  else
+    rez = m_timeshiftBuffer->GetStreamReadChunkSize(chunksize);
+  LOG_API_IRET(__FUNCTION__, *chunksize);
   return rez;
 }
 

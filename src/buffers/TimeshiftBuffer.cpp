@@ -31,7 +31,7 @@ using namespace timeshift;
 using namespace ADDON;
 
 const int TimeshiftBuffer::INPUT_READ_LENGTH = 32768;
-const int TimeshiftBuffer::BUFFER_BLOCKS = 12;
+const int TimeshiftBuffer::BUFFER_BLOCKS = 48;
 const int TimeshiftBuffer::WINDOW_SIZE = std::max(6, (BUFFER_BLOCKS/2));
 
 // Fix a stupid #define on Windows which causes XBMC->DeleteFile() to break
@@ -143,12 +143,12 @@ bool TimeshiftBuffer::Open(const std::string inputUrl)
   XBMC->Log(LOG_DEBUG, "Open Continuing");
   int minLength = BUFFER_BLOCKS * INPUT_READ_LENGTH;
   XBMC->Log(LOG_DEBUG, "Open waiting for %d bytes to buffer", minLength);
-  m_reader.wait_for(lock, std::chrono::seconds(2),
+  m_reader.wait_for(lock, std::chrono::seconds(1),
                     [this, minLength]()
   {
     return m_circularBuffer.BytesAvailable() >= minLength;
   });
-  XBMC->Log(LOG_DEBUG, "Open Continuing");
+  XBMC->Log(LOG_DEBUG, "Open Continuing %d / %d", m_circularBuffer.BytesAvailable(), minLength);
   // Make sure data is flowing, before declaring success.
   if (m_circularBuffer.BytesAvailable() != 0)
     return true;
@@ -213,12 +213,14 @@ int TimeshiftBuffer::Read(byte *buffer, size_t length)
   // Wait until we have enough data
   
   std::unique_lock<std::mutex> lock(m_mutex);
-  m_reader.wait_for(lock, std::chrono::seconds(m_readTimeout),
+  if (! m_reader.wait_for(lock, std::chrono::seconds(m_readTimeout),
     [this, length]()
   {
     return m_circularBuffer.BytesAvailable() >= (int )length;
-  });
-  
+  }))
+  {
+    XBMC->Log(LOG_DEBUG, "Timeout waiting for bytes!! [buffer underflow]");
+  }
   bytesRead = m_circularBuffer.ReadBytes(buffer, length);
   m_sd.streamPosition.fetch_add(length);
   if (m_circularBuffer.BytesFree() >= INPUT_READ_LENGTH)
@@ -291,6 +293,14 @@ PVR_ERROR TimeshiftBuffer::GetStreamTimes(PVR_STREAM_TIMES *stimes)
   stimes->ptsEnd = ((int64_t )(time(nullptr) - Buffer::GetStartTime())) * DVD_TIME_BASE;
   return PVR_ERROR_NO_ERROR;
 }
+
+PVR_ERROR TimeshiftBuffer::GetStreamReadChunkSize(int* chunksize)
+{
+  // Make this a tunable parameter?
+  *chunksize = TimeshiftBuffer::INPUT_READ_LENGTH;
+  return PVR_ERROR_NO_ERROR;
+}
+
 
 time_t TimeshiftBuffer::GetPlayingTime()
 {

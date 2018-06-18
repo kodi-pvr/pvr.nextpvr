@@ -1,3 +1,6 @@
+v3.3.1
+- Implent GetStreamReadChunkSize()
+
 v3.3.0
 - Updated to PVR addon API v5.10.0
 

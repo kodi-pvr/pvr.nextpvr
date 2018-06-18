@@ -127,6 +127,14 @@ namespace timeshift {
       return PVR_ERROR_NO_ERROR;
     }
     
+    virtual PVR_ERROR GetStreamReadChunkSize(int* chunksize)
+    {
+      // Return 16K for recordings, and non-timeshift
+      // Make this a tunable parameter?
+      *chunksize = 16 * 1024;
+      return PVR_ERROR_NO_ERROR;
+    }
+    
     virtual time_t GetPlayingTime()
     {
       return time(nullptr);

@@ -88,6 +88,7 @@ public:
   PVR_ERROR GetDriveSpace(long long *iTotal, long long *iUsed);
   PVR_ERROR GetBackendTime(time_t *localTime, int *gmtOffset);
   PVR_ERROR GetStreamTimes(PVR_STREAM_TIMES *stimes);
+  PVR_ERROR GetStreamReadChunkSize(int* chunksize);
 
   /* EPG handling */
   PVR_ERROR GetEpg(ADDON_HANDLE handle, const PVR_CHANNEL &channel, time_t iStart = 0, time_t iEnd = 0);
