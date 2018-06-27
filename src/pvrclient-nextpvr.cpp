@@ -1798,17 +1798,11 @@ bool cPVRClientNextPVR::OpenLiveStream(const PVR_CHANNEL &channelinfo)
   LOG_API_CALL(__FUNCTION__);
   if (channelinfo.bIsRadio == false && m_supportsLiveTimeshift && g_bUseTimeshift)
   {
-    if (channelinfo.iSubChannelNumber == 0)
-      sprintf(line, "GET /live?channel=%d&mode=liveshift&client=XBMC-%s HTTP/1.0\r\n", channelinfo.iChannelNumber, m_sid);
-    else
-      sprintf(line, "GET /live?channel=%d.%d&mode=liveshift&client=XBMC-%s HTTP/1.0\r\n", channelinfo.iChannelNumber, channelinfo.iSubChannelNumber, m_sid);
+    sprintf(line, "GET /live?channeloid=%d&mode=liveshift&client=XBMC-%s HTTP/1.0\r\n", channelinfo.iUniqueId, m_sid);
   }
   else
   {
-    if (channelinfo.iSubChannelNumber == 0)
-      sprintf(line, "http://%s:%d/live?channel=%d&client=XBMC-%s", g_szHostname.c_str(), g_iPort, channelinfo.iChannelNumber, m_sid);
-    else
-      sprintf(line, "http://%s:%d/live?channel=%d.%d&client=XBMC-%s", g_szHostname.c_str(), g_iPort, channelinfo.iChannelNumber, channelinfo.iSubChannelNumber, m_sid);
+    sprintf(line, "http://%s:%d/live?channeloid=%d&client=XBMC-%s", g_szHostname.c_str(), g_iPort, channelinfo.iUniqueId, m_sid);
   }
   XBMC->Log(LOG_NOTICE, "Calling Open(%s) on tsb!", line);
   if (m_timeshiftBuffer->Open(line))
