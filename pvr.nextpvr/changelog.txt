@@ -2,7 +2,7 @@ v3.3.2
 - use iUniqueId instead of iChannelNumber for live streaming.
 
 v3.3.1
-- Implent GetStreamReadChunkSize()
+- Implement GetStreamReadChunkSize()
 
 v3.3.0
 - Updated to PVR addon API v5.10.0
