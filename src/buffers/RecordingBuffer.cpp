@@ -29,7 +29,7 @@ PVR_ERROR RecordingBuffer::GetStreamTimes(PVR_STREAM_TIMES *stimes)
   stimes->ptsStart = 0;
   stimes->ptsBegin = 0;
   stimes->ptsEnd = ((int64_t )m_Duration) * DVD_TIME_BASE;
-  XBMC->Log(LOG_ERROR, "RecordingBuffer::GetStreamTimes called!");
+  XBMC->Log(LOG_DEBUG, "RecordingBuffer::GetStreamTimes called!");
   return PVR_ERROR_NO_ERROR;
 }
 

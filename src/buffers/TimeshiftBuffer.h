@@ -83,6 +83,7 @@ namespace timeshift {
     virtual time_t GetStartTime() override;
     virtual time_t GetEndTime() override;
     virtual PVR_ERROR GetStreamTimes(PVR_STREAM_TIMES *) override;
+    virtual PVR_ERROR GetStreamReadChunkSize(int *chunksize) override;
 
   private:
 
