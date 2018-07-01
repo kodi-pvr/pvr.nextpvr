@@ -54,7 +54,7 @@ msgstr "Přejděte na verzi „%s“ nebo novější!"
 
 msgctxt "#30052"
 msgid "Connection failed. Incorrect PIN?"
-msgstr "Spojení selhalo. Nesprávný PIN?"
+msgstr "Spojení se nepodařilo. Nesprávný PIN?"
 
 msgctxt "#30053"
 msgid "Tuner no longer available"

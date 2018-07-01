@@ -32,6 +32,10 @@ msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
 msgstr "Galluogi SymudAmser gyda Theledu Byw?"
 
+msgctxt "#30004"
+msgid "Download TV Guide Artwork"
+msgstr "Lawrlwytho Gwaith Celf y Canllaw Teledu"
+
 msgctxt "#30040"
 msgid "Connection"
 msgstr "Cysylltiad"
@@ -56,9 +60,69 @@ msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Tiwniwr ddim ar gael"
 
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "Unwaith (â llaw)"
+
+msgctxt "#30141"
+msgid "One time (guide)"
+msgstr "Unwaith (gydag arweiniad)"
+
+msgctxt "#30142"
+msgid "Repeating (manual)"
+msgstr "Ailadrodd (â llaw)"
+
+msgctxt "#30143"
+msgid "Repeating (guide)"
+msgstr "Ailadrodd (gydag arweiniad)"
+
+msgctxt "#30144"
+msgid "Child Recording"
+msgstr "Recordio Plentyn"
+
+msgctxt "#30145"
+msgid "Repeating (keyword)"
+msgstr "Ailadrodd (allweddair)"
+
 msgctxt "#30150"
 msgid "All Recordings"
 msgstr "Pob Recordiad"
+
+msgctxt "#30151"
+msgid "1 Recording"
+msgstr "1 Recordiad"
+
+msgctxt "#30152"
+msgid "2 Recordings"
+msgstr "2 Recordiad"
+
+msgctxt "#30153"
+msgid "3 Recordings"
+msgstr "3 Recordiad"
+
+msgctxt "#30154"
+msgid "4 Recordings"
+msgstr "4 Recordiad"
+
+msgctxt "#30155"
+msgid "5 Recordings"
+msgstr "5 Recordiad"
+
+msgctxt "#30156"
+msgid "6 Recordings"
+msgstr "6 Recordiad"
+
+msgctxt "#30157"
+msgid "7 Recordings"
+msgstr "7 Recordiad"
+
+msgctxt "#30158"
+msgid "10 Recordings"
+msgstr "10 Recordiad"
+
+msgctxt "#30160"
+msgid "New Only"
+msgstr "Newydd yn Unig"
 
 msgctxt "#30161"
 msgid "All"
