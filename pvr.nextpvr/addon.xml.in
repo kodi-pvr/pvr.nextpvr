@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon
   id="pvr.nextpvr"
-  version="3.3.4"
+  version="3.3.5"
   name="NextPVR PVR Client"
   provider-name="Graeme Blackley">
   <requires>@ADDON_DEPENDS@</requires>
@@ -107,7 +107,7 @@
     <description lang="sl_SI">Vmesnik za NextPVR; podpira pretakanje televizije v živo &amp; posnetkov, poslušanje radia in EPG.</description>
     <description lang="sr_RS">NextPVR интерфејс. Подржава стримовање ТВ Уживо &amp; Снимака, слушање Радио канала и EPG.</description>
     <description lang="sr_RS@latin">NextPVR interfejs. Podržava strimovanje TV Uživo &amp; Snimaka, slušanje Radio kanala i EPG.</description>
-    <description lang="sv_SE">NextPVR-frontend. Stödjer strömning av direktsänd TV &amp; inspelningar, lyssna på radiokanaler och EPG.</description>
+    <description lang="sv_SE">NextPVR-frontend. Stödjer strömning av Live-tv &amp; inspelningar, lyssna på radiokanaler och EPG.</description>
     <description lang="szl">Klijynt telewizyjny dlŏ NextPVR podpiyrŏ szpricowanie kanałōw radyjowych i telewizyjnych, nagrowanie aji funkcyje EPG.</description>
     <description lang="th_TH">ส่วนหน้า NextPVR รองรับการส่งกระแสของทีวี สด &amp; การบันทึก, ฟังช่องรายการวิทยุ และ EPG</description>
     <description lang="tr_TR">NextPVR ön ucu. Canlı TV akışı ve kayıt yapabilme, radyo kanallarını dinleme ve EPG destekler.</description>
