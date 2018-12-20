@@ -76,6 +76,10 @@ msgctxt "#30143"
 msgid "Repeating (guide)"
 msgstr "Ponavljajuće (EPG vodič)"
 
+msgctxt "#30144"
+msgid "Child Recording"
+msgstr "Podsnimke"
+
 msgctxt "#30145"
 msgid "Repeating (keyword)"
 msgstr "Ponavljajuće zakazano snimanje (ključnom riječi)"
