@@ -54,7 +54,7 @@ namespace timeshift {
 
     virtual bool CanPauseStream() const override
     {
-      return true;
+      return m_CanPause;
     }
 
     virtual bool CanSeekStream() const override
@@ -130,6 +130,11 @@ namespace timeshift {
     mutable std::mutex m_mutex;
 
     /**
+     * Protects seek completion
+     */
+    mutable std::mutex m_sLock;
+
+    /**
      * Signaled whenever new packets have been added to the buffer
      */
     mutable std::condition_variable m_reader;
@@ -150,6 +155,6 @@ namespace timeshift {
     Seeker m_seek;
     CircularBuffer m_circularBuffer;
     session_data_t m_sd;
-    time_t m_tsbStartTime;
+    bool m_CanPause;
   };
 }

@@ -368,8 +368,7 @@ bool cPVRClientNextPVR::IsUp()
     }
     else
     {
-      m_lastRecordingUpdateTime = MAXINT64;
-      XBMC->Log(LOG_NOTICE, "Disabling recording update.  Update NextPVR to v3.4");
+      m_lastRecordingUpdateTime = time(0);
     }
   }
   return m_bConnected;
