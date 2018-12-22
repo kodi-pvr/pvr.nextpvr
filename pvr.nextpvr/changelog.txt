@@ -1,3 +1,6 @@
+v3.3.8
+- Fixed issue with timeout when checking for available data
+
 v3.3.2
 - use iUniqueId instead of iChannelNumber for live streaming.
 

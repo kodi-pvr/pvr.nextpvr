@@ -90,7 +90,8 @@ bool Socket::read_ready()
   FD_SET(_sd, &fdset);
 
   struct timeval tv; 
-    tv.tv_sec = 1; 
+  tv.tv_usec = 0;
+  tv.tv_sec = 1; 
 
   int retVal = select(_sd+1, &fdset, NULL, NULL, &tv); 
   if (retVal > 0)
