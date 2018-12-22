@@ -45,8 +45,8 @@ bool Seeker::InitSeek(int64_t offset, int whence)
   }
   m_iBlockOffset = temp % m_pSd->inputBlockSize;
   m_xStreamOffset = temp - m_iBlockOffset;
-  XBMC->Log(LOG_DEBUG, "block: %d, stream: %lli", m_iBlockOffset, m_xStreamOffset);
   m_bSeeking = true;
+  XBMC->Log(LOG_DEBUG, "block: %d, stream: %lli, m_bSeeking: %d", m_iBlockOffset, m_xStreamOffset, m_bSeeking);
   return true;
 }
 
@@ -111,11 +111,15 @@ bool Seeker::PreprocessSeek()
 
 void Seeker::ProcessRequests()
 {
-  if (m_bSeeking && !m_bSeekBlockRequested)
+  if (m_bSeeking)
   {
-    m_pSd->requestBlock = m_xStreamOffset;
-    m_pSd->currentWindowSize = 0; // Request all blocks in window
-    m_bSeekBlockRequested = true;
+    m_streamPositionSet = false;
+    if (!m_bSeekBlockRequested)
+    {
+      m_pSd->requestBlock = m_xStreamOffset;
+      m_pSd->currentWindowSize = 0; // Request all blocks in window
+      m_bSeekBlockRequested = true;
+    }
   }
 }
 
@@ -123,14 +127,33 @@ bool Seeker::PostprocessSeek(int64_t blockNo)
 {
   // seeked block has just been buffered!
   // reset seek mechanism
-  if (blockNo == m_xStreamOffset)
+  bool retVal = false;
+  if (m_bSeeking) 
   {
-    m_pSd->streamPosition.store(m_xStreamOffset + m_iBlockOffset);
-    m_cirBuf->AdjustBytes(m_iBlockOffset);
-    m_bSeekBlockRequested = false;
-    m_bSeeking = false;
-    m_xStreamOffset = -1;
-    return true;
+    if (blockNo == m_xStreamOffset)
+    {
+      if (!m_streamPositionSet)
+      {
+        m_pSd->streamPosition.store(m_xStreamOffset + m_iBlockOffset);
+        m_cirBuf->AdjustBytes(m_iBlockOffset);
+        m_streamPositionSet = true;
+        XBMC->Log(LOG_DEBUG, "%s:%d - m_xStreamOffset: %llu, m_iBlockOffset: %d", __FUNCTION__, __LINE__, m_xStreamOffset, m_iBlockOffset);
+      }
+      if (m_iBlockOffset)
+      {  // Go around one more time.
+        XBMC->Log(LOG_DEBUG, "%s:%d", __FUNCTION__, __LINE__);
+        m_iBlockOffset = 0;
+        m_xStreamOffset += m_pSd->inputBlockSize;
+        retVal = false;
+      }
+      else
+      {
+        m_bSeekBlockRequested = false;
+        m_bSeeking = false;
+        m_xStreamOffset = -1;
+        retVal = true;
+      }
+    }
   }
-  return false;
+  return retVal;
 }
