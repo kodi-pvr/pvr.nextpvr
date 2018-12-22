@@ -33,7 +33,7 @@ bool Buffer::Open(const std::string inputUrl)
   if (!inputUrl.empty())
   {
     // Append the read timeout parameter
-    XBMC->Log(LOG_DEBUG, "Buffer::Open() called! [ %s ]", inputUrl.c_str());
+    LOG_IT(LOG_DEBUG, "Buffer::Open() called! [ %s ]", inputUrl.c_str());
     std::stringstream ss;
     ss << inputUrl << "|connection-timeout=" << m_readTimeout;
     m_inputHandle = XBMC->OpenFile(ss.str().c_str(), 0x08 );  /*READ_NO_CACHE*/

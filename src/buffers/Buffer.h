@@ -49,7 +49,7 @@ namespace timeshift {
   public:
     Buffer() :
       m_active(false), m_inputHandle(nullptr), m_startTime(0),
-      m_readTimeout(DEFAULT_READ_TIMEOUT) {XBMC->Log(LOG_NOTICE, "Buffer created!"); };
+      m_readTimeout(DEFAULT_READ_TIMEOUT) {LOG_IT(LOG_NOTICE, "Buffer created!"); };
     virtual ~Buffer();
 
     /**

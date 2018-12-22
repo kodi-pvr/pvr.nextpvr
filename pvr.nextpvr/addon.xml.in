@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon
   id="pvr.nextpvr"
-  version="3.3.3"
+  version="3.3.8"
   name="NextPVR PVR Client"
   provider-name="Graeme Blackley">
   <requires>@ADDON_DEPENDS@</requires>
@@ -27,7 +27,7 @@
     <summary lang="es_MX">Kodi frontend para el NextPVR</summary>
     <summary lang="et_EE">Kodi liides NextPVR'ile</summary>
     <summary lang="fi_FI">Kodin NextPVR-asiakasohjelma</summary>
-    <summary lang="fr_CA">Frontal Kodi pour NextPVR</summary>
+    <summary lang="fr_CA">Frontale Kodi pour NextPVR</summary>
     <summary lang="fr_FR">Interface logicielle pour l'enregistreur vidéo NextPVR</summary>
     <summary lang="gl_ES">Interface de Kodi para NextPVR</summary>
     <summary lang="he_IL">לקוח טלוויזיה חיה עבור NextPVR</summary>
@@ -80,7 +80,7 @@
     <description lang="es_MX">NextPVR frontend. Soporta transmisión de TV en directo y Grabaciones, escuchando canales de Radio y EPG.</description>
     <description lang="et_EE">NextPVR'i liides. Toetab telekanalite striimimist ja salvestamist, raadio kuulamist ja elektroonilist saatekava.</description>
     <description lang="fi_FI">NextPVR-asiakasohjelma. Tukee suorien tv-lähetysten ja tallennusten katsomista, radiokanavia, ohjelmaopasta ja ohjelmien ajastamista.</description>
-    <description lang="fr_CA">Frontal de numériscope pour NextPVR, prenant en charge la diffusion en continu des télés en direct  et les enregistrements, l’écoute de chaînes radio, et le GÉP.</description>
+    <description lang="fr_CA">Frontale de numériscope pour NextPVR, prenant en charge la diffusion en continu des télés en direct  et les enregistrements, l’écoute de chaînes radio, et le GÉP.</description>
     <description lang="fr_FR">Interface logicielle pour l'enregistreur vidéo (PVR) NextPVR. Gère la diffusion de la TV en direct et des enregistrements en direct, l'écoute de chaînes de radios et le guide électronique des programmes TV.</description>
     <description lang="gl_ES">Interface de NextPVR. Compatíbel coa transmisión de TV en directo, gravacións, escoita de canles de radio e Guía.</description>
     <description lang="he_IL">לקוח טלוויזיה חיה של NextPVR. תומך בהזרמת שידורים חיים והקלטות, האזנה לרדיו, הצגת לוח שידורים ותזמון הקלטות.</description>
@@ -107,7 +107,7 @@
     <description lang="sl_SI">Vmesnik za NextPVR; podpira pretakanje televizije v živo &amp; posnetkov, poslušanje radia in EPG.</description>
     <description lang="sr_RS">NextPVR интерфејс. Подржава стримовање ТВ Уживо &amp; Снимака, слушање Радио канала и EPG.</description>
     <description lang="sr_RS@latin">NextPVR interfejs. Podržava strimovanje TV Uživo &amp; Snimaka, slušanje Radio kanala i EPG.</description>
-    <description lang="sv_SE">NextPVR-frontend. Stödjer strömning av direktsänd TV &amp; inspelningar, lyssna på radiokanaler och EPG.</description>
+    <description lang="sv_SE">NextPVR-frontend. Stödjer strömning av Live-TV &amp; inspelningar, lyssna på radiokanaler och EPG.</description>
     <description lang="szl">Klijynt telewizyjny dlŏ NextPVR podpiyrŏ szpricowanie kanałōw radyjowych i telewizyjnych, nagrowanie aji funkcyje EPG.</description>
     <description lang="th_TH">ส่วนหน้า NextPVR รองรับการส่งกระแสของทีวี สด &amp; การบันทึก, ฟังช่องรายการวิทยุ และ EPG</description>
     <description lang="tr_TR">NextPVR ön ucu. Canlı TV akışı ve kayıt yapabilme, radyo kanallarını dinleme ve EPG destekler.</description>

@@ -64,5 +64,6 @@ namespace timeshift {
      * The next position a read will access. (in stream, not buffer)
      */
     std::atomic<int64_t> streamPosition;
+    
   } session_data_t;
 }

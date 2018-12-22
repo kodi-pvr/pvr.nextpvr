@@ -57,22 +57,6 @@ extern bool g_bDownloadGuideArtwork;
 #define HTTP_NOTFOUND 404
 #define HTTP_BADREQUEST 400
 
-#define DEBUGGING_XML 0
-#if DEBUGGING_XML
-void dump_to_log( TiXmlNode* pParent, unsigned int indent);
-#else
-#define dump_to_log(x, y)
-#endif
-
-
-#define DEBUGGING_API 0
-#if DEBUGGING_API
-#define LOG_API_CALL(f) XBMC->Log(LOG_ERROR, "%s:  called!", f)
-#define LOG_API_IRET(f,i) XBMC->Log(LOG_ERROR, "%s: returns %d", f, i)
-#else
-#define LOG_API_CALL(f)
-#define LOG_API_IRET(f,i)
-#endif
 
 const char SAFE[256] =
 {
@@ -159,7 +143,7 @@ cPVRClientNextPVR::~cPVRClientNextPVR()
 {
   StopThread();
 
-  XBMC->Log(LOG_DEBUG, "->~cPVRClientNextPVR()");
+  LOG_IT(LOG_DEBUG, "->~cPVRClientNextPVR()");
   if (m_bConnected)
     Disconnect();
   SAFE_DELETE(m_tcpclient);  
@@ -215,7 +199,7 @@ bool cPVRClientNextPVR::Connect()
         PVR_STRCPY(salt, saltNode->FirstChild()->Value());
 
         // a bit of debug
-        XBMC->Log(LOG_DEBUG, "session.initiate returns: sid=%s salt=%s", m_sid, salt);
+        LOG_IT(LOG_DEBUG, "session.initiate returns: sid=%s salt=%s", m_sid, salt);
         
 
         std::string pinMD5 = PVRXBMC::XBMC_MD5::GetMD5(g_szPin);
@@ -247,7 +231,7 @@ bool cPVRClientNextPVR::Connect()
               TiXmlDocument settingsDoc;
               if (settingsDoc.Parse(settings.c_str()) != NULL)
               {
-                //XBMC->Log(LOG_NOTICE, "Settings:\n");
+                //LOG_IT(LOG_NOTICE, "Settings:\n");
                 //dump_to_log(&settingsDoc, 0);
                 TiXmlElement* versionNode = settingsDoc.RootElement()->FirstChildElement("NextPVRVersion");
                 if (versionNode == NULL)
@@ -258,12 +242,12 @@ bool cPVRClientNextPVR::Connect()
                 {
                   // NextPVR server
                   int version = atoi(versionNode->FirstChild()->Value());
-                  XBMC->Log(LOG_DEBUG, "NextPVR version: %d", version);
+                  LOG_IT(LOG_DEBUG, "NextPVR version: %d", version);
 
                   // is the server new enough
                   if (version < 30600)
                   {
-                    XBMC->Log(LOG_ERROR, "Your NextPVR version '%d' is too old. Please upgrade to '%s' or higher!", version, NEXTPVRC_MIN_VERSION_STRING);
+                    LOG_IT(LOG_ERROR, "Your NextPVR version '%d' is too old. Please upgrade to '%s' or higher!", version, NEXTPVRC_MIN_VERSION_STRING);
                     XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30050));
                     XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30051), NEXTPVRC_MIN_VERSION_STRING);
                     return false;
@@ -275,12 +259,12 @@ bool cPVRClientNextPVR::Connect()
                   m_supportsLiveTimeshift = true;
                   if (g_bUseTimeshift)
                   {
-                    XBMC->Log(LOG_NOTICE, "g_bUseTimeshift is true!!");
+                    LOG_IT(LOG_NOTICE, "g_bUseTimeshift is true!!");
                     delete m_timeshiftBuffer;
                     m_timeshiftBuffer = new timeshift::TimeshiftBuffer();
                   }
                   g_timeShiftBufferSeconds = atoi(settingsDoc.RootElement()->FirstChildElement("SlipSeconds")->FirstChild()->Value());
-                  XBMC->Log(LOG_NOTICE, "time shift buffer in seconds == %d\n", g_timeShiftBufferSeconds);
+                  LOG_IT(LOG_NOTICE, "time shift buffer in seconds == %d\n", g_timeShiftBufferSeconds);
                 }
 
                 // load padding defaults
@@ -304,12 +288,12 @@ bool cPVRClientNextPVR::Connect()
             }
 
             m_bConnected = true;
-            XBMC->Log(LOG_DEBUG, "session.login successful");
+            LOG_IT(LOG_DEBUG, "session.login successful");
             return true;
           }
           else
           {
-            XBMC->Log(LOG_DEBUG, "session.login failed");
+            LOG_IT(LOG_DEBUG, "session.login failed");
             XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30052));
             m_bConnected = false;
           }
@@ -368,8 +352,7 @@ bool cPVRClientNextPVR::IsUp()
     }
     else
     {
-      m_lastRecordingUpdateTime = MAXINT64;
-      XBMC->Log(LOG_NOTICE, "Disabling recording update.  Update NextPVR to v3.4");
+      m_lastRecordingUpdateTime = time(0);
     }
   }
   return m_bConnected;
@@ -397,7 +380,7 @@ const char* cPVRClientNextPVR::GetBackendName(void)
     return g_szHostname.c_str();
   }
 
-  XBMC->Log(LOG_DEBUG, "->GetBackendName()");
+  LOG_IT(LOG_DEBUG, "->GetBackendName()");
   
   if (m_BackendName.length() == 0)
   {
@@ -679,7 +662,7 @@ PVR_ERROR cPVRClientNextPVR::GetChannels(ADDON_HANDLE handle, bool bRadio)
     TiXmlDocument doc;
     if (doc.Parse(response.c_str()) != NULL)
     {
-      //XBMC->Log(LOG_NOTICE, "Channels:\n");
+      //LOG_IT(LOG_NOTICE, "Channels:\n");
       //dump_to_log(&doc, 0);
 
       TiXmlElement* channelsNode = doc.RootElement()->FirstChildElement("channels");
@@ -736,7 +719,7 @@ int cPVRClientNextPVR::GetChannelGroupsAmount(void)
 {
   LOG_API_CALL(__FUNCTION__);
   // Not directly possible at the moment
-  XBMC->Log(LOG_DEBUG, "GetChannelGroupsAmount");
+  LOG_IT(LOG_DEBUG, "GetChannelGroupsAmount");
 
   int groups = 0;
 
@@ -870,7 +853,7 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
     TiXmlDocument doc;
     if (doc.Parse(response.c_str()) != NULL)
     {
-      //XBMC->Log(LOG_NOTICE, "Recordings [ready:%d]:\n", __LINE__);
+      //LOG_IT(LOG_NOTICE, "Recordings [ready:%d]:\n", __LINE__);
       dump_to_log(&doc, 0);
       PVR_RECORDING   tag;
 
@@ -906,7 +889,7 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
         if (pRecordingNode->FirstChildElement("epg_event_oid") != NULL && pRecordingNode->FirstChildElement("epg_event_oid")->FirstChild() != NULL)
         {
           tag.iEpgEventId = atoi(pRecordingNode->FirstChildElement("epg_event_oid")->FirstChild()->Value());
-          XBMC->Log(LOG_DEBUG, "Setting epg id %s %d", tag.strRecordingId, tag.iEpgEventId);
+          LOG_IT(LOG_DEBUG, "Setting epg id %s %d", tag.strRecordingId, tag.iEpgEventId);
         }
     
         char artworkPath[512];
@@ -926,14 +909,14 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
         PVR->TransferRecordingEntry(handle, &tag);
       }
     }
-    XBMC->Log(LOG_DEBUG, "Updated recordings %lld", m_lastRecordingUpdateTime);
+    LOG_IT(LOG_DEBUG, "Updated recordings %lld", m_lastRecordingUpdateTime);
     // ...and any in-progress recordings
     if (DoRequest("/service?method=recording.list&filter=pending", response) == HTTP_OK)
     {
       TiXmlDocument doc;
       if (doc.Parse(response.c_str()) != NULL)
       {
-        //XBMC->Log(LOG_NOTICE, "Recordings [pending:%d]:", __LINE__);
+        //LOG_IT(LOG_NOTICE, "Recordings [pending:%d]:", __LINE__);
         //dump_to_log(&doc, 0);
         PVR_RECORDING   tag;
 
@@ -981,7 +964,7 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
 PVR_ERROR cPVRClientNextPVR::DeleteRecording(const PVR_RECORDING &recording)
 {
   LOG_API_CALL(__FUNCTION__);
-  XBMC->Log(LOG_DEBUG, "DeleteRecording");
+  LOG_IT(LOG_DEBUG, "DeleteRecording");
   char request[512];
   sprintf(request, "/service?method=recording.delete&recording_id=%s", recording.strRecordingId);
 
@@ -991,17 +974,17 @@ PVR_ERROR cPVRClientNextPVR::DeleteRecording(const PVR_RECORDING &recording)
     if (strstr(response.c_str(), "<rsp stat=\"ok\">"))
     {
       PVR->TriggerRecordingUpdate();
-      XBMC->Log(LOG_DEBUG, "DeleteRecording failed. Returning PVR_ERROR_NO_ERROR");
+      LOG_IT(LOG_DEBUG, "DeleteRecording failed. Returning PVR_ERROR_NO_ERROR");
       return PVR_ERROR_NO_ERROR;
     }
     else
     {
-      XBMC->Log(LOG_DEBUG, "DeleteRecording failed");
+      LOG_IT(LOG_DEBUG, "DeleteRecording failed");
     }
   }
 
 
-  XBMC->Log(LOG_DEBUG, "DeleteRecording failed. Returning PVR_ERROR_FAILED");
+  LOG_IT(LOG_DEBUG, "DeleteRecording failed. Returning PVR_ERROR_FAILED");
   return PVR_ERROR_FAILED;
 }
 
@@ -1017,7 +1000,7 @@ PVR_ERROR cPVRClientNextPVR::RenameRecording(const PVR_RECORDING &recording)
 PVR_ERROR cPVRClientNextPVR::SetRecordingLastPlayedPosition(const PVR_RECORDING &recording, int lastplayedposition)
 {
   LOG_API_CALL(__FUNCTION__);
-  XBMC->Log(LOG_DEBUG, "SetRecordingLastPlayedPosition");
+  LOG_IT(LOG_DEBUG, "SetRecordingLastPlayedPosition");
   char request[512];
   sprintf(request, "/service?method=recording.watched.set&recording_id=%s&position=%d", recording.strRecordingId, lastplayedposition);
 
@@ -1026,7 +1009,7 @@ PVR_ERROR cPVRClientNextPVR::SetRecordingLastPlayedPosition(const PVR_RECORDING 
   {
     if (strstr(response.c_str(), "<rsp stat=\"ok\">") == NULL)
     {
-      XBMC->Log(LOG_DEBUG, "SetRecordingLastPlayedPosition failed");
+      LOG_IT(LOG_DEBUG, "SetRecordingLastPlayedPosition failed");
       return PVR_ERROR_FAILED;
     }
     PVR->TriggerRecordingUpdate();
@@ -1043,7 +1026,7 @@ int cPVRClientNextPVR::GetRecordingLastPlayedPosition(const PVR_RECORDING &recor
 PVR_ERROR cPVRClientNextPVR::GetRecordingEdl(const PVR_RECORDING& recording, PVR_EDL_ENTRY entries[], int *size)
 {
   LOG_API_CALL(__FUNCTION__);
-  XBMC->Log(LOG_DEBUG, "GetRecordingEdl");
+  LOG_IT(LOG_DEBUG, "GetRecordingEdl");
   char request[512];
   sprintf(request, "/service?method=recording.edl&recording_id=%s", recording.strRecordingId);
 
@@ -1668,7 +1651,7 @@ PVR_ERROR cPVRClientNextPVR::AddTimer(const PVR_TIMER &timerinfo)
   switch (timerinfo.iTimerType)
   {
   case TIMER_ONCE_MANUAL:
-    XBMC->Log(LOG_DEBUG, "TIMER_ONCE_MANUAL");
+    LOG_IT(LOG_DEBUG, "TIMER_ONCE_MANUAL");
     // build one-off recording request
     snprintf(request, sizeof(request), "/service?method=recording.save&name=%s&channel=%d&time_t=%d&duration=%d&pre_padding=%d&post_padding=%d&directory_id=%s",
       encodedName.c_str(),
@@ -1682,7 +1665,7 @@ PVR_ERROR cPVRClientNextPVR::AddTimer(const PVR_TIMER &timerinfo)
     break;
 
   case TIMER_ONCE_EPG:
-    XBMC->Log(LOG_DEBUG, "TIMER_ONCE_EPG");
+    LOG_IT(LOG_DEBUG, "TIMER_ONCE_EPG");
     // build one-off recording request
     snprintf(request, sizeof(request), "/service?method=recording.save&recording_id=%d&event_id=%d&pre_padding=%d&post_padding=%d&directory_id=%s",
       timerinfo.iClientIndex,
@@ -1693,7 +1676,7 @@ PVR_ERROR cPVRClientNextPVR::AddTimer(const PVR_TIMER &timerinfo)
     break;
 
   case TIMER_REPEATING_EPG:
-    XBMC->Log(LOG_DEBUG, "TIMER_REPEATING_EPG");
+    LOG_IT(LOG_DEBUG, "TIMER_REPEATING_EPG");
     // build recurring recording request
     snprintf(request, sizeof(request), "/service?method=recording.recurring.save&recurring_id=%d&event_id=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s&only_new=%s",
       timerinfo.iClientIndex,
@@ -1708,7 +1691,7 @@ PVR_ERROR cPVRClientNextPVR::AddTimer(const PVR_TIMER &timerinfo)
     break;
 
   case TIMER_REPEATING_MANUAL:
-    XBMC->Log(LOG_DEBUG, "TIMER_REPEATING_EPG");
+    LOG_IT(LOG_DEBUG, "TIMER_REPEATING_EPG");
     // build manual recurring request
     snprintf(request, sizeof(request), "/service?method=recording.recurring.save&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s",
       timerinfo.iClientIndex,
@@ -1725,7 +1708,7 @@ PVR_ERROR cPVRClientNextPVR::AddTimer(const PVR_TIMER &timerinfo)
     break;
 
   case TIMER_REPEATING_KEYWORD:
-    XBMC->Log(LOG_DEBUG, "TIMER_REPEATING_KEYWORD");
+    LOG_IT(LOG_DEBUG, "TIMER_REPEATING_KEYWORD");
     // build manual recurring request
     snprintf(request, sizeof(request), "/service?method=recording.recurring.save&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&directory_id=%s&keyword=%s&only_new=%s",
       timerinfo.iClientIndex,
@@ -1804,7 +1787,7 @@ bool cPVRClientNextPVR::OpenLiveStream(const PVR_CHANNEL &channelinfo)
   {
     sprintf(line, "http://%s:%d/live?channeloid=%d&client=XBMC-%s", g_szHostname.c_str(), g_iPort, channelinfo.iUniqueId, m_sid);
   }
-  XBMC->Log(LOG_NOTICE, "Calling Open(%s) on tsb!", line);
+  LOG_IT(LOG_NOTICE, "Calling Open(%s) on tsb!", line);
   if (m_timeshiftBuffer->Open(line))
   {
     return true;
@@ -1814,16 +1797,16 @@ bool cPVRClientNextPVR::OpenLiveStream(const PVR_CHANNEL &channelinfo)
 
 int cPVRClientNextPVR::ReadLiveStream(unsigned char *pBuffer, unsigned int iBufferSize)
 {
-  XBMC->Log(LOG_DEBUG, "ReadLiveStream:%d bufsize: %d", __LINE__, iBufferSize);
+  LOG_IT(LOG_DEBUG, "ReadLiveStream:%d bufsize: %d", __LINE__, iBufferSize);
   return m_timeshiftBuffer->Read(pBuffer, iBufferSize);
 }
 
 void cPVRClientNextPVR::CloseLiveStream(void)
 {
   LOG_API_CALL(__FUNCTION__);
-  XBMC->Log(LOG_DEBUG, "CloseLiveStream");
+  LOG_IT(LOG_DEBUG, "CloseLiveStream");
   m_timeshiftBuffer->Close();
-  XBMC->Log(LOG_DEBUG, "CloseLiveStream@exit");
+  LOG_IT(LOG_DEBUG, "CloseLiveStream@exit");
 }
 
 
@@ -1913,7 +1896,7 @@ void cPVRClientNextPVR::CloseRecordedStream(void)
 
 int cPVRClientNextPVR::ReadRecordedStream(unsigned char *pBuffer, unsigned int iBufferSize)
 {
-  XBMC->Log(LOG_DEBUG, "ReadRecordedStream(%d bytes from offset %d)", iBufferSize, (int)m_currentRecordingPosition);
+  LOG_IT(LOG_DEBUG, "ReadRecordedStream(%d bytes from offset %d)", iBufferSize, (int)m_currentRecordingPosition);
   iBufferSize = m_recordingBuffer->Read(pBuffer, iBufferSize);
   return iBufferSize;
 
@@ -1946,7 +1929,7 @@ int cPVRClientNextPVR::DoRequest(const char *resource, std::string &response)
     strURL = StringUtils::Format("http://%s:%d%s", g_szHostname.c_str(), g_iPort, resource);
   
 #if DEBUGGING_API
-  XBMC->Log(LOG_ERROR, "%s: %s", __FUNCTION__, strURL.c_str());
+  LOG_IT(LOG_ERROR, "%s: %s", __FUNCTION__, strURL.c_str());
 #endif
 
   // ask XBMC to read the URL for us
@@ -1961,7 +1944,7 @@ int cPVRClientNextPVR::DoRequest(const char *resource, std::string &response)
     resultCode = HTTP_OK;
     if (response.empty() || strstr(response.c_str(), "<rsp stat=\"ok\">") == NULL)
     {
-      XBMC->Log(LOG_ERROR, "DoRequest failed, response=\n%s", response.c_str());
+      LOG_IT(LOG_ERROR, "DoRequest failed, response=\n%s", response.c_str());
       resultCode = HTTP_BADREQUEST;
     }
   }
@@ -2011,10 +1994,10 @@ PVR_ERROR cPVRClientNextPVR::GetStreamTimes(PVR_STREAM_TIMES *stimes)
   else
     rez = m_timeshiftBuffer->GetStreamTimes(stimes);
 #if DEBUGGING_API
-  XBMC->Log(LOG_ERROR, "GetStreamTimes: start: %d", stimes->startTime);
-  XBMC->Log(LOG_ERROR, "             ptsStart: %lld", stimes->ptsStart);
-  XBMC->Log(LOG_ERROR, "             ptsBegin: %lld", stimes->ptsBegin);
-  XBMC->Log(LOG_ERROR, "               ptsEnd: %lld", stimes->ptsEnd);
+  LOG_IT(LOG_ERROR, "GetStreamTimes: start: %d", stimes->startTime);
+  LOG_IT(LOG_ERROR, "             ptsStart: %lld", stimes->ptsStart);
+  LOG_IT(LOG_ERROR, "             ptsBegin: %lld", stimes->ptsBegin);
+  LOG_IT(LOG_ERROR, "               ptsEnd: %lld", stimes->ptsEnd);
 #endif
   return rez;
 }
@@ -2067,24 +2050,24 @@ int dump_attribs_to_stdout(TiXmlElement* pElement, unsigned int indent)
   int ival;
   double dval;
   const char* pIndent=getIndent(indent);
-  // XBMC->Log(LOG_NOTICE, "\n");
+  // LOG_IT(LOG_NOTICE, "\n");
   while (pAttrib)
   {
     char buf[1024];
     sprintf(buf, "%s%s: value=[%s]", pIndent, pAttrib->Name(), pAttrib->Value());
-    // XBMC->Log(LOG_NOTICE,  "%s%s: value=[%s]", pIndent, pAttrib->Name(), pAttrib->Value());
+    // LOG_IT(LOG_NOTICE,  "%s%s: value=[%s]", pIndent, pAttrib->Name(), pAttrib->Value());
 
     if (pAttrib->QueryIntValue(&ival)==TIXML_SUCCESS)    
     {
       sprintf(buf + strlen(buf), " int=%d", ival);
-      // XBMC->Log(LOG_NOTICE,  " int=%d", ival);
+      // LOG_IT(LOG_NOTICE,  " int=%d", ival);
     }
     if (pAttrib->QueryDoubleValue(&dval)==TIXML_SUCCESS)
     {
       sprintf(buf + strlen(buf), " d=%1.1f", dval);
-      // XBMC->Log(LOG_NOTICE,  " d=%1.1f", dval);
+      // LOG_IT(LOG_NOTICE,  " d=%1.1f", dval);
     }
-    XBMC->Log(LOG_NOTICE,  "%s\n", buf );
+    LOG_IT(LOG_NOTICE,  "%s\n", buf );
     i++;
     pAttrib=pAttrib->Next();
   }
@@ -2100,61 +2083,61 @@ void dump_to_log( TiXmlNode* pParent, unsigned int indent)
   TiXmlText* pText;
   int t = pParent->Type();
   sprintf(buf, "%s", getIndent(indent));
-  // XBMC->Log(LOG_NOTICE,  "%s", getIndent(indent));
+  // LOG_IT(LOG_NOTICE,  "%s", getIndent(indent));
   int num;
 
   switch ( t )
   {
   case TiXmlNode::TINYXML_DOCUMENT:
     sprintf(buf + strlen(buf), "Document");
-    // XBMC->Log(LOG_NOTICE,  "Document" );
+    // LOG_IT(LOG_NOTICE,  "Document" );
     break;
 
   case TiXmlNode::TINYXML_ELEMENT:
     sprintf(buf + strlen(buf), "Element [%s]", pParent->Value());
-    // XBMC->Log(LOG_NOTICE,  "Element [%s]", pParent->Value() );
+    // LOG_IT(LOG_NOTICE,  "Element [%s]", pParent->Value() );
     num=dump_attribs_to_stdout(pParent->ToElement(), indent+1);
     switch(num)
     {
       case 0:
         sprintf(buf + strlen(buf), " (No attributes)");
-        // XBMC->Log(LOG_NOTICE,  " (No attributes)"); 
+        // LOG_IT(LOG_NOTICE,  " (No attributes)"); 
         break;
       case 1:
         sprintf(buf + strlen(buf), "%s1 attribute", getIndentAlt(indent));
-        // XBMC->Log(LOG_NOTICE,  "%s1 attribute", getIndentAlt(indent)); 
+        // LOG_IT(LOG_NOTICE,  "%s1 attribute", getIndentAlt(indent)); 
         break;
       default:
         sprintf(buf + strlen(buf), "%s%d attributes", getIndentAlt(indent), num);
-        // XBMC->Log(LOG_NOTICE,  "%s%d attributes", getIndentAlt(indent), num);
+        // LOG_IT(LOG_NOTICE,  "%s%d attributes", getIndentAlt(indent), num);
         break;
     }
     break;
 
   case TiXmlNode::TINYXML_COMMENT:
     sprintf(buf + strlen(buf), "Comment: [%s]", pParent->Value());
-    //XBMC->Log(LOG_NOTICE,  "Comment: [%s]", pParent->Value());
+    //LOG_IT(LOG_NOTICE,  "Comment: [%s]", pParent->Value());
     break;
 
   case TiXmlNode::TINYXML_UNKNOWN:
     sprintf(buf + strlen(buf), "Unknown");
-    // XBMC->Log(LOG_NOTICE,  "Unknown" );
+    // LOG_IT(LOG_NOTICE,  "Unknown" );
     break;
 
   case TiXmlNode::TINYXML_TEXT:
     pText = pParent->ToText();
     sprintf(buf + strlen(buf), "Text: [%s]", pText->Value());
-    // XBMC->Log(LOG_NOTICE,  "Text: [%s]", pText->Value() );
+    // LOG_IT(LOG_NOTICE,  "Text: [%s]", pText->Value() );
     break;
 
   case TiXmlNode::TINYXML_DECLARATION:
     sprintf(buf + strlen(buf), "Declaration");
-    // XBMC->Log(LOG_NOTICE,  "Declaration" );
+    // LOG_IT(LOG_NOTICE,  "Declaration" );
     break;
   default:
     break;
   }
-  XBMC->Log(LOG_ERROR,  "%s\n", buf );
+  LOG_IT(LOG_ERROR,  "%s\n", buf );
   for ( pChild = pParent->FirstChild(); pChild != 0; pChild = pChild->NextSibling()) 
   {
     dump_to_log( pChild, indent+1 );

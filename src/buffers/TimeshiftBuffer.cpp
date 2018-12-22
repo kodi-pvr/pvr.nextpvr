@@ -31,7 +31,7 @@ using namespace timeshift;
 using namespace ADDON;
 
 const int TimeshiftBuffer::INPUT_READ_LENGTH = 32768;
-const int TimeshiftBuffer::BUFFER_BLOCKS = 48;
+const int TimeshiftBuffer::BUFFER_BLOCKS = 24;
 const int TimeshiftBuffer::WINDOW_SIZE = std::max(6, (BUFFER_BLOCKS/2));
 
 // Fix a stupid #define on Windows which causes XBMC->DeleteFile() to break
@@ -41,7 +41,7 @@ const int TimeshiftBuffer::WINDOW_SIZE = std::max(6, (BUFFER_BLOCKS/2));
 
 TimeshiftBuffer::TimeshiftBuffer()
   : Buffer(), m_circularBuffer(INPUT_READ_LENGTH * BUFFER_BLOCKS), 
-    m_seek(&m_sd, &m_circularBuffer), m_streamingclient(nullptr), m_tsbStartTime(0)
+    m_seek(&m_sd, &m_circularBuffer), m_streamingclient(nullptr), m_CanPause(true)
 {
   XBMC->Log(LOG_DEBUG, "TimeshiftBuffer created!");
   m_sd.lastKnownLength.store(0);
@@ -97,6 +97,8 @@ bool TimeshiftBuffer::Open(const std::string inputUrl)
   char buf[1024];
   int read = m_streamingclient->receive(buf, sizeof buf, 0);
 
+  if (read < 0)
+    return false;
 
   for (int i=0; i<read; i++)
   {
@@ -208,11 +210,11 @@ void TimeshiftBuffer::Reset()
 int TimeshiftBuffer::Read(byte *buffer, size_t length)
 {
   int bytesRead = 0;
+  std::unique_lock<std::mutex> lock(m_mutex);
   XBMC->Log(LOG_DEBUG, "TimeshiftBuffer::Read() %d @ %lli", length, m_sd.streamPosition.load());
 
   // Wait until we have enough data
   
-  std::unique_lock<std::mutex> lock(m_mutex);
   if (! m_reader.wait_for(lock, std::chrono::seconds(m_readTimeout),
     [this, length]()
   {
@@ -229,6 +231,8 @@ int TimeshiftBuffer::Read(byte *buffer, size_t length)
     m_writer.notify_one();
   }
 
+  if (bytesRead != length)
+    XBMC->Log(LOG_DEBUG, "Read returns %d for %d request.", bytesRead, length);
   return bytesRead;
 }
 
@@ -239,20 +243,36 @@ int TimeshiftBuffer::Read(byte *buffer, size_t length)
 
 int64_t TimeshiftBuffer::Seek(int64_t position, int whence)
 {
+  bool sleep = false;
   XBMC->Log(LOG_DEBUG, "TimeshiftBuffer::Seek()");
-
-  std::unique_lock<std::mutex> lock(m_mutex);
-  // m_streamPositon is the offset in the stream that will be read next,
-  // so if that matches the seek position, don't seek.
-  XBMC->Log(LOG_DEBUG, "Seek:  %d  %d  %llu %llu", SEEK_SET, whence, m_sd.streamPosition.load(), position);
-  if ((whence == SEEK_SET) && (position == m_sd.streamPosition.load()))
-    return position;
-  m_seek.InitSeek(position, whence);
-  if (m_seek.PreprocessSeek())
+  int64_t lastKnownLength = m_sd.lastKnownLength.load();
+  
+  if (position > lastKnownLength)
   {
-    internalRequestBlocks();
-    m_writer.notify_one(); // wake consumer.
-    m_seeker.wait(lock);
+    XBMC->Log(LOG_DEBUG, "Seek requested to %lld, limiting to %lld\n", position, lastKnownLength);
+    position = lastKnownLength;
+  }
+
+  {
+    std::unique_lock<std::mutex> lock(m_mutex);
+    // m_streamPositon is the offset in the stream that will be read next,
+    // so if that matches the seek position, don't seek.
+    XBMC->Log(LOG_DEBUG, "Seek:  %d  %d  %llu %llu", SEEK_SET, whence, m_sd.streamPosition.load(), position);
+    if ((whence == SEEK_SET) && (position == m_sd.streamPosition.load()))
+      return position;
+    m_seek.InitSeek(position, whence);
+    if (m_seek.PreprocessSeek())
+    {
+      internalRequestBlocks();
+      m_writer.notify_one(); // wake consumer.
+      sleep = true;
+    }
+  }
+  if (sleep)
+  {
+    std::unique_lock<std::mutex> sLock(m_sLock);
+    LOG_IT(LOG_DEBUG, "Seek Waiting");
+    m_seeker.wait(sLock);
   }
   XBMC->Log(LOG_DEBUG, "Seek() returning %lli", position);
   return position;
@@ -380,6 +400,7 @@ uint32_t TimeshiftBuffer::WatchForBlock(byte *buffer, uint64_t *block)
     if (m_seek.BlockRequested())
     { // Can't watch for blocks that haven't been requested!
       watchFor = m_seek.SeekStreamOffset();
+      XBMC->Log(LOG_DEBUG, "%s:%d: watching for bloc %llu", __FUNCTION__, __LINE__, watchFor);
     }
     else
     {
@@ -404,10 +425,15 @@ uint32_t TimeshiftBuffer::WatchForBlock(byte *buffer, uint64_t *block)
       char response[128];
       memset(response, 0, sizeof(response));
       int responseByteCount = m_streamingclient->receive(response, sizeof(response), sizeof(response));
+      XBMC->Log(LOG_DEBUG, "%s:%d: responseByteCount: %d\n", __FUNCTION__, __LINE__, responseByteCount);
       if (responseByteCount > 0)
       {
         XBMC->Log(LOG_DEBUG, "%s:%d: got: %s\n", __FUNCTION__, __LINE__, response);
       }
+    else if (responseByteCount < 0)
+    {
+      return 0;
+    }
   #if defined(TARGET_WINDOWS)
       else if (responseByteCount < 0 && errno == WSAEWOULDBLOCK)
   #else
@@ -415,7 +441,7 @@ uint32_t TimeshiftBuffer::WatchForBlock(byte *buffer, uint64_t *block)
   #endif
       {
 #if defined(TARGET_WINDOWS)
-		Sleep(50);
+        Sleep(50);
 #else
         usleep(50000);
 #endif
@@ -430,12 +456,13 @@ uint32_t TimeshiftBuffer::WatchForBlock(byte *buffer, uint64_t *block)
       long long fileSize;
       int dummy;
       sscanf(response, "%llu:%d %llu %d", &payloadOffset, &payloadSize, &fileSize, &dummy);
+      XBMC->Log(LOG_DEBUG, "PKT_IN: %llu:%d %llu %d", payloadOffset, payloadSize, fileSize, dummy);
       if (m_sd.lastKnownLength.load() != fileSize)
       {
-        XBMC->Log(LOG_DEBUG, "Adjust lastKnownLength, and reset m_sd.lastBufferTime!");
         m_sd.lastBufferTime = time(NULL);
         time_t elapsed = m_sd.lastBufferTime - m_sd.sessionStartTime;
         m_sd.iBytesPerSecond = (int )(elapsed ? fileSize / elapsed : fileSize); // Running estimate of 1 second worth of stream bytes.
+        XBMC->Log(LOG_DEBUG, "Adjust lastKnownLength, and reset m_sd.lastBufferTime! [%d]", m_sd.iBytesPerSecond);
         m_sd.lastKnownLength.store(fileSize);
       }
       
@@ -506,6 +533,7 @@ void TimeshiftBuffer::ConsumeInput()
         {
           if (m_seek.PostprocessSeek(blockNo))
           {
+            XBMC->Log(LOG_DEBUG, "Notify Seek");
             m_seeker.notify_one();
           }
         }
@@ -515,6 +543,7 @@ void TimeshiftBuffer::ConsumeInput()
       {
         XBMC->Log(LOG_DEBUG, "Error Buffering Data!!");
       }
+      std::this_thread::yield();
       std::unique_lock<std::mutex> lock(m_mutex);
       if (m_circularBuffer.BytesFree() < INPUT_READ_LENGTH)
       {

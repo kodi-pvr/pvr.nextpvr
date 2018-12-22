@@ -34,7 +34,7 @@ namespace timeshift {
   private:
     int m_Duration;
   public:
-    RecordingBuffer() : Buffer() { m_Duration = 0; XBMC->Log(LOG_NOTICE, "RecordingBuffer created!"); }
+    RecordingBuffer() : Buffer() { m_Duration = 0; LOG_IT(LOG_NOTICE, "RecordingBuffer created!"); }
     virtual ~RecordingBuffer() {}
     
     virtual int Read(byte *buffer, size_t length) override
@@ -74,7 +74,7 @@ namespace timeshift {
     time_t GetBufferStartTime();
     time_t GetBufferEndTime();
     
-    void SetDuration(int duration) { m_Duration = duration; XBMC->Log(LOG_ERROR, "XXXXX Duration set to %d XXXXX", m_Duration); }
-    int GetDuration(void) { return m_Duration; XBMC->Log(LOG_ERROR, "XXXXX Duration set to %d XXXXX", m_Duration); }
+    void SetDuration(int duration) { m_Duration = duration; LOG_IT(LOG_ERROR, "XXXXX Duration set to %d XXXXX", m_Duration); }
+    int GetDuration(void) { return m_Duration; LOG_IT(LOG_ERROR, "XXXXX Duration set to %d XXXXX", m_Duration); }
   };
 }

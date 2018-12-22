@@ -1,3 +1,9 @@
+v3.3.8
+- bugfixes for live tv tsb seeking, fix uninitialzed struct timeval in socket.cpp
+
+v3.3.3
+- language string updates.
+
 v3.3.2
 - use iUniqueId instead of iChannelNumber for live streaming.
 

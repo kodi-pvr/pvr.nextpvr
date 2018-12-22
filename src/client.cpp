@@ -80,7 +80,7 @@ ADDON_STATUS ADDON_Create(void* hdl, void* props)
     return ADDON_STATUS_PERMANENT_FAILURE;
   }
 
-  XBMC->Log(LOG_INFO, "Creating NextPVR PVR-Client");
+  LOG_IT(LOG_INFO, "Creating NextPVR PVR-Client");
 
   m_CurStatus    = ADDON_STATUS_UNKNOWN;
   g_szUserPath   = pvrprops->strUserPath;
@@ -147,7 +147,7 @@ void ADDON_ReadSettings(void)
   else
   {
     /* If setting is unknown fallback to defaults */
-    XBMC->Log(LOG_ERROR, "Couldn't get 'host' setting, falling back to '127.0.0.1' as default");
+    LOG_IT(LOG_ERROR, "Couldn't get 'host' setting, falling back to '127.0.0.1' as default");
     g_szHostname = DEFAULT_HOST;
   }
 
@@ -155,7 +155,7 @@ void ADDON_ReadSettings(void)
   if (!XBMC->GetSetting("port", &g_iPort))
   {
     /* If setting is unknown fallback to defaults */
-    XBMC->Log(LOG_ERROR, "Couldn't get 'port' setting, falling back to '8866' as default");
+    LOG_IT(LOG_ERROR, "Couldn't get 'port' setting, falling back to '8866' as default");
     g_iPort = DEFAULT_PORT;
   }
 
@@ -173,7 +173,7 @@ void ADDON_ReadSettings(void)
   if (!XBMC->GetSetting("usetimeshift", &g_bUseTimeshift))
   {
     /* If setting is unknown fallback to defaults */
-    XBMC->Log(LOG_ERROR, "Couldn't get 'usetimeshift' setting, falling back to 'true' as default");
+    LOG_IT(LOG_ERROR, "Couldn't get 'usetimeshift' setting, falling back to 'true' as default");
     g_bUseTimeshift = DEFAULT_USE_TIMESHIFT;
   }
 
@@ -181,12 +181,12 @@ void ADDON_ReadSettings(void)
   if (!XBMC->GetSetting("guideartwork", &g_bDownloadGuideArtwork))
   {
     /* If setting is unknown fallback to defaults */
-    XBMC->Log(LOG_ERROR, "Couldn't get 'guideartwork' setting, falling back to 'true' as default");
+    LOG_IT(LOG_ERROR, "Couldn't get 'guideartwork' setting, falling back to 'true' as default");
     g_bDownloadGuideArtwork = DEFAULT_GUIDE_ARTWORK;
   }
 
   /* Log the current settings for debugging purposes */
-  XBMC->Log(LOG_DEBUG, "settings: host='%s', port=%i", g_szHostname.c_str(), g_iPort);
+  LOG_IT(LOG_DEBUG, "settings: host='%s', port=%i", g_szHostname.c_str(), g_iPort);
 }
 
 //-- SetSetting ---------------------------------------------------------------
@@ -206,7 +206,7 @@ ADDON_STATUS ADDON_SetSetting(const char *settingName, const void *settingValue)
   if (str == "host")
   {
     string tmp_sHostname;
-    XBMC->Log(LOG_INFO, "Changed Setting 'host' from %s to %s", g_szHostname.c_str(), (const char*) settingValue);
+    LOG_IT(LOG_INFO, "Changed Setting 'host' from %s to %s", g_szHostname.c_str(), (const char*) settingValue);
     tmp_sHostname = g_szHostname;
     g_szHostname = (const char*) settingValue;
     if (tmp_sHostname != g_szHostname)
@@ -214,7 +214,7 @@ ADDON_STATUS ADDON_SetSetting(const char *settingName, const void *settingValue)
   }
   else if (str == "port")
   {
-    XBMC->Log(LOG_INFO, "Changed Setting 'port' from %u to %u", g_iPort, *(int*) settingValue);
+    LOG_IT(LOG_INFO, "Changed Setting 'port' from %u to %u", g_iPort, *(int*) settingValue);
     if (g_iPort != *(int*) settingValue)
     {
       g_iPort = *(int*) settingValue;
@@ -223,7 +223,7 @@ ADDON_STATUS ADDON_SetSetting(const char *settingName, const void *settingValue)
   }
   else if (str == "pin")
   {
-    XBMC->Log(LOG_INFO, "Changed Setting 'pin'");
+    LOG_IT(LOG_INFO, "Changed Setting 'pin'");
     string tmp_sPin;
     tmp_sPin = g_szPin;
     g_szPin = (const char*) settingValue;
@@ -234,13 +234,13 @@ ADDON_STATUS ADDON_SetSetting(const char *settingName, const void *settingValue)
   {
     if (g_bUseTimeshift != *(bool *)settingValue)
     {
-      XBMC->Log(LOG_INFO, "Changed setting 'usetimeshift' from %u to %u", g_bUseTimeshift, *(bool*) settingValue);
+      LOG_IT(LOG_INFO, "Changed setting 'usetimeshift' from %u to %u", g_bUseTimeshift, *(bool*) settingValue);
       return ADDON_STATUS_NEED_RESTART;
     }
   }
   else if (str == "guideartwork")
   {
-    XBMC->Log(LOG_INFO, "Changed setting 'guideartwork' from %u to %u", g_bDownloadGuideArtwork, *(bool*)settingValue);
+    LOG_IT(LOG_INFO, "Changed setting 'guideartwork' from %u to %u", g_bDownloadGuideArtwork, *(bool*)settingValue);
     g_bDownloadGuideArtwork = *(bool*)settingValue;
   }
 
@@ -272,7 +272,7 @@ void OnPowerSavingDeactivated()
 //-----------------------------------------------------------------------------
 PVR_ERROR GetAddonCapabilities(PVR_ADDON_CAPABILITIES *pCapabilities)
 {
-  XBMC->Log(LOG_DEBUG, "->GetProperties()");
+  LOG_IT(LOG_DEBUG, "->GetProperties()");
 
   //pCapabilities->bSupportsTimeshift          = true; //removed from Frodo API
   pCapabilities->bSupportsEPG                = true;

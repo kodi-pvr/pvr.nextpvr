@@ -89,8 +89,8 @@ bool Socket::read_ready()
   FD_ZERO(&fdset); 
   FD_SET(_sd, &fdset);
 
-  struct timeval tv; 
-    tv.tv_sec = 1; 
+  struct timeval tv = { 1, 0 }; 
+  //  tv.tv_sec = 1; 
 
   int retVal = select(_sd+1, &fdset, NULL, NULL, &tv); 
   if (retVal > 0)
@@ -253,7 +253,7 @@ int Socket::send ( const char* data, const unsigned int len )
 
   if (result < 0)
   {
-    XBMC->Log(LOG_ERROR, "Socket::send  - select failed");
+    LOG_IT(LOG_ERROR, "Socket::send  - select failed");
     _sd = INVALID_SOCKET;
     return 0;
   }
@@ -268,7 +268,7 @@ int Socket::send ( const char* data, const unsigned int len )
   if (status == SOCKET_ERROR)
   {
     errormessage( getLastError(), "Socket::send");
-    XBMC->Log(LOG_ERROR, "Socket::send  - failed to send data");
+    LOG_IT(LOG_ERROR, "Socket::send  - failed to send data");
     _sd = INVALID_SOCKET;
   }
   return status;
@@ -372,7 +372,7 @@ bool Socket::ReadResponse (int &code, vector<string> &lines)
 
     if (result < 0)
     {
-      XBMC->Log(LOG_DEBUG, "CVTPTransceiver::ReadResponse - select failed");
+      LOG_IT(LOG_DEBUG, "CVTPTransceiver::ReadResponse - select failed");
       lines.push_back("ERROR: Select failed");
       code = 1; //error
       _sd = INVALID_SOCKET;
@@ -383,11 +383,11 @@ bool Socket::ReadResponse (int &code, vector<string> &lines)
     {
       if (retries != 0)
       {
-         XBMC->Log(LOG_DEBUG, "CVTPTransceiver::ReadResponse - timeout waiting for response, retrying... (%i)", retries);
+         LOG_IT(LOG_DEBUG, "CVTPTransceiver::ReadResponse - timeout waiting for response, retrying... (%i)", retries);
          retries--;
         continue;
       } else {
-         XBMC->Log(LOG_DEBUG, "CVTPTransceiver::ReadResponse - timeout waiting for response. Failed after 10 retries.");
+         LOG_IT(LOG_DEBUG, "CVTPTransceiver::ReadResponse - timeout waiting for response. Failed after 10 retries.");
          lines.push_back("ERROR: Failed after 10 retries");
          code = 1; //error
         _sd = INVALID_SOCKET;
@@ -398,7 +398,7 @@ bool Socket::ReadResponse (int &code, vector<string> &lines)
     result = recv(_sd, buffer, sizeof(buffer) - 1, 0);
     if (result < 0)
     {
-      XBMC->Log(LOG_DEBUG, "CVTPTransceiver::ReadResponse - recv failed");
+      LOG_IT(LOG_DEBUG, "CVTPTransceiver::ReadResponse - recv failed");
       lines.push_back("ERROR: Recv failed");
       code = 1; //error
       _sd = INVALID_SOCKET;
@@ -457,7 +457,7 @@ int Socket::receive ( char* data, const unsigned int buffersize, const unsigned 
       }
       else
       {
-        XBMC->Log(LOG_ERROR, "Socket::read EAGAIN");
+        LOG_IT(LOG_ERROR, "Socket::read EAGAIN");
         usleep(50000);
         continue;
       }
@@ -494,7 +494,7 @@ bool Socket::connect ( const std::string& host, const unsigned short port )
 
   if ( !setHostname( host ) )
   {
-    XBMC->Log(LOG_ERROR, "Socket::setHostname(%s) failed.\n", host.c_str());
+    LOG_IT(LOG_ERROR, "Socket::setHostname(%s) failed.\n", host.c_str());
     return false;
   }
 
@@ -502,7 +502,7 @@ bool Socket::connect ( const std::string& host, const unsigned short port )
 
   if ( status == SOCKET_ERROR )
   {
-    XBMC->Log(LOG_ERROR, "Socket::connect %s:%u\n", host.c_str(), port);
+    LOG_IT(LOG_ERROR, "Socket::connect %s:%u\n", host.c_str(), port);
     errormessage( getLastError(), "Socket::connect" );
     return false;
   }
@@ -548,7 +548,7 @@ bool Socket::set_non_blocking ( const bool b )
 
   if (ioctlsocket(_sd, FIONBIO, &iMode) == -1)
   {
-    XBMC->Log(LOG_ERROR, "Socket::set_non_blocking - Can't set socket condition to: %i", iMode);
+    LOG_IT(LOG_ERROR, "Socket::set_non_blocking - Can't set socket condition to: %i", iMode);
     return false;
   }
 
@@ -639,7 +639,7 @@ void Socket::errormessage( int errnum, const char* functionname) const
   default:
     errmsg = "WSA Error";
   }
-  XBMC->Log(LOG_ERROR, "%s: (Winsock error=%i) %s\n", functionname, errnum, errmsg);
+  LOG_IT(LOG_ERROR, "%s: (Winsock error=%i) %s\n", functionname, errnum, errmsg);
 }
 
 int Socket::getLastError() const
@@ -697,7 +697,7 @@ bool Socket::set_non_blocking ( const bool b )
 
   if(fcntl (_sd , F_SETFL, opts) == -1)
   {
-    XBMC->Log(LOG_ERROR, "Socket::set_non_blocking - Can't set socket flags to: %i", opts);
+    LOG_IT(LOG_ERROR, "Socket::set_non_blocking - Can't set socket flags to: %i", opts);
     return false;
   }
   return true;
@@ -769,7 +769,7 @@ void Socket::errormessage( int errnum, const char* functionname) const
     default:
       break;
   }
-  XBMC->Log(LOG_ERROR, "%s: (errno=%i) %s\n", functionname, errnum, errmsg);
+  LOG_IT(LOG_ERROR, "%s: (errno=%i) %s\n", functionname, errnum, errmsg);
 }
 
 int Socket::getLastError() const

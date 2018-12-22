@@ -32,7 +32,7 @@ namespace timeshift {
   class DummyBuffer : public Buffer
   {
   public:
-    DummyBuffer() : Buffer() { XBMC->Log(LOG_NOTICE, "DummyBuffer created!"); }
+    DummyBuffer() : Buffer() { LOG_IT(LOG_NOTICE, "DummyBuffer created!"); }
     virtual ~DummyBuffer() {}
     
     virtual int Read(byte *buffer, size_t length) override
