@@ -45,16 +45,6 @@ namespace timeshift {
       return -1; // we can't seek without a real buffer
     }
 
-    virtual bool CanPauseStream() const override
-    {
-      return false;
-    }
-
-    virtual bool CanSeekStream() const override
-    {
-      return false;
-    }
-
     virtual int64_t Position() const override
     {
       return XBMC->GetFilePosition(m_inputHandle);

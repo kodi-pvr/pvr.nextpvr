@@ -1,3 +1,6 @@
+v3.3.9
+- more bugfixing in timeshift seeking, GetStreamTimes() changes.
+
 v3.3.8
 - bugfixes for live tv tsb seeking, fix uninitialzed struct timeval in socket.cpp
 
