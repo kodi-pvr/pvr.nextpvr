@@ -307,10 +307,10 @@ time_t TimeshiftBuffer::GetEndTime()
 
 PVR_ERROR TimeshiftBuffer::GetStreamTimes(PVR_STREAM_TIMES *stimes)
 {
-  stimes->startTime = 0;
+  stimes->startTime = Buffer::GetStartTime();
   stimes->ptsStart = 0;
   stimes->ptsBegin = ((int64_t )(GetStartTime()-Buffer::GetStartTime())) * DVD_TIME_BASE;
-  stimes->ptsEnd = ((int64_t )(time(nullptr) - Buffer::GetStartTime())) * DVD_TIME_BASE;
+  stimes->ptsEnd = ((int64_t )(time(nullptr) - GetStartTime())) * DVD_TIME_BASE;
   return PVR_ERROR_NO_ERROR;
 }
 
@@ -320,7 +320,6 @@ PVR_ERROR TimeshiftBuffer::GetStreamReadChunkSize(int* chunksize)
   *chunksize = TimeshiftBuffer::INPUT_READ_LENGTH;
   return PVR_ERROR_NO_ERROR;
 }
-
 
 time_t TimeshiftBuffer::GetPlayingTime()
 {

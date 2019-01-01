@@ -43,6 +43,11 @@ bool Seeker::InitSeek(int64_t offset, int whence)
   {
     return false;  // Unrecognized.
   }
+  
+  // Prevent seeking beyond live point.
+  if (temp > m_pSd->lastKnownLength)
+    temp = m_pSd->lastKnownLength;
+  
   m_iBlockOffset = temp % m_pSd->inputBlockSize;
   m_xStreamOffset = temp - m_iBlockOffset;
   m_bSeeking = true;
@@ -74,7 +79,7 @@ bool Seeker::PreprocessSeek()
       int64_t seekTarget = m_xStreamOffset + m_iBlockOffset;
       if (m_xStreamOffset < m_pSd->lastBlockBuffered)
       { // Seeking forward in buffer.
-        int seekDiff = (int )(curStreamPtr - seekTarget);
+        int seekDiff = (int )(seekTarget - curStreamPtr);
         m_pSd->streamPosition.store(seekTarget);
         m_cirBuf->AdjustBytes(seekDiff);
       }

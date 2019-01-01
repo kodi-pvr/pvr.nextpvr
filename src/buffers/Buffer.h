@@ -78,12 +78,19 @@ namespace timeshift {
     /**
      * Whether the buffer supports pausing
      */
-    virtual bool CanPauseStream() const = 0;
+    virtual bool CanPauseStream() const
+    {
+      return false;
+    }
+
 
     /**
      * Whether the buffer supports seeking
      */
-    virtual bool CanSeekStream() const = 0;
+    virtual bool CanSeekStream() const
+    {
+      return false;
+    }
 
     /**
      * @return the current read position
@@ -123,7 +130,7 @@ namespace timeshift {
       stimes->startTime = m_startTime;
       stimes->ptsStart = 0;
       stimes->ptsBegin = 0;
-      stimes->ptsEnd = time(nullptr) * DVD_TIME_BASE;
+      stimes->ptsEnd = 0;
       return PVR_ERROR_NO_ERROR;
     }
     
