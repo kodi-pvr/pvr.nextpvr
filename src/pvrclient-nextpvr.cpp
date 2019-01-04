@@ -34,10 +34,10 @@
 #include "tinyxml.h"
 
 #if defined(TARGET_WINDOWS)
-  #define atoll(S) _atoi64(S) 
+  #define atoll(S) _atoi64(S)
 #else
   #define MAXINT64 ULONG_MAX
-#endif 
+#endif
 
 #include <algorithm>
 
@@ -81,17 +81,17 @@ const char SAFE[256] =
     /* 1 */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
     /* 2 */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
     /* 3 */ 1,1,1,1, 1,1,1,1, 1,1,0,0, 0,0,0,0,
-    
+
     /* 4 */ 0,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1,
     /* 5 */ 1,1,1,1, 1,1,1,1, 1,1,1,0, 0,0,0,0,
     /* 6 */ 0,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1,
     /* 7 */ 1,1,1,1, 1,1,1,1, 1,1,1,0, 0,0,0,0,
-    
+
     /* 8 */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
     /* 9 */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
     /* A */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
     /* B */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
-    
+
     /* C */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
     /* D */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
     /* E */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
@@ -109,7 +109,7 @@ std::string UriEncode(const std::string sSrc)
 
   for (; pSrc < SRC_END; ++pSrc)
   {
-    if (SAFE[*pSrc]) 
+    if (SAFE[*pSrc])
     {
       *pEnd++ = *pSrc;
     }
@@ -151,7 +151,7 @@ cPVRClientNextPVR::cPVRClientNextPVR()
   m_lastRecordingUpdateTime = MAXINT64;  // time of last recording check - force forever
   m_timeshiftBuffer = new timeshift::DummyBuffer();
   m_recordingBuffer = new timeshift::RecordingBuffer();
-  
+
   CreateThread(false);
 }
 
@@ -162,13 +162,13 @@ cPVRClientNextPVR::~cPVRClientNextPVR()
   XBMC->Log(LOG_DEBUG, "->~cPVRClientNextPVR()");
   if (m_bConnected)
     Disconnect();
-  SAFE_DELETE(m_tcpclient);  
+  SAFE_DELETE(m_tcpclient);
 }
 
 std::vector<std::string> cPVRClientNextPVR::split(const std::string& s, const std::string& delim, const bool keep_empty)
 {
   std::vector<std::string> result;
-  if (delim.empty()) 
+  if (delim.empty())
   {
     result.push_back(s);
     return result;
@@ -216,7 +216,7 @@ bool cPVRClientNextPVR::Connect()
 
         // a bit of debug
         XBMC->Log(LOG_DEBUG, "session.initiate returns: sid=%s salt=%s", m_sid, salt);
-        
+
 
         std::string pinMD5 = PVRXBMC::XBMC_MD5::GetMD5(g_szPin);
         StringUtils::ToLower(pinMD5);
@@ -254,7 +254,7 @@ bool cPVRClientNextPVR::Connect()
                 {
                   // WinTV Extend server
                 }
-                else 
+                else
                 {
                   // NextPVR server
                   int version = atoi(versionNode->FirstChild()->Value());
@@ -291,7 +291,7 @@ bool cPVRClientNextPVR::Connect()
                   m_iDefaultPrePadding = atoi(settingsDoc.RootElement()->FirstChildElement("PrePadding")->FirstChild()->Value());
                   m_iDefaultPostPadding = atoi( settingsDoc.RootElement()->FirstChildElement("PostPadding")->FirstChild()->Value());
                 }
-                
+
                 if ( settingsDoc.RootElement()->FirstChildElement("RecordingDirectories") != NULL &&  settingsDoc.RootElement()->FirstChildElement("RecordingDirectories")->FirstChild() != NULL)
                 {
                   vector<std::string> directories = split(settingsDoc.RootElement()->FirstChildElement("RecordingDirectories")->FirstChild()->Value(), ",", false);
@@ -315,7 +315,7 @@ bool cPVRClientNextPVR::Connect()
           }
         }
       }
-    }  
+    }
   }
 
   return false;
@@ -356,7 +356,7 @@ bool cPVRClientNextPVR::IsUp()
             PVR->TriggerTimerUpdate();
           }
           else
-          {            
+          {
             m_lastRecordingUpdateTime = time(0);
           }
         }
@@ -377,7 +377,7 @@ bool cPVRClientNextPVR::IsUp()
 void *cPVRClientNextPVR::Process(void)
 {
   while (!IsStopped())
-  {    
+  {
     IsUp();
     Sleep(2500);
   }
@@ -397,7 +397,7 @@ const char* cPVRClientNextPVR::GetBackendName(void)
   }
 
   XBMC->Log(LOG_DEBUG, "->GetBackendName()");
-  
+
   if (m_BackendName.length() == 0)
   {
     m_BackendName = "NextPVR  (";
@@ -504,7 +504,7 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, const PVR_CHANNEL &chan
         broadcast.iYear               = 0;    // unused
         broadcast.strIMDBNumber       = NULL; // unused
 
-        // artwork URL 
+        // artwork URL
         char artworkPath[128];
         artworkPath[0] = '\0';
         if (g_bDownloadGuideArtwork)
@@ -595,9 +595,9 @@ std::string cPVRClientNextPVR::GetChannelIcon(int channelID)
 
   // do we already have the icon file?
   if (XBMC->FileExists(iconFilename.c_str(), false))
-  {        
-    return iconFilename;    
-  } 
+  {
+    return iconFilename;
+  }
 
   if (m_tcpclient->create())
   {
@@ -667,9 +667,9 @@ std::string cPVRClientNextPVR::GetChannelIcon(int channelID)
 PVR_ERROR cPVRClientNextPVR::GetChannels(ADDON_HANDLE handle, bool bRadio)
 {
   PVR_CHANNEL     tag;
-  std::string      stream;  
+  std::string      stream;
   LOG_API_CALL(__FUNCTION__);
-  
+
   m_iChannelCount = 0;
 
   std::string response;
@@ -720,7 +720,7 @@ PVR_ERROR cPVRClientNextPVR::GetChannels(ADDON_HANDLE handle, bool bRadio)
         // transfer channel to XBMC
         if ((bRadio && tag.bIsRadio) || (!bRadio && !tag.bIsRadio))
           PVR->TransferChannelEntry(handle, &tag);
-        
+
         m_iChannelCount ++;
       }
     }
@@ -878,7 +878,7 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
       for( pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode=pRecordingNode->NextSiblingElement())
       {
         memset(&tag, 0, sizeof(PVR_RECORDING));
-        
+
         PVR_STRCPY(tag.strRecordingId, pRecordingNode->FirstChildElement("id")->FirstChild()->Value());
         PVR_STRCPY(tag.strTitle, pRecordingNode->FirstChildElement("name")->FirstChild()->Value());
         PVR_STRCPY(tag.strDirectory, pRecordingNode->FirstChildElement("name")->FirstChild()->Value());
@@ -907,7 +907,7 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
           tag.iEpgEventId = atoi(pRecordingNode->FirstChildElement("epg_event_oid")->FirstChild()->Value());
           XBMC->Log(LOG_DEBUG, "Setting epg id %s %d", tag.strRecordingId, tag.iEpgEventId);
         }
-    
+
         char artworkPath[512];
         snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=recording.artwork&sid=%s&recording_id=%s", g_szHostname.c_str(), g_iPort, m_sid, tag.strRecordingId);
         PVR_STRCPY(tag.strIconPath, artworkPath);
@@ -941,7 +941,7 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
         for( pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode=pRecordingNode->NextSiblingElement())
         {
           memset(&tag, 0, sizeof(PVR_RECORDING));
-          
+
           PVR_STRCPY(tag.strRecordingId, pRecordingNode->FirstChildElement("id")->FirstChild()->Value());
           PVR_STRCPY(tag.strTitle, pRecordingNode->FirstChildElement("name")->FirstChild()->Value());
           PVR_STRCPY(tag.strDirectory, pRecordingNode->FirstChildElement("name")->FirstChild()->Value());
@@ -953,6 +953,11 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
 
           tag.recordingTime = atoi(pRecordingNode->FirstChildElement("start_time_ticks")->FirstChild()->Value());
           tag.iDuration = atoi(pRecordingNode->FirstChildElement("duration_seconds")->FirstChild()->Value());
+
+          if (pRecordingNode->FirstChildElement("playback_position") != NULL && pRecordingNode->FirstChildElement("playback_position")->FirstChild() != NULL)
+          {
+            tag.iLastPlayedPosition = atoi(pRecordingNode->FirstChildElement("playback_position")->FirstChild()->Value());
+          }
 
           /* TODO: PVR API 5.0.0: Implement this */
           tag.iChannelUid = PVR_CHANNEL_INVALID_UID;
@@ -1058,7 +1063,7 @@ PVR_ERROR cPVRClientNextPVR::GetRecordingEdl(const PVR_RECORDING& recording, PVR
         TiXmlElement* commercialsNode = doc.RootElement()->FirstChildElement("commercials");
         TiXmlElement* pCommercialNode;
         for( pCommercialNode = commercialsNode->FirstChildElement("commercial"); pCommercialNode; pCommercialNode=pCommercialNode->NextSiblingElement())
-        {          
+        {
           PVR_EDL_ENTRY entry;
           entry.start = atoi(pCommercialNode->FirstChildElement("start")->FirstChild()->Value()) * 1000;
           entry.end = atoi(pCommercialNode->FirstChildElement("end")->FirstChild()->Value()) * 1000 ;
@@ -1150,7 +1155,7 @@ PVR_ERROR cPVRClientNextPVR::GetTimers(ADDON_HANDLE handle)
 
         TiXmlElement* pMatchRulesNode = pRecurringNode->FirstChildElement("matchrules");// ->FirstChildElement("Rules");
         TiXmlElement* pRulesNode = pMatchRulesNode->FirstChildElement("Rules");// ->FirstChildElement("Rules");
-                
+
         tag.iClientIndex = atoi(pRecurringNode->FirstChildElement("id")->FirstChild()->Value());
         tag.iClientChannelUid = atoi(pRulesNode->FirstChildElement("ChannelOID")->FirstChild()->Value());
 
@@ -1249,7 +1254,7 @@ PVR_ERROR cPVRClientNextPVR::GetTimers(ADDON_HANDLE handle)
         strncat(tag.strTitle, strTitle, sizeof(tag.strTitle) - 1);
 
         tag.state = PVR_TIMER_STATE_SCHEDULED;
-        
+
         PVR_STRCPY(tag.strSummary, "summary");
 
         // pass timer to xbmc
@@ -1344,7 +1349,7 @@ PVR_ERROR cPVRClientNextPVR::GetTimers(ADDON_HANDLE handle)
   }
 
   LOG_API_IRET(__FUNCTION__, returnValue);
-  return returnValue;  
+  return returnValue;
 }
 
 namespace
@@ -1446,7 +1451,7 @@ PVR_ERROR cPVRClientNextPVR::GetTimerTypes(PVR_TIMER_TYPE types[], int *size)
   }
 
   /* PVR_Timer.iRecordingGroup values and presentation */
-  int i = 0; 
+  int i = 0;
   static std::vector< std::pair<int, std::string> > recordingGroupValues;
   for (auto it = m_recordingDirectories.begin(); it != m_recordingDirectories.end(); ++it, i++)
   {
@@ -1622,7 +1627,7 @@ std::string cPVRClientNextPVR::GetDayString(int dayMask)
   else if (dayMask == (PVR_WEEKDAY_MONDAY | PVR_WEEKDAY_TUESDAY | PVR_WEEKDAY_WEDNESDAY | PVR_WEEKDAY_THURSDAY | PVR_WEEKDAY_FRIDAY))
   {
     days = "WEEKDAYS";
-  } 
+  }
   else
   {
     if (dayMask & PVR_WEEKDAY_SATURDAY)
@@ -1887,7 +1892,7 @@ void Tokenize(const string& str, vector<string>& tokens, const string& delimiter
 
 bool cPVRClientNextPVR::OpenRecordedStream(const PVR_RECORDING &recording)
 {
-  
+
   LOG_API_CALL(__FUNCTION__);
   m_currentRecordingLength = 0;
   m_currentRecordingPosition = 0;
@@ -1895,9 +1900,8 @@ bool cPVRClientNextPVR::OpenRecordedStream(const PVR_RECORDING &recording)
 
   PVR_STRCPY(m_currentRecordingID, recording.strRecordingId);
   char line[1024];
-  m_recordingBuffer->SetDuration(recording.iDuration);
-  sprintf(line, "http://%s:%d/live?recording=%s&client=XBMC", g_szHostname.c_str(), g_iPort, m_currentRecordingID);
-  return m_recordingBuffer->Open(line);
+  snprintf(line, sizeof(line), "http://%s:%d/live?recording=%s&client=XBMC", g_szHostname.c_str(), g_iPort, m_currentRecordingID);
+  return m_recordingBuffer->Open(line,recording);
 }
 
 void cPVRClientNextPVR::CloseRecordedStream(void)
@@ -1907,7 +1911,7 @@ void cPVRClientNextPVR::CloseRecordedStream(void)
   m_recordingBuffer->SetDuration(0);
   m_currentRecordingLength = 0;
   m_currentRecordingPosition = 0;
-  
+
 }
 
 int cPVRClientNextPVR::ReadRecordedStream(unsigned char *pBuffer, unsigned int iBufferSize)
@@ -1943,7 +1947,7 @@ int cPVRClientNextPVR::DoRequest(const char *resource, std::string &response)
     strURL = StringUtils::Format("http://%s:%d%s&sid=%s", g_szHostname.c_str(), g_iPort, resource, m_sid);
   else
     strURL = StringUtils::Format("http://%s:%d%s", g_szHostname.c_str(), g_iPort, resource);
-  
+
 #if DEBUGGING_API
   XBMC->Log(LOG_ERROR, "%s: %s", __FUNCTION__, strURL.c_str());
 #endif
@@ -1975,7 +1979,7 @@ time_t cPVRClientNextPVR::GetBufferTimeStart(void)
 }
 
 time_t cPVRClientNextPVR::GetBufferTimeEnd(void)
-{ 
+{
   LOG_API_CALL(__FUNCTION__);
   return m_timeshiftBuffer->GetEndTime();
 }
@@ -2073,7 +2077,7 @@ int dump_attribs_to_stdout(TiXmlElement* pElement, unsigned int indent)
     sprintf(buf, "%s%s: value=[%s]", pIndent, pAttrib->Name(), pAttrib->Value());
     // XBMC->Log(LOG_NOTICE,  "%s%s: value=[%s]", pIndent, pAttrib->Name(), pAttrib->Value());
 
-    if (pAttrib->QueryIntValue(&ival)==TIXML_SUCCESS)    
+    if (pAttrib->QueryIntValue(&ival)==TIXML_SUCCESS)
     {
       sprintf(buf + strlen(buf), " int=%d", ival);
       // XBMC->Log(LOG_NOTICE,  " int=%d", ival);
@@ -2087,7 +2091,7 @@ int dump_attribs_to_stdout(TiXmlElement* pElement, unsigned int indent)
     i++;
     pAttrib=pAttrib->Next();
   }
-  return i; 
+  return i;
 }
 
 void dump_to_log( TiXmlNode* pParent, unsigned int indent)
@@ -2117,11 +2121,11 @@ void dump_to_log( TiXmlNode* pParent, unsigned int indent)
     {
       case 0:
         sprintf(buf + strlen(buf), " (No attributes)");
-        // XBMC->Log(LOG_NOTICE,  " (No attributes)"); 
+        // XBMC->Log(LOG_NOTICE,  " (No attributes)");
         break;
       case 1:
         sprintf(buf + strlen(buf), "%s1 attribute", getIndentAlt(indent));
-        // XBMC->Log(LOG_NOTICE,  "%s1 attribute", getIndentAlt(indent)); 
+        // XBMC->Log(LOG_NOTICE,  "%s1 attribute", getIndentAlt(indent));
         break;
       default:
         sprintf(buf + strlen(buf), "%s%d attributes", getIndentAlt(indent), num);
@@ -2154,7 +2158,7 @@ void dump_to_log( TiXmlNode* pParent, unsigned int indent)
     break;
   }
   XBMC->Log(LOG_ERROR,  "%s\n", buf );
-  for ( pChild = pParent->FirstChild(); pChild != 0; pChild = pChild->NextSibling()) 
+  for ( pChild = pParent->FirstChild(); pChild != 0; pChild = pChild->NextSibling())
   {
     dump_to_log( pChild, indent+1 );
   }
