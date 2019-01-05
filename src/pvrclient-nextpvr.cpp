@@ -954,6 +954,11 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
           tag.recordingTime = atoi(pRecordingNode->FirstChildElement("start_time_ticks")->FirstChild()->Value());
           tag.iDuration = atoi(pRecordingNode->FirstChildElement("duration_seconds")->FirstChild()->Value());
 
+          if (pRecordingNode->FirstChildElement("playback_position") != NULL && pRecordingNode->FirstChildElement("playback_position")->FirstChild() != NULL)
+          {
+            tag.iLastPlayedPosition = atoi(pRecordingNode->FirstChildElement("playback_position")->FirstChild()->Value());
+          }
+
           /* TODO: PVR API 5.0.0: Implement this */
           tag.iChannelUid = PVR_CHANNEL_INVALID_UID;
 
@@ -1895,9 +1900,8 @@ bool cPVRClientNextPVR::OpenRecordedStream(const PVR_RECORDING &recording)
 
   PVR_STRCPY(m_currentRecordingID, recording.strRecordingId);
   char line[1024];
-  m_recordingBuffer->SetDuration(recording.iDuration);
-  sprintf(line, "http://%s:%d/live?recording=%s&client=XBMC", g_szHostname.c_str(), g_iPort, m_currentRecordingID);
-  return m_recordingBuffer->Open(line);
+  snprintf(line, sizeof(line), "http://%s:%d/live?recording=%s&client=XBMC", g_szHostname.c_str(), g_iPort, m_currentRecordingID);
+  return m_recordingBuffer->Open(line,recording);
 }
 
 void cPVRClientNextPVR::CloseRecordedStream(void)

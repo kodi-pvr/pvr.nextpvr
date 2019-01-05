@@ -28,7 +28,7 @@ PVR_ERROR RecordingBuffer::GetStreamTimes(PVR_STREAM_TIMES *stimes)
   stimes->startTime = 0;
   stimes->ptsStart = 0;
   stimes->ptsBegin = 0;
-  stimes->ptsEnd = ((int64_t )m_Duration) * DVD_TIME_BASE;
+  stimes->ptsEnd = ((int64_t ) Duration() ) * DVD_TIME_BASE;
   XBMC->Log(LOG_DEBUG, "RecordingBuffer::GetStreamTimes called!");
   return PVR_ERROR_NO_ERROR;
 }
@@ -41,4 +41,62 @@ time_t RecordingBuffer::GetBufferStartTime()
 time_t RecordingBuffer::GetBufferEndTime()
 {
   return Buffer::GetEndTime();
+}
+
+int RecordingBuffer::Duration(void)
+{
+  if (m_isRecording)
+  {
+    time_t endTime =  time(nullptr);
+    int diff = (int) (endTime - m_startTime - 10);
+    if (diff > 0)
+    {
+      return diff;
+    }
+    else
+    {
+      return 0;
+    }
+  }
+  else
+  {
+    return m_Duration;
+  }
+}
+
+bool RecordingBuffer::Open(const std::string inputUrl,const PVR_RECORDING &recording)
+{
+  m_Duration = recording.iDuration;
+  if (recording.iDuration + recording.recordingTime > time(nullptr))
+  {
+    m_startTime = recording.recordingTime;
+    XBMC->Log(LOG_DEBUG, "RecordingBuffer::Open In Progress %d %lld", recording.iDuration, recording.recordingTime);
+    m_isRecording = true;
+  }
+  else
+  {
+    m_isRecording = false;
+  }
+
+  return Buffer::Open(inputUrl);
+}
+
+int RecordingBuffer::Read(byte *buffer, size_t length)
+{
+  int dataRead = (int) XBMC->ReadFile(m_inputHandle, buffer, length);
+  if (dataRead==0 && m_isRecording)
+  {
+    XBMC->Log(LOG_DEBUG, "%s:%d: %lld %lld", __FUNCTION__, __LINE__, XBMC->GetFileLength(m_inputHandle) ,XBMC->GetFilePosition(m_inputHandle));
+    if (XBMC->GetFileLength(m_inputHandle) == XBMC->GetFilePosition(m_inputHandle))
+    {
+      int64_t where = XBMC->GetFileLength(m_inputHandle);
+      Seek(where - length,SEEK_SET);
+      Seek(where,SEEK_SET);
+      if (where != Length())
+      {
+        XBMC->Log(LOG_INFO, "%s:%d: Before %lld After %lld", __FUNCTION__, __LINE__, where, Length());
+      }
+    }
+  }
+  return dataRead;
 }
