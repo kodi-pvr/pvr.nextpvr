@@ -1,3 +1,6 @@
+v3.3.10
+- In-progress recording changes
+
 v3.3.9
 - more bugfixing in timeshift seeking, GetStreamTimes() changes.
 
