@@ -31,7 +31,7 @@ using namespace timeshift;
 using namespace ADDON;
 
 const int TimeshiftBuffer::INPUT_READ_LENGTH = 32768;
-const int TimeshiftBuffer::BUFFER_BLOCKS = 24;
+const int TimeshiftBuffer::BUFFER_BLOCKS = 48;
 const int TimeshiftBuffer::WINDOW_SIZE = std::max(6, (BUFFER_BLOCKS/2));
 
 // Fix a stupid #define on Windows which causes XBMC->DeleteFile() to break
@@ -45,17 +45,22 @@ TimeshiftBuffer::TimeshiftBuffer()
 {
   XBMC->Log(LOG_DEBUG, "TimeshiftBuffer created!");
   m_sd.lastKnownLength.store(0);
+  m_sd.ptsBegin.store(0);
+  m_sd.ptsEnd.store(0);
   m_sd.tsbStart.store(0);
   m_sd.streamPosition.store(0);
   m_sd.iBytesPerSecond = 0;
-  m_sd.sessionStartTime = 0;
-  m_sd.tsbStartTime = 0;
+  m_sd.sessionStartTime.store(0);
+  m_sd.tsbStartTime.store(0);
   m_sd.tsbRollOff = 0;
   m_sd.lastBlockBuffered = 0;
   m_sd.lastBufferTime = 0;
   m_sd.currentWindowSize = 0;
   m_sd.requestNumber = 0;
   m_sd.requestBlock = 0;
+  m_sd.isPaused = false;
+  m_sd.pauseStart = 0;
+  m_sd.lastPauseAdjust = 0;
 }
 
 TimeshiftBuffer::~TimeshiftBuffer()
@@ -67,7 +72,8 @@ bool TimeshiftBuffer::Open(const std::string inputUrl)
 {
   XBMC->Log(LOG_DEBUG, "TimeshiftBuffer::Open()");
   Buffer::Open(""); // To set the time stream starts
-  m_sd.tsbStartTime = m_sd.sessionStartTime = Buffer::GetStartTime();
+  m_sd.sessionStartTime.store(m_startTime);
+  m_sd.tsbStartTime.store(m_sd.sessionStartTime.load());
   m_streamingclient = new NextPVR::Socket(NextPVR::af_inet, NextPVR::pf_inet, NextPVR::sock_stream, NextPVR::tcp);
   if (!m_streamingclient->create())
   {
@@ -140,6 +146,11 @@ bool TimeshiftBuffer::Open(const std::string inputUrl)
     ConsumeInput();
   });
   
+  m_tsbThread = std::thread([this]()
+  {
+    TSBTimerProc();
+  });
+  
   XBMC->Log(LOG_DEBUG, "Open grabbing lock");
   std::unique_lock<std::mutex> lock(m_mutex);
   XBMC->Log(LOG_DEBUG, "Open Continuing");
@@ -168,6 +179,10 @@ void TimeshiftBuffer::Close()
 
   if (m_inputThread.joinable())
     m_inputThread.join();
+
+  if (m_tsbThread.joinable())
+    m_tsbThread.join();
+
   
   if (m_streamingclient)
   {
@@ -179,9 +194,11 @@ void TimeshiftBuffer::Close()
   m_sd.requestBlock = 0;
   m_sd.requestNumber = 0;
   m_sd.lastKnownLength.store(0);
+  m_sd.ptsBegin.store(0);
+  m_sd.ptsEnd.store(0);
   m_sd.tsbStart.store(0);
-  m_sd.sessionStartTime = 0;
-  m_sd.tsbStartTime = 0;
+  m_sd.sessionStartTime.store(0);
+  m_sd.tsbStartTime.store(0);
   m_sd.tsbRollOff = 0;
   m_sd.iBytesPerSecond = 0;
   m_sd.lastBlockBuffered = 0;
@@ -189,6 +206,9 @@ void TimeshiftBuffer::Close()
   m_sd.streamPosition.store(0);
   m_sd.currentWindowSize = 0;
   m_sd.inputBlockSize = INPUT_READ_LENGTH;
+  m_sd.isPaused = false;
+  m_sd.pauseStart = 0;
+  m_sd.lastPauseAdjust = 0;
   m_circularBuffer.Reset();
 
   Reset();
@@ -245,14 +265,20 @@ int64_t TimeshiftBuffer::Seek(int64_t position, int whence)
 {
   bool sleep = false;
   XBMC->Log(LOG_DEBUG, "TimeshiftBuffer::Seek()");
-  int64_t lastKnownLength = m_sd.lastKnownLength.load();
+  int64_t highLimit = m_sd.lastKnownLength.load() - m_sd.iBytesPerSecond;
+  int64_t lowLimit = m_sd.tsbStart.load() + m_sd.iBytesPerSecond;
   
-  if (position > lastKnownLength)
+  if (position > highLimit)
   {
-    XBMC->Log(LOG_DEBUG, "Seek requested to %lld, limiting to %lld\n", position, lastKnownLength);
-    position = lastKnownLength;
+    XBMC->Log(LOG_ERROR, "Seek requested to %lld, limiting to %lld\n", position, highLimit);
+    position = highLimit;
   }
-
+  else if (position < lowLimit)
+  {
+    XBMC->Log(LOG_ERROR, "Seek requested to %lld, limiting to %lld\n", position, lowLimit);
+    position = lowLimit;
+  }
+  
   {
     std::unique_lock<std::mutex> lock(m_mutex);
     // m_streamPositon is the offset in the stream that will be read next,
@@ -278,39 +304,14 @@ int64_t TimeshiftBuffer::Seek(int64_t position, int whence)
   return position;
 }
 
-time_t TimeshiftBuffer::GetStartTime()
-{
-  if (m_active)
-  {
-    if (m_sd.tsbStartTime == 0)
-    {
-      m_sd.tsbStartTime = Buffer::GetStartTime();
-    }
-    time_t now = time(nullptr);
-    time_t time_diff = now - m_sd.tsbStartTime;
-    XBMC->Log(LOG_DEBUG, "time_diff: %d, m_tsbStartTime: %d", time_diff, m_sd.tsbStartTime);
-    if (time_diff > g_timeShiftBufferSeconds)
-    {
-      m_sd.tsbStartTime += (time_diff - g_timeShiftBufferSeconds);
-    }
-    return m_sd.tsbStartTime;
-  }
-  return 0;
-}
-
-time_t TimeshiftBuffer::GetEndTime()
-{
-  if (m_active)
-    return Buffer::GetEndTime();
-  return 0;
-}
-
 PVR_ERROR TimeshiftBuffer::GetStreamTimes(PVR_STREAM_TIMES *stimes)
 {
-  stimes->startTime = Buffer::GetStartTime();
+  stimes->startTime = m_sd.sessionStartTime.load();
   stimes->ptsStart = 0;
-  stimes->ptsBegin = ((int64_t )(GetStartTime()-Buffer::GetStartTime())) * DVD_TIME_BASE;
-  stimes->ptsEnd = ((int64_t )(time(nullptr) - GetStartTime())) * DVD_TIME_BASE;
+  stimes->ptsBegin = m_sd.ptsBegin.load();
+  stimes->ptsEnd = m_sd.ptsEnd.load();
+//  XBMC->Log(LOG_ERROR, "GetStreamTimes: %d, %lli, %lli, %lli", 
+//            stimes->startTime, stimes->ptsStart, stimes->ptsBegin, stimes->ptsEnd);
   return PVR_ERROR_NO_ERROR;
 }
 
@@ -320,40 +321,6 @@ PVR_ERROR TimeshiftBuffer::GetStreamReadChunkSize(int* chunksize)
   *chunksize = TimeshiftBuffer::INPUT_READ_LENGTH;
   return PVR_ERROR_NO_ERROR;
 }
-
-time_t TimeshiftBuffer::GetPlayingTime()
-{
-  if (m_active)
-  {
-    time_t start = GetStartTime();
-    time_t now = time(NULL);
-    time_t tsbRoll = start - m_sd.sessionStartTime;
-    time_t tdiff = tsbRoll - m_sd.tsbRollOff;  // Correction on this visit.
-    time_t lbtc = now - m_sd.lastBufferTime;
-    XBMC->Log(LOG_DEBUG, "start: %d, lbtc: %d, tdiff: %d", start, lbtc, tdiff);
-    if (lbtc > 0)
-    { // If we're paused, we stop requesting/receiving buffers, so Length() doesn't get updated. Fudge it here.
-      m_sd.lastKnownLength.fetch_add(lbtc * m_sd.iBytesPerSecond);
-      m_sd.lastBufferTime = now;
-    }
-    if (tdiff > 0)
-    {
-      m_sd.tsbStart.fetch_add(tdiff * m_sd.iBytesPerSecond);
-      m_sd.tsbRollOff = tsbRoll;
-    }
-    uint64_t end = m_sd.lastKnownLength.load();
-    int64_t local_tsb_start = m_sd.tsbStart.load();
-    int64_t tsb_len = end - local_tsb_start;
-    uint64_t pos = Position();
-    uint64_t temp = (now - start) * (pos - local_tsb_start);
-    int64_t  viewPos = temp ? (temp / tsb_len) : 0;
-    XBMC->Log(LOG_DEBUG, "tsb_start: %lli, end: %llu, tsb_len: %lli, viewPos: %d B/sec: %d", 
-              local_tsb_start, end, tsb_len, viewPos, m_sd.iBytesPerSecond);
-    return (time_t )(start + viewPos);
-  }
-  return 0;
-}
-
 
 void TimeshiftBuffer::RequestBlocks()
 {
@@ -429,10 +396,10 @@ uint32_t TimeshiftBuffer::WatchForBlock(byte *buffer, uint64_t *block)
       {
         XBMC->Log(LOG_DEBUG, "%s:%d: got: %s\n", __FUNCTION__, __LINE__, response);
       }
-    else if (responseByteCount < 0)
-    {
-      return 0;
-    }
+      else if (responseByteCount < 0)
+      {
+        return 0;
+      }
   #if defined(TARGET_WINDOWS)
       else if (responseByteCount < 0 && errno == WSAEWOULDBLOCK)
   #else
@@ -458,10 +425,6 @@ uint32_t TimeshiftBuffer::WatchForBlock(byte *buffer, uint64_t *block)
       XBMC->Log(LOG_DEBUG, "PKT_IN: %llu:%d %llu %d", payloadOffset, payloadSize, fileSize, dummy);
       if (m_sd.lastKnownLength.load() != fileSize)
       {
-        m_sd.lastBufferTime = time(NULL);
-        time_t elapsed = m_sd.lastBufferTime - m_sd.sessionStartTime;
-        m_sd.iBytesPerSecond = (int )(elapsed ? fileSize / elapsed : fileSize); // Running estimate of 1 second worth of stream bytes.
-        XBMC->Log(LOG_DEBUG, "Adjust lastKnownLength, and reset m_sd.lastBufferTime! [%d]", m_sd.iBytesPerSecond);
         m_sd.lastKnownLength.store(fileSize);
       }
       
@@ -506,6 +469,71 @@ bool TimeshiftBuffer::WriteData(const byte *buf, unsigned int size, uint64_t blo
   return false;
  }
 
+ void TimeshiftBuffer::TSBTimerProc()
+ {
+   // ONLY use atomic types/ops inR session_data, don't mess with
+   // the locks!
+   while (m_active)
+   {
+     std::this_thread::sleep_for(std::chrono::seconds(1));  // Let's try 1 per second.
+
+     // First, take a snapshot
+     time_t now = time(NULL);
+     time_t sessionStartTime = m_sd.sessionStartTime.load();
+     time_t tsbStartTime = m_sd.tsbStartTime.load();
+     int64_t lastKnownLength = m_sd.lastKnownLength.load();
+     uint64_t streamPosition = m_sd.streamPosition.load();
+     int64_t tsbStart = m_sd.tsbStart.load();
+     time_t iBytesPerSecond = m_sd.iBytesPerSecond;
+     bool isPaused = m_sd.isPaused;
+     time_t pauseStart = m_sd.pauseStart;
+     time_t lastPauseAdjust = m_sd.lastPauseAdjust;
+     
+     if (tsbStartTime == 0)
+     {
+       tsbStartTime = sessionStartTime;
+     }
+     
+     // Now perform the calculations
+     time_t elapsed = now - tsbStartTime;
+     //XBMC->Log(LOG_ERROR, "TSBTimerProc: time_diff: %d, tsbStartTime: %d", elapsed, tsbStartTime);
+     if (elapsed > g_timeShiftBufferSeconds)
+     {
+       // Roll the tsb forward
+       int tsbRoll = elapsed - g_timeShiftBufferSeconds;
+       elapsed = g_timeShiftBufferSeconds;
+       tsbStart += (tsbRoll * iBytesPerSecond);
+       tsbStartTime += tsbRoll;
+       // XBMC->Log(LOG_ERROR, "startTime: %d, start: %lli, isPaused: %d, tsbRoll: %d", tsbStartTime, tsbStart, isPaused, tsbRoll);
+     }
+     if (m_sd.isPaused)
+     { 
+       if ((now > pauseStart) && (now > lastPauseAdjust))
+       { // If we're paused, we stop requesting/receiving buffers, so lastKnownLength doesn't get updated. Fudge it here.
+         lastKnownLength += ((now - lastPauseAdjust) * iBytesPerSecond);
+         lastPauseAdjust = now;
+       }
+     }
+
+     int totalTime = now - sessionStartTime;                // total seconds we've been tuned to this channel.
+     iBytesPerSecond = totalTime ? (int )(lastKnownLength / totalTime) : 0;  // lastKnownLength (total bytes buffered) / number_of_seconds buffered.
+                       
+     // Write everything back
+     m_sd.tsbStartTime.store(tsbStartTime);
+     m_sd.tsbStart.store(tsbStart);
+     m_sd.lastKnownLength.store(lastKnownLength);
+     m_sd.iBytesPerSecond = iBytesPerSecond;
+     m_sd.ptsBegin.store((tsbStartTime - sessionStartTime) * DVD_TIME_BASE);
+     m_sd.ptsEnd.store((now - sessionStartTime) * DVD_TIME_BASE);
+     m_sd.lastPauseAdjust = lastPauseAdjust;
+     
+     
+//     XBMC->Log(LOG_ERROR, "tsb_start: %lli, end: %llu, B/sec: %d", 
+//               tsbStart, lastKnownLength, iBytesPerSecond);
+
+   }
+ }
+ 
 void TimeshiftBuffer::ConsumeInput()
 {
   XBMC->Log(LOG_DEBUG, "TimeshiftBuffer::ConsumeInput()");

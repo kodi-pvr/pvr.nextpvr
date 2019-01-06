@@ -1833,8 +1833,12 @@ void cPVRClientNextPVR::CloseLiveStream(void)
 
 long long cPVRClientNextPVR::SeekLiveStream(long long iPosition, int iWhence)
 {
+  long long retVal;
   LOG_API_CALL(__FUNCTION__);
-  return m_timeshiftBuffer->Seek(iPosition, iWhence);
+  XBMC->Log(LOG_DEBUG, "calling seek(%lli %d)", iPosition, iWhence);
+  retVal = m_timeshiftBuffer->Seek(iPosition, iWhence);
+  XBMC->Log(LOG_DEBUG, "returned from seek()");
+  return retVal;
 }
 
 
@@ -1859,6 +1863,11 @@ bool cPVRClientNextPVR::CanPauseStream(void)
     return true;
   else
     return m_timeshiftBuffer->CanPauseStream();
+}
+
+void cPVRClientNextPVR::PauseStream(bool bPaused)
+{
+  m_timeshiftBuffer->PauseStream(bPaused);
 }
 
 bool cPVRClientNextPVR::CanSeekStream(void)
@@ -1970,24 +1979,6 @@ int cPVRClientNextPVR::DoRequest(const char *resource, std::string &response)
   }
   LOG_API_IRET(__FUNCTION__, resultCode);
   return resultCode;
-}
-
-time_t cPVRClientNextPVR::GetBufferTimeStart(void)
-{
-  LOG_API_CALL(__FUNCTION__);
-  return m_timeshiftBuffer->GetStartTime();
-}
-
-time_t cPVRClientNextPVR::GetBufferTimeEnd(void)
-{ 
-  LOG_API_CALL(__FUNCTION__);
-  return m_timeshiftBuffer->GetEndTime();
-}
-
-time_t cPVRClientNextPVR::GetPlayingTime()
-{
-  LOG_API_CALL(__FUNCTION__);
-  return m_timeshiftBuffer->GetPlayingTime();
 }
 
 bool cPVRClientNextPVR::IsTimeshifting()

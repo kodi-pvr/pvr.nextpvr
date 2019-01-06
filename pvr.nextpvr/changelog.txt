@@ -1,3 +1,6 @@
+v3.3.11
+- Fixes for live tv timeshift and seeking.
+
 v3.3.10
 - In-progress recording changes
 

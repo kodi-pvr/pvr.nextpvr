@@ -57,6 +57,14 @@ namespace timeshift {
       return m_CanPause;
     }
 
+    virtual void PauseStream(bool bPause) override
+    {
+      if ((m_sd.isPaused = bPause))
+        m_sd.lastPauseAdjust = m_sd.pauseStart = time(nullptr);
+      else
+        m_sd.lastPauseAdjust = m_sd.pauseStart = 0;
+    }
+    
     virtual bool CanSeekStream() const override
     {
       return true;
@@ -79,9 +87,6 @@ namespace timeshift {
       return false;
     }
 
-    virtual time_t GetPlayingTime() override;
-    virtual time_t GetStartTime() override;
-    virtual time_t GetEndTime() override;
     virtual PVR_ERROR GetStreamTimes(PVR_STREAM_TIMES *) override;
     virtual PVR_ERROR GetStreamReadChunkSize(int *chunksize) override;
 
@@ -98,6 +103,8 @@ namespace timeshift {
      * handle and writes it to the output handle
      */
     void ConsumeInput();
+    
+    void TSBTimerProc();
 
     
     bool WriteData(const byte *, unsigned int, uint64_t);
@@ -123,6 +130,12 @@ namespace timeshift {
      * handles
      */
     std::thread m_inputThread;
+
+    /**
+     * The thread that keeps track of the size of the current tsb, and
+     * drags the starting time forward when slip seconds is exceeded
+     */
+    std::thread m_tsbThread;
 
     /**
      * Protects m_output*Handle
