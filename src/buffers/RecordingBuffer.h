@@ -33,20 +33,18 @@ namespace timeshift {
   {
   private:
     int m_Duration;
+    bool m_isRecording;
+    time_t m_startTime;
+
   public:
     RecordingBuffer() : Buffer() { m_Duration = 0; XBMC->Log(LOG_NOTICE, "RecordingBuffer created!"); }
     virtual ~RecordingBuffer() {}
     
-    virtual int Read(byte *buffer, size_t length) override
-    {
-      return XBMC->ReadFile(m_inputHandle, buffer, length);
-    }
+    virtual int Read(byte *buffer, size_t length) override;
 
     virtual int64_t Seek(int64_t position, int whence) override
     {
-      int64_t newPosition = XBMC->SeekFile(m_inputHandle, position, whence);
-
-      return newPosition;
+      return XBMC->SeekFile(m_inputHandle, position, whence);
     }
 
     virtual bool CanPauseStream() const override
@@ -76,5 +74,8 @@ namespace timeshift {
     
     void SetDuration(int duration) { m_Duration = duration; XBMC->Log(LOG_ERROR, "XXXXX Duration set to %d XXXXX", m_Duration); }
     int GetDuration(void) { return m_Duration; XBMC->Log(LOG_ERROR, "XXXXX Duration set to %d XXXXX", m_Duration); }
+    int Duration(void);
+    bool Open(const std::string inputUrl,const PVR_RECORDING &recording);
+
   };
 }
