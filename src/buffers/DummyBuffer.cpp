@@ -28,12 +28,3 @@ PVR_ERROR DummyBuffer::GetStreamTimes(PVR_STREAM_TIMES *stimes)
   return Buffer::GetStreamTimes(stimes);
 }
 
-time_t DummyBuffer::GetBufferStartTime()
-{
-  return Buffer::GetStartTime();
-}
-
-time_t DummyBuffer::GetBufferEndTime()
-{
-  return Buffer::GetEndTime();
-}

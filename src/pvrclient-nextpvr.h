@@ -129,10 +129,8 @@ public:
   long long SeekLiveStream(long long iPosition, int iWhence = SEEK_SET);
   long long LengthLiveStream(void);
   bool CanPauseStream(void);
+  void PauseStream(bool bPause);
   bool CanSeekStream(void);
-  time_t GetBufferTimeStart(void);
-  time_t GetBufferTimeEnd(void);
-  time_t GetPlayingTime(void);
   bool IsTimeshifting(void);
   bool IsRealTimeStream(void);
 

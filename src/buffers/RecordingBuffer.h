@@ -67,11 +67,8 @@ namespace timeshift {
       return XBMC->GetFileLength(m_inputHandle);
     }
 
-    PVR_ERROR GetStreamTimes(PVR_STREAM_TIMES *);
+    PVR_ERROR GetStreamTimes(PVR_STREAM_TIMES *) override;
 
-    time_t GetBufferStartTime();
-    time_t GetBufferEndTime();
-    
     void SetDuration(int duration) { m_Duration = duration; XBMC->Log(LOG_ERROR, "XXXXX Duration set to %d XXXXX", m_Duration); }
     int GetDuration(void) { return m_Duration; XBMC->Log(LOG_ERROR, "XXXXX Duration set to %d XXXXX", m_Duration); }
     int Duration(void);

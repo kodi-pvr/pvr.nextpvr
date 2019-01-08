@@ -636,6 +636,8 @@ bool CanPauseStream(void)
 
 void PauseStream(bool bPaused)
 {
+  if (g_client)
+    g_client->PauseStream(bPaused);
 }
 
 bool CanSeekStream(void)
@@ -663,27 +665,6 @@ PVR_ERROR GetRecordingEdl(const PVR_RECORDING &recording, PVR_EDL_ENTRY entries[
 {
   if (g_client)
     return g_client->GetRecordingEdl(recording, entries, size);
-  return PVR_ERROR_SERVER_ERROR;
-}
-
-time_t GetBufferTimeStart(void) 
-{
-  if (g_client)
-    return g_client->GetBufferTimeStart();
-  return PVR_ERROR_SERVER_ERROR;
-}
-
-time_t GetBufferTimeEnd(void)
-{
-  if (g_client)
-    return g_client->GetBufferTimeEnd();
-  return PVR_ERROR_SERVER_ERROR;
-}
-
-time_t GetPlayingTime()
-{
-  if (g_client)
-    return g_client->GetPlayingTime();
   return PVR_ERROR_SERVER_ERROR;
 }
 

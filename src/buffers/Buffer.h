@@ -83,6 +83,7 @@ namespace timeshift {
       return false;
     }
 
+    virtual void PauseStream(bool bPause) {}
 
     /**
      * Whether the buffer supports seeking
@@ -115,14 +116,6 @@ namespace timeshift {
     }
 
     /**
-     * @return the time the buffering started
-     */
-    virtual time_t GetStartTime()
-    {
-      return m_startTime;
-    }
-    
-    /**
      * @return stream times
      */
     virtual PVR_ERROR GetStreamTimes(PVR_STREAM_TIMES *stimes)
@@ -142,11 +135,6 @@ namespace timeshift {
       return PVR_ERROR_NO_ERROR;
     }
     
-    virtual time_t GetPlayingTime()
-    {
-      return time(nullptr);
-    }
-
     /**
      * @return basically the current time
      */
@@ -189,7 +177,6 @@ namespace timeshift {
      */
     volatile std::atomic<bool> m_active;
 
-  private:
     /**
      * The time the buffer was created
      */

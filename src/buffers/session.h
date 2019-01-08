@@ -43,6 +43,10 @@ namespace timeshift {
      *
      */
     int inputBlockSize;
+    
+    volatile bool isPaused;
+    volatile time_t pauseStart;
+    volatile time_t lastPauseAdjust;
     /**
      * The next block to request.
      */
@@ -50,16 +54,17 @@ namespace timeshift {
     /**
      * The last known length of the timeshift file on backend
      */
-    std::atomic<int64_t> lastKnownLength;
+    volatile std::atomic<int64_t> lastKnownLength;
+    volatile std::atomic<int64_t> ptsBegin;
+    volatile std::atomic<int64_t> ptsEnd;
     
-    std::atomic<int64_t> tsbStart;
+    volatile std::atomic<int64_t> tsbStart;
     
-    int iBytesPerSecond;
-    time_t sessionStartTime;
-    time_t tsbStartTime;
-    time_t tsbRollOff;
-    time_t lastBufferTime;
-
+    volatile int iBytesPerSecond;
+    volatile std::atomic<time_t> sessionStartTime;
+    volatile std::atomic<time_t> tsbStartTime;
+    volatile time_t tsbRollOff;
+    volatile time_t lastBufferTime;
     /**
      * The next position a read will access. (in stream, not buffer)
      */
