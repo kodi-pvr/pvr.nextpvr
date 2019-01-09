@@ -47,7 +47,7 @@ namespace timeshift {
       return XBMC->SeekFile(m_inputHandle, position, whence);
     }
 
-    virtual bool CanPauseStream() const override
+    virtual bool CanPauseStream() override
     {
       return true;
     }

@@ -9,7 +9,8 @@
 
   <!-- advanced -->
   <category label="30041">
-    <setting id="usetimeshift" type="bool" label="30003" default="false"/>
+    <!--setting id="usetimeshift" type="bool" label="30003" default="false"/-->
+    <setting id="livestreamingmethod" type="enum" label="Live TV Stream" values="Timeshift|EPG Based|Basic" default="Basic"/>
     <setting id="guideartwork" type="bool" label="30004" default="false"/>     
   </category>
 </settings>

@@ -78,7 +78,7 @@ namespace timeshift {
     /**
      * Whether the buffer supports pausing
      */
-    virtual bool CanPauseStream() const
+    virtual bool CanPauseStream()
     {
       return false;
     }
@@ -115,6 +115,7 @@ namespace timeshift {
       return false;
     }
 
+
     /**
      * @return stream times
      */
@@ -142,6 +143,8 @@ namespace timeshift {
     {
       return time(nullptr);
     }
+
+    virtual void SetSid(char *sid) {}
 
     /**
      * Sets the read timeout (defaults to 10 seconds)

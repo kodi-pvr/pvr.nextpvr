@@ -29,8 +29,9 @@
 
 enum eStreamingMethod
 {
-  TSReader = 0,
-  ffmpeg = 1
+  Timeshift = 0,
+  EPG_Based = 1,
+  Basic = 2
 };
 
 #define DEFAULT_HOST                  "127.0.0.1"
@@ -39,6 +40,7 @@ enum eStreamingMethod
 #define DEFAULT_RADIO                 true
 #define DEFAULT_USE_TIMESHIFT         false
 #define DEFAULT_GUIDE_ARTWORK         false
+#define DEFAULT_LIVE_STREAM           Timeshift
 
 extern std::string      g_szUserPath;         ///< The Path to the user directory inside user profile
 extern std::string      g_szClientPath;       ///< The Path where this driver is located
@@ -50,6 +52,7 @@ extern std::string      g_szPin;
 extern bool             g_bRadioEnabled;
 extern bool             g_bUseTimeshift;
 extern int16_t          g_timeShiftBufferSeconds;
+extern eStreamingMethod      g_livestreamingmethod;
 
 extern ADDON::CHelper_libXBMC_addon *XBMC;
 extern CHelper_libXBMC_pvr          *PVR;

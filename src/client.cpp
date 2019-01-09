@@ -35,15 +35,17 @@ std::string      g_szHostname             = DEFAULT_HOST;                  ///< 
 std::string      g_szPin                  = DEFAULT_HOST;                  ///< The Host name or IP of the NextPVR server
 int              g_iPort                  = DEFAULT_PORT;                  ///< The web listening port (default: 8866)
 int16_t          g_timeShiftBufferSeconds = 0;
+eStreamingMethod g_livestreamingmethod = Basic;
 
 /* Client member variables */
 ADDON_STATUS           m_CurStatus    = ADDON_STATUS_UNKNOWN;
 cPVRClientNextPVR     *g_client       = NULL;
 std::string            g_szUserPath   = "";
 std::string            g_szClientPath = "";
+bool             g_bUseTimeshift;  /* obsolete but settings.xml might have it */
+
 CHelper_libXBMC_addon *XBMC           = NULL;
 CHelper_libXBMC_pvr   *PVR            = NULL;
-bool                   g_bUseTimeshift = false;
 bool                   g_bDownloadGuideArtwork = false;
 
 extern "C" {
@@ -169,12 +171,27 @@ void ADDON_ReadSettings(void)
     g_szPin = DEFAULT_PIN;
   }
 
-    /* Read setting "usetimeshift" from settings.xml */
+  /* Read setting "livestreamingmethod" from settings.xml */
+  if (!XBMC->GetSetting("livestreamingmethod", &g_livestreamingmethod))
+  {
+    /* If setting is unknown fallback to defaults */
+    XBMC->Log(LOG_ERROR, "Couldn't get 'livestreamingmethod' setting");
+    g_livestreamingmethod = DEFAULT_LIVE_STREAM;
+  }
+
+  if (g_livestreamingmethod == DEFAULT_LIVE_STREAM)
+  {
+    /* Read obsolete setting "usetimeshift" from settings.xml */
   if (!XBMC->GetSetting("usetimeshift", &g_bUseTimeshift))
   {
     /* If setting is unknown fallback to defaults */
     XBMC->Log(LOG_ERROR, "Couldn't get 'usetimeshift' setting, falling back to 'true' as default");
-    g_bUseTimeshift = DEFAULT_USE_TIMESHIFT;
+      g_livestreamingmethod = Basic;
+    }
+    else
+    {
+      g_livestreamingmethod = Timeshift;
+    }
   }
 
   /* Read setting "guideartwork" from settings.xml */
@@ -242,6 +259,16 @@ ADDON_STATUS ADDON_SetSetting(const char *settingName, const void *settingValue)
   {
     XBMC->Log(LOG_INFO, "Changed setting 'guideartwork' from %u to %u", g_bDownloadGuideArtwork, *(bool*)settingValue);
     g_bDownloadGuideArtwork = *(bool*)settingValue;
+  }
+  else if (str == "livestreamingmethod")
+  {
+      XBMC->Log(LOG_INFO, "Changed setting 'livestreamingmethod' from %d to %d", g_livestreamingmethod, *(bool*)settingValue);
+      eStreamingMethod  tmp_livestreamingmethod = g_livestreamingmethod;
+      g_livestreamingmethod = *(eStreamingMethod*) settingValue;
+      if (g_livestreamingmethod != tmp_livestreamingmethod)
+      {
+        return ADDON_STATUS_NEED_RESTART;
+      }
   }
 
   return ADDON_STATUS_OK;

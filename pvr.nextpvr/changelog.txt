@@ -1,3 +1,9 @@
+v3.3.12
+- Add EPG based buffer,
+- Add share based recording playback
+- Move DoRequest to a Class
+- Fix radio, reduce spam
+
 v3.3.11
 - Fixes for live tv timeshift and seeking.
 

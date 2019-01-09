@@ -30,6 +30,7 @@
 #include "buffers/DummyBuffer.h"
 #include "buffers/TimeshiftBuffer.h"
 #include "buffers/RecordingBuffer.h"
+#include "buffers/EpgBasedBuffer.h"
 
 #define SAFE_DELETE(p)       do { delete (p);     (p)=NULL; } while (0)
 
@@ -184,5 +185,6 @@ private:
   time_t                  m_tsbStartTime;
   int                     m_timeShiftBufferSeconds;
   timeshift::Buffer      *m_timeshiftBuffer;
+  timeshift::Buffer      *m_radioBuffer;
   timeshift::RecordingBuffer *m_recordingBuffer;
 };

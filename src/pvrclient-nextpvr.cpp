@@ -22,12 +22,12 @@
 #include <stdlib.h>
 #include <memory>
 
-#include "p8-platform/os.h"
 #include <p8-platform/util/StringUtils.h>
-#include "p8-platform/util/timeutils.h"
+
 
 #include "client.h"
 #include "pvrclient-nextpvr.h"
+#include "BackendRequest.h"
 
 #include "md5.h"
 
@@ -151,6 +151,7 @@ cPVRClientNextPVR::cPVRClientNextPVR()
   m_lastRecordingUpdateTime = MAXINT64;  // time of last recording check - force forever
   m_timeshiftBuffer = new timeshift::DummyBuffer();
   m_recordingBuffer = new timeshift::RecordingBuffer();
+	m_radioBuffer = new timeshift::DummyBuffer();
   
   CreateThread(false);
 }
@@ -273,14 +274,23 @@ bool cPVRClientNextPVR::Connect()
                 if (liveTimeshiftNode != NULL)
                 {
                   m_supportsLiveTimeshift = true;
-                  if (g_bUseTimeshift)
+									g_timeShiftBufferSeconds = atoi(settingsDoc.RootElement()->FirstChildElement("SlipSeconds")->FirstChild()->Value());
+									XBMC->Log(LOG_NOTICE, "time shift buffer in seconds == %d\n", g_timeShiftBufferSeconds);
+									if (g_livestreamingmethod == Timeshift)
                   {
-                    XBMC->Log(LOG_NOTICE, "g_bUseTimeshift is true!!");
+                    XBMC->Log(LOG_NOTICE, "Timeshift is true!!");
                     delete m_timeshiftBuffer;
                     m_timeshiftBuffer = new timeshift::TimeshiftBuffer();
                   }
-                  g_timeShiftBufferSeconds = atoi(settingsDoc.RootElement()->FirstChildElement("SlipSeconds")->FirstChild()->Value());
-                  XBMC->Log(LOG_NOTICE, "time shift buffer in seconds == %d\n", g_timeShiftBufferSeconds);
+									else if (g_livestreamingmethod == EPG_Based)
+									{
+										XBMC->Log(LOG_NOTICE, "EPG Based Buffering");
+										delete m_timeshiftBuffer;
+										m_timeshiftBuffer = new timeshift::EpgBasedBuffer();
+										m_timeshiftBuffer->SetSid(m_sid);
+									}
+
+
                 }
 
                 // load padding defaults
@@ -916,8 +926,18 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
         snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=recording.fanart&sid=%s&recording_id=%s", g_szHostname.c_str(), g_iPort, m_sid, tag.strRecordingId);
         PVR_STRCPY(tag.strFanartPath, artworkPath);
 
-        /* TODO: PVR API 5.0.0: Implement this */
-        tag.iChannelUid = PVR_CHANNEL_INVALID_UID;
+        if (pRecordingNode->FirstChildElement("channel_oid") != NULL && pRecordingNode->FirstChildElement("channel_oid")->FirstChild() != NULL)
+        {
+          tag.iChannelUid = atoi(pRecordingNode->FirstChildElement("channel_oid")->FirstChild()->Value());
+          if (tag.iChannelUid == 0)
+          {
+            tag.iChannelUid = PVR_CHANNEL_INVALID_UID;
+          }
+        }
+        else
+        {
+          tag.iChannelUid = PVR_CHANNEL_INVALID_UID;
+        }
 
         /* TODO: PVR API 5.1.0: Implement this */
         tag.channelType = PVR_RECORDING_CHANNEL_TYPE_UNKNOWN;
@@ -959,9 +979,23 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
             tag.iLastPlayedPosition = atoi(pRecordingNode->FirstChildElement("playback_position")->FirstChild()->Value());
           }
 
-          /* TODO: PVR API 5.0.0: Implement this */
-          tag.iChannelUid = PVR_CHANNEL_INVALID_UID;
+          if (pRecordingNode->FirstChildElement("channel_oid") != NULL && pRecordingNode->FirstChildElement("channel_oid")->FirstChild() != NULL)
+          {
+            tag.iChannelUid = atoi(pRecordingNode->FirstChildElement("channel_oid")->FirstChild()->Value());
+            if (tag.iChannelUid == 0)
+            {
+              tag.iChannelUid = PVR_CHANNEL_INVALID_UID;
+            }
+          }
+          else
+          {
+            tag.iChannelUid = PVR_CHANNEL_INVALID_UID;
+          }
 
+          if (pRecordingNode->FirstChildElement("file") != NULL && pRecordingNode->FirstChildElement("file")->FirstChild() != NULL)
+          {
+            PVR_STRCPY(tag.strDirectory, pRecordingNode->FirstChildElement("file")->FirstChild()->Value());
+          }
           /* TODO: PVR API 5.1.0: Implement this */
           tag.channelType = PVR_RECORDING_CHANNEL_TYPE_UNKNOWN;
 
@@ -1800,16 +1834,24 @@ bool cPVRClientNextPVR::OpenLiveStream(const PVR_CHANNEL &channelinfo)
 {
   char line[256];
   LOG_API_CALL(__FUNCTION__);
-  if (channelinfo.bIsRadio == false && m_supportsLiveTimeshift && g_bUseTimeshift)
+  if (channelinfo.bIsRadio == false && m_supportsLiveTimeshift && g_livestreamingmethod == Timeshift)
   {
     sprintf(line, "GET /live?channeloid=%d&mode=liveshift&client=XBMC-%s HTTP/1.0\r\n", channelinfo.iUniqueId, m_sid);
   }
   else
   {
     sprintf(line, "http://%s:%d/live?channeloid=%d&client=XBMC-%s", g_szHostname.c_str(), g_iPort, channelinfo.iUniqueId, m_sid);
+    if (channelinfo.bIsRadio == false && g_livestreamingmethod == EPG_Based)
+    {
+      strcat(line,"&epgmode=true");
+    }
   }
   XBMC->Log(LOG_NOTICE, "Calling Open(%s) on tsb!", line);
-  if (m_timeshiftBuffer->Open(line))
+  if (channelinfo.bIsRadio == true && m_radioBuffer->Open(line))
+  {
+    return true;
+  }
+  else if (m_timeshiftBuffer->Open(line))
   {
     return true;
   }
@@ -1818,7 +1860,6 @@ bool cPVRClientNextPVR::OpenLiveStream(const PVR_CHANNEL &channelinfo)
 
 int cPVRClientNextPVR::ReadLiveStream(unsigned char *pBuffer, unsigned int iBufferSize)
 {
-  XBMC->Log(LOG_DEBUG, "ReadLiveStream:%d bufsize: %d", __LINE__, iBufferSize);
   return m_timeshiftBuffer->Read(pBuffer, iBufferSize);
 }
 
@@ -1845,6 +1886,7 @@ long long cPVRClientNextPVR::SeekLiveStream(long long iPosition, int iWhence)
 long long cPVRClientNextPVR::LengthLiveStream(void)
 {
   LOG_API_CALL(__FUNCTION__);
+  XBMC->Log(LOG_DEBUG, "seek length(%lli)", m_timeshiftBuffer->Length());
   return m_timeshiftBuffer->Length();
 }
 
@@ -1862,7 +1904,10 @@ bool cPVRClientNextPVR::CanPauseStream(void)
   if (m_recordingBuffer->GetDuration())
     return true;
   else
-    return m_timeshiftBuffer->CanPauseStream();
+  {
+    bool retval = m_timeshiftBuffer->CanPauseStream();
+    return retval;
+  }
 }
 
 void cPVRClientNextPVR::PauseStream(bool bPaused)
@@ -1925,10 +1970,9 @@ void cPVRClientNextPVR::CloseRecordedStream(void)
 
 int cPVRClientNextPVR::ReadRecordedStream(unsigned char *pBuffer, unsigned int iBufferSize)
 {
-  XBMC->Log(LOG_DEBUG, "ReadRecordedStream(%d bytes from offset %d)", iBufferSize, (int)m_currentRecordingPosition);
+  LOG_API_CALL(__FUNCTION__);
   iBufferSize = m_recordingBuffer->Read(pBuffer, iBufferSize);
   return iBufferSize;
-
 }
 
 long long cPVRClientNextPVR::SeekRecordedStream(long long iPosition, int iWhence)
@@ -1947,36 +1991,12 @@ long long  cPVRClientNextPVR::LengthRecordedStream(void)
 /** http handling */
 int cPVRClientNextPVR::DoRequest(const char *resource, std::string &response)
 {
-  P8PLATFORM::CLockObject lock(m_mutex);
   LOG_API_CALL(__FUNCTION__);
-
-  // build request string, adding SID if requred
-  std::string strURL;
-  if (strstr(resource, "method=session") == NULL)
-    strURL = StringUtils::Format("http://%s:%d%s&sid=%s", g_szHostname.c_str(), g_iPort, resource, m_sid);
-  else
-    strURL = StringUtils::Format("http://%s:%d%s", g_szHostname.c_str(), g_iPort, resource);
-  
-#if DEBUGGING_API
-  XBMC->Log(LOG_ERROR, "%s: %s", __FUNCTION__, strURL.c_str());
-#endif
-
-  // ask XBMC to read the URL for us
-  int resultCode = HTTP_NOTFOUND;
-  void* fileHandle = XBMC->OpenFile(strURL.c_str(), 0);
-  if (fileHandle)
-  {
-    char buffer[1024];
-    while (XBMC->ReadFileString(fileHandle, buffer, 1024))
-      response.append(buffer);
-    XBMC->CloseFile(fileHandle);
-    resultCode = HTTP_OK;
-    if (response.empty() || strstr(response.c_str(), "<rsp stat=\"ok\">") == NULL)
-    {
-      XBMC->Log(LOG_ERROR, "DoRequest failed, response=\n%s", response.c_str());
-      resultCode = HTTP_BADREQUEST;
-    }
-  }
+  P8PLATFORM::CLockObject lock(m_mutex);
+  NextPVR::Request *request;
+  request = new NextPVR::Request();
+  int resultCode =  request->DoRequest(resource, response,m_sid);
+  delete request;
   LOG_API_IRET(__FUNCTION__, resultCode);
   return resultCode;
 }

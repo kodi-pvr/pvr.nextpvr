@@ -29,7 +29,6 @@ PVR_ERROR RecordingBuffer::GetStreamTimes(PVR_STREAM_TIMES *stimes)
   stimes->ptsStart = 0;
   stimes->ptsBegin = 0;
   stimes->ptsEnd = ((int64_t ) Duration() ) * DVD_TIME_BASE;
-  XBMC->Log(LOG_DEBUG, "RecordingBuffer::GetStreamTimes called!");
   return PVR_ERROR_NO_ERROR;
 }
 
@@ -67,7 +66,39 @@ bool RecordingBuffer::Open(const std::string inputUrl,const PVR_RECORDING &recor
   {
     m_isRecording = false;
   }
-
+  if (recording.strDirectory)
+  {
+    struct  __stat64 StatFile;
+    char strDirectory [PVR_ADDON_URL_STRING_LENGTH];
+    strcpy(strDirectory,recording.strDirectory);
+    int i = 0;
+    int j = 0;
+  	for(; i <= strlen(recording.strDirectory); i++, j++)
+  	{
+      if (recording.strDirectory[i] == '\\')
+      {
+        if (i==0 && recording.strDirectory[1] == '\\')
+        {
+          strcpy(strDirectory,"smb://");
+          i = 1;
+          j = 5;
+        }
+        else
+        {
+          strDirectory[j] = '/';
+        }
+      }
+      else
+      {
+          strDirectory[j] = recording.strDirectory[i];
+      }
+	  }
+    if ( XBMC->StatFile(strDirectory,&StatFile) == 0)
+    {
+      XBMC->Log(LOG_DEBUG, "Native playback %s %lld", strDirectory, StatFile.st_size);
+      return Buffer::Open(std::string(strDirectory));
+    }
+  }
   return Buffer::Open(inputUrl);
 }
 
