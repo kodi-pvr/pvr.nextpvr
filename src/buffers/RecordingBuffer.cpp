@@ -21,6 +21,12 @@
 
 #include "RecordingBuffer.h"
 
+#define __USE_LARGEFILE64
+#define _LARGEFILE_SOURCE
+#define _LARGEFILE64_SOURCE
+
+#include <sys/stat.h>
+
 using namespace timeshift;
 
 PVR_ERROR RecordingBuffer::GetStreamTimes(PVR_STREAM_TIMES *stimes)
