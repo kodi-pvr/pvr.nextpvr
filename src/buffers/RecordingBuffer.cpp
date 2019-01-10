@@ -21,12 +21,6 @@
 
 #include "RecordingBuffer.h"
 
-#define __USE_LARGEFILE64
-#define _LARGEFILE_SOURCE
-#define _LARGEFILE64_SOURCE
-
-#include <sys/stat.h>
-
 using namespace timeshift;
 
 PVR_ERROR RecordingBuffer::GetStreamTimes(PVR_STREAM_TIMES *stimes)
@@ -74,7 +68,6 @@ bool RecordingBuffer::Open(const std::string inputUrl,const PVR_RECORDING &recor
   }
   if (recording.strDirectory)
   {
-    struct  __stat64 StatFile;
     char strDirectory [PVR_ADDON_URL_STRING_LENGTH];
     strcpy(strDirectory,recording.strDirectory);
     int i = 0;
@@ -99,9 +92,9 @@ bool RecordingBuffer::Open(const std::string inputUrl,const PVR_RECORDING &recor
           strDirectory[j] = recording.strDirectory[i];
       }
 	  }
-    if ( XBMC->StatFile(strDirectory,&StatFile) == 0)
+    if ( XBMC->FileExists(strDirectory,false))
     {
-      XBMC->Log(LOG_DEBUG, "Native playback %s %lld", strDirectory, StatFile.st_size);
+      XBMC->Log(LOG_DEBUG, "Native playback %s", strDirectory);
       return Buffer::Open(std::string(strDirectory));
     }
   }
