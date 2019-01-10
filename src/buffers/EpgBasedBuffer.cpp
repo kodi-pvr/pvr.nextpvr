@@ -45,21 +45,22 @@ bool EpgBasedBuffer::CanPauseStream()
 	if (m_sd.isPaused == true)
 	{
 		time_t now = time(nullptr);
-		if ( m_sd.lastPauseAdjust + 10  >= now )
+		if ( m_sd.lastPauseAdjust <= now )
 		{
-			m_sd.lastPauseAdjust = now + 10;
+			std::this_thread::yield();
+			std::unique_lock<std::mutex> lock(m_mutex);
 			std::string response;
 			NextPVR::Request *request;
 			request = new NextPVR::Request();
-			std::this_thread::yield();
-			std::unique_lock<std::mutex> lock(m_mutex);
 			if (request->DoRequest("/service?method=channel.transcode.lease", response,m_sid) == HTTP_OK)
 			{
-				XBMC->Log(LOG_DEBUG, "channel.transcode.lease success");
+				XBMC->Log(LOG_DEBUG, "channel.transcode.lease success %lld", m_sd.lastPauseAdjust );
+				m_sd.lastPauseAdjust = now + 5;
 			}
 			else
 			{
-				XBMC->Log(LOG_ERROR, "channel.transcode.lease failed");
+				XBMC->Log(LOG_ERROR, "channel.transcode.lease failed %lld", m_sd.lastPauseAdjust );
+				m_sd.lastPauseAdjust = now + 1;
 			}
 			delete request;
 		}

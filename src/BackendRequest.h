@@ -41,8 +41,9 @@ namespace NextPVR
       int DoRequest(const char *resource, std::string &response, char *m_sid);
 
       Request(void);
-      virtual ~Request();
+      virtual ~Request() {};
     private:
       P8PLATFORM::CMutex        m_mutexRequest;
+      time_t m_start;
   };
 }

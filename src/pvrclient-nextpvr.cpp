@@ -467,6 +467,11 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, const PVR_CHANNEL &chan
   std::string response;
   char request[512];
   LOG_API_CALL(__FUNCTION__);
+  if ( iEnd < (time(nullptr) - 24 * 3660))
+  {
+      XBMC->Log(LOG_DEBUG, "Skipping expired EPG data %d %ld %lld",channel.iUniqueId,iStart, iEnd);
+      return PVR_ERROR_INVALID_PARAMETERS;
+  }
   sprintf(request, "/service?method=channel.listings&channel_id=%d&start=%d&end=%d", channel.iUniqueId, (int)iStart, (int)iEnd);
   if (DoRequest(request, response) == HTTP_OK)
   {
@@ -912,12 +917,6 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
           tag.iLastPlayedPosition = atoi(pRecordingNode->FirstChildElement("playback_position")->FirstChild()->Value());
         }
 
-        if (pRecordingNode->FirstChildElement("epg_event_oid") != NULL && pRecordingNode->FirstChildElement("epg_event_oid")->FirstChild() != NULL)
-        {
-          tag.iEpgEventId = atoi(pRecordingNode->FirstChildElement("epg_event_oid")->FirstChild()->Value());
-          XBMC->Log(LOG_DEBUG, "Setting epg id %s %d", tag.strRecordingId, tag.iEpgEventId);
-        }
-    
         char artworkPath[512];
         snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=recording.artwork&sid=%s&recording_id=%s", g_szHostname.c_str(), g_iPort, m_sid, tag.strRecordingId);
         PVR_STRCPY(tag.strIconPath, artworkPath);
@@ -998,6 +997,11 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
           if (pRecordingNode->FirstChildElement("file") != NULL && pRecordingNode->FirstChildElement("file")->FirstChild() != NULL)
           {
             PVR_STRCPY(tag.strDirectory, pRecordingNode->FirstChildElement("file")->FirstChild()->Value());
+          }
+          if (pRecordingNode->FirstChildElement("epg_event_oid") != NULL && pRecordingNode->FirstChildElement("epg_event_oid")->FirstChild() != NULL)
+          {
+            tag.iEpgEventId = atoi(pRecordingNode->FirstChildElement("epg_event_oid")->FirstChild()->Value());
+            XBMC->Log(LOG_DEBUG, "Setting epg id %s %d", tag.strRecordingId, tag.iEpgEventId);
           }
           /* TODO: PVR API 5.1.0: Implement this */
           tag.channelType = PVR_RECORDING_CHANNEL_TYPE_UNKNOWN;
@@ -1202,7 +1206,14 @@ PVR_ERROR cPVRClientNextPVR::GetTimers(ADDON_HANDLE handle)
         if (pRulesNode->FirstChildElement("StartTimeTicks") != NULL)
         {
           tag.startTime = atol(pRulesNode->FirstChildElement("StartTimeTicks")->FirstChild()->Value());
-          tag.endTime = atol(pRulesNode->FirstChildElement("EndTimeTicks")->FirstChild()->Value());
+          if (tag.startTime < time(nullptr))
+          {
+            tag.startTime = 0;
+          }
+          else
+          {
+            tag.endTime = atol(pRulesNode->FirstChildElement("EndTimeTicks")->FirstChild()->Value());
+          }
         }
 
         // keyword recordings
@@ -1841,13 +1852,13 @@ bool cPVRClientNextPVR::OpenLiveStream(const PVR_CHANNEL &channelinfo)
   {
     sprintf(line, "GET /live?channeloid=%d&mode=liveshift&client=XBMC-%s HTTP/1.0\r\n", channelinfo.iUniqueId, m_sid);
   }
+  else if (channelinfo.bIsRadio == false && g_livestreamingmethod == EPG_Based)
+  {
+    sprintf(line, "http://%s:%d/live?channeloid=%d&sid%s&epgmode=true", g_szHostname.c_str(), g_iPort, channelinfo.iUniqueId, m_sid);
+  }
   else
   {
     sprintf(line, "http://%s:%d/live?channeloid=%d&client=XBMC-%s", g_szHostname.c_str(), g_iPort, channelinfo.iUniqueId, m_sid);
-    if (channelinfo.bIsRadio == false && g_livestreamingmethod == EPG_Based)
-    {
-      strcat(line,"&epgmode=true");
-    }
   }
   XBMC->Log(LOG_NOTICE, "Calling Open(%s) on tsb!", line);
   if (channelinfo.bIsRadio == true && m_radioBuffer->Open(line))

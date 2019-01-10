@@ -20,7 +20,7 @@
 
 
 #include  "BackendRequest.h"
-
+#include "Filesystem.h"
 
 #define HTTP_OK 200
 #define HTTP_NOTFOUND 404
@@ -45,7 +45,7 @@ namespace NextPVR
 
     // ask XBMC to read the URL for us
     int resultCode = HTTP_NOTFOUND;
-    void* fileHandle = XBMC->OpenFile(strURL, 0);
+    void* fileHandle = XBMC->OpenFile(strURL, READ_NO_CACHE);
     if (fileHandle)
     {
       char buffer[1024];
@@ -61,14 +61,12 @@ namespace NextPVR
           resultCode = HTTP_BADREQUEST;
       }
     }
+    XBMC->Log(LOG_DEBUG, "Performance check %s %d %d %d", resource, resultCode,response.length(),time(nullptr)-m_start);
+
     return resultCode;
   }
   Request::Request()
   {
-    XBMC->Log(LOG_ERROR, "%s %d", __FUNCTION__, __LINE__);
-  }
-  Request::~Request()
-  {
-    XBMC->Log(LOG_ERROR, "%s %d", __FUNCTION__, __LINE__);
+    m_start = time(nullptr);
   }
 }
