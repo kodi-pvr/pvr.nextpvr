@@ -938,7 +938,10 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
         {
           tag.iChannelUid = PVR_CHANNEL_INVALID_UID;
         }
-
+        if (pRecordingNode->FirstChildElement("file") != NULL && pRecordingNode->FirstChildElement("file")->FirstChild() != NULL)
+        {
+          PVR_STRCPY(tag.strDirectory, pRecordingNode->FirstChildElement("file")->FirstChild()->Value());
+        }
         /* TODO: PVR API 5.1.0: Implement this */
         tag.channelType = PVR_RECORDING_CHANNEL_TYPE_UNKNOWN;
 

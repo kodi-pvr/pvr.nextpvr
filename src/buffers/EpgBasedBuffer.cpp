@@ -31,28 +31,28 @@ using namespace timeshift;
 
 bool EpgBasedBuffer::Open(const std::string inputUrl)
 {
-  struct PVR_RECORDING recording;
-  recording.recordingTime = time(nullptr);
-  recording.iDuration = 5 * 60 * 60;
-  m_sd.isPaused = false;
-  m_sd.lastPauseAdjust = 0;
-  XBMC->Log(LOG_DEBUG, "EpgBasedBuffer::Open In EPG Mode");
-  return RecordingBuffer::Open(inputUrl,recording);
+	struct PVR_RECORDING recording;
+	recording.recordingTime = time(nullptr);
+	recording.iDuration = 5 * 60 * 60;
+	m_sd.isPaused = false;
+	m_sd.lastPauseAdjust = 0;
+	XBMC->Log(LOG_DEBUG, "EpgBasedBuffer::Open In EPG Mode");
+	return RecordingBuffer::Open(inputUrl,recording);
 }
 
 bool EpgBasedBuffer::CanPauseStream()
 {
-  if (m_sd.isPaused == true)
-  {
-    time_t now = time(nullptr);
-    if ( m_sd.lastPauseAdjust + 10  >= now )
-    {
-      //m_sd.lastPauseAdjust = now + 10;
+	if (m_sd.isPaused == true)
+	{
+		time_t now = time(nullptr);
+		if ( m_sd.lastPauseAdjust + 10  >= now )
+		{
+			m_sd.lastPauseAdjust = now + 10;
 			std::string response;
-      NextPVR::Request *request;
-      request = new NextPVR::Request();
-      std::this_thread::yield();
-      std::unique_lock<std::mutex> lock(m_mutex);
+			NextPVR::Request *request;
+			request = new NextPVR::Request();
+			std::this_thread::yield();
+			std::unique_lock<std::mutex> lock(m_mutex);
 			if (request->DoRequest("/service?method=channel.transcode.lease", response,m_sid) == HTTP_OK)
 			{
 				XBMC->Log(LOG_DEBUG, "channel.transcode.lease success");
@@ -61,8 +61,8 @@ bool EpgBasedBuffer::CanPauseStream()
 			{
 				XBMC->Log(LOG_ERROR, "channel.transcode.lease failed");
 			}
-      delete request;
+			delete request;
 		}
-  }
-  return true;
+	}
+	return true;
 }

@@ -38,7 +38,7 @@ bool Buffer::Open(const std::string inputUrl)
     std::stringstream ss;
     if (inputUrl.rfind("http", 0) == 0)
     {
-    ss << inputUrl << "|connection-timeout=" << m_readTimeout;
+      ss << inputUrl << "|connection-timeout=" << m_readTimeout;
     }
     else
     {
