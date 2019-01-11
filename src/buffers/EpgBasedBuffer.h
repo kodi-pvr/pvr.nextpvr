@@ -68,19 +68,6 @@ namespace timeshift {
       return false;
     }
 
-    /*virtual int64_t Length() const
-    {
-      return 0;
-      int64_t length;
-      if ( XBMC->GetFileLength(m_inputHandle) == 0 )
-      {
-          return XBMC->GetFilePosition(m_inputHandle);
-          NextPVR::DoRequest(NextPVR::af_inet, NextPVR::pf_inet, NextPVR::sock_stream, NextPVR::tcp)
-      }
-      return length;
-    }*/
-
-
     void SetSid(char *sid) override { strcpy(m_sid,sid); }
 
   };

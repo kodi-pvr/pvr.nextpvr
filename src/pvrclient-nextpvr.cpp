@@ -1854,7 +1854,7 @@ bool cPVRClientNextPVR::OpenLiveStream(const PVR_CHANNEL &channelinfo)
   }
   else if (channelinfo.bIsRadio == false && g_livestreamingmethod == EPG_Based)
   {
-    sprintf(line, "http://%s:%d/live?channeloid=%d&sid%s&epgmode=true", g_szHostname.c_str(), g_iPort, channelinfo.iUniqueId, m_sid);
+    sprintf(line, "http://%s:%d/live?channeloid=%d&sid=%s&epgmode=true", g_szHostname.c_str(), g_iPort, channelinfo.iUniqueId, m_sid);
   }
   else
   {

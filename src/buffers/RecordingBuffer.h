@@ -44,6 +44,7 @@ namespace timeshift {
 
     virtual int64_t Seek(int64_t position, int whence) override
     {
+      XBMC->Log(LOG_DEBUG, "Seek: %s %d  %d  %lld  %lld %lld", __FUNCTION__, __LINE__,whence, position, XBMC->GetFilePosition(m_inputHandle), XBMC->GetFileLength(m_inputHandle) );
       return XBMC->SeekFile(m_inputHandle, position, whence);
     }
 
