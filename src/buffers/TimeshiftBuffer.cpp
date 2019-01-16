@@ -266,7 +266,7 @@ int64_t TimeshiftBuffer::Seek(int64_t position, int whence)
   bool sleep = false;
   XBMC->Log(LOG_DEBUG, "TimeshiftBuffer::Seek()");
   int64_t highLimit = m_sd.lastKnownLength.load() - m_sd.iBytesPerSecond;
-  int64_t lowLimit = m_sd.tsbStart.load() + m_sd.iBytesPerSecond;
+  int64_t lowLimit = m_sd.tsbStart.load() + (m_sd.iBytesPerSecond << 2);  // Add Roughly 4 seconds to account for estimating the start. 
   
   if (position > highLimit)
   {
@@ -466,6 +466,7 @@ bool TimeshiftBuffer::WriteData(const byte *buf, unsigned int size, uint64_t blo
     m_sd.lastBlockBuffered = blockNum;
     return true;
   }
+  XBMC->Log(LOG_ERROR, "%s:%d: Error writing block to circularBuffer!", __FUNCTION__, __LINE__);
   return false;
  }
 

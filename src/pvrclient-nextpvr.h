@@ -27,9 +27,12 @@
 #include "Socket.h"
 #include "p8-platform/threads/mutex.h"
 #include "p8-platform/threads/threads.h"
+#include "tinyxml.h"
 #include "buffers/DummyBuffer.h"
 #include "buffers/TimeshiftBuffer.h"
 #include "buffers/RecordingBuffer.h"
+#include "buffers/RollingFile.h"
+#include <map>
 
 #define SAFE_DELETE(p)       do { delete (p);     (p)=NULL; } while (0)
 
@@ -80,6 +83,8 @@ public:
   bool Connect();
   void Disconnect();
   bool IsUp();
+  void OnSystemSleep();
+  void OnSystemWake();
 
   /* General handling */
   const char* GetBackendName(void);
@@ -106,11 +111,12 @@ public:
   int GetNumRecordings(void);
   PVR_ERROR GetRecordings(ADDON_HANDLE handle);
   PVR_ERROR DeleteRecording(const PVR_RECORDING &recording);
-  PVR_ERROR RenameRecording(const PVR_RECORDING &recording);
   PVR_ERROR SetRecordingLastPlayedPosition(const PVR_RECORDING &recording, int lastplayedposition);
   int GetRecordingLastPlayedPosition(const PVR_RECORDING &recording);
   PVR_ERROR GetRecordingEdl(const PVR_RECORDING& recording, PVR_EDL_ENTRY[], int *size);
   PVR_ERROR GetRecordingStreamProperties(const PVR_RECORDING*, PVR_NAMED_VALUE*, unsigned int*);
+  bool UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_RECORDING *tag);
+  void ParseNextPVRSubtitle( const char *episodeName, PVR_RECORDING   *tag);
   
   /* Timer handling */
   int GetNumTimers(void);
@@ -120,6 +126,7 @@ public:
   PVR_ERROR AddTimer(const PVR_TIMER &timer);
   PVR_ERROR DeleteTimer(const PVR_TIMER &timer, bool bForceDelete = false);
   PVR_ERROR UpdateTimer(const PVR_TIMER &timer);
+  bool UpdatePvrTimer(TiXmlElement* pRecordingNode, PVR_TIMER *tag);
 
   /* Live stream handling */
   bool OpenLiveStream(const PVR_CHANNEL &channel);
@@ -155,6 +162,7 @@ private:
   bool LoadGenreXML(const std::string &filename);
   int DoRequest(const char *resource, std::string &response);
   std::string GetChannelIcon(int channelID);
+  std::string GetChannelIconFileName(int channelID);
   void Close();
 
   int                     m_iCurrentChannel;
@@ -162,7 +170,6 @@ private:
   std::string             m_BackendName;
   P8PLATFORM::CMutex        m_mutex;
 
-  char                    m_currentRecordingID[1024];
   long long               m_currentRecordingLength;
   long long               m_currentRecordingPosition;
 
@@ -171,18 +178,33 @@ private:
   long long               m_currentLivePosition;
   int                     m_iDefaultPrePadding;
   int                     m_iDefaultPostPadding;  
+
   std::vector< std::string > m_recordingDirectories;
 
   int64_t                 m_lastRecordingUpdateTime;
 
   char                    m_sid[64];
 
-  int                     m_iChannelCount;  
+  // update these at end of counting loop can be called during action
+  int                     m_iChannelCount = -1;
+  int                     m_iRecordingCount = -1;
+  int                     m_iTimerCount = -1;
 
   int                     m_defaultLimit;
   int                     m_defaultShowType;
   time_t                  m_tsbStartTime;
   int                     m_timeShiftBufferSeconds;
   timeshift::Buffer      *m_timeshiftBuffer;
+  timeshift::Buffer      *m_livePlayer;
+  timeshift::Buffer      *m_realTimeBuffer;
   timeshift::RecordingBuffer *m_recordingBuffer;
+
+  std::map<std::string, std::string> m_hostFilenames;
+  std::map<int, bool> m_channelTypes;  // returns isRadio
+  std::map<int, std::string> m_liveStreams;
+
+  void SendWakeOnLan();
+  bool SaveSettings(std::string name, std::string value);
+  void LoadLiveStreams();
+
 };
