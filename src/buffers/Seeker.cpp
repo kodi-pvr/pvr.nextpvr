@@ -27,6 +27,9 @@ using namespace ADDON;
 bool Seeker::InitSeek(int64_t offset, int whence)
 {
   int64_t temp;
+  m_xStreamOffset = m_iBlockOffset = 0;
+  m_bSeeking = m_bSeekBlockRequested = m_bSeekBlockReceived = m_streamPositionSet = false;
+
   if (whence == SEEK_SET)
   {
     temp = offset;
@@ -77,7 +80,8 @@ bool Seeker::PreprocessSeek()
     if (curBlock < m_xStreamOffset)
     {  // seek forward
       int64_t seekTarget = m_xStreamOffset + m_iBlockOffset;
-      if (m_xStreamOffset < m_pSd->lastBlockBuffered)
+	  XBMC->Log(LOG_DEBUG, "%s:%d: curBlock: %lli, m_xStreamOffset: %lli, m_pSd->lastBlockBuffered: %lli", __FUNCTION__, __LINE__, curBlock, m_xStreamOffset, m_pSd->lastBlockBuffered);
+	  if (m_xStreamOffset <= m_pSd->lastBlockBuffered)
       { // Seeking forward in buffer.
         int seekDiff = (int )(seekTarget - curStreamPtr);
         m_pSd->streamPosition.store(seekTarget);

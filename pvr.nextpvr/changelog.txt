@@ -1,3 +1,6 @@
+v3.3.12
+- Bugfixes, seek re-init, and jump to last block already buffered.
+
 v3.3.11
 - Fixes for live tv timeshift and seeking.
 
