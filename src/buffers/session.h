@@ -30,7 +30,7 @@ namespace timeshift {
     /**
      * The offset into stream of the last block we successfully buffered.
      */
-    int64_t lastBlockBuffered;
+    volatile int64_t lastBlockBuffered;
     /**
      * Sliding window variable, should be in range 0..WINDOW_SIZE
      */
