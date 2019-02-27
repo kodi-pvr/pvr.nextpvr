@@ -137,3 +137,31 @@ msgstr ""
 msgctxt "#30161"
 msgid "All"
 msgstr ""
+
+msgctxt "#30162"
+msgid "Pre-buffer time in seconds"
+msgstr ""
+
+msgctxt "#30163"
+msgid "Enable Wake On LAN"
+msgstr ""
+
+msgctxt "#30164"
+msgid "Wait for server after wake in seconds"
+msgstr ""
+
+msgctxt "#30165"
+msgid "NextPVR server MAC address"
+msgstr ""
+
+msgctxt "#30166"
+msgid "Failed Recordings"
+msgstr ""
+
+msgctxt "#30167"
+msgid "Live TV Chunk Size"
+msgstr ""
+
+msgctxt "#30168"
+msgid "Recording Chunk Size"
+msgstr ""
