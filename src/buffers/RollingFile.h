@@ -20,8 +20,7 @@
 *
 */
 #include "RecordingBuffer.h"
-//#include <thread>
-//#include <condition_variable>
+#include <thread>
 #include <mutex>
 #include <list>
 #include "session.h"

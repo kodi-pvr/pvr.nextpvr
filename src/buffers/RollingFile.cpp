@@ -21,10 +21,10 @@
 #include "RollingFile.h"
 #include  "../BackendRequest.h"
 #include "Filesystem.h"
-#include <thread>
 #include <regex>
 #include <mutex>
 #include "tinyxml.h"
+#include "p8-platform/threads/threads.h"
 
 #define HTTP_OK 200
 
