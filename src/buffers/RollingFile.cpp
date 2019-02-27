@@ -24,9 +24,15 @@
 #include <regex>
 #include <mutex>
 #include "tinyxml.h"
-#include "p8-platform/threads/threads.h"
+
 
 #define HTTP_OK 200
+
+#if defined(TARGET_WINDOWS)
+#define SLEEP(ms) Sleep(ms)
+#else
+#define SLEEP(ms) usleep(ms*1000)
+#endif
 
 using namespace timeshift;
 
@@ -67,7 +73,7 @@ bool RollingFile::Open(const std::string inputUrl)
     XBMC->Log(LOG_ERROR,"Could not open slip file");
     return false;
   }
-  Sleep(500);
+  SLEEP(500);
   if ( !RollingFile::GetStreamInfo())
   {
     XBMC->Log(LOG_ERROR,"Could not read slip file");
@@ -89,7 +95,7 @@ bool RollingFile::Open(const std::string inputUrl)
   }
   while (m_sd.tsbStart.load() < waitTime)
   {
-    Sleep(500);
+    SLEEP(500);
     RollingFile::GetStreamInfo();
   };
   return  RollingFile::RollingFileOpen();
@@ -141,7 +147,7 @@ void RollingFile::TSBTimerProc(void)
       std::unique_lock<std::mutex> lock(m_mutex);
       RollingFile::GetStreamInfo();
     }
-    Sleep(1000);
+    SLEEP(1000);
   }
 }
 
@@ -298,7 +304,7 @@ void RollingFile::Close()
   if (m_slipHandle != nullptr)
   {
     RecordingBuffer::Close();
-    Sleep(500);
+    SLEEP(500);
     XBMC->CloseFile(m_slipHandle);
     XBMC->Log(LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
     m_slipHandle = nullptr;
@@ -354,7 +360,7 @@ int RollingFile::Read(byte *buffer, size_t length)
           XBMC->Log(LOG_DEBUG, "should exit %s:%d: %lld %lld %lld", __FUNCTION__, __LINE__,Length(),  XBMC->GetFileLength(m_inputHandle) ,XBMC->GetFilePosition(m_inputHandle));
           return 0;
         }
-        Sleep(200);
+        SLEEP(200);
       }
     }
     XBMC->Log(LOG_DEBUG, "%s:%d: %lld %d %lld %lld", __FUNCTION__, __LINE__,length, dataRead, XBMC->GetFileLength(m_inputHandle) ,XBMC->GetFilePosition(m_inputHandle));
