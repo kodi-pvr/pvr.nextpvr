@@ -704,7 +704,7 @@ std::string cPVRClientNextPVR::GetChannelIconFileName(int channelID)
   return iconFilename + filename;
 }
 
-bool cPVRClientNextPVR::LoadLiveStreams()
+void cPVRClientNextPVR::LoadLiveStreams()
 {
   char strURL[256];
   sprintf(strURL, "/public/LiveStreams.xml");
@@ -1469,68 +1469,69 @@ bool cPVRClientNextPVR::UpdatePvrTimer(TiXmlElement* pRecordingNode, PVR_TIMER *
   tag->iClientIndex = atoi(pRecordingNode->FirstChildElement("id")->FirstChild()->Value());
   tag->iClientChannelUid = atoi(pRecordingNode->FirstChildElement("channel_id")->FirstChild()->Value());
 
-          if (pRecordingNode->FirstChildElement("recurring_parent") != NULL)
-          {
+  if (pRecordingNode->FirstChildElement("recurring_parent") != NULL)
+  {
     tag->iParentClientIndex = atoi(pRecordingNode->FirstChildElement("recurring_parent")->FirstChild()->Value());
     if (tag->iParentClientIndex != PVR_TIMER_NO_PARENT)
-            {
+    {
       if (tag->iTimerType == TIMER_ONCE_EPG)
-              {
+      {
         tag->iTimerType = TIMER_ONCE_EPG_CHILD;
-              }
-              else
-              {
+      }
+      else
+      {
         tag->iTimerType = TIMER_ONCE_MANUAL_CHILD;
-              }
-            }
-            if (pRecordingNode->FirstChildElement("epg_event_oid") != NULL && pRecordingNode->FirstChildElement("epg_event_oid")->FirstChild() != NULL)
-            {
+      }
+    }
+    if (pRecordingNode->FirstChildElement("epg_event_oid") != NULL && pRecordingNode->FirstChildElement("epg_event_oid")->FirstChild() != NULL)
+    {
       tag->iEpgUid = atoi(pRecordingNode->FirstChildElement("epg_event_oid")->FirstChild()->Value());
       XBMC->Log(LOG_DEBUG, "Setting timer epg id %d %d", tag->iClientIndex, tag->iEpgUid);
-            }
-          }
+    }
+  }
 
-          // pre-padding
-          if (pRecordingNode->FirstChildElement("pre_padding") != NULL)
-          {
+  // pre-padding
+  if (pRecordingNode->FirstChildElement("pre_padding") != NULL)
+  {
     tag->iMarginStart = atoi(pRecordingNode->FirstChildElement("pre_padding")->FirstChild()->Value());
-          }
+  }
 
-          // post-padding
-          if (pRecordingNode->FirstChildElement("post_padding") != NULL)
-          {
+  // post-padding
+  if (pRecordingNode->FirstChildElement("post_padding") != NULL)
+  {
     tag->iMarginEnd = atoi(pRecordingNode->FirstChildElement("post_padding")->FirstChild()->Value());
-          }
+  }
 
-          // name
+  // name
   PVR_STRCPY(tag->strTitle, pRecordingNode->FirstChildElement("name")->FirstChild()->Value());
 
-          // description
-          if (pRecordingNode->FirstChildElement("desc") != NULL && pRecordingNode->FirstChildElement("desc")->FirstChild() != NULL)
-          {
+  // description
+  if (pRecordingNode->FirstChildElement("desc") != NULL && pRecordingNode->FirstChildElement("desc")->FirstChild() != NULL)
+  {
     PVR_STRCPY(tag->strSummary, pRecordingNode->FirstChildElement("desc")->FirstChild()->Value());
-          }
+  }
 
   tag->state = PVR_TIMER_STATE_SCHEDULED;
-          if (pRecordingNode->FirstChildElement("status") != NULL && pRecordingNode->FirstChildElement("status")->FirstChild() != NULL)
-          {
+  if (pRecordingNode->FirstChildElement("status") != NULL && pRecordingNode->FirstChildElement("status")->FirstChild() != NULL)
+  {
     std::string status = pRecordingNode->FirstChildElement("status")->FirstChild()->Value();
     if (status == "Recording")
-            {
+    {
       tag->state = PVR_TIMER_STATE_RECORDING;
     }
     else if (status == "Conflict")
     {
       tag->state = PVR_TIMER_STATE_CONFLICT_NOK;
-            }
-          }
+    }
+  }
 
-          // start/end time
-          char start[32];
-          strncpy(start, pRecordingNode->FirstChildElement("start_time_ticks")->FirstChild()->Value(), sizeof start);
-          start[10] = '\0';
+  // start/end time
+  char start[32];
+  strncpy(start, pRecordingNode->FirstChildElement("start_time_ticks")->FirstChild()->Value(), sizeof start);
+  start[10] = '\0';
   tag->startTime           = atol(start);
   tag->endTime             = tag->startTime + atoi(pRecordingNode->FirstChildElement("duration_seconds")->FirstChild()->Value());
+  return true;
 }
 
 namespace

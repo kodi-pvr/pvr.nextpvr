@@ -85,7 +85,7 @@ namespace NextPVR
       if (outputFile)
       {
         char buffer[1024];
-        while (datalen=XBMC->ReadFile(inputFile, buffer, sizeof(buffer)))
+        while ((datalen=XBMC->ReadFile(inputFile, buffer, sizeof(buffer))))
         {
           XBMC->WriteFile(outputFile, buffer, datalen);
           written += datalen;
