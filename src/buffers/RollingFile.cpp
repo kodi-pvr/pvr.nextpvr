@@ -330,7 +330,7 @@ int RollingFile::Read(byte *buffer, size_t length)
           if (File==slipFiles.rbegin())
           {
             // still waiting for new filename
-            XBMC->Log(LOG_ERROR, "%s:%d: waiting %s  %s", __FUNCTION__, __LINE__,File->filename.c_str(),m_activeFilename);
+            XBMC->Log(LOG_ERROR, "%s:%d: waiting %s  %s", __FUNCTION__, __LINE__,File->filename.c_str(),m_activeFilename.c_str());
           }
           else
           {
