@@ -33,8 +33,6 @@ namespace timeshift {
   {
   private:
     int m_Duration;
-    bool m_isRecording;
-    time_t m_startTime;
 
   public:
     RecordingBuffer() : Buffer() { m_Duration = 0; XBMC->Log(LOG_NOTICE, "RecordingBuffer created!"); }
@@ -44,6 +42,7 @@ namespace timeshift {
 
     virtual int64_t Seek(int64_t position, int whence) override
     {
+      XBMC->Log(LOG_DEBUG, "Seek: %s:%d  %lld  %lld %lld", __FUNCTION__, __LINE__,position, XBMC->GetFilePosition(m_inputHandle), XBMC->GetFileLength(m_inputHandle) );
       return XBMC->SeekFile(m_inputHandle, position, whence);
     }
 
@@ -57,22 +56,29 @@ namespace timeshift {
       return true;
     }
 
-    virtual int64_t Position() const override
+    virtual bool IsRealTimeStream() const override
     {
-      return XBMC->GetFilePosition(m_inputHandle);
+      return m_isRecording.load();
     }
+
+
+    PVR_ERROR GetStreamTimes(PVR_STREAM_TIMES *) override;
 
     virtual int64_t Length() const override
     {
       return XBMC->GetFileLength(m_inputHandle);
     }
+    virtual int64_t Position() const override
+    {
+      return XBMC->GetFilePosition(m_inputHandle);
+    }
 
-    PVR_ERROR GetStreamTimes(PVR_STREAM_TIMES *) override;
-
-    void SetDuration(int duration) { m_Duration = duration; XBMC->Log(LOG_ERROR, "XXXXX Duration set to %d XXXXX", m_Duration); }
+    virtual int Duration(void);
     int GetDuration(void) { return m_Duration; XBMC->Log(LOG_ERROR, "XXXXX Duration set to %d XXXXX", m_Duration); }
-    int Duration(void);
+    void SetDuration(int duration) { m_Duration = duration; XBMC->Log(LOG_ERROR, "XXXXX Duration set to %d XXXXX", m_Duration); }
+
     bool Open(const std::string inputUrl,const PVR_RECORDING &recording);
 
+    std::atomic<bool> m_isRecording;
   };
 }

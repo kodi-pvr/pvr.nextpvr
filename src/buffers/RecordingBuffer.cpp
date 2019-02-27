@@ -29,16 +29,15 @@ PVR_ERROR RecordingBuffer::GetStreamTimes(PVR_STREAM_TIMES *stimes)
   stimes->ptsStart = 0;
   stimes->ptsBegin = 0;
   stimes->ptsEnd = ((int64_t ) Duration() ) * DVD_TIME_BASE;
-  XBMC->Log(LOG_DEBUG, "RecordingBuffer::GetStreamTimes called!");
   return PVR_ERROR_NO_ERROR;
 }
 
 int RecordingBuffer::Duration(void)
 {
-  if (m_isRecording)
+  if (m_isRecording.load())
   {
     time_t endTime =  time(nullptr);
-    int diff = (int) (endTime - m_startTime - 10);
+    int diff = (int) (endTime - m_startTime);
     if (diff > 0)
     {
       return diff;
@@ -57,24 +56,59 @@ int RecordingBuffer::Duration(void)
 bool RecordingBuffer::Open(const std::string inputUrl,const PVR_RECORDING &recording)
 {
   m_Duration = recording.iDuration;
+  if (!XBMC->GetSetting("chunkrecording", &m_chunkSize))
+  {
+    m_chunkSize = 32;
+  }
   if (recording.iDuration + recording.recordingTime > time(nullptr))
   {
     m_startTime = recording.recordingTime;
     XBMC->Log(LOG_DEBUG, "RecordingBuffer::Open In Progress %d %lld", recording.iDuration, recording.recordingTime);
-    m_isRecording = true;
+    m_isRecording.store(true);
   }
   else
   {
-    m_isRecording = false;
+    m_isRecording.store(false);
   }
-
-  return Buffer::Open(inputUrl);
+  if (recording.strDirectory[0] != 0)
+  {
+    char strDirectory [PVR_ADDON_URL_STRING_LENGTH];
+    strcpy(strDirectory,recording.strDirectory);
+    int i = 0;
+    int j = 0;
+    for(; i <= strlen(recording.strDirectory); i++, j++)
+    {
+      if (recording.strDirectory[i] == '\\')
+      {
+        if (i==0 && recording.strDirectory[1] == '\\')
+        {
+          strcpy(strDirectory,"smb://");
+          i = 1;
+          j = 5;
+        }
+        else
+        {
+          strDirectory[j] = '/';
+        }
+      }
+      else
+      {
+          strDirectory[j] = recording.strDirectory[i];
+      }
+    }
+    if ( XBMC->FileExists(strDirectory,false))
+    {
+      XBMC->Log(LOG_DEBUG, "Native playback %s", strDirectory);
+        return Buffer::Open(std::string(strDirectory),0);
+    }
+  }
+  return Buffer::Open(inputUrl,0);
 }
 
 int RecordingBuffer::Read(byte *buffer, size_t length)
 {
   int dataRead = (int) XBMC->ReadFile(m_inputHandle, buffer, length);
-  if (dataRead==0 && m_isRecording)
+  if (dataRead==0 && m_isRecording.load())
   {
     XBMC->Log(LOG_DEBUG, "%s:%d: %lld %lld", __FUNCTION__, __LINE__, XBMC->GetFileLength(m_inputHandle) ,XBMC->GetFilePosition(m_inputHandle));
     if (XBMC->GetFileLength(m_inputHandle) == XBMC->GetFilePosition(m_inputHandle))

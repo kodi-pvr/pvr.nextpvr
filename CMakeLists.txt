@@ -21,11 +21,13 @@ set(NEXTPVR_SOURCES src/client.cpp
                     src/pvrclient-nextpvr.cpp
                     src/Socket.cpp
                     src/uri.cpp
+                    src/BackendRequest.cpp
                     src/buffers/Buffer.cpp
                     src/buffers/DummyBuffer.cpp
                     src/buffers/TimeshiftBuffer.cpp
                     src/buffers/RecordingBuffer.cpp
                     src/buffers/CircularBuffer.cpp
+                    src/buffers/RollingFile.cpp
                     src/buffers/Seeker.cpp)
 
 set(NEXTPVR_HEADERS src/client.h
@@ -35,11 +37,13 @@ set(NEXTPVR_HEADERS src/client.h
                     src/pvrclient-nextpvr.h
                     src/Socket.h
                     src/uri.h
+                    src/BackendRequest.h
                     src/buffers/Buffer.h
                     src/buffers/DummyBuffer.h
                     src/buffers/TimeshiftBuffer.h
                     src/buffers/RecordingBuffer.h
                     src/buffers/CircularBuffer.h
+                    src/buffers/RollingFile.h
                     src/buffers/Seeker.h)
 
 SET(DEPLIBS ${p8-platform_LIBRARIES}
