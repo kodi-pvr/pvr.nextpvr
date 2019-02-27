@@ -205,6 +205,6 @@ private:
 
   void SendWakeOnLan();
   bool SaveSettings(std::string name, std::string value);
-  bool LoadLiveStreams();
+  void LoadLiveStreams();
 
 };
