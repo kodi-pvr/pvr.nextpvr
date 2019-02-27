@@ -288,9 +288,9 @@ bool cPVRClientNextPVR::Connect()
                   XBMC->Log(LOG_NOTICE, "time shift buffer in seconds == %d\n", g_timeShiftBufferSeconds);
                   if (g_livestreamingmethod == RollingFile && version < 40204 )
                   {
-                    XBMC->QueueNotification(QUEUE_ERROR,"v4.2.3 required for Extended mode");
+                    XBMC->QueueNotification(QUEUE_ERROR,"v4.2.4 required for Extended mode");
                     Sleep(2000);
-                    g_livestreamingmethod == Timeshift;
+                    g_livestreamingmethod = Timeshift;
                   }
                   if (g_livestreamingmethod == RollingFile )
                   {
@@ -714,7 +714,7 @@ bool cPVRClientNextPVR::LoadLiveStreams()
     TiXmlDocument doc;
     char *liveStreams = XBMC->TranslateSpecialProtocol("special://userdata/addon_data/pvr.nextpvr/LiveStreams.xml");
     XBMC->Log(LOG_DEBUG, "Loading LiveStreams.xml %s", liveStreams);
-    if (doc.LoadFile(liveStreams) != NULL)
+    if (doc.LoadFile(liveStreams))
     {
       TiXmlElement* streamsNode = doc.FirstChildElement("streams");
       if (streamsNode)

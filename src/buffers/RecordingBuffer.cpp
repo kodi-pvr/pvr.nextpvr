@@ -70,7 +70,7 @@ bool RecordingBuffer::Open(const std::string inputUrl,const PVR_RECORDING &recor
   {
     m_isRecording.store(false);
   }
-  if (recording.strDirectory)
+  if (recording.strDirectory[0] != 0)
   {
     char strDirectory [PVR_ADDON_URL_STRING_LENGTH];
     strcpy(strDirectory,recording.strDirectory);

@@ -126,7 +126,7 @@ public:
   PVR_ERROR AddTimer(const PVR_TIMER &timer);
   PVR_ERROR DeleteTimer(const PVR_TIMER &timer, bool bForceDelete = false);
   PVR_ERROR UpdateTimer(const PVR_TIMER &timer);
-  bool cPVRClientNextPVR::UpdatePvrTimer(TiXmlElement* pRecordingNode, PVR_TIMER *tag);
+  bool UpdatePvrTimer(TiXmlElement* pRecordingNode, PVR_TIMER *tag);
 
   /* Live stream handling */
   bool OpenLiveStream(const PVR_CHANNEL &channel);
