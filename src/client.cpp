@@ -191,12 +191,11 @@ void ADDON_ReadSettings(void)
 
   if (g_livestreamingmethod == DEFAULT_LIVE_STREAM)
   {
-    /* Read obsolete setting "usetimeshift" from settings.xml */
+    /* Use obsolete setting "usetimeshift" from settings.xml when Real Time*/
     if (!g_bUseTimeshift)
     {
       /* If setting is unknown fallback to defaults */
-      XBMC->Log(LOG_ERROR, "Couldn't get 'usetimeshift' setting, falling back to 'true' as default");
-      g_livestreamingmethod = RealTime;
+      XBMC->Log(LOG_ERROR, "Couldn't get 'usetimeshift' setting,  continue as default");
     }
     else
     {

@@ -48,7 +48,7 @@ enum eNowPlaying
 #define DEFAULT_RADIO                 true
 #define DEFAULT_USE_TIMESHIFT         false
 #define DEFAULT_GUIDE_ARTWORK         false
-#define DEFAULT_LIVE_STREAM           Timeshift
+#define DEFAULT_LIVE_STREAM           RealTime
 
 extern std::string      g_szUserPath;         ///< The Path to the user directory inside user profile
 extern std::string      g_szClientPath;       ///< The Path where this driver is located
