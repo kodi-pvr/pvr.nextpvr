@@ -57,6 +57,11 @@ bool RollingFile::Open(const std::string inputUrl)
   else
     m_chunkSize = 4;
 
+  while ((m_lastClose + 10) > time(nullptr))
+  {
+    // epgmode=true requires a 10 second pause changing channels
+    SLEEP(1000);
+  }
   XBMC->Log(LOG_DEBUG, "%s:%d: %d", __FUNCTION__, __LINE__, m_chunkSize);
   ss << inputUrl << "|connection-timeout=" << 15;
   if (ss.str().find("&epgmode=true") != std::string::npos)
@@ -106,16 +111,21 @@ bool RollingFile::RollingFileOpen()
   struct PVR_RECORDING recording;
   recording.recordingTime = time(nullptr);
   recording.iDuration = 5 * 60 * 60;
-    memset(recording.strDirectory,0,sizeof(recording.strDirectory));
-    #if !defined(TESTURL)
+  memset(recording.strDirectory,0,sizeof(recording.strDirectory));
+  #if !defined(TESTURL)
     strcpy(recording.strDirectory, m_activeFilename.c_str());
-    #endif
+  #endif
 
   char strURL[1024];
   #if defined(TESTURL)
     strcpy(strURL,TESTURL);
   #else
-  snprintf(strURL,sizeof(strURL),"http://%s:%d/stream?f=%s&sid=%s", g_szHostname.c_str(), g_iPort, UriEncode(m_activeFilename).c_str(), NextPVR::m_backEnd->getSID());
+    snprintf(strURL,sizeof(strURL),"http://%s:%d/stream?f=%s&sid=%s", g_szHostname.c_str(), g_iPort, UriEncode(m_activeFilename).c_str(), NextPVR::m_backEnd->getSID());
+    if (g_NowPlaying == Radio && m_activeLength == -1)
+    {
+      // reduce buffer for radio when playing in-progess slip file
+      strcat(strURL,"&bufsize=32768&wait=true");
+    }
   #endif
   return RecordingBuffer::Open(strURL,recording);
 }
@@ -311,6 +321,8 @@ void RollingFile::Close()
   }
   if (m_tsbThread.joinable())
     m_tsbThread.join();
+
+  m_lastClose = time(nullptr);
 }
 int RollingFile::Read(byte *buffer, size_t length)
 {

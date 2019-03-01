@@ -769,7 +769,7 @@ PVR_ERROR cPVRClientNextPVR::GetChannels(ADDON_HANDLE handle, bool bRadio)
         if (strcmp(channelTypeNode->FirstChild()->Value(), "0xa") == 0)
         {
           tag.bIsRadio = true;
-          PVR_STRCPY(tag.strInputFormat, "audio/*");
+          PVR_STRCPY(tag.strInputFormat, "application/octet-stream");
         }
         else
         {

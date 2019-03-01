@@ -48,6 +48,7 @@ namespace timeshift {
     bool m_isEpgBased;
     int m_prebuffer;
     int m_liveChunkSize;
+    int m_lastClose;
 
     struct slipFile{
       std::string filename;
@@ -74,6 +75,7 @@ namespace timeshift {
       {
         m_liveChunkSize = 64;
       }
+      m_lastClose = 0;
       XBMC->Log(LOG_NOTICE, "EPG Based Buffer created!");
     }
 
