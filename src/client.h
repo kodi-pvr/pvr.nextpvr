@@ -29,8 +29,17 @@
 
 enum eStreamingMethod
 {
-  TSReader = 0,
-  ffmpeg = 1
+  Timeshift = 0,
+  RollingFile = 1,
+  RealTime = 2
+};
+
+enum eNowPlaying
+{
+  NotPlaying = 0,
+  TV = 1,
+  Radio = 2,
+  Recording = 3
 };
 
 #define DEFAULT_HOST                  "127.0.0.1"
@@ -39,6 +48,7 @@ enum eStreamingMethod
 #define DEFAULT_RADIO                 true
 #define DEFAULT_USE_TIMESHIFT         false
 #define DEFAULT_GUIDE_ARTWORK         false
+#define DEFAULT_LIVE_STREAM           RealTime
 
 extern std::string      g_szUserPath;         ///< The Path to the user directory inside user profile
 extern std::string      g_szClientPath;       ///< The Path where this driver is located
@@ -47,14 +57,21 @@ extern std::string      g_szClientPath;       ///< The Path where this driver is
 extern std::string      g_szHostname;
 extern int              g_iPort;
 extern std::string      g_szPin;
+extern char             g_host_mac[18];
+extern int              g_wol_timeout;
+extern bool             g_wol_enabled;
 extern bool             g_bRadioEnabled;
 extern bool             g_bUseTimeshift;
 extern int16_t          g_timeShiftBufferSeconds;
+extern eStreamingMethod g_livestreamingmethod;
+extern eNowPlaying g_NowPlaying;
 
 extern ADDON::CHelper_libXBMC_addon *XBMC;
 extern CHelper_libXBMC_pvr          *PVR;
 
 extern int              g_iTVServerXBMCBuild;
+
+extern int g_ServerTimeOffset;
 
 typedef unsigned char byte;
 

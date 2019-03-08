@@ -1,3 +1,17 @@
+v3.3.13
+- Add Extended Timeshift Rolling File based live tv and radio buffer (pause and seekable)
+- Use file-system for recording and rolling file playback if available
+- Removed GetBackendTime() not part of API, changed RenameRecordings not supported
+- Fixed radio playback with timeshift, All Channel recurring recordings, problems passing expired EPG ID's
+- Fixed URL encoding of recording directory virtual name.
+- Separate and show Failed recordings, added Conflict Timers
+- Disable backend updates during media playback.  Kodi still will update if configured
+- Separate Radio recordings for current stations, don't know type for deleted stations
+- Use S##E## and subtitles for improved Kodi skin display
+- Update recordings when timers are added or deleted
+- Improved system wake and added WOL (still needs state machine), get server time difference as global
+- Fixed problem with in-progress files.
+
 v3.3.12
 - Bugfixes, seek re-init, and jump to last block already buffered.
 

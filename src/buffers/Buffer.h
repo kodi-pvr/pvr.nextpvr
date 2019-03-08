@@ -59,6 +59,12 @@ namespace timeshift {
     virtual bool Open(const std::string inputUrl);
 
     /**
+     * Opens the input handle with options  Kodi addons use 0
+     * @return whether the input was successfully opened
+     */
+    virtual bool Open(const std::string inputUrl, int optFlag);
+
+    /**
      * Closes the buffer
      */
     virtual void Close();
@@ -127,11 +133,18 @@ namespace timeshift {
       return PVR_ERROR_NO_ERROR;
     }
     
+    /**
+     * The time the buffer was created
+     */
+    int m_chunkSize = 16;
+
     virtual PVR_ERROR GetStreamReadChunkSize(int* chunksize)
     {
       // Return 16K for recordings, and non-timeshift
-      // Make this a tunable parameter?
-      *chunksize = 16 * 1024;
+      if (g_NowPlaying == Radio)
+        *chunksize = 4096;
+      else
+      *chunksize = m_chunkSize * 1024;
       return PVR_ERROR_NO_ERROR;
     }
     

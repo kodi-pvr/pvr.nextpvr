@@ -9,7 +9,14 @@
 
   <!-- advanced -->
   <category label="30041">
-    <setting id="usetimeshift" type="bool" label="30003" default="false"/>
-    <setting id="guideartwork" type="bool" label="30004" default="false"/>     
+    <setting id="usetimeshift" type="bool" label="30003" default="false" visible="false" />
+    <setting id="livestreamingmethod" type="enum" label="Live TV Stream" values="Timeshift|Extended Timeshift|Real Time" default="Real Time"/>
+    <setting id="chunklivetv" label="30167" option="int" range="16,16,96" type="slider" default="64"  />
+    <setting id="chunkrecording" label="30168" option="int" range="16,16,96" type="slider"  default="32"  />
+    <setting id="prebuffer" label="30162" option="int" range="4,1,15" type="slider" visible="eq(-3,1)" default="8"  />
+    <setting id="wolenable" label="30163" type="bool" default="false"/>
+    <setting id="woltimeout" label="30164" option="int" range="5,5,45" type="slider" visible="eq(-1,true)" default="20"  />
+    <setting id="host_mac" label="30165" type="text" enable="false" default="00:00:00:00:00:00"  visible="eq(-2,true)" />
+    <setting id="guideartwork" type="bool" label="30004" default="false"/>
   </category>
 </settings>

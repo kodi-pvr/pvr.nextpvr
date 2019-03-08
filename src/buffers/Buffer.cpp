@@ -20,6 +20,7 @@
 */
 
 #include "Buffer.h"
+#include "Filesystem.h"
 #include <sstream>
 
 using namespace timeshift;
@@ -29,14 +30,26 @@ const int Buffer::DEFAULT_READ_TIMEOUT = 10;
 
 bool Buffer::Open(const std::string inputUrl)
 {
+  return Buffer::Open(inputUrl,READ_NO_CACHE);
+}
+
+bool Buffer::Open(const std::string inputUrl, int optFlag)
+{
   m_active = true;
   if (!inputUrl.empty())
   {
     // Append the read timeout parameter
     XBMC->Log(LOG_DEBUG, "Buffer::Open() called! [ %s ]", inputUrl.c_str());
     std::stringstream ss;
-    ss << inputUrl << "|connection-timeout=" << m_readTimeout;
-    m_inputHandle = XBMC->OpenFile(ss.str().c_str(), 0x08 );  /*READ_NO_CACHE*/
+    if (inputUrl.rfind("http", 0) == 0)
+    {
+      ss << inputUrl << "|connection-timeout=" << m_readTimeout;
+    }
+    else
+    {
+      ss << inputUrl;
+    }
+    m_inputHandle = XBMC->OpenFile(ss.str().c_str(), optFlag );
   }
   // Remember the start time and open the input
   m_startTime = time(nullptr);
@@ -60,6 +73,7 @@ void Buffer::CloseHandle(void *&handle)
   if (handle)
   {
     XBMC->CloseFile(handle);
+    XBMC->Log(LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
     handle = nullptr;
   }
 }
