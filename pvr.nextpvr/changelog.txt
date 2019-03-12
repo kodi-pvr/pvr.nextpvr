@@ -1,3 +1,9 @@
+v3.3.14
+- Fixed issue with meta art not showing for deleted channels
+- New settings option to enabled Kodi style recordings - defaults to NextPVR style
+- Reduce channel tuning time in Extended Timeshift
+- Adjust for server time difference loading instant recordings
+
 v3.3.13
 - Add Extended Timeshift Rolling File based live tv and radio buffer (pause and seekable)
 - Use file-system for recording and rolling file playback if available

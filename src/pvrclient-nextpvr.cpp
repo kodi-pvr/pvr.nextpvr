@@ -446,7 +446,6 @@ void cPVRClientNextPVR::OnSystemWake()
 {
   PVR->ConnectionStateChange( "waking", PVR_CONNECTION_STATE_CONNECTING, NULL);
   int count = 0;
-  SendWakeOnLan();
   for (;count < 5; count++)
   {
     if (Connect())
@@ -991,7 +990,7 @@ bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_REC
   tag->recordingTime = atol(pRecordingNode->FirstChildElement("start_time_ticks")->FirstChild()->Value());
 
   std::string status = pRecordingNode->FirstChildElement("status")->FirstChild()->Value();
-  if (status=="Pending" && tag->recordingTime > time(nullptr) )
+  if (status=="Pending"  && tag->recordingTime > time(nullptr) + g_ServerTimeOffset)
   {
     // skip timers
     return false;
@@ -1049,7 +1048,14 @@ bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_REC
   PVR_STRCPY(tag->strTitle, pRecordingNode->FirstChildElement("name")->FirstChild()->Value());
   if (pRecordingNode->FirstChildElement("subtitle") != NULL && pRecordingNode->FirstChildElement("subtitle")->FirstChild() != NULL)
   {
+    if (g_KodiLook)
+    {
       ParseNextPVRSubtitle(pRecordingNode->FirstChildElement("subtitle")->FirstChild()->Value(), tag);
+    }
+    else
+    {
+      PVR_STRCPY(tag->strTitle, pRecordingNode->FirstChildElement("subtitle")->FirstChild()->Value());
+    }
   }
 
   if (pRecordingNode->FirstChildElement("playback_position") != NULL && pRecordingNode->FirstChildElement("playback_position")->FirstChild() != NULL)
@@ -1094,13 +1100,16 @@ bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_REC
       else
       {
         tag->channelType = PVR_RECORDING_CHANNEL_TYPE_TV;
-        char artworkPath[512];
-        snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=recording.artwork&sid=%s&recording_id=%s", g_szHostname.c_str(), g_iPort, m_sid, tag->strRecordingId);
-        PVR_STRCPY(tag->strThumbnailPath, artworkPath);
-        snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=recording.fanart&sid=%s&recording_id=%s", g_szHostname.c_str(), g_iPort, m_sid, tag->strRecordingId);
-        PVR_STRCPY(tag->strFanartPath, artworkPath);
       }
     }
+  }
+  if (tag->channelType != PVR_RECORDING_CHANNEL_TYPE_RADIO)
+  {
+    char artworkPath[512];
+    snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=recording.artwork&sid=%s&recording_id=%s", g_szHostname.c_str(), g_iPort, m_sid, tag->strRecordingId);
+    PVR_STRCPY(tag->strThumbnailPath, artworkPath);
+    snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=recording.fanart&sid=%s&recording_id=%s", g_szHostname.c_str(), g_iPort, m_sid, tag->strRecordingId);
+    PVR_STRCPY(tag->strFanartPath, artworkPath);
   }
 
   return true;
@@ -1514,11 +1523,18 @@ bool cPVRClientNextPVR::UpdatePvrTimer(TiXmlElement* pRecordingNode, PVR_TIMER *
     PVR_STRCPY(tag->strSummary, pRecordingNode->FirstChildElement("desc")->FirstChild()->Value());
   }
 
+  // start/end time
+  char start[32];
+  strncpy(start, pRecordingNode->FirstChildElement("start_time_ticks")->FirstChild()->Value(), sizeof start);
+  start[10] = '\0';
+  tag->startTime           = atol(start);
+  tag->endTime             = tag->startTime + atoi(pRecordingNode->FirstChildElement("duration_seconds")->FirstChild()->Value());
+
   tag->state = PVR_TIMER_STATE_SCHEDULED;
   if (pRecordingNode->FirstChildElement("status") != NULL && pRecordingNode->FirstChildElement("status")->FirstChild() != NULL)
   {
     std::string status = pRecordingNode->FirstChildElement("status")->FirstChild()->Value();
-    if (status == "Recording")
+    if (status == "Recording" || (status == "Pending"  && tag->startTime < time(nullptr) + g_ServerTimeOffset) )
     {
       tag->state = PVR_TIMER_STATE_RECORDING;
     }
@@ -1528,12 +1544,6 @@ bool cPVRClientNextPVR::UpdatePvrTimer(TiXmlElement* pRecordingNode, PVR_TIMER *
     }
   }
 
-  // start/end time
-  char start[32];
-  strncpy(start, pRecordingNode->FirstChildElement("start_time_ticks")->FirstChild()->Value(), sizeof start);
-  start[10] = '\0';
-  tag->startTime           = atol(start);
-  tag->endTime             = tag->startTime + atoi(pRecordingNode->FirstChildElement("duration_seconds")->FirstChild()->Value());
   return true;
 }
 

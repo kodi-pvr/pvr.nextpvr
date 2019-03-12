@@ -165,3 +165,7 @@ msgstr ""
 msgctxt "#30168"
 msgid "Recording Chunk Size"
 msgstr ""
+
+msgctxt "#30169"
+msgid "Kodi Style Recordings"
+msgstr ""

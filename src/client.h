@@ -62,6 +62,7 @@ extern int              g_wol_timeout;
 extern bool             g_wol_enabled;
 extern bool             g_bRadioEnabled;
 extern bool             g_bUseTimeshift;
+extern bool             g_KodiLook;
 extern int16_t          g_timeShiftBufferSeconds;
 extern eStreamingMethod g_livestreamingmethod;
 extern eNowPlaying g_NowPlaying;
