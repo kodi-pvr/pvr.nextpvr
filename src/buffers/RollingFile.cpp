@@ -57,11 +57,7 @@ bool RollingFile::Open(const std::string inputUrl)
   else
     m_chunkSize = 4;
 
-  while ((m_lastClose + 10) > time(nullptr))
-  {
-    // epgmode=true requires a 10 second pause changing channels
-    SLEEP(1000);
-  }
+
   XBMC->Log(LOG_DEBUG, "%s:%d: %d", __FUNCTION__, __LINE__, m_chunkSize);
   ss << inputUrl << "|connection-timeout=" << 15;
   if (ss.str().find("&epgmode=true") != std::string::npos)
@@ -78,7 +74,22 @@ bool RollingFile::Open(const std::string inputUrl)
     XBMC->Log(LOG_ERROR,"Could not open slip file");
     return false;
   }
-  SLEEP(500);
+  int waitTime = 0;
+  if (g_NowPlaying == TV)
+  {
+    waitTime = m_prebuffer;
+  }
+  do
+  {
+    // epgmode=true requires a 10 second pause changing channels
+    SLEEP(1000);
+    waitTime--;
+    if ( RollingFile::GetStreamInfo())
+    {
+      m_lastClose = 0;
+    }
+  }  while ((m_lastClose + 10) > time(nullptr));
+
   if ( !RollingFile::GetStreamInfo())
   {
     XBMC->Log(LOG_ERROR,"Could not read slip file");
@@ -93,11 +104,6 @@ bool RollingFile::Open(const std::string inputUrl)
     TSBTimerProc();
   });
 
-  int waitTime = 0;
-  if (g_NowPlaying == TV)
-  {
-    waitTime = m_prebuffer;
-  }
   while (m_sd.tsbStart.load() < waitTime)
   {
     SLEEP(500);
@@ -195,6 +201,10 @@ bool RollingFile::GetStreamInfo()
         XBMC->Log(LOG_DEBUG,"channel.stream.info %lld %lld %d %d",length, duration,complete, m_sd.iBytesPerSecond);
         if (complete == 1)
         {
+          if ( slipFiles.empty() )
+          {
+            return false;
+          }
           m_sd.lastKnownLength.store(length);
           slipFiles.back().length = length - slipFiles.back().offset;
           m_sd.lastBufferTime = m_nextRoll = LLONG_MAX;

@@ -40,6 +40,7 @@ eStreamingMethod g_livestreamingmethod = RealTime;
 eNowPlaying      g_NowPlaying = NotPlaying;
 int              g_wol_timeout;
 bool             g_wol_enabled;
+bool             g_KodiLook;
 
 /* Client member variables */
 ADDON_STATUS           m_CurStatus    = ADDON_STATUS_UNKNOWN;
@@ -226,6 +227,11 @@ void ADDON_ReadSettings(void)
     g_wol_timeout = 20;
   }
 
+  if (!XBMC->GetSetting("kodilook", &g_KodiLook))
+  {
+    g_KodiLook = false;
+  }
+
   /* Log the current settings for debugging purposes */
   XBMC->Log(LOG_DEBUG, "settings: host='%s', port=%i, mac=%4.4s...", g_szHostname.c_str(), g_iPort, g_host_mac);
 
@@ -289,6 +295,16 @@ ADDON_STATUS ADDON_SetSetting(const char *settingName, const void *settingValue)
     {
       XBMC->Log(LOG_INFO, "Changed setting 'guideartwork' from %u to %u", g_bDownloadGuideArtwork, *(bool*)settingValue);
       g_bDownloadGuideArtwork = *(bool*)settingValue;
+    }
+  }
+  else if (str == "kodilook")
+  {
+    if ( g_KodiLook != *(bool*)settingValue)
+    {
+      XBMC->Log(LOG_INFO, "Changed setting 'kodilook' from %u to %u", g_KodiLook, *(bool*)settingValue);
+      g_KodiLook = *(bool*)settingValue;
+      if (g_client)
+        PVR->TriggerRecordingUpdate();
     }
   }
   else if (str == "livestreamingmethod")

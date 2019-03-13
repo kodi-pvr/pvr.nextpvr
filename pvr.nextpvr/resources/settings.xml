@@ -18,5 +18,6 @@
     <setting id="woltimeout" label="30164" option="int" range="5,5,45" type="slider" visible="eq(-1,true)" default="20"  />
     <setting id="host_mac" label="30165" type="text" enable="false" default="00:00:00:00:00:00"  visible="eq(-2,true)" />
     <setting id="guideartwork" type="bool" label="30004" default="false"/>
+    <setting id="kodilook" type="bool" label="30169" default="false"/>
   </category>
 </settings>
