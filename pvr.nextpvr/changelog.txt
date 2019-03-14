@@ -51,7 +51,7 @@ v3.2.7
 v3.2.6
 - Updated to PVR addon API 5.9.0
 
-v3.2.5 
+v3.2.5
 - Change buffer management, using pvr.vbox model/code as a starting point.
 
 v3.2.3
@@ -159,7 +159,7 @@ v1.12.3
 - Upped minimum NextPVR version to 3.6.0
 
 v1.12.2
-- fixed a potential illegal memory access, picked up by Coverity. 
+- fixed a potential illegal memory access, picked up by Coverity.
 
 v1.12.1
 - added support for keyword timers
@@ -224,7 +224,7 @@ v1.9.19
 - added support for ATSC subchannel numbers, fixing 'no tuner available' message users were getting with this type of channel
 - fixes a problem with playback of radio stations
 - added recording artwork
-- added fanart 
+- added fanart
 
 v1.9.18
 - Fixed mime-type for MPEG-TS
@@ -251,7 +251,7 @@ v1.9.9
 - updated language files from Transifex
 
 v1.9.8
-- fixed bug that could cause connection to close prematurely 
+- fixed bug that could cause connection to close prematurely
 
 v1.9.7
 - updated language files from Transifex
@@ -261,7 +261,7 @@ v1.9.6
 
 v1.9.6
 - added dialog to set recurring recordings, including recurrence type, padding, number of recordings to keep, and recording directory
-- added support for EDL 
+- added support for EDL
 - added support for retrieving and storing last playback position
 - now requires NextPVR 3.1.1 or higher
 - fixed a bug that could cause an EPG event with no description to have a copy of last show's description, or cause a crash if the user was unlucky.
@@ -294,7 +294,7 @@ v1.0.1.0
 - added: new 'advanced' settings page where timeshift can be enabled/disabled.
 - added: radio support, mainly to workaround an XBMC channel group bug.
 - changed: now using XBMC curl abstraction for HTTP requests
-- added: detection of live tv having to exit if tuner was required for a recording. Shows user a notification message when this was required. 
+- added: detection of live tv having to exit if tuner was required for a recording. Shows user a notification message when this was required.
 
 v1.0.0.0
 - Created

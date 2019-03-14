@@ -34,7 +34,7 @@ namespace timeshift {
   public:
     DummyBuffer() : Buffer() { XBMC->Log(LOG_NOTICE, "DummyBuffer created!"); }
     virtual ~DummyBuffer() {}
-    
+
     virtual int Read(byte *buffer, size_t length) override
     {
       return XBMC->ReadFile(m_inputHandle, buffer, length);
