@@ -37,7 +37,7 @@ namespace timeshift {
   public:
     RecordingBuffer() : Buffer() { m_Duration = 0; XBMC->Log(LOG_NOTICE, "RecordingBuffer created!"); }
     virtual ~RecordingBuffer() {}
-    
+
     virtual int Read(byte *buffer, size_t length) override;
 
     virtual int64_t Seek(int64_t position, int whence) override

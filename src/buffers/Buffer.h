@@ -28,7 +28,7 @@
 #include <atomic>
 #include "../client.h"
 
-using namespace ADDON; 
+using namespace ADDON;
 
 namespace timeshift {
 
@@ -108,12 +108,12 @@ namespace timeshift {
      * @return the current length of the buffer
      */
     virtual int64_t Length() const = 0;
-    
+
     virtual bool IsTimeshifting() const
     {
       return false;
     }
-    
+
     virtual bool IsRealTimeStream() const
     {
       if (m_active)
@@ -132,7 +132,7 @@ namespace timeshift {
       stimes->ptsEnd = 0;
       return PVR_ERROR_NO_ERROR;
     }
-    
+
     /**
      * The time the buffer was created
      */
@@ -144,10 +144,10 @@ namespace timeshift {
       if (g_NowPlaying == Radio)
         *chunksize = 4096;
       else
-      *chunksize = m_chunkSize * 1024;
+        *chunksize = m_chunkSize * 1024;
       return PVR_ERROR_NO_ERROR;
     }
-    
+
     /**
      * @return basically the current time
      */
@@ -180,7 +180,7 @@ namespace timeshift {
     void *m_inputHandle;
 
     /**
-     * The time (in seconds) to wait when opening a read handle and when 
+     * The time (in seconds) to wait when opening a read handle and when
      * waiting for the buffer to have enough data
      */
     int m_readTimeout;

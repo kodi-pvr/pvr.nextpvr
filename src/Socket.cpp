@@ -84,15 +84,15 @@ bool Socket::setHostname ( const std::string& host )
 
 bool Socket::read_ready()
 {
-  fd_set fdset; 
+  fd_set fdset;
 
-  FD_ZERO(&fdset); 
+  FD_ZERO(&fdset);
   FD_SET(_sd, &fdset);
 
-  struct timeval tv = { 1, 0 }; 
-  //  tv.tv_sec = 1; 
+  struct timeval tv = { 1, 0 };
+  //  tv.tv_sec = 1;
 
-  int retVal = select(_sd+1, &fdset, NULL, NULL, &tv); 
+  int retVal = select(_sd+1, &fdset, NULL, NULL, &tv);
   if (retVal > 0)
     return true;
   return false;
@@ -216,9 +216,9 @@ int Socket::send ( const std::string& data )
     return 0;
   }
   int status = 0;
-  do 
+  do
   {
-    status = Socket::send( (const char*) data.c_str(), (const unsigned int) data.size());    
+    status = Socket::send( (const char*) data.c_str(), (const unsigned int) data.size());
 #if defined(TARGET_WINDOWS)
   } while (status == SOCKET_ERROR && errno == WSAEWOULDBLOCK);
 #else

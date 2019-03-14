@@ -100,8 +100,8 @@ public:
 
   /* Channel handling */
   int GetNumChannels(void);
-  PVR_ERROR GetChannels(ADDON_HANDLE handle, bool bRadio);  
-  
+  PVR_ERROR GetChannels(ADDON_HANDLE handle, bool bRadio);
+
   /* Channel group handling */
   int GetChannelGroupsAmount(void);
   PVR_ERROR GetChannelGroups(ADDON_HANDLE handle, bool bRadio);
@@ -117,7 +117,7 @@ public:
   PVR_ERROR GetRecordingStreamProperties(const PVR_RECORDING*, PVR_NAMED_VALUE*, unsigned int*);
   bool UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_RECORDING *tag);
   void ParseNextPVRSubtitle( const char *episodeName, PVR_RECORDING   *tag);
-  
+
   /* Timer handling */
   int GetNumTimers(void);
   PVR_ERROR GetTimerTypes(PVR_TIMER_TYPE types[], int *size);
@@ -166,9 +166,9 @@ private:
   void Close();
 
   int                     m_iCurrentChannel;
-  bool                    m_bConnected;  
+  bool                    m_bConnected;
   std::string             m_BackendName;
-  P8PLATFORM::CMutex        m_mutex;
+  P8PLATFORM::CMutex      m_mutex;
 
   long long               m_currentRecordingLength;
   long long               m_currentRecordingPosition;
@@ -177,7 +177,7 @@ private:
   long long               m_currentLiveLength;
   long long               m_currentLivePosition;
   int                     m_iDefaultPrePadding;
-  int                     m_iDefaultPostPadding;  
+  int                     m_iDefaultPostPadding;
 
   std::vector< std::string > m_recordingDirectories;
 

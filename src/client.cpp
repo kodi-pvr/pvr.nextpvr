@@ -69,7 +69,7 @@ ADDON_STATUS ADDON_Create(void* hdl, void* props)
 {
   if (!hdl || !props)
     return ADDON_STATUS_UNKNOWN;
-   
+
   PVR_PROPERTIES* pvrprops = (PVR_PROPERTIES*)props;
 
   XBMC = new CHelper_libXBMC_addon;
@@ -148,7 +148,7 @@ void ADDON_ReadSettings(void)
   /* Connection settings */
   /***********************/
   if (XBMC->GetSetting("host", &buffer))
-  { 
+  {
     g_szHostname = buffer;
     uri::decode(g_szHostname);
   }
@@ -580,7 +580,7 @@ int GetTimersAmount(void)
 }
 
 PVR_ERROR GetTimers(ADDON_HANDLE handle)
-{  
+{
   if (!g_client)
     return PVR_ERROR_SERVER_ERROR;
   else
@@ -726,7 +726,7 @@ PVR_ERROR SetRecordingLastPlayedPosition(const PVR_RECORDING &recording, int las
 {
   if (g_client)
     return g_client->SetRecordingLastPlayedPosition(recording, lastplayedposition);
-  return PVR_ERROR_SERVER_ERROR; 
+  return PVR_ERROR_SERVER_ERROR;
 }
 
 int GetRecordingLastPlayedPosition(const PVR_RECORDING &recording)
@@ -736,7 +736,7 @@ int GetRecordingLastPlayedPosition(const PVR_RECORDING &recording)
   return -1;
 }
 
-PVR_ERROR GetRecordingEdl(const PVR_RECORDING &recording, PVR_EDL_ENTRY entries[], int *size) 
+PVR_ERROR GetRecordingEdl(const PVR_RECORDING &recording, PVR_EDL_ENTRY entries[], int *size)
 {
   if (g_client)
     return g_client->GetRecordingEdl(recording, entries, size);
@@ -744,14 +744,14 @@ PVR_ERROR GetRecordingEdl(const PVR_RECORDING &recording, PVR_EDL_ENTRY entries[
 }
 
 bool IsTimeshifting(void)
-{ 
+{
   if (g_client)
     return g_client->IsTimeshifting();
   return false;
 }
 
 bool IsRealTimeStream(void)
-{ 
+{
   if (g_client)
     return g_client->IsRealTimeStream();
   return false;
@@ -761,7 +761,7 @@ PVR_ERROR GetStreamTimes(PVR_STREAM_TIMES *stimes)
 {
   if (g_client)
     return g_client->GetStreamTimes(stimes);
-  return PVR_ERROR_SERVER_ERROR; 
+  return PVR_ERROR_SERVER_ERROR;
 }
 
 PVR_ERROR GetStreamReadChunkSize(int* chunksize)
