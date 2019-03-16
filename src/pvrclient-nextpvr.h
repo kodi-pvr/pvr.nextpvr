@@ -101,6 +101,8 @@ public:
   /* Channel handling */
   int GetNumChannels(void);
   PVR_ERROR GetChannels(ADDON_HANDLE handle, bool bRadio);
+  PVR_ERROR GetChannelStreamProperties(const PVR_CHANNEL &channel, PVR_NAMED_VALUE *properties, unsigned int *iPropertiesCount);
+  bool IsChannelAPlugin(int uid);
 
   /* Channel group handling */
   int GetChannelGroupsAmount(void);

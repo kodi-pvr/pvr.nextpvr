@@ -35,7 +35,7 @@ std::string      g_szHostname             = DEFAULT_HOST;                  ///< 
 std::string      g_szPin                  = DEFAULT_PIN;                   ///< The PIN for the NextPVR server
 int              g_iPort                  = DEFAULT_PORT;                  ///< The web listening port (default: 8866)
 int16_t          g_timeShiftBufferSeconds = 0;
-char             g_host_mac[18] = "\0";
+std::string      g_host_mac = "";
 eStreamingMethod g_livestreamingmethod = RealTime;
 eNowPlaying      g_NowPlaying = NotPlaying;
 int              g_wol_timeout;
@@ -214,7 +214,7 @@ void ADDON_ReadSettings(void)
 
   if (XBMC->GetSetting("host_mac", &buffer))
   {
-    snprintf(g_host_mac, sizeof(g_host_mac),"%s",buffer);
+    g_host_mac = buffer;
   }
 
   if (!XBMC->GetSetting("wolenable", &g_wol_enabled))
@@ -233,7 +233,7 @@ void ADDON_ReadSettings(void)
   }
 
   /* Log the current settings for debugging purposes */
-  XBMC->Log(LOG_DEBUG, "settings: host='%s', port=%i, mac=%4.4s...", g_szHostname.c_str(), g_iPort, g_host_mac);
+  XBMC->Log(LOG_DEBUG, "settings: host='%s', port=%i, mac=%4.4s...", g_szHostname.c_str(), g_iPort, g_host_mac.c_str());
 
 }
 
@@ -318,10 +318,10 @@ ADDON_STATUS ADDON_SetSetting(const char *settingName, const void *settingValue)
   }
   else if (str == "host_mac")
   {
-    if (strcmp ( g_host_mac, (const char *)settingValue ))
+    if ( g_host_mac != (const char *)settingValue )
     {
-      XBMC->Log(LOG_INFO, "Changed setting 'host_mac' from %4.4s... to %4.4s...", g_host_mac, (const char *)settingValue );
-      strcpy (g_host_mac, (const char *) settingValue);
+      XBMC->Log(LOG_INFO, "Changed setting 'host_mac' from %4.4s... to %4.4s...", g_host_mac.c_str(), (const char *)settingValue );
+      g_host_mac = (const char *) settingValue;
       return ADDON_STATUS_OK ;
     }
   }
@@ -661,6 +661,13 @@ PVR_ERROR SignalStatus(PVR_SIGNAL_STATUS &signalStatus)
     return g_client->SignalStatus(signalStatus);
 }
 
+PVR_ERROR GetChannelStreamProperties(const PVR_CHANNEL* channel, PVR_NAMED_VALUE* properties, unsigned int* iPropertiesCount)
+{
+  if (g_client)
+    return g_client->GetChannelStreamProperties(*channel,properties,iPropertiesCount);
+  return PVR_ERROR_NOT_IMPLEMENTED;
+}
+
 /*******************************************/
 /** PVR Recording Stream Functions        **/
 
@@ -786,7 +793,6 @@ PVR_ERROR DeleteAllRecordingsFromTrash() { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR SetEPGTimeFrame(int) { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR GetDescrambleInfo(PVR_DESCRAMBLE_INFO*) { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR SetRecordingLifetime(const PVR_RECORDING*) { return PVR_ERROR_NOT_IMPLEMENTED; }
-PVR_ERROR GetChannelStreamProperties(const PVR_CHANNEL*, PVR_NAMED_VALUE*, unsigned int*)  { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR GetRecordingStreamProperties(const PVR_RECORDING*, PVR_NAMED_VALUE*, unsigned int*) { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR IsEPGTagRecordable(const EPG_TAG*, bool*) { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR IsEPGTagPlayable(const EPG_TAG*, bool*) { return PVR_ERROR_NOT_IMPLEMENTED; }
