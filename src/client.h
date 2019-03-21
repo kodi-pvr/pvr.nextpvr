@@ -57,7 +57,7 @@ extern std::string      g_szClientPath;       ///< The Path where this driver is
 extern std::string      g_szHostname;
 extern int              g_iPort;
 extern std::string      g_szPin;
-extern char             g_host_mac[18];
+extern std::string      g_host_mac;
 extern int              g_wol_timeout;
 extern bool             g_wol_enabled;
 extern bool             g_bRadioEnabled;

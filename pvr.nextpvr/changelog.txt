@@ -1,8 +1,11 @@
 v3.3.14
-- Fixed issue with meta art not showing for deleted channels
-- New settings option to enabled Kodi style recordings - defaults to NextPVR style
+- Fixed issue with art not showing up on recordings from deleted channels
+- New settings option to enabled Kodi style recordings - defaults to NextPVR style (no title, with S/E )
 - Reduce channel tuning time in Extended Timeshift
-- Adjust for server time difference loading instant recordings
+- Removed trigger on deletes causing Kodi crash
+- Adjust for server time difference loading instant recordings (could show as scheduled)
+- Clean up MAC address logic, no WOL for localhost
+- Allow Kodi plugin:// URL in LiveStreams.xml
 
 v3.3.13
 - Add Extended Timeshift Rolling File based live tv and radio buffer (pause and seekable)

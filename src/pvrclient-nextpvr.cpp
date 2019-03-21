@@ -330,17 +330,17 @@ bool cPVRClientNextPVR::Connect()
                 }
                 if ( settingsDoc.RootElement()->FirstChildElement("ServerMAC") != NULL)
                 {
-                  if ( settingsDoc.RootElement()->FirstChildElement("ServerMAC")->FirstChild()->Value() != g_host_mac)
+                  char rawMAC[13];
+                  PVR_STRCPY(rawMAC,settingsDoc.RootElement()->FirstChildElement("ServerMAC")->FirstChild()->Value());
+                  if (strlen(rawMAC)==12)
                   {
-                    char rawMAC[13];
-                    PVR_STRCPY(rawMAC,settingsDoc.RootElement()->FirstChildElement("ServerMAC")->FirstChild()->Value());
-                    if (strlen(rawMAC)==12)
+                    char mac[18];
+                    sprintf(mac,"%2.2s:%2.2s:%2.2s:%2.2s:%2.2s:%2.2s",rawMAC,&rawMAC[2],&rawMAC[4],&rawMAC[6],&rawMAC[8],&rawMAC[10]);
+                    XBMC->Log(LOG_DEBUG, "Server MAC addres %4.4s...",mac);
+                    std::string smac = mac;
+                    if (g_host_mac != smac)
                     {
-                      char mac[18];
-                      sprintf(mac,"%2.2s:%2.2s:%2.2s:%2.2s:%2.2s:%2.2s",rawMAC,&rawMAC[2],&rawMAC[4],&rawMAC[6],&rawMAC[8],&rawMAC[10]);
-                      XBMC->Log(LOG_DEBUG, "Server MAC addres %4.4s...",mac);
-                      std::string mmac = mac;
-                      SaveSettings("host_mac", mmac);
+                      SaveSettings("host_mac", smac);
                     }
                   }
                 }
@@ -463,6 +463,11 @@ void cPVRClientNextPVR::SendWakeOnLan()
 {
   if (g_wol_enabled == true )
   {
+    if (g_szHostname == "127.0.0.1" || g_szHostname == "localhost" || g_szHostname == "::1")
+    {
+      g_wol_enabled = false;
+      return;
+    }
     int count = 0;
     for (;count < g_wol_timeout; count++)
     {
@@ -470,7 +475,7 @@ void cPVRClientNextPVR::SendWakeOnLan()
       {
         return;
       }
-      XBMC->WakeOnLan(g_host_mac);
+      XBMC->WakeOnLan(g_host_mac.c_str());
       XBMC->Log(LOG_DEBUG, "WOL sent %d",count);
       Sleep(1000);
     }
@@ -758,6 +763,7 @@ PVR_ERROR cPVRClientNextPVR::GetChannels(ADDON_HANDLE handle, bool bRadio)
     {
       //XBMC->Log(LOG_NOTICE, "Channels:\n");
       //dump_to_log(&doc, 0);
+      LoadLiveStreams();
       channelCount = 0;
       TiXmlElement* channelsNode = doc.RootElement()->FirstChildElement("channels");
       TiXmlElement* pChannelNode;
@@ -765,6 +771,7 @@ PVR_ERROR cPVRClientNextPVR::GetChannels(ADDON_HANDLE handle, bool bRadio)
       {
         memset(&tag, 0, sizeof(PVR_CHANNEL));
         TiXmlElement* channelTypeNode = pChannelNode->FirstChildElement("type");
+        tag.iUniqueId = atoi(pChannelNode->FirstChildElement("id")->FirstChild()->Value());
         if (strcmp(channelTypeNode->FirstChild()->Value(), "0xa") == 0)
         {
           tag.bIsRadio = true;
@@ -773,12 +780,12 @@ PVR_ERROR cPVRClientNextPVR::GetChannels(ADDON_HANDLE handle, bool bRadio)
         else
         {
           tag.bIsRadio = false;
-          PVR_STRCPY(tag.strInputFormat, "video/mp2t");
+          if (!IsChannelAPlugin(tag.iUniqueId))
+            PVR_STRCPY(tag.strInputFormat, "video/mp2t");
         }
         if (bRadio != tag.bIsRadio)
           continue;
 
-        tag.iUniqueId = atoi(pChannelNode->FirstChildElement("id")->FirstChild()->Value());
         tag.iChannelNumber = atoi(pChannelNode->FirstChildElement("number")->FirstChild()->Value());
 
         // handle major.minor style subchannels
@@ -808,7 +815,6 @@ PVR_ERROR cPVRClientNextPVR::GetChannels(ADDON_HANDLE handle, bool bRadio)
       }
     }
     m_iChannelCount = channelCount;
-    LoadLiveStreams();
   }
   return PVR_ERROR_NO_ERROR;
 }
@@ -877,6 +883,29 @@ PVR_ERROR cPVRClientNextPVR::GetChannelGroups(ADDON_HANDLE handle, bool bRadio)
   }
   return PVR_ERROR_NO_ERROR;
 }
+
+PVR_ERROR cPVRClientNextPVR::GetChannelStreamProperties(const PVR_CHANNEL &channel, PVR_NAMED_VALUE *properties, unsigned int *iPropertiesCount)
+{
+  if (IsChannelAPlugin(channel.iUniqueId)!= 0)
+  {
+    strncpy(properties[0].strName, PVR_STREAM_PROPERTY_STREAMURL, sizeof(properties[0].strName) - 1);
+    strncpy(properties[0].strValue,m_liveStreams[channel.iUniqueId].c_str(), sizeof(properties[0].strValue) - 1);
+    *iPropertiesCount = 1;
+    return PVR_ERROR_NO_ERROR;
+  }
+  return PVR_ERROR_NOT_IMPLEMENTED;
+}
+
+
+bool cPVRClientNextPVR::IsChannelAPlugin(int uid)
+{
+  if (m_liveStreams.count(uid)!= 0)
+    if (StringUtils::StartsWith(m_liveStreams[uid],"plugin:"))
+      return true;
+
+  return false;
+}
+
 
 PVR_ERROR cPVRClientNextPVR::GetChannelGroupMembers(ADDON_HANDLE handle, const PVR_CHANNEL_GROUP &group)
 {
@@ -1146,6 +1175,9 @@ PVR_ERROR cPVRClientNextPVR::DeleteRecording(const PVR_RECORDING &recording)
   LOG_API_CALL(__FUNCTION__);
   XBMC->Log(LOG_DEBUG, "DeleteRecording");
   char request[512];
+  if (recording.recordingTime < time(nullptr) && recording.recordingTime + recording.iDuration > time(nullptr))
+    return PVR_ERROR_RECORDING_RUNNING;
+
   sprintf(request, "/service?method=recording.delete&recording_id=%s", recording.strRecordingId);
 
   std::string response;
@@ -1153,18 +1185,13 @@ PVR_ERROR cPVRClientNextPVR::DeleteRecording(const PVR_RECORDING &recording)
   {
     if (strstr(response.c_str(), "<rsp stat=\"ok\">"))
     {
-      PVR->TriggerRecordingUpdate();
-      XBMC->Log(LOG_DEBUG, "DeleteRecording failed. Returning PVR_ERROR_NO_ERROR");
       return PVR_ERROR_NO_ERROR;
     }
-    else
-    {
-      XBMC->Log(LOG_DEBUG, "DeleteRecording failed");
-    }
   }
-
-
-  XBMC->Log(LOG_DEBUG, "DeleteRecording failed. Returning PVR_ERROR_FAILED");
+  else
+  {
+    XBMC->Log(LOG_DEBUG, "DeleteRecording failed");
+  }
   return PVR_ERROR_FAILED;
 }
 
@@ -1407,11 +1434,7 @@ PVR_ERROR cPVRClientNextPVR::GetTimers(ADDON_HANDLE handle)
           }
         }
 
-        char strTitle[PVR_ADDON_NAME_STRING_LENGTH];
-        strncpy(strTitle, pRecurringNode->FirstChildElement("name")->FirstChild()->Value(), sizeof(strTitle)-1);
-        strncat(tag.strTitle, XBMC->GetLocalizedString(30054), sizeof(tag.strTitle) - 1);
-        strncat(tag.strTitle, " ", sizeof(tag.strTitle) - 1);
-        strncat(tag.strTitle, strTitle, sizeof(tag.strTitle) - 1);
+        PVR_STRCPY(tag.strTitle,pRecurringNode->FirstChildElement("name")->FirstChild()->Value());
 
         tag.state = PVR_TIMER_STATE_SCHEDULED;
 
@@ -2137,22 +2160,6 @@ bool cPVRClientNextPVR::CanSeekStream(void)
   else
     return m_livePlayer->CanSeekStream();
 }
-
-void Tokenize(const string& str, vector<string>& tokens, const string& delimiters = " ")
-{
-  string::size_type start_pos = 0;
-  string::size_type delim_pos = 0;
-  LOG_API_CALL(__FUNCTION__);
-
-  while (string::npos != delim_pos)
-  {
-    delim_pos = str.find_first_of(delimiters, start_pos);
-    tokens.push_back(str.substr(start_pos, delim_pos - start_pos));
-    start_pos = delim_pos + 1;
-    // Find next "non-delimiter"
-  }
-}
-
 
 /************************************************************/
 /** Record stream handling */
