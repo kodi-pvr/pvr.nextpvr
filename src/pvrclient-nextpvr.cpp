@@ -328,7 +328,7 @@ bool cPVRClientNextPVR::Connect()
                   g_ServerTimeOffset = time(nullptr) - atoi(settingsDoc.RootElement()->FirstChildElement("TimeEpoch")->FirstChild()->Value());
                   XBMC->Log(LOG_NOTICE, "Server time offset in seconds: %d", g_ServerTimeOffset);
                 }
-                if ( settingsDoc.RootElement()->FirstChildElement("ServerMAC") != NULL)
+                if ( settingsDoc.RootElement()->FirstChildElement("ServerMAC") != NULL && settingsDoc.RootElement()->FirstChildElement("ServerMAC")->FirstChild() != NULL)
                 {
                   char rawMAC[13];
                   PVR_STRCPY(rawMAC,settingsDoc.RootElement()->FirstChildElement("ServerMAC")->FirstChild()->Value());
