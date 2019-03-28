@@ -6,6 +6,7 @@ v3.3.14
 - Adjust for server time difference loading instant recordings (could show as scheduled)
 - Clean up MAC address logic, no WOL for localhost
 - Allow Kodi plugin:// URL in LiveStreams.xml
+- CreateThread() change
 
 v3.3.13
 - Add Extended Timeshift Rolling File based live tv and radio buffer (pause and seekable)
