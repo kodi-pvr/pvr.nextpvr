@@ -159,7 +159,7 @@ cPVRClientNextPVR::cPVRClientNextPVR()
   m_realTimeBuffer = new timeshift::DummyBuffer();
   m_livePlayer = nullptr;
 
-  CreateThread(false);
+  CreateThread();
 }
 
 cPVRClientNextPVR::~cPVRClientNextPVR()
