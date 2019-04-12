@@ -279,6 +279,14 @@ bool cPVRClientNextPVR::Connect()
                     XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30051), NEXTPVRC_MIN_VERSION_STRING);
                     return false;
                   }
+                  else if (version >= 50000)
+                  {
+                     if ( g_livestreamingmethod != RealTime)
+                     {
+                       g_livestreamingmethod = RealTime;
+                      XBMC->QueueNotification(QUEUE_ERROR,"v5 timeshifting disabled");
+                     }
+                  }
                 }
                 TiXmlElement* liveTimeshiftNode = settingsDoc.RootElement()->FirstChildElement("LiveTimeshift");
                 if (liveTimeshiftNode != NULL && g_livestreamingmethod != RealTime)
@@ -348,6 +356,7 @@ bool cPVRClientNextPVR::Connect()
             }
 
             m_bConnected = true;
+            LoadLiveStreams();
             XBMC->Log(LOG_DEBUG, "session.login successful");
             return true;
           }
@@ -563,17 +572,44 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, const PVR_CHANNEL &chan
       {
         memset(&broadcast, 0, sizeof(EPG_TAG));
 
-        char title[128];
-        char description[1024];
-
-        strncpy(title, pListingNode->FirstChildElement("name")->FirstChild()->Value(), sizeof title);
+        string title;
+        string description;
+        string subtitle;
+        title = pListingNode->FirstChildElement("name")->FirstChild()->Value();
         if (pListingNode->FirstChildElement("description") != NULL && pListingNode->FirstChildElement("description")->FirstChild() != NULL)
         {
-          PVR_STRCPY(description, pListingNode->FirstChildElement("description")->FirstChild()->Value());
+          description = pListingNode->FirstChildElement("description")->FirstChild()->Value();
         }
         else
         {
-          description[0] = '\0';
+          description = "";
+        }
+
+        if (pListingNode->FirstChildElement("subtitle") != NULL && pListingNode->FirstChildElement("subtitle")->FirstChild() != NULL)
+        {
+          subtitle = pListingNode->FirstChildElement("subtitle")->FirstChild()->Value();
+          if (description == subtitle + ":")
+          {
+            description = "";
+          }
+          else if (StringUtils::StartsWith(description,subtitle + ": "))
+          {
+            description = description.substr(subtitle.length()+2);
+          }
+        }
+        else
+        {
+          subtitle = "";
+        }
+
+        if (pListingNode->FirstChildElement("year") != NULL && pListingNode->FirstChildElement("year")->FirstChild() != NULL)
+        {
+          broadcast.iYear = atoi(pListingNode->FirstChildElement("year")->FirstChild()->Value());
+          title += " (" + std::to_string(broadcast.iYear) + ")";
+        }
+        else
+        {
+          broadcast.iYear = 0;
         }
 
         char start[32];
@@ -585,17 +621,17 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, const PVR_CHANNEL &chan
         end[10] = '\0';
 
         broadcast.iUniqueBroadcastId  = atoi(pListingNode->FirstChildElement("id")->FirstChild()->Value());
-        broadcast.strTitle            = title;
+        broadcast.strTitle            = title.c_str();
+        broadcast.strEpisodeName      = subtitle.c_str();
         broadcast.iUniqueChannelId    = channel.iUniqueId;
         broadcast.startTime           = atol(start);
         broadcast.endTime             = atol(end);
         broadcast.strPlotOutline      = NULL; //unused
-        broadcast.strPlot             = description;
+        broadcast.strPlot             = description.c_str();
         broadcast.strOriginalTitle    = NULL; // unused
         broadcast.strCast             = NULL; // unused
         broadcast.strDirector         = NULL; // unused
         broadcast.strWriter           = NULL; // unused
-        broadcast.iYear               = 0;    // unused
         broadcast.strIMDBNumber       = NULL; // unused
 
         // artwork URL
@@ -611,7 +647,7 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, const PVR_CHANNEL &chan
         genre[0] = '\0';
         if (pListingNode->FirstChildElement("genre") != NULL && pListingNode->FirstChildElement("genre")->FirstChild() != NULL)
         {
-          broadcast.iGenreType          = EPG_GENRE_USE_STRING;
+          broadcast.iGenreType = EPG_GENRE_USE_STRING;
           PVR_STRCPY(genre, pListingNode->FirstChildElement("genre")->FirstChild()->Value());
           broadcast.strGenreDescription = genre;
         }
@@ -620,24 +656,39 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, const PVR_CHANNEL &chan
           // genre type
           if (pListingNode->FirstChildElement("genre_type") != NULL && pListingNode->FirstChildElement("genre_type")->FirstChild() != NULL)
           {
-            broadcast.iGenreType  = atoi(pListingNode->FirstChildElement("genre_type")->FirstChild()->Value());
+            broadcast.iGenreType = atoi(pListingNode->FirstChildElement("genre_type")->FirstChild()->Value());
           }
 
           // genre subtype
           if (pListingNode->FirstChildElement("genre_subtype") != NULL && pListingNode->FirstChildElement("genre_subtype")->FirstChild() != NULL)
           {
-            broadcast.iGenreSubType  = atoi(pListingNode->FirstChildElement("genre_subtype")->FirstChild()->Value());
+            broadcast.iGenreSubType = atoi(pListingNode->FirstChildElement("genre_subtype")->FirstChild()->Value());
           }
+        }
+
+        if (pListingNode->FirstChildElement("season") != NULL && pListingNode->FirstChildElement("season")->FirstChild() != NULL)
+        {
+          broadcast.iSeriesNumber = atoi(pListingNode->FirstChildElement("season")->FirstChild()->Value());
+        }
+        else
+        {
+          broadcast.iSeriesNumber = 0;
+
+        }
+        if (pListingNode->FirstChildElement("episode") != NULL && pListingNode->FirstChildElement("episode")->FirstChild() != NULL)
+        {
+          broadcast.iEpisodeNumber = atoi(pListingNode->FirstChildElement("episode")->FirstChild()->Value());
+        }
+        else
+        {
+          broadcast.iEpisodeNumber = 0;
         }
 
         broadcast.firstAired         = 0;  // unused
         broadcast.iParentalRating    = 0;  // unused
         broadcast.iStarRating        = 0;  // unused
         broadcast.bNotify            = false;
-        broadcast.iSeriesNumber      = 0;  // unused
-        broadcast.iEpisodeNumber     = 0;  // unused
         broadcast.iEpisodePartNumber = 0;  // unused
-        broadcast.strEpisodeName     = ""; // unused
 
         PVR->TransferEpgEntry(handle, &broadcast);
       }
@@ -763,7 +814,6 @@ PVR_ERROR cPVRClientNextPVR::GetChannels(ADDON_HANDLE handle, bool bRadio)
     {
       //XBMC->Log(LOG_NOTICE, "Channels:\n");
       //dump_to_log(&doc, 0);
-      LoadLiveStreams();
       channelCount = 0;
       TiXmlElement* channelsNode = doc.RootElement()->FirstChildElement("channels");
       TiXmlElement* pChannelNode;
