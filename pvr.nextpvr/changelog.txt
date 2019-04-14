@@ -1,3 +1,8 @@
+v3.3.15
+- CreateThread() change
+- Move LiveStreams.xml to only load once
+- Changes for NextPVR v5
+
 v3.3.14
 - Fixed issue with art not showing up on recordings from deleted channels
 - New settings option to enabled Kodi style recordings - defaults to NextPVR style (no title, with S/E )
@@ -6,7 +11,6 @@ v3.3.14
 - Adjust for server time difference loading instant recordings (could show as scheduled)
 - Clean up MAC address logic, no WOL for localhost
 - Allow Kodi plugin:// URL in LiveStreams.xml
-- CreateThread() change
 
 v3.3.13
 - Add Extended Timeshift Rolling File based live tv and radio buffer (pause and seekable)

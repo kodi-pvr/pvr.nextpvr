@@ -99,7 +99,7 @@ bool RecordingBuffer::Open(const std::string inputUrl,const PVR_RECORDING &recor
     if ( XBMC->FileExists(strDirectory,false))
     {
       XBMC->Log(LOG_DEBUG, "Native playback %s", strDirectory);
-        return Buffer::Open(std::string(strDirectory),0);
+      return Buffer::Open(std::string(strDirectory),0);
     }
   }
   return Buffer::Open(inputUrl,0);
