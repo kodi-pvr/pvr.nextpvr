@@ -548,7 +548,7 @@ PVR_ERROR cPVRClientNextPVR::GetDriveSpace(long long *iTotal, long long *iUsed)
 /************************************************************/
 /** EPG handling */
 
-PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, const PVR_CHANNEL &channel, time_t iStart, time_t iEnd)
+PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t iStart, time_t iEnd)
 {
   EPG_TAG broadcast;
 
@@ -557,10 +557,10 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, const PVR_CHANNEL &chan
   LOG_API_CALL(__FUNCTION__);
   if ( iEnd < (time(nullptr) - 24 * 3600))
   {
-      XBMC->Log(LOG_DEBUG, "Skipping expired EPG data %d %ld %lld",channel.iUniqueId,iStart, iEnd);
+      XBMC->Log(LOG_DEBUG, "Skipping expired EPG data %d %ld %lld",iChannelUid,iStart, iEnd);
       return PVR_ERROR_INVALID_PARAMETERS;
   }
-  sprintf(request, "/service?method=channel.listings&channel_id=%d&start=%d&end=%d", channel.iUniqueId, (int)iStart, (int)iEnd);
+  sprintf(request, "/service?method=channel.listings&channel_id=%d&start=%d&end=%d", iChannelUid, (int)iStart, (int)iEnd);
   if (DoRequest(request, response) == HTTP_OK)
   {
     TiXmlDocument doc;
@@ -623,7 +623,7 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, const PVR_CHANNEL &chan
         broadcast.iUniqueBroadcastId  = atoi(pListingNode->FirstChildElement("id")->FirstChild()->Value());
         broadcast.strTitle            = title.c_str();
         broadcast.strEpisodeName      = subtitle.c_str();
-        broadcast.iUniqueChannelId    = channel.iUniqueId;
+        broadcast.iUniqueChannelId    = iChannelUid;
         broadcast.startTime           = atol(start);
         broadcast.endTime             = atol(end);
         broadcast.strPlotOutline      = NULL; //unused
@@ -687,7 +687,6 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, const PVR_CHANNEL &chan
         broadcast.firstAired         = 0;  // unused
         broadcast.iParentalRating    = 0;  // unused
         broadcast.iStarRating        = 0;  // unused
-        broadcast.bNotify            = false;
         broadcast.iEpisodePartNumber = 0;  // unused
 
         PVR->TransferEpgEntry(handle, &broadcast);

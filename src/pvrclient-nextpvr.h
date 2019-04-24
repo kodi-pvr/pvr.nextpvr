@@ -96,7 +96,7 @@ public:
   PVR_ERROR GetStreamReadChunkSize(int* chunksize);
 
   /* EPG handling */
-  PVR_ERROR GetEpg(ADDON_HANDLE handle, const PVR_CHANNEL &channel, time_t iStart = 0, time_t iEnd = 0);
+  PVR_ERROR GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t iStart = 0, time_t iEnd = 0);
 
   /* Channel handling */
   int GetNumChannels(void);
