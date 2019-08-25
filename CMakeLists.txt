@@ -11,7 +11,7 @@ find_package(TinyXML REQUIRED)
 include_directories(${kodiplatform_INCLUDE_DIRS}
                     ${p8-platform_INCLUDE_DIRS}
                     ${TINYXML_INCLUDE_DIR}
-                    ${KODI_INCLUDE_DIR})
+                    ${KODI_INCLUDE_DIR}/..) # Hack way with "/..", need bigger Kodi cmake rework to match right include ways
 
 set(NEXTPVR_SOURCES src/client.cpp
                     src/md5.cpp
