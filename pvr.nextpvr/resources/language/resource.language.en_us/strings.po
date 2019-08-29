@@ -127,3 +127,35 @@ msgstr "New Only"
 msgctxt "#30161"
 msgid "All"
 msgstr "All"
+
+msgctxt "#30162"
+msgid "Pre-buffer time in seconds"
+msgstr "Pre-buffer time in seconds"
+
+msgctxt "#30163"
+msgid "Enable Wake On LAN"
+msgstr "Enable Wake On LAN"
+
+msgctxt "#30164"
+msgid "Wait for server after wake in seconds"
+msgstr "Wait for server after wake in seconds"
+
+msgctxt "#30165"
+msgid "NextPVR server MAC address"
+msgstr "NextPVR server MAC address"
+
+msgctxt "#30166"
+msgid "Failed Recordings"
+msgstr "Failed Recordings"
+
+msgctxt "#30167"
+msgid "Live TV Chunk Size"
+msgstr "Live TV Chunk Size"
+
+msgctxt "#30168"
+msgid "Recording Chunk Size"
+msgstr "Recording Chunk Size"
+
+msgctxt "#30169"
+msgid "Kodi Style Recordings"
+msgstr "Kodi Style Recordings"

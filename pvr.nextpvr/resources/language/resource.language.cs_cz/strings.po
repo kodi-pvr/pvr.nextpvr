@@ -127,3 +127,35 @@ msgstr "Pouze nové"
 msgctxt "#30161"
 msgid "All"
 msgstr "Vše"
+
+msgctxt "#30162"
+msgid "Pre-buffer time in seconds"
+msgstr "Čas předuložení do vyrovnávací paměti v sekundách"
+
+msgctxt "#30163"
+msgid "Enable Wake On LAN"
+msgstr "Povolit Wake On LAN"
+
+msgctxt "#30164"
+msgid "Wait for server after wake in seconds"
+msgstr "Čekat na server po probuzení v sekundách"
+
+msgctxt "#30165"
+msgid "NextPVR server MAC address"
+msgstr "MAC adresa serveru NextPVR"
+
+msgctxt "#30166"
+msgid "Failed Recordings"
+msgstr "Selhané nahrávky"
+
+msgctxt "#30167"
+msgid "Live TV Chunk Size"
+msgstr "Velikost bloku živého vysílání"
+
+msgctxt "#30168"
+msgid "Recording Chunk Size"
+msgstr "Velikost bloku nahrávání"
+
+msgctxt "#30169"
+msgid "Kodi Style Recordings"
+msgstr "Nahrávání ve stylu Kodi"

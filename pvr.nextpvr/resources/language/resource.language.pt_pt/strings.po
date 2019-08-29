@@ -30,7 +30,7 @@ msgstr "Código Pin do NextPVR"
 
 msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
-msgstr "Ativar TimeShift com TV em direto"
+msgstr "Ativar TimeShift com TV em Direto"
 
 msgctxt "#30004"
 msgid "Download TV Guide Artwork"
@@ -127,3 +127,35 @@ msgstr "Apenas novas"
 msgctxt "#30161"
 msgid "All"
 msgstr "Todas"
+
+msgctxt "#30162"
+msgid "Pre-buffer time in seconds"
+msgstr "Tempo de pre-buffer em segundos"
+
+msgctxt "#30163"
+msgid "Enable Wake On LAN"
+msgstr "Ativar Wake On LAN"
+
+msgctxt "#30164"
+msgid "Wait for server after wake in seconds"
+msgstr "Aguardar pelo servidor após despertar em segundos"
+
+msgctxt "#30165"
+msgid "NextPVR server MAC address"
+msgstr "Endereço MAC do servidor NextPVR"
+
+msgctxt "#30166"
+msgid "Failed Recordings"
+msgstr "Gravações falhadas"
+
+msgctxt "#30167"
+msgid "Live TV Chunk Size"
+msgstr "Tamanho do pacote da TV em Direto"
+
+msgctxt "#30168"
+msgid "Recording Chunk Size"
+msgstr "Tamanho do pacote de gravação"
+
+msgctxt "#30169"
+msgid "Kodi Style Recordings"
+msgstr "Gravações ao estilo do Kodi"

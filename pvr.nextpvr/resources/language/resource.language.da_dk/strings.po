@@ -26,15 +26,15 @@ msgstr "NextPVR port (almindeligvis 8866 eller 7799)"
 
 msgctxt "#30002"
 msgid "NextPVR PinCode"
-msgstr "NextPVR PinKode"
+msgstr "NextPVR pinkode"
 
 msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
-msgstr "Aktiver Tidsforskydelse af Direkte TV"
+msgstr "Aktiver tidsforskydelse af direkte tv"
 
 msgctxt "#30004"
 msgid "Download TV Guide Artwork"
-msgstr "Hent TV guide grafik"
+msgstr "Hent grafik til tv-guide"
 
 msgctxt "#30040"
 msgid "Connection"
@@ -54,19 +54,35 @@ msgstr "Opgrader til '%s' eller højere!"
 
 msgctxt "#30052"
 msgid "Connection failed. Incorrect PIN?"
-msgstr "Forbindelse mislykkedes.  Forkert Pinkode?"
+msgstr "Forbindelse mislykkedes.  Forkert pinkode?"
 
 msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr "Tuneren er ikke længere tilgængelig"
 
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr "En gang (manuel)"
+
+msgctxt "#30141"
+msgid "One time (guide)"
+msgstr "En gang (guide)"
+
+msgctxt "#30142"
+msgid "Repeating (manual)"
+msgstr "Gentagende (manuel)"
+
 msgctxt "#30143"
 msgid "Repeating (guide)"
-msgstr "Gentagende (vejledning)"
+msgstr "Gentagende (guide)"
+
+msgctxt "#30145"
+msgid "Repeating (keyword)"
+msgstr "Gentagende (nøgleord)"
 
 msgctxt "#30150"
 msgid "All Recordings"
-msgstr "Alle Optagelser"
+msgstr "Alle optagelser"
 
 msgctxt "#30151"
 msgid "1 Recording"
@@ -100,6 +116,18 @@ msgctxt "#30158"
 msgid "10 Recordings"
 msgstr "10 optagelser"
 
+msgctxt "#30160"
+msgid "New Only"
+msgstr "Kun nye"
+
 msgctxt "#30161"
 msgid "All"
 msgstr "Alle"
+
+msgctxt "#30165"
+msgid "NextPVR server MAC address"
+msgstr "NextPVR servers MAC-adresse"
+
+msgctxt "#30166"
+msgid "Failed Recordings"
+msgstr "Mislykkede optagelser"

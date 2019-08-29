@@ -127,3 +127,35 @@ msgstr "Baharu Sahaja"
 msgctxt "#30161"
 msgid "All"
 msgstr "Semua"
+
+msgctxt "#30162"
+msgid "Pre-buffer time in seconds"
+msgstr "Masa pra-timbal dalam saat"
+
+msgctxt "#30163"
+msgid "Enable Wake On LAN"
+msgstr "Benarkan Wake On LAN"
+
+msgctxt "#30164"
+msgid "Wait for server after wake in seconds"
+msgstr "Tunggu pelayan selepas bangun dalam saat"
+
+msgctxt "#30165"
+msgid "NextPVR server MAC address"
+msgstr "Alamat MAC pelayan NextPVR"
+
+msgctxt "#30166"
+msgid "Failed Recordings"
+msgstr "Rakaman Gagal"
+
+msgctxt "#30167"
+msgid "Live TV Chunk Size"
+msgstr "Saiz Cebisan TV Langsung"
+
+msgctxt "#30168"
+msgid "Recording Chunk Size"
+msgstr "Saiz Cebisan Rakaman"
+
+msgctxt "#30169"
+msgid "Kodi Style Recordings"
+msgstr "Rakaman Gaya Kodi"

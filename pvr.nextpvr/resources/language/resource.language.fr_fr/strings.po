@@ -127,3 +127,35 @@ msgstr "Nouveaux seulement"
 msgctxt "#30161"
 msgid "All"
 msgstr "Tout"
+
+msgctxt "#30162"
+msgid "Pre-buffer time in seconds"
+msgstr "Durée de prétampon en seconde"
+
+msgctxt "#30163"
+msgid "Enable Wake On LAN"
+msgstr "Activer les réveil à distance ( Wake On LAN)"
+
+msgctxt "#30164"
+msgid "Wait for server after wake in seconds"
+msgstr "Temps d'attente du serveur après réveil en seconde"
+
+msgctxt "#30165"
+msgid "NextPVR server MAC address"
+msgstr "Adresse MAC du serveur NextPVR"
+
+msgctxt "#30166"
+msgid "Failed Recordings"
+msgstr "Enregistrements échoués"
+
+msgctxt "#30167"
+msgid "Live TV Chunk Size"
+msgstr "Taille de bloc de TV en direct"
+
+msgctxt "#30168"
+msgid "Recording Chunk Size"
+msgstr "Taille de bloc d'enregistrement"
+
+msgctxt "#30169"
+msgid "Kodi Style Recordings"
+msgstr "Enregistrements style Kodi"

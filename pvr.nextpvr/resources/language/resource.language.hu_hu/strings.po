@@ -127,3 +127,35 @@ msgstr "Csak új"
 msgctxt "#30161"
 msgid "All"
 msgstr "Mind"
+
+msgctxt "#30162"
+msgid "Pre-buffer time in seconds"
+msgstr "Előtöltési idő, másodpercben"
+
+msgctxt "#30163"
+msgid "Enable Wake On LAN"
+msgstr "Hálózaton keresztüli felébresztés engedélyezése"
+
+msgctxt "#30164"
+msgid "Wait for server after wake in seconds"
+msgstr "Várakozás a szerver oldali ébresztésre, másodpercben"
+
+msgctxt "#30165"
+msgid "NextPVR server MAC address"
+msgstr "NextPVR szerver MAC cím"
+
+msgctxt "#30166"
+msgid "Failed Recordings"
+msgstr "Hibás felvétel"
+
+msgctxt "#30167"
+msgid "Live TV Chunk Size"
+msgstr "Élő adás rész méret"
+
+msgctxt "#30168"
+msgid "Recording Chunk Size"
+msgstr "Felvételrész méret"
+
+msgctxt "#30169"
+msgid "Kodi Style Recordings"
+msgstr "Kodi stílusú felvétel"

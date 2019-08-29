@@ -127,3 +127,35 @@ msgstr "Slegs Nuut"
 msgctxt "#30161"
 msgid "All"
 msgstr "Almal"
+
+msgctxt "#30162"
+msgid "Pre-buffer time in seconds"
+msgstr "Voor-buffer tyd in sekondes"
+
+msgctxt "#30163"
+msgid "Enable Wake On LAN"
+msgstr "Stel Wake On LAN in staat"
+
+msgctxt "#30164"
+msgid "Wait for server after wake in seconds"
+msgstr "Wag vir bediener na waak in sekondes"
+
+msgctxt "#30165"
+msgid "NextPVR server MAC address"
+msgstr "NextPVR bediener MAC adres"
+
+msgctxt "#30166"
+msgid "Failed Recordings"
+msgstr "Gefaalde Opnames"
+
+msgctxt "#30167"
+msgid "Live TV Chunk Size"
+msgstr "Live TV Chunk Grootte"
+
+msgctxt "#30168"
+msgid "Recording Chunk Size"
+msgstr "Opname Chunk Grootte"
+
+msgctxt "#30169"
+msgid "Kodi Style Recordings"
+msgstr "Kodi Styl Opnames"

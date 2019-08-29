@@ -127,3 +127,35 @@ msgstr "Само новите"
 msgctxt "#30161"
 msgid "All"
 msgstr "Всички"
+
+msgctxt "#30162"
+msgid "Pre-buffer time in seconds"
+msgstr "Време за пред-зареждане, в секунди"
+
+msgctxt "#30163"
+msgid "Enable Wake On LAN"
+msgstr "Включване на събуждането по LAN"
+
+msgctxt "#30164"
+msgid "Wait for server after wake in seconds"
+msgstr "Изчакване на сървъра след събуждане, в секунди"
+
+msgctxt "#30165"
+msgid "NextPVR server MAC address"
+msgstr "MAC адрес на сървъра на NextPVR"
+
+msgctxt "#30166"
+msgid "Failed Recordings"
+msgstr "Неуспешни записи"
+
+msgctxt "#30167"
+msgid "Live TV Chunk Size"
+msgstr "Размер на частите за зареждане за ТВ на живо"
+
+msgctxt "#30168"
+msgid "Recording Chunk Size"
+msgstr "Размер на частите при запис"
+
+msgctxt "#30169"
+msgid "Kodi Style Recordings"
+msgstr "Записи в стила на Kodi"

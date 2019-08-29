@@ -18,27 +18,27 @@ msgstr ""
 
 msgctxt "#30000"
 msgid "NextPVR Hostname"
-msgstr "Hostname do NextPVR"
+msgstr "Nome do servidor NextPVR"
 
 msgctxt "#30001"
 msgid "NextPVR Port (usually 8866 or 7799)"
-msgstr "Porta do NextPVR (normalmente 8866 ou 7799"
+msgstr "Porta do NextPVR (normalmente 8866 ou 7799)"
 
 msgctxt "#30002"
 msgid "NextPVR PinCode"
-msgstr "Pincode do NextPVR"
+msgstr "Código Pin do NextPVR"
 
 msgctxt "#30003"
 msgid "Enable TimeShift with Live TV"
-msgstr "Ativar TimeShift com Tv ao Vivo"
+msgstr "Ativar TimeShift com TV em Direto"
 
 msgctxt "#30004"
 msgid "Download TV Guide Artwork"
-msgstr "Transferir artes Guia de TV"
+msgstr "Descarregar imagens do guia"
 
 msgctxt "#30040"
 msgid "Connection"
-msgstr "Conexão"
+msgstr "Ligação"
 
 msgctxt "#30041"
 msgid "Advanced"
@@ -50,15 +50,15 @@ msgstr "O servidor NextPVR é muito antigo."
 
 msgctxt "#30051"
 msgid "Upgrade to '%s' or higher!"
-msgstr "Atualizar para '%s' ou superior!"
+msgstr "Atualize para a versão '%s' ou superior!"
 
 msgctxt "#30052"
 msgid "Connection failed. Incorrect PIN?"
-msgstr "A conexão falhou. PIN incorreto?"
+msgstr "Erro de ligação. PIN incorreto? "
 
 msgctxt "#30053"
 msgid "Tuner no longer available"
-msgstr "Sintonizador não está disponível"
+msgstr "Sintonizador não disponível"
 
 msgctxt "#30140"
 msgid "One time (manual)"
@@ -70,19 +70,19 @@ msgstr "Uma vez (guia)"
 
 msgctxt "#30142"
 msgid "Repeating (manual)"
-msgstr "Recorrente (manual)"
+msgstr "Repetição (manual)"
 
 msgctxt "#30143"
 msgid "Repeating (guide)"
-msgstr "Recorrente (guia)"
+msgstr "Repetição (guia)"
 
 msgctxt "#30144"
 msgid "Child Recording"
-msgstr "Gravações Aninhadas"
+msgstr "Gravação para crianças"
 
 msgctxt "#30145"
 msgid "Repeating (keyword)"
-msgstr "Recorrente (palavra chave)"
+msgstr "Repetição (palavra-chave)"
 
 msgctxt "#30150"
 msgid "All Recordings"
@@ -90,40 +90,72 @@ msgstr "Todas as gravações"
 
 msgctxt "#30151"
 msgid "1 Recording"
-msgstr "1 Gravação"
+msgstr "1 gravação"
 
 msgctxt "#30152"
 msgid "2 Recordings"
-msgstr "2 Gravações"
+msgstr "2 gravações"
 
 msgctxt "#30153"
 msgid "3 Recordings"
-msgstr "3 Gravações"
+msgstr "3 gravações"
 
 msgctxt "#30154"
 msgid "4 Recordings"
-msgstr "4 Gravações"
+msgstr "4 gravações"
 
 msgctxt "#30155"
 msgid "5 Recordings"
-msgstr "5 Gravações"
+msgstr "5 gravações"
 
 msgctxt "#30156"
 msgid "6 Recordings"
-msgstr "6 Gravações"
+msgstr "6 gravações"
 
 msgctxt "#30157"
 msgid "7 Recordings"
-msgstr "7 Gravações"
+msgstr "7 gravações"
 
 msgctxt "#30158"
 msgid "10 Recordings"
-msgstr "10 Gravações"
+msgstr "10 gravações"
 
 msgctxt "#30160"
 msgid "New Only"
-msgstr "Somente Novo"
+msgstr "Apenas novas"
 
 msgctxt "#30161"
 msgid "All"
-msgstr "Todos os Add-ons"
+msgstr "Todas"
+
+msgctxt "#30162"
+msgid "Pre-buffer time in seconds"
+msgstr "Tempo de pre-buffer em segundos"
+
+msgctxt "#30163"
+msgid "Enable Wake On LAN"
+msgstr "Ativar Wake On LAN"
+
+msgctxt "#30164"
+msgid "Wait for server after wake in seconds"
+msgstr "Aguardar pelo servidor após despertar em segundos"
+
+msgctxt "#30165"
+msgid "NextPVR server MAC address"
+msgstr "Endereço MAC do servidor NextPVR"
+
+msgctxt "#30166"
+msgid "Failed Recordings"
+msgstr "Gravações falhadas"
+
+msgctxt "#30167"
+msgid "Live TV Chunk Size"
+msgstr "Tamanho do pacote da TV em Direto"
+
+msgctxt "#30168"
+msgid "Recording Chunk Size"
+msgstr "Tamanho do pacote de gravação"
+
+msgctxt "#30169"
+msgid "Kodi Style Recordings"
+msgstr "Gravações ao estilo do Kodi"

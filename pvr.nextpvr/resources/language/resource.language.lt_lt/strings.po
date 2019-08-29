@@ -127,3 +127,35 @@ msgstr "Tik nauji"
 msgctxt "#30161"
 msgid "All"
 msgstr "Visi"
+
+msgctxt "#30162"
+msgid "Pre-buffer time in seconds"
+msgstr "Išankstinio buferio laikas sekundėmis"
+
+msgctxt "#30163"
+msgid "Enable Wake On LAN"
+msgstr "Įjungti 'Wake On LAN'"
+
+msgctxt "#30164"
+msgid "Wait for server after wake in seconds"
+msgstr "Serverio laukimo laikas po pažadinimo sekundėmis"
+
+msgctxt "#30165"
+msgid "NextPVR server MAC address"
+msgstr "NextPVR serverio MAC adresas"
+
+msgctxt "#30166"
+msgid "Failed Recordings"
+msgstr "Nepavykę įrašymai"
+
+msgctxt "#30167"
+msgid "Live TV Chunk Size"
+msgstr "Televizijos dalies dydis"
+
+msgctxt "#30168"
+msgid "Recording Chunk Size"
+msgstr "Įrašo dalies dydis"
+
+msgctxt "#30169"
+msgid "Kodi Style Recordings"
+msgstr "Kodi stiliaus įrašymai"

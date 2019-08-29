@@ -127,3 +127,35 @@ msgstr "최신만"
 msgctxt "#30161"
 msgid "All"
 msgstr "전체"
+
+msgctxt "#30162"
+msgid "Pre-buffer time in seconds"
+msgstr "프리-버퍼 시간 (초)"
+
+msgctxt "#30163"
+msgid "Enable Wake On LAN"
+msgstr "Wake On LAN 사용"
+
+msgctxt "#30164"
+msgid "Wait for server after wake in seconds"
+msgstr "서버가 깨어나기를 기다림 (초)"
+
+msgctxt "#30165"
+msgid "NextPVR server MAC address"
+msgstr "NextPVR 서버 MAC 어드레스"
+
+msgctxt "#30166"
+msgid "Failed Recordings"
+msgstr "녹화 실패"
+
+msgctxt "#30167"
+msgid "Live TV Chunk Size"
+msgstr "라이브 TV 단위 데이터 크기"
+
+msgctxt "#30168"
+msgid "Recording Chunk Size"
+msgstr "녹화 단위 데이터 크기"
+
+msgctxt "#30169"
+msgid "Kodi Style Recordings"
+msgstr "Kodi 스타일 녹화"
