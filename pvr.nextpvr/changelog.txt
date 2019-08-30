@@ -1,3 +1,8 @@
+v3.3.16
+- Update build system version and cleanup
+- Fix package check for TinyXML
+- Added AppVeyor for Windows related build tests
+
 v3.3.15
 - CreateThread() change
 - Move LiveStreams.xml to only load once
