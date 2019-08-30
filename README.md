@@ -1,8 +1,9 @@
-[![Build Status](https://travis-ci.org/kodi-pvr/pvr.nextpvr.svg?branch=master)](https://travis-ci.org/kodi-pvr/pvr.nextpvr)
+[![Build Status](https://travis-ci.org/kodi-pvr/pvr.nextpvr.svg?branch=Matrix)](https://travis-ci.org/kodi-pvr/pvr.nextpvr/branches)
+[![Build Status](https://ci.appveyor.com/api/projects/status/github/kodi-pvr/pvr.nextpvr?branch=Matrix&svg=true)](https://ci.appveyor.com/project/kodi-pvr/pvr-nextpvr?branch=Matrix)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/5120/badge.svg)](https://scan.coverity.com/projects/5120)
 
 # NextPVR PVR
-NextPVR PVR client addon for [Kodi] (http://kodi.tv)
+NextPVR PVR client addon for [Kodi] (https://kodi.tv)
 
 ## Build instructions
 
@@ -16,5 +17,5 @@ NextPVR PVR client addon for [Kodi] (http://kodi.tv)
 
 ##### Useful links
 
-* [Kodi's PVR user support] (http://forum.kodi.tv/forumdisplay.php?fid=167)
-* [Kodi's PVR development support] (http://forum.kodi.tv/forumdisplay.php?fid=136)
+* [Kodi's PVR user support] (https://forum.kodi.tv/forumdisplay.php?fid=167)
+* [Kodi's PVR development support] (https://forum.kodi.tv/forumdisplay.php?fid=136)
