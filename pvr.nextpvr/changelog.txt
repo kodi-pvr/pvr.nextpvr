@@ -1,3 +1,6 @@
+v4.2.0
+- Recompile for 6.1.0 PVR Addon API compatibility
+
 v4.1.1
 - Update build system version and cleanup
 - Fix package check for JsonCpp
