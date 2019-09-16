@@ -127,3 +127,7 @@ msgstr "Doar cele noi"
 msgctxt "#30161"
 msgid "All"
 msgstr "Toate"
+
+msgctxt "#30169"
+msgid "Kodi Style Recordings"
+msgstr "Înregistrări în stil Kodi"

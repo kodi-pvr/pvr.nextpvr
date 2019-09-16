@@ -127,3 +127,19 @@ msgstr "Iba nové"
 msgctxt "#30161"
 msgid "All"
 msgstr "Všetky"
+
+msgctxt "#30163"
+msgid "Enable Wake On LAN"
+msgstr "Povoliť Wake On LAN"
+
+msgctxt "#30164"
+msgid "Wait for server after wake in seconds"
+msgstr "Počkať na server po požiadavke prebudiť v sekundách"
+
+msgctxt "#30165"
+msgid "NextPVR server MAC address"
+msgstr "MAC adresa serveru NextPVR"
+
+msgctxt "#30166"
+msgid "Failed Recordings"
+msgstr "Zlyhané nahrávky"
