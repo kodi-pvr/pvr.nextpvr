@@ -50,7 +50,7 @@ msgstr "Le serveur NextPVR est trop ancien."
 
 msgctxt "#30051"
 msgid "Upgrade to '%s' or higher!"
-msgstr "Mettre à niveau vers « %s » ou ultérieure !"
+msgstr "Mettre à niveau vers «  %s » ou ultérieure !"
 
 msgctxt "#30052"
 msgid "Connection failed. Incorrect PIN?"

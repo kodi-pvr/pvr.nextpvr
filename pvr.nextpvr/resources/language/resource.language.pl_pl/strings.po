@@ -127,3 +127,15 @@ msgstr "Tylko nowe"
 msgctxt "#30161"
 msgid "All"
 msgstr "Wszystkie"
+
+msgctxt "#30166"
+msgid "Failed Recordings"
+msgstr "Nieudane nagrania"
+
+msgctxt "#30168"
+msgid "Recording Chunk Size"
+msgstr "Rozmiar fragmentu nagrania"
+
+msgctxt "#30169"
+msgid "Kodi Style Recordings"
+msgstr "Nagrania w stylu Kodi"
