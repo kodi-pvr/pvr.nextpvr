@@ -127,3 +127,35 @@ msgstr "Samo nove"
 msgctxt "#30161"
 msgid "All"
 msgstr "Sve"
+
+msgctxt "#30162"
+msgid "Pre-buffer time in seconds"
+msgstr "Pre-buffer vrijeme u sekundama"
+
+msgctxt "#30163"
+msgid "Enable Wake On LAN"
+msgstr "Omogući Wake On LAN"
+
+msgctxt "#30164"
+msgid "Wait for server after wake in seconds"
+msgstr "Čekaj na server nakon buđenja u sekundama"
+
+msgctxt "#30165"
+msgid "NextPVR server MAC address"
+msgstr "MAC adresa NextPVR servera"
+
+msgctxt "#30166"
+msgid "Failed Recordings"
+msgstr "Neuspješna Snimanja"
+
+msgctxt "#30167"
+msgid "Live TV Chunk Size"
+msgstr "TV Uživo veličina komada"
+
+msgctxt "#30168"
+msgid "Recording Chunk Size"
+msgstr "Veličina komada za snimanje"
+
+msgctxt "#30169"
+msgid "Kodi Style Recordings"
+msgstr "Kodi Style Snimke"
