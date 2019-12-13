@@ -20,7 +20,7 @@
 */
 
 #include "Buffer.h"
-#include "kodi/Filesystem.h"
+
 #include <sstream>
 
 using namespace timeshift;
@@ -76,4 +76,45 @@ void Buffer::CloseHandle(void *&handle)
     XBMC->Log(LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
     handle = nullptr;
   }
+}
+
+void Buffer::LeaseWorker(void)
+{
+  while (m_isLeaseRunning == true)
+  {
+    time_t now = time(nullptr);
+    bool complete = false;
+    if ( m_nextLease <= now  && m_complete == false)
+    {
+      std::this_thread::yield();
+      std::unique_lock<std::mutex> lock(m_mutex);
+      int retval = Lease();
+      if ( retval == HTTP_OK)
+      {
+        m_nextLease = now + 7;
+      }
+      else if (retval == HTTP_BADREQUEST)
+      {
+        complete = true;
+        XBMC->QueueNotification(QUEUE_INFO, "Tuner required for recording");
+      }
+      else
+      {
+        XBMC->Log(LOG_ERROR, "channel.transcode.lease failed %lld", m_nextLease );
+        m_nextLease = now + 1;
+      }
+    }
+    if (m_nextStreamInfo <= now || m_nextRoll <= now || complete == true)
+    {
+      GetStreamInfo();
+      if (complete) m_complete = true;
+    }
+    SLEEP(1000);
+  }
+}
+
+int Buffer::Lease()
+{
+  std::string response;
+  return NextPVR::m_backEnd->DoRequest("/service?method=channel.transcode.lease", response);
 }

@@ -22,6 +22,7 @@
 
 /* Master defines for client control */
 #include "kodi/xbmc_pvr_types.h"
+#include "kodi/kodi_vfs_types.h"
 
 /* Local includes */
 #include "Socket.h"
@@ -32,6 +33,7 @@
 #include "buffers/TimeshiftBuffer.h"
 #include "buffers/RecordingBuffer.h"
 #include "buffers/RollingFile.h"
+#include "buffers/ClientTimeshift.h"
 #include <map>
 
 #define SAFE_DELETE(p)       do { delete (p);     (p)=NULL; } while (0)
@@ -51,7 +53,8 @@
 #define TIMER_REPEATING_MANUAL    (TIMER_REPEATING_MIN + 0)
 #define TIMER_REPEATING_EPG       (TIMER_REPEATING_MIN + 1)
 #define TIMER_REPEATING_KEYWORD   (TIMER_REPEATING_MIN + 2)
-#define TIMER_REPEATING_MAX       (TIMER_REPEATING_MIN + 2)
+#define TIMER_REPEATING_ADVANCED  (TIMER_REPEATING_MIN + 3)
+#define TIMER_REPEATING_MAX       (TIMER_REPEATING_MIN + 3)
 
 typedef enum
 {
@@ -94,6 +97,7 @@ public:
   PVR_ERROR GetBackendTime(time_t *localTime, int *gmtOffset);
   PVR_ERROR GetStreamTimes(PVR_STREAM_TIMES *stimes);
   PVR_ERROR GetStreamReadChunkSize(int* chunksize);
+  int XmlGetInt(TiXmlElement * node, const char* name);
 
   /* EPG handling */
   PVR_ERROR GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t iStart = 0, time_t iEnd = 0);
@@ -165,6 +169,8 @@ private:
   int DoRequest(const char *resource, std::string &response);
   std::string GetChannelIcon(int channelID);
   std::string GetChannelIconFileName(int channelID);
+  void DeleteChannelIcons();
+
   void Close();
 
   int                     m_iCurrentChannel;
@@ -208,5 +214,9 @@ private:
   void SendWakeOnLan();
   bool SaveSettings(std::string name, std::string value);
   void LoadLiveStreams();
+
+  bool GetAdditiveString(const TiXmlNode* pRootNode, const char* strTag,
+        const std::string& strSeparator, std::string& strStringValue,
+        bool clear);
 
 };

@@ -34,16 +34,27 @@ PVR_ERROR RecordingBuffer::GetStreamTimes(PVR_STREAM_TIMES *stimes)
 
 int RecordingBuffer::Duration(void)
 {
-  if (m_isRecording.load())
+  if (m_recordingTime)
   {
+    std::unique_lock<std::mutex> lock(m_mutex);
     time_t endTime =  time(nullptr);
-    int diff = (int) (endTime - m_recordingTime);
+    int diff = (int) (endTime - m_recordingTime -10);
     if (diff > 0)
-    {
+      {
+      int64_t bps = XBMC->GetFileLength(m_inputHandle) / diff;
+      if ((XBMC->GetFileLength(m_inputHandle) - XBMC->GetFilePosition(m_inputHandle)) * bps < 10)
+      {
+        m_isLive = false;
+      }
+      else
+      {
+        m_isLive = true;
+      }
       return diff;
     }
     else
     {
+      m_isLive = false;
       return 0;
     }
   }
@@ -60,16 +71,19 @@ bool RecordingBuffer::Open(const std::string inputUrl,const PVR_RECORDING &recor
   {
     m_chunkSize = 32;
   }
+  XBMC->Log(LOG_DEBUG, "RecordingBuffer::Open In Progress %d %lld", recording.iDuration, recording.recordingTime);
   if (recording.iDuration + recording.recordingTime > time(nullptr))
   {
-    m_recordingTime = recording.recordingTime;
+    m_recordingTime = recording.recordingTime + g_ServerTimeOffset;
     XBMC->Log(LOG_DEBUG, "RecordingBuffer::Open In Progress %d %lld", recording.iDuration, recording.recordingTime);
-    m_isRecording.store(true);
+    m_isLive = true;
   }
   else
   {
-    m_isRecording.store(false);
+    m_recordingTime = 0;
+    m_isLive = false;
   }
+  m_recordingURL = inputUrl;
   if (recording.strDirectory[0] != 0)
   {
     char strDirectory [PVR_ADDON_URL_STRING_LENGTH];
@@ -98,29 +112,26 @@ bool RecordingBuffer::Open(const std::string inputUrl,const PVR_RECORDING &recor
     }
     if ( XBMC->FileExists(strDirectory,false))
     {
-      XBMC->Log(LOG_DEBUG, "Native playback %s", strDirectory);
-      return Buffer::Open(std::string(strDirectory),0);
+      //m_recordingURL = strDirectory;
     }
   }
-  return Buffer::Open(inputUrl,0);
+  return Buffer::Open(m_recordingURL,0);
 }
 
 int RecordingBuffer::Read(byte *buffer, size_t length)
 {
+  if (m_recordingTime)
+    std::unique_lock<std::mutex> lock(m_mutex);
   int dataRead = (int) XBMC->ReadFile(m_inputHandle, buffer, length);
-  if (dataRead==0 && m_isRecording.load())
+  if (dataRead == 0 && m_isLive)
   {
     XBMC->Log(LOG_DEBUG, "%s:%d: %lld %lld", __FUNCTION__, __LINE__, XBMC->GetFileLength(m_inputHandle) ,XBMC->GetFilePosition(m_inputHandle));
-    if (XBMC->GetFileLength(m_inputHandle) == XBMC->GetFilePosition(m_inputHandle))
-    {
-      int64_t where = XBMC->GetFileLength(m_inputHandle);
-      Seek(where - length,SEEK_SET);
-      Seek(where,SEEK_SET);
-      if (where != Length())
-      {
-        XBMC->Log(LOG_INFO, "%s:%d: Before %lld After %lld", __FUNCTION__, __LINE__, where, Length());
-      }
-    }
+    int64_t position = XBMC->GetFilePosition(m_inputHandle);
+    Buffer::Close();
+    Buffer::Open(m_recordingURL,0);
+    Seek(position,0);
+    dataRead = (int) XBMC->ReadFile(m_inputHandle, buffer, length);
+    XBMC->Log(LOG_DEBUG, "%s:%d: %lld %lld", __FUNCTION__, __LINE__, XBMC->GetFileLength(m_inputHandle) ,XBMC->GetFilePosition(m_inputHandle));
   }
   return dataRead;
 }

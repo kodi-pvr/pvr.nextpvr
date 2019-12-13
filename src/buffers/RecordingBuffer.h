@@ -33,6 +33,8 @@ namespace timeshift {
   {
   private:
     int m_Duration;
+    bool m_buffering = false;
+    std::string m_recordingURL;
 
   public:
     RecordingBuffer() : Buffer() { m_Duration = 0; XBMC->Log(LOG_NOTICE, "RecordingBuffer created!"); }
@@ -42,8 +44,9 @@ namespace timeshift {
 
     virtual int64_t Seek(int64_t position, int whence) override
     {
-      XBMC->Log(LOG_DEBUG, "Seek: %s:%d  %lld  %lld %lld", __FUNCTION__, __LINE__,position, XBMC->GetFilePosition(m_inputHandle), XBMC->GetFileLength(m_inputHandle) );
-      return XBMC->SeekFile(m_inputHandle, position, whence);
+      int64_t retval =  XBMC->SeekFile(m_inputHandle, position, whence);
+      XBMC->Log(LOG_DEBUG, "Seek: %s:%d  %lld  %lld %lld %lld", __FUNCTION__, __LINE__,position, XBMC->GetFilePosition(m_inputHandle), XBMC->GetFileLength(m_inputHandle), retval );
+      return retval;
     }
 
     virtual bool CanPauseStream() const override
@@ -58,7 +61,7 @@ namespace timeshift {
 
     virtual bool IsRealTimeStream() const override
     {
-      return m_isRecording.load();
+      return false;
     }
 
 
@@ -79,7 +82,9 @@ namespace timeshift {
 
     bool Open(const std::string inputUrl,const PVR_RECORDING &recording);
 
-    std::atomic<bool> m_isRecording;
+    std::atomic<bool> m_isLive;
+
+    // recording start time
     time_t m_recordingTime;
   };
 }

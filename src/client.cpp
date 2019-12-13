@@ -41,6 +41,7 @@ eNowPlaying      g_NowPlaying = NotPlaying;
 int              g_wol_timeout;
 bool             g_wol_enabled;
 bool             g_KodiLook;
+bool             g_eraseIcons = false;
 
 /* Client member variables */
 ADDON_STATUS           m_CurStatus    = ADDON_STATUS_UNKNOWN;
@@ -232,6 +233,12 @@ void ADDON_ReadSettings(void)
     g_KodiLook = false;
   }
 
+  if (!XBMC->GetSetting("reseticons", &g_eraseIcons))
+  {
+    g_eraseIcons = false;
+  }
+
+
   /* Log the current settings for debugging purposes */
   XBMC->Log(LOG_DEBUG, "settings: host='%s', port=%i, mac=%4.4s...", g_szHostname.c_str(), g_iPort, g_host_mac.c_str());
 
@@ -309,12 +316,23 @@ ADDON_STATUS ADDON_SetSetting(const char *settingName, const void *settingValue)
   }
   else if (str == "livestreamingmethod")
   {
-      eStreamingMethod  tmp_livestreamingmethod = g_livestreamingmethod;
-      g_livestreamingmethod = *(eStreamingMethod*) settingValue;
-      if (g_livestreamingmethod != tmp_livestreamingmethod)
+    eStreamingMethod  setting_livestreamingmethod = *(eStreamingMethod*) settingValue;
+    if (g_livestreamingmethod == ClientTimeshift)
+    {
+        if (setting_livestreamingmethod == RealTime)
+        {
+            g_livestreamingmethod = RealTime;
+            return ADDON_STATUS_NEED_RESTART;
+        }
+    }
+    else
+    {
+      if (g_livestreamingmethod != setting_livestreamingmethod)
       {
+        g_livestreamingmethod = setting_livestreamingmethod;
         return ADDON_STATUS_NEED_RESTART;
       }
+    }
   }
   else if (str == "host_mac")
   {
@@ -323,6 +341,18 @@ ADDON_STATUS ADDON_SetSetting(const char *settingName, const void *settingValue)
       XBMC->Log(LOG_INFO, "Changed setting 'host_mac' from %4.4s... to %4.4s...", g_host_mac.c_str(), (const char *)settingValue );
       g_host_mac = (const char *) settingValue;
       return ADDON_STATUS_OK ;
+    }
+  }
+  else if (str == "reseticons")
+  {
+    if ( g_eraseIcons != *(bool*)settingValue )
+    {
+      g_eraseIcons = *(bool*)settingValue;
+      if (g_eraseIcons )
+      {
+        XBMC->Log(LOG_INFO, "Flagging icon reset");
+      }
+      return ADDON_STATUS_NEED_RESTART;
     }
   }
 
