@@ -125,7 +125,7 @@ void ClientTimeShift::StreamStop()
 
 int64_t ClientTimeShift::Seek(int64_t position, int whence)
 {
-  if (!m_complete) return -1;
+  if (m_complete) return -1;
   if (m_active)
     Buffer::Close();
   ClientTimeShift::GetStreamInfo();
