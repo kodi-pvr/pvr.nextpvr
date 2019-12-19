@@ -1,3 +1,17 @@
+v4.3.0
+- implement v5 timeshifting
+- improve playback of in progress recordings
+- added original air date as firstAired
+- live and new flags modify firstAired
+- added Advanced Recording type
+- Add genres to recordings (Kodi bug doesn't display them)
+- can force delete of all channel icons from the setup screen
+- added the sid to recordings
+- removed forced (YEAR) from EPG titles, Kodi V19 does this now.
+- reintroduce XMLUtils makes the parsing code easier to read.
+- continue to change c to c++
+- fixed bug passing empty group titles to Kodi (kodi bug)
+
 v4.2.0
 - Recompile for 6.1.0 PVR Addon API compatibility
 

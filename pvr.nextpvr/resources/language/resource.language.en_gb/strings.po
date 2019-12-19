@@ -169,3 +169,11 @@ msgstr ""
 msgctxt "#30169"
 msgid "Kodi Style Recordings"
 msgstr ""
+
+msgctxt "#30170"
+msgid "Erase Channel Icons"
+msgstr ""
+
+msgctxt "#30171"
+msgid "Repeating (advanced)"
+msgstr ""

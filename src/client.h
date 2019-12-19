@@ -31,7 +31,8 @@ enum eStreamingMethod
 {
   Timeshift = 0,
   RollingFile = 1,
-  RealTime = 2
+  RealTime = 2,
+  ClientTimeshift = 3
 };
 
 enum eNowPlaying
@@ -63,6 +64,7 @@ extern bool             g_wol_enabled;
 extern bool             g_bRadioEnabled;
 extern bool             g_bUseTimeshift;
 extern bool             g_KodiLook;
+extern bool             g_eraseIcons;
 extern int16_t          g_timeShiftBufferSeconds;
 extern eStreamingMethod g_livestreamingmethod;
 extern eNowPlaying g_NowPlaying;
@@ -75,6 +77,8 @@ extern int              g_iTVServerXBMCBuild;
 extern int g_ServerTimeOffset;
 
 typedef unsigned char byte;
+
+#define READ_NO_CACHE 0
 
 /*!
  * @brief PVR macros for string exchange

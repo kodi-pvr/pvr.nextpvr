@@ -23,7 +23,6 @@
 #include <thread>
 #include <mutex>
 #include <list>
-#include "session.h"
 
 std::string UriEncode(const std::string sSrc);
 
@@ -37,32 +36,34 @@ namespace timeshift {
   class RollingFile : public RecordingBuffer
   {
   private:
-    mutable std::mutex m_mutex;
-    session_data_t m_sd;
     std::string m_activeFilename;
     int64_t m_activeLength;
+
+  protected:
     void *m_slipHandle = nullptr;
-    time_t m_slipStart;
-    time_t m_rollingBegin;
-    time_t m_nextRoll;
+    time_t m_streamStart;
+
+    std::atomic<time_t> m_rollingStartSeconds;
+
+    std::atomic<int64_t> m_stream_length;
+    std::atomic<int64_t> m_stream_duration;
+    std::atomic<int> m_bytesPerSecond;
+
     bool m_isEpgBased;
     int m_prebuffer;
     int m_liveChunkSize;
-    int m_lastClose;
+    time_t m_lastClose;
+
+    bool m_isPaused;
 
     struct slipFile{
       std::string filename;
       int64_t offset;
       int64_t length;
+      int seconds;
     };
 
     std::list <slipFile> slipFiles;
-
-    /**
-     * The thread that keeps track of the size of the current tsb, and
-     * drags the starting time forward when slip seconds is exceeded
-     */
-    std::thread m_tsbThread;
 
   public:
     RollingFile() : RecordingBuffer()
@@ -86,19 +87,13 @@ namespace timeshift {
 
     virtual void PauseStream(bool bPause) override
     {
-      if ((m_sd.isPaused = bPause))
-        m_sd.lastBufferTime = 0;
-    }
-
-    virtual bool IsTimeshifting() const override
-    {
-      XBMC->Log(LOG_DEBUG, "%s:%d: %lld %lld", __FUNCTION__, __LINE__, XBMC->GetFileLength(m_inputHandle) ,XBMC->GetFilePosition(m_inputHandle));
-      return true;
+      if ((m_isPaused = bPause))
+        m_nextLease = 20;
     }
 
     virtual int64_t Length() const override
     {
-      return m_sd.lastKnownLength.load();
+      return m_stream_length;
     }
 
     virtual int64_t Position() const override
@@ -110,10 +105,11 @@ namespace timeshift {
 
     int64_t Seek(int64_t position, int whence) override;
 
-    void TSBTimerProc();
+
     bool RollingFileOpen();
 
-    bool GetStreamInfo();
+    virtual bool GetStreamInfo();
+
     virtual PVR_ERROR GetStreamTimes(PVR_STREAM_TIMES *) override;
   };
 }

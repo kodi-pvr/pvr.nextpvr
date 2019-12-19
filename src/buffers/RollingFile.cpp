@@ -20,19 +20,13 @@
 
 #include "RollingFile.h"
 #include  "../BackendRequest.h"
-#include "kodi/Filesystem.h"
+
 #include <regex>
 #include <mutex>
 #include "tinyxml.h"
+#include "util/XMLUtils.h"
 
-
-#define HTTP_OK 200
-
-#if defined(TARGET_WINDOWS)
-#define SLEEP(ms) Sleep(ms)
-#else
-#define SLEEP(ms) usleep(ms*1000)
-#endif
+//#define TESTURL "d:/downloads/abc.ts"
 
 using namespace timeshift;
 
@@ -40,15 +34,18 @@ using namespace timeshift;
 
 bool RollingFile::Open(const std::string inputUrl)
 {
-  m_sd.isPaused = false;
-  m_sd.lastPauseAdjust = 0;
-  m_sd.lastBufferTime = 0;
-  m_sd.lastKnownLength.store(0);
+  m_isPaused = false;
+  m_nextLease = 0;
+  m_nextStreamInfo = 0;
+  m_nextRoll = 0;
+
+  m_stream_duration = 0;
+  m_bytesPerSecond = 0;
   m_activeFilename.clear();
-  m_isRecording.store(true);
+  m_isLive = true;
+
   slipFiles.clear();
   std::stringstream ss;
-  m_nextRoll = 0;
 
   if (g_NowPlaying == TV)
   {
@@ -59,7 +56,7 @@ bool RollingFile::Open(const std::string inputUrl)
 
 
   XBMC->Log(LOG_DEBUG, "%s:%d: %d", __FUNCTION__, __LINE__, m_chunkSize);
-  ss << inputUrl << "|connection-timeout=" << 15;
+  ss << inputUrl ;//<< "|connection-timeout=" << 15;
   if (ss.str().find("&epgmode=true") != std::string::npos)
   {
     m_isEpgBased = true;
@@ -71,7 +68,7 @@ bool RollingFile::Open(const std::string inputUrl)
   m_slipHandle = XBMC->OpenFile(ss.str().c_str(), READ_NO_CACHE );
   if (m_slipHandle == nullptr)
   {
-    XBMC->Log(LOG_ERROR,"Could not open slip file");
+    XBMC->Log(LOG_ERROR,"Could not open slipHandle file");
     return false;
   }
   int waitTime = 0;
@@ -92,19 +89,20 @@ bool RollingFile::Open(const std::string inputUrl)
 
   if ( !RollingFile::GetStreamInfo())
   {
-    XBMC->Log(LOG_ERROR,"Could not read slip file");
+    XBMC->Log(LOG_ERROR,"Could not read rolling file");
     return false;
   }
-  m_rollingBegin = m_slipStart = time(nullptr);
+  m_rollingStartSeconds = m_streamStart = time(nullptr);
   XBMC->Log(LOG_DEBUG, "RollingFile::Open in Rolling File Mode: %d", m_isEpgBased);
   m_activeFilename = slipFiles.back().filename;
   m_activeLength = -1;
-  m_tsbThread = std::thread([this]()
+  m_isLeaseRunning = true;
+  m_leaseThread = std::thread([this]()
   {
-    TSBTimerProc();
+    LeaseWorker();
   });
 
-  while (m_sd.tsbStart.load() < waitTime)
+  while (m_stream_length < waitTime)
   {
     SLEEP(500);
     RollingFile::GetStreamInfo();
@@ -126,7 +124,7 @@ bool RollingFile::RollingFileOpen()
   #if defined(TESTURL)
     strcpy(strURL,TESTURL);
   #else
-    snprintf(strURL,sizeof(strURL),"http://%s:%d/stream?f=%s&sid=%s", g_szHostname.c_str(), g_iPort, UriEncode(m_activeFilename).c_str(), NextPVR::m_backEnd->getSID());
+    snprintf(strURL,sizeof(strURL),"http://%s:%d/stream?f=%s&mode=http&sid=%s", g_szHostname.c_str(), g_iPort, UriEncode(m_activeFilename).c_str(), NextPVR::m_backEnd->getSID());
     if (g_NowPlaying == Radio && m_activeLength == -1)
     {
       // reduce buffer for radio when playing in-progess slip file
@@ -134,37 +132,6 @@ bool RollingFile::RollingFileOpen()
     }
   #endif
   return RecordingBuffer::Open(strURL,recording);
-}
-
-void RollingFile::TSBTimerProc(void)
-{
-  while (m_slipHandle != nullptr)
-  {
-    time_t now = time(nullptr);
-    //XBMC->Log(LOG_DEBUG,"TSB %lld %lld %lld %lld",now,m_nextRoll, m_sd.lastPauseAdjust, m_sd.lastBufferTime  );
-    if ( m_sd.lastPauseAdjust <= now )
-    {
-      std::this_thread::yield();
-      std::unique_lock<std::mutex> lock(m_mutex);
-      std::string response;
-      if (NextPVR::m_backEnd->DoRequest("/service?method=channel.transcode.lease", response) == HTTP_OK)
-      {
-        m_sd.lastPauseAdjust = now + 7;
-      }
-      else
-      {
-        XBMC->Log(LOG_ERROR, "channel.transcode.lease failed %lld", m_sd.lastPauseAdjust );
-        m_sd.lastPauseAdjust = now + 1;
-      }
-    }
-    if (m_sd.lastBufferTime <= now || m_nextRoll <= now)
-    {
-      std::this_thread::yield();
-      std::unique_lock<std::mutex> lock(m_mutex);
-      RollingFile::GetStreamInfo();
-    }
-    SLEEP(1000);
-  }
 }
 
 bool RollingFile::GetStreamInfo()
@@ -175,16 +142,17 @@ bool RollingFile::GetStreamInfo()
     XML_PARSE,
     HTTP_ERROR
   };
-  int64_t  length;
+  int64_t  stream_length;
   int64_t duration;
-  int complete;
+  bool complete;
   infoReturns infoReturn;
   infoReturn = HTTP_ERROR;
   std::string response;
+
   if (m_nextRoll == LLONG_MAX)
   {
     XBMC->Log(LOG_ERROR, "NextPVR not updating completed rolling file");
-    return true;
+    return ( m_stream_length != 0 );
   }
   if (NextPVR::m_backEnd->DoRequest("/services/service?method=channel.stream.info", response) == HTTP_OK)
   {
@@ -194,33 +162,34 @@ bool RollingFile::GetStreamInfo()
       TiXmlElement* filesNode = doc.FirstChildElement("Files");
       if (filesNode != NULL)
       {
-        length = strtoll(filesNode->FirstChildElement("Length")->GetText(),nullptr,0);
+        stream_length = strtoll(filesNode->FirstChildElement("Length")->GetText(),nullptr,0);
         duration = strtoll(filesNode->FirstChildElement("Duration")->GetText(),nullptr,0);
-        m_sd.tsbStart.store(duration/1000);
-        complete = atoi(filesNode->FirstChildElement("Complete")->GetText());
-        XBMC->Log(LOG_DEBUG,"channel.stream.info %lld %lld %d %d",length, duration,complete, m_sd.iBytesPerSecond);
-        if (complete == 1)
+        XMLUtils::GetBoolean(filesNode,"Complete",complete);
+        XBMC->Log(LOG_DEBUG,"channel.stream.info %lld %lld %d %d",stream_length, duration,complete, m_bytesPerSecond.load());
+        if (complete == true)
         {
           if ( slipFiles.empty() )
           {
             return false;
           }
-          m_sd.lastKnownLength.store(length);
-          slipFiles.back().length = length - slipFiles.back().offset;
-          m_sd.lastBufferTime = m_nextRoll = LLONG_MAX;
+          m_stream_length = stream_length-500000;
+          slipFiles.back().length = stream_length - slipFiles.back().offset;
+          m_nextStreamInfo = m_nextRoll = LLONG_MAX;
           return true;
         }
 
         infoReturn = OK;
         if (duration!=0)
         {
-          m_sd.iBytesPerSecond = length/duration * 1000;
+          m_bytesPerSecond = stream_length/duration * 1000;
         }
-        m_sd.lastKnownLength.store(length);
+        m_stream_length = stream_length;
+        m_stream_duration = duration/1000;
         TiXmlElement* pFileNode;
         for( pFileNode = filesNode->FirstChildElement("File"); pFileNode; pFileNode=pFileNode->NextSiblingElement("File"))
         {
           int64_t offset = strtoll(pFileNode->Attribute("offset"),nullptr,0);
+
           if (!slipFiles.empty())
           {
             if ( slipFiles.back().offset == offset)
@@ -230,6 +199,15 @@ bool RollingFile::GetStreamInfo()
               if (now >= m_nextRoll)
               {
                 m_nextRoll = now + 1;
+              }
+              if (slipFiles.size() == 4)
+              {
+                slipFiles.front().offset = slipFiles.front().offset + stream_length - offset;
+                if (!m_isEpgBased)
+                {
+                  duration = slipFiles.front().seconds - duration;
+                  m_rollingStartSeconds = now - g_timeShiftBufferSeconds;
+                }
               }
               break;
             }
@@ -247,6 +225,7 @@ bool RollingFile::GetStreamInfo()
           newFile.filename = pFileNode->GetText();
           newFile.offset =  offset;
           newFile.length = -1;
+          newFile.seconds = time(nullptr);
           slipFiles.push_back(newFile);
           if (m_isEpgBased)
           {
@@ -282,11 +261,21 @@ bool RollingFile::GetStreamInfo()
           if (!m_isEpgBased)
           {
             m_nextRoll = time(nullptr) + g_timeShiftBufferSeconds/3 - 3 + g_ServerTimeOffset;
-            if (slipFiles.size() == 5)
+          }
+          if (slipFiles.size() == 5)
+          {
+            time_t slipDuration = slipFiles.front().seconds;
+            slipFiles.pop_front();
+            if (m_isEpgBased)
             {
-              slipFiles.pop_front();
-              m_rollingBegin += g_timeShiftBufferSeconds/3;
+              slipDuration = slipFiles.front().seconds - slipDuration;
+              m_rollingStartSeconds += slipDuration;
             }
+            else
+            {
+              m_rollingStartSeconds = time(nullptr) - g_timeShiftBufferSeconds;
+            }
+
           }
           for (auto File : slipFiles )
           {
@@ -301,21 +290,21 @@ bool RollingFile::GetStreamInfo()
   if (infoReturn != OK)
   {
     XBMC->Log(LOG_ERROR, "NextPVR not updating rolling file %d", infoReturn );
-    m_sd.lastBufferTime = time(nullptr) + 1;
+    m_nextStreamInfo = time(nullptr) + 1;
     return false;
   }
-  m_sd.lastBufferTime = time(nullptr) + 10;
+  m_nextStreamInfo = time(nullptr) + 10;
   return true;
 }
 PVR_ERROR RollingFile::GetStreamTimes(PVR_STREAM_TIMES *stimes)
 {
-  if (m_isRecording.load()==false)
+  if (m_isLive == false)
     return RecordingBuffer::GetStreamTimes(stimes);
 
-  stimes->startTime = m_slipStart;
+  stimes->startTime = m_streamStart;
   stimes->ptsStart = 0;
-  stimes->ptsBegin = (m_rollingBegin - m_slipStart)  * DVD_TIME_BASE;
-  stimes->ptsEnd = (time(nullptr) - m_slipStart) * DVD_TIME_BASE;
+  stimes->ptsBegin = (m_rollingStartSeconds - m_streamStart)  * DVD_TIME_BASE;
+  stimes->ptsEnd = (time(nullptr) - m_streamStart) * DVD_TIME_BASE;
   return PVR_ERROR_NO_ERROR;
 }
 
@@ -329,15 +318,17 @@ void RollingFile::Close()
     XBMC->Log(LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
     m_slipHandle = nullptr;
   }
-  if (m_tsbThread.joinable())
-    m_tsbThread.join();
+  m_isLeaseRunning = false;
+  if (m_leaseThread.joinable())
+    m_leaseThread.join();
 
   m_lastClose = time(nullptr);
 }
 int RollingFile::Read(byte *buffer, size_t length)
 {
-  int dataRead = (int) XBMC->ReadFile(m_inputHandle,buffer, length);
+  std::unique_lock<std::mutex> lock(m_mutex);
   bool foundFile = false;
+  int dataRead = (int) XBMC->ReadFile(m_inputHandle,buffer, length);
   if (dataRead == 0)
   {
     RollingFile::GetStreamInfo();
@@ -374,7 +365,7 @@ int RollingFile::Read(byte *buffer, size_t length)
     }
     else
     {
-      while( XBMC->GetFilePosition(m_inputHandle) == Length())
+      while( XBMC->GetFilePosition(m_inputHandle) == XBMC->GetFileLength(m_inputHandle))
       {
         RollingFile::GetStreamInfo();
         if (m_nextRoll == LLONG_MAX)
@@ -382,6 +373,7 @@ int RollingFile::Read(byte *buffer, size_t length)
           XBMC->Log(LOG_DEBUG, "should exit %s:%d: %lld %lld %lld", __FUNCTION__, __LINE__,Length(),  XBMC->GetFileLength(m_inputHandle) ,XBMC->GetFilePosition(m_inputHandle));
           return 0;
         }
+        XBMC->Log(LOG_DEBUG, "should exit %s:%d: %lld %lld %lld", __FUNCTION__, __LINE__,Length(),  XBMC->GetFileLength(m_inputHandle) ,XBMC->GetFilePosition(m_inputHandle));
         SLEEP(200);
       }
     }
@@ -399,11 +391,7 @@ int64_t RollingFile::Seek(int64_t position, int whence)
   slipFile prevFile;
   int64_t adjust;
   RollingFile::GetStreamInfo();
-  if (!m_isEpgBased)
-  {
-    // catch deleted files
-    prevFile = slipFiles.front();
-  }
+  prevFile = slipFiles.front();
   if (slipFiles.back().offset <= position)
   {
     // seek on head
@@ -444,6 +432,7 @@ int64_t RollingFile::Seek(int64_t position, int whence)
   {
     adjust = position;
   }
-  XBMC->Log(LOG_DEBUG, "%s:%d: %lld %d", __FUNCTION__, __LINE__, position, adjust);
-  return RecordingBuffer::Seek(position - adjust,whence);
+  int64_t seekval = RecordingBuffer::Seek(position - adjust,whence);
+  XBMC->Log(LOG_DEBUG, "%s:%d: %lld %d %lld", __FUNCTION__, __LINE__, position, adjust, seekval);
+  return seekval;
 }
