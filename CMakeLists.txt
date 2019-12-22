@@ -21,6 +21,7 @@ set(NEXTPVR_SOURCES src/client.cpp
                     src/BackendRequest.cpp
                     src/buffers/Buffer.cpp
                     src/buffers/DummyBuffer.cpp
+                    src/buffers/ClientTimeshift.cpp
                     src/buffers/TimeshiftBuffer.cpp
                     src/buffers/RecordingBuffer.cpp
                     src/buffers/CircularBuffer.cpp
@@ -37,6 +38,7 @@ set(NEXTPVR_HEADERS src/client.h
                     src/BackendRequest.h
                     src/buffers/Buffer.h
                     src/buffers/DummyBuffer.h
+                    src/buffers/ClientTimeshift.h
                     src/buffers/TimeshiftBuffer.h
                     src/buffers/RecordingBuffer.h
                     src/buffers/CircularBuffer.h
@@ -44,6 +46,7 @@ set(NEXTPVR_HEADERS src/client.h
                     src/buffers/Seeker.h)
 
 SET(DEPLIBS ${p8-platform_LIBRARIES}
+            ${kodiplatform_LIBRARIES}
             ${TINYXML_LIBRARIES})
 if(WIN32)
   list(APPEND DEPLIBS ws2_32)

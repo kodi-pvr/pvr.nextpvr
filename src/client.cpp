@@ -309,12 +309,23 @@ ADDON_STATUS ADDON_SetSetting(const char *settingName, const void *settingValue)
   }
   else if (str == "livestreamingmethod")
   {
-      eStreamingMethod  tmp_livestreamingmethod = g_livestreamingmethod;
-      g_livestreamingmethod = *(eStreamingMethod*) settingValue;
-      if (g_livestreamingmethod != tmp_livestreamingmethod)
+    eStreamingMethod  setting_livestreamingmethod = *(eStreamingMethod*) settingValue;
+    if (g_livestreamingmethod == ClientTimeshift)
+    {
+        if (setting_livestreamingmethod == RealTime)
+        {
+            g_livestreamingmethod = RealTime;
+            return ADDON_STATUS_NEED_RESTART;
+        }
+    }
+    else
+    {
+      if (g_livestreamingmethod != setting_livestreamingmethod)
       {
+        g_livestreamingmethod = setting_livestreamingmethod;
         return ADDON_STATUS_NEED_RESTART;
       }
+    }
   }
   else if (str == "host_mac")
   {

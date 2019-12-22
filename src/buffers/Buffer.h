@@ -27,6 +27,16 @@
 #include <ctime>
 #include <atomic>
 #include "../client.h"
+#include <mutex>
+#include <thread>
+#include  "../BackendRequest.h"
+
+
+#if defined(TARGET_WINDOWS)
+#define SLEEP(ms) Sleep(ms)
+#else
+#define SLEEP(ms) usleep(ms*1000)
+#endif
 
 using namespace ADDON;
 
@@ -165,7 +175,25 @@ namespace timeshift {
       m_readTimeout = timeout;
     }
 
+    void Channel(int channel_id)
+    {
+      m_channel_id = channel_id;
+    }
+
   protected:
+
+    time_t m_nextRoll;
+    time_t m_nextLease;
+    time_t m_nextStreamInfo;
+    bool m_isLeaseRunning;
+    std::thread m_leaseThread;
+    int Lease();
+    void LeaseWorker();
+    virtual bool GetStreamInfo() {return true;}
+    bool m_complete;
+    mutable std::mutex m_mutex;
+
+
     const static int DEFAULT_READ_TIMEOUT;
 
     /**
@@ -194,5 +222,8 @@ namespace timeshift {
      * The time the buffer was created
      */
     time_t m_startTime;
+
+    int m_channel_id;
+
   };
 }

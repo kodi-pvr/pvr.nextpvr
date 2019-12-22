@@ -32,6 +32,7 @@
 #include "buffers/TimeshiftBuffer.h"
 #include "buffers/RecordingBuffer.h"
 #include "buffers/RollingFile.h"
+#include "buffers/ClientTimeshift.h"
 #include <map>
 
 #define SAFE_DELETE(p)       do { delete (p);     (p)=NULL; } while (0)
