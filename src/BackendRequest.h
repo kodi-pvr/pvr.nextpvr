@@ -26,6 +26,10 @@
 #include "client.h"
 #include "p8-platform/threads/mutex.h"
 
+#define HTTP_OK 200
+#define HTTP_NOTFOUND 404
+#define HTTP_BADREQUEST 400
+
 using namespace ADDON;
 
 namespace NextPVR

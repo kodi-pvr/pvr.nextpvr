@@ -24,6 +24,7 @@
 #include <memory>
 
 #include <p8-platform/util/StringUtils.h>
+#include "kodi/util/XMLUtils.h"
 
 #include "client.h"
 #include "pvrclient-nextpvr.h"
@@ -56,10 +57,6 @@ int g_ServerTimeOffset = 0;
 /* PVR client version (don't forget to update also the addon.xml and the Changelog.txt files) */
 #define PVRCLIENT_NEXTPVR_VERSION_STRING    "1.0.0.0"
 #define NEXTPVRC_MIN_VERSION_STRING         "3.6.0"
-
-#define HTTP_OK 200
-#define HTTP_NOTFOUND 404
-#define HTTP_BADREQUEST 400
 
 #define DEBUGGING_XML 0
 #if DEBUGGING_XML
@@ -281,15 +278,22 @@ bool cPVRClientNextPVR::Connect()
                   }
                   else if (version >= 50000)
                   {
-                     if ( g_livestreamingmethod != RealTime)
-                     {
-                       g_livestreamingmethod = RealTime;
-                      XBMC->QueueNotification(QUEUE_ERROR,"v5 timeshifting disabled");
-                     }
+                    if ( g_livestreamingmethod != RealTime)
+                    {
+                      if (version >= 50001)
+                      {
+                        g_livestreamingmethod = ClientTimeshift;
+                      }
+                      else
+                      {
+                        g_livestreamingmethod = RealTime;
+                        XBMC->QueueNotification(QUEUE_ERROR,"NextPVR v5.0.1+ required for timeshift");
+                      }
+                    }
                   }
                 }
                 TiXmlElement* liveTimeshiftNode = settingsDoc.RootElement()->FirstChildElement("LiveTimeshift");
-                if (liveTimeshiftNode != NULL && g_livestreamingmethod != RealTime)
+                if ( (liveTimeshiftNode != NULL && g_livestreamingmethod != RealTime) || g_livestreamingmethod == ClientTimeshift)
                 {
                   m_supportsLiveTimeshift = true;
                   g_timeShiftBufferSeconds = atoi(settingsDoc.RootElement()->FirstChildElement("SlipSeconds")->FirstChild()->Value());
@@ -300,11 +304,19 @@ bool cPVRClientNextPVR::Connect()
                     Sleep(2000);
                     g_livestreamingmethod = Timeshift;
                   }
-                  if (g_livestreamingmethod == RollingFile )
+                  if (g_livestreamingmethod != Timeshift )
                   {
-                    XBMC->Log(LOG_NOTICE, "Rolling File Based Buffering");
                     delete m_timeshiftBuffer;
-                    m_timeshiftBuffer = new timeshift::RollingFile();
+                    if (version < 50000 )
+                    {
+                      XBMC->Log(LOG_NOTICE, "Rolling File Based Buffering");
+                      m_timeshiftBuffer = new timeshift::RollingFile();
+                    }
+                    else
+                    {
+                      XBMC->Log(LOG_NOTICE, "Client Timeshift Based Buffering");
+                      m_timeshiftBuffer = new timeshift::ClientTimeShift();
+                    }
                   }
                   else
                   {
@@ -921,15 +933,23 @@ PVR_ERROR cPVRClientNextPVR::GetChannelGroups(ADDON_HANDLE handle, bool bRadio)
         memset(&tag, 0, sizeof(PVR_CHANNEL_GROUP));
         tag.bIsRadio  = false;
         tag.iPosition = 0; // groups default order, unused
-        strncpy(tag.strGroupName, pGroupNode->FirstChildElement("name")->FirstChild()->Value(), sizeof tag.strGroupName);
-
-        // tell XBMC about channel, ignoring "All Channels" since xbmc has an built in group with effectively the same function
-        if (strcmp(tag.strGroupName, "All Channels") != 0)
+        std::string group;
+        if ( XMLUtils::GetString(pGroupNode,"name",group) )
         {
-          PVR->TransferChannelGroup(handle, &tag);
+          // tell XBMC about channel, ignoring "All Channels" since xbmc has an built in group with effectively the same function
+          strcpy(tag.strGroupName,group.c_str());
+          if (strcmp(tag.strGroupName, "All Channels") != 0 && tag.strGroupName[0]!=0)
+          {
+            PVR->TransferChannelGroup(handle, &tag);
+          }
         }
       }
     }
+    else
+    {
+      XBMC->Log(LOG_DEBUG, "GetChannelGroupsAmount");
+    }
+
   }
   return PVR_ERROR_NO_ERROR;
 }
@@ -2119,6 +2139,12 @@ bool cPVRClientNextPVR::OpenLiveStream(const PVR_CHANNEL &channelinfo)
     sprintf(line, "http://%s:%d/live?channeloid=%d&client=XBMC-%s&epgmode=true", g_szHostname.c_str(), g_iPort, channelinfo.iUniqueId, m_sid);
     m_livePlayer = m_timeshiftBuffer;
   }
+  else if (g_livestreamingmethod == ClientTimeshift)
+  {
+    sprintf(line, "http://%s:%d/live?channeloid=%d&client=%s&sid=%s", g_szHostname.c_str(), g_iPort, channelinfo.iUniqueId, m_sid,m_sid);
+    m_livePlayer = m_timeshiftBuffer;
+    m_livePlayer->Channel(channelinfo.iUniqueId);
+  }
   else
   {
     sprintf(line, "http://%s:%d/live?channeloid=%d&client=XBMC-%s", g_szHostname.c_str(), g_iPort, channelinfo.iUniqueId, m_sid);
@@ -2225,7 +2251,7 @@ bool cPVRClientNextPVR::OpenRecordedStream(const PVR_RECORDING &recording)
   char line[1024];
   g_NowPlaying = Recording;
   strcpy(copyRecording.strDirectory,m_hostFilenames[recording.strRecordingId].c_str());
-  snprintf(line, sizeof(line), "http://%s:%d/live?recording=%s&client=XBMC", g_szHostname.c_str(), g_iPort, recording.strRecordingId);
+  snprintf(line, sizeof(line), "http://%s:%d/live?recording=%s&client=XBMC-%s", g_szHostname.c_str(), g_iPort, recording.strRecordingId, m_sid);
   return m_recordingBuffer->Open(line,copyRecording);
 }
 
@@ -2278,10 +2304,16 @@ bool cPVRClientNextPVR::IsTimeshifting()
 bool cPVRClientNextPVR::IsRealTimeStream()
 {
   LOG_API_CALL(__FUNCTION__);
+  bool retval;
   if (g_NowPlaying == Recording )
-    return false;
+  {
+    retval = m_recordingBuffer->IsRealTimeStream();
+  }
   else
-    return m_livePlayer->IsRealTimeStream();
+  {
+    retval = m_livePlayer->IsRealTimeStream();
+  }
+  return retval;
 }
 
 PVR_ERROR cPVRClientNextPVR::GetStreamTimes(PVR_STREAM_TIMES *stimes)

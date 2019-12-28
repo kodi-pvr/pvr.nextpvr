@@ -33,6 +33,8 @@ namespace timeshift {
   {
   private:
     int m_Duration;
+    bool m_buffering = false;
+    std::string m_recordingURL;
 
   public:
     RecordingBuffer() : Buffer() { m_Duration = 0; XBMC->Log(LOG_NOTICE, "RecordingBuffer created!"); }
@@ -58,7 +60,7 @@ namespace timeshift {
 
     virtual bool IsRealTimeStream() const override
     {
-      return m_isRecording.load();
+      return false;
     }
 
 
@@ -79,7 +81,9 @@ namespace timeshift {
 
     bool Open(const std::string inputUrl,const PVR_RECORDING &recording);
 
-    std::atomic<bool> m_isRecording;
+    std::atomic<bool> m_isLive;
+
+    // recording start time
     time_t m_recordingTime;
   };
 }

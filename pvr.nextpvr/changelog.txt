@@ -1,3 +1,10 @@
+v3.3.17
+- implement v5 timeshifting
+- improve playback of in progress recordings
+- added the sid to recordings
+- reintroduce XMLUtils makes the parsing code easier to read.
+- fixed bug passing empty group titles to Kodi (kodi bug)
+
 v3.3.16
 - Update build system version and cleanup
 - Fix package check for TinyXML

@@ -64,7 +64,7 @@ namespace timeshift {
       else
         m_sd.lastPauseAdjust = m_sd.pauseStart = 0;
     }
-    
+
     virtual bool CanSeekStream() const override
     {
       return true;
@@ -79,7 +79,7 @@ namespace timeshift {
     {
       return m_sd.lastKnownLength.load();
     }
-    
+
     virtual bool IsTimeshifting() const override
     {
       if (m_active)
@@ -95,7 +95,7 @@ namespace timeshift {
     const static int INPUT_READ_LENGTH;
     const static int WINDOW_SIZE;
     const static int BUFFER_BLOCKS;
-    
+
     NextPVR::Socket           *m_streamingclient;
 
     /**
@@ -103,10 +103,10 @@ namespace timeshift {
      * handle and writes it to the output handle
      */
     void ConsumeInput();
-    
+
     void TSBTimerProc();
 
-    
+
     bool WriteData(const byte *, unsigned int, uint64_t);
 
     /**
@@ -118,13 +118,13 @@ namespace timeshift {
      * Sends requests for blocks to backend.
      */
     void RequestBlocks(void);          // Acquires lock, calls internalRequestBlocks();
-    void internalRequestBlocks(void);  // Call when already holding lock. 
+    void internalRequestBlocks(void);  // Call when already holding lock.
 
     /**
      * Pull in incoming blocks.
      */
     uint32_t WatchForBlock(byte *, uint64_t *);
-    
+
     /**
      * The thread that reads from m_inputHandle and writes to the output
      * handles
@@ -140,7 +140,7 @@ namespace timeshift {
     /**
      * Protects m_output*Handle
      */
-    mutable std::mutex m_mutex;
+    // mutable std::mutex m_mutex moved to base class
 
     /**
      * Protects seek completion
@@ -161,7 +161,7 @@ namespace timeshift {
      * Signaled whenever seek processing is complete.
      */
     mutable std::condition_variable m_seeker;
-    
+
     /**
      * The current write position in the buffer file
      */
