@@ -38,6 +38,7 @@ bool RollingFile::Open(const std::string inputUrl)
   m_nextLease = 0;
   m_nextStreamInfo = 0;
   m_nextRoll = 0;
+  m_complete = false;
 
   m_stream_duration = 0;
   m_bytesPerSecond = 0;
@@ -144,7 +145,6 @@ bool RollingFile::GetStreamInfo()
   };
   int64_t  stream_length;
   int64_t duration;
-  bool complete;
   infoReturns infoReturn;
   infoReturn = HTTP_ERROR;
   std::string response;
@@ -164,9 +164,9 @@ bool RollingFile::GetStreamInfo()
       {
         stream_length = strtoll(filesNode->FirstChildElement("Length")->GetText(),nullptr,0);
         duration = strtoll(filesNode->FirstChildElement("Duration")->GetText(),nullptr,0);
-        XMLUtils::GetBoolean(filesNode,"Complete",complete);
-        XBMC->Log(LOG_DEBUG,"channel.stream.info %lld %lld %d %d",stream_length, duration,complete, m_bytesPerSecond.load());
-        if (complete == true)
+        XMLUtils::GetBoolean(filesNode,"Complete",m_complete);
+        XBMC->Log(LOG_DEBUG,"channel.stream.info %lld %lld %d %d",stream_length, duration,m_complete, m_bytesPerSecond.load());
+        if (m_complete == true)
         {
           if ( slipFiles.empty() )
           {
@@ -377,7 +377,7 @@ int RollingFile::Read(byte *buffer, size_t length)
         SLEEP(200);
       }
     }
-    XBMC->Log(LOG_DEBUG, "%s:%d: %lld %d %lld %lld", __FUNCTION__, __LINE__,length, dataRead, XBMC->GetFileLength(m_inputHandle) ,XBMC->GetFilePosition(m_inputHandle));
+    XBMC->Log(LOG_DEBUG, "%s:%d: %d %d %lld %lld", __FUNCTION__, __LINE__,length, dataRead, XBMC->GetFileLength(m_inputHandle) ,XBMC->GetFilePosition(m_inputHandle));
   }
   else if (dataRead < length)
   {
