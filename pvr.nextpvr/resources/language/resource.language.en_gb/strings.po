@@ -177,3 +177,15 @@ msgstr ""
 msgctxt "#30171"
 msgid "Repeating (advanced)"
 msgstr ""
+
+msgctxt "#30172"
+msgid "Live TV Stream"
+msgstr ""
+
+msgctxt "#30173"
+msgid "Resolution"
+msgstr ""
+
+msgctxt "#30174"
+msgid "Bitrate (Kbps)"
+msgstr ""

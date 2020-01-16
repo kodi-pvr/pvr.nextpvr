@@ -42,6 +42,8 @@ int              g_wol_timeout;
 bool             g_wol_enabled;
 bool             g_KodiLook;
 bool             g_eraseIcons = false;
+int              g_iResolution;
+int              g_iBitrate;
 
 /* Client member variables */
 ADDON_STATUS           m_CurStatus    = ADDON_STATUS_UNKNOWN;
@@ -186,25 +188,6 @@ void ADDON_ReadSettings(void)
     g_livestreamingmethod = DEFAULT_LIVE_STREAM;
   }
 
-  if (!XBMC->GetSetting("usetimeshift", &g_bUseTimeshift))
-  {
-    g_bUseTimeshift = false;
-  }
-
-  if (g_livestreamingmethod == DEFAULT_LIVE_STREAM)
-  {
-    /* Use obsolete setting "usetimeshift" from settings.xml when Real Time*/
-    if (!g_bUseTimeshift)
-    {
-      /* If setting is unknown fallback to defaults */
-      XBMC->Log(LOG_ERROR, "Couldn't get 'usetimeshift' setting,  continue as default");
-    }
-    else
-    {
-      g_livestreamingmethod = Timeshift;
-    }
-  }
-
   /* Read setting "guideartwork" from settings.xml */
   if (!XBMC->GetSetting("guideartwork", &g_bDownloadGuideArtwork))
   {
@@ -238,6 +221,19 @@ void ADDON_ReadSettings(void)
     g_eraseIcons = false;
   }
 
+  if (!XBMC->GetSetting("resolution", &buffer))
+  {
+    g_iResolution = 720;
+  }
+  else
+  {
+    g_iResolution = atoi(buffer);
+  }
+
+  if (!XBMC->GetSetting("bitrate", &g_iBitrate))
+  {
+    g_iBitrate = 1000;
+  }
 
   /* Log the current settings for debugging purposes */
   XBMC->Log(LOG_DEBUG, "settings: host='%s', port=%i, mac=%4.4s...", g_szHostname.c_str(), g_iPort, g_host_mac.c_str());
@@ -355,6 +351,23 @@ ADDON_STATUS ADDON_SetSetting(const char *settingName, const void *settingValue)
       return ADDON_STATUS_NEED_RESTART;
     }
   }
+  else if (str == "resolution")
+  {
+    if (g_iResolution != *(int*) settingValue)
+    {
+      g_iResolution = *(int*) settingValue;
+      return ADDON_STATUS_NEED_RESTART;
+    }
+  }
+  else if (str == "bitrate")
+  {
+    if (g_iBitrate != *(int*) settingValue)
+    {
+      g_iBitrate = *(int*) settingValue;
+      return ADDON_STATUS_NEED_RESTART;
+    }
+  }
+
 
   return ADDON_STATUS_OK;
 }

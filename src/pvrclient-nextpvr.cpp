@@ -167,6 +167,9 @@ cPVRClientNextPVR::~cPVRClientNextPVR()
   if (m_bConnected)
     Disconnect();
   SAFE_DELETE(m_tcpclient);
+  delete m_timeshiftBuffer;
+  delete m_recordingBuffer;
+  delete m_realTimeBuffer;
 }
 
 std::vector<std::string> cPVRClientNextPVR::split(const std::string& s, const std::string& delim, const bool keep_empty)
@@ -285,17 +288,31 @@ bool cPVRClientNextPVR::Connect()
                   {
                     if ( g_livestreamingmethod != RealTime)
                     {
-                      if (version >= 50001)
+                      if (g_livestreamingmethod == Transcoded)
+                      {
+                        delete m_timeshiftBuffer;
+                        m_timeshiftBuffer = new timeshift::TranscodedBuffer();
+                      }
+                      else if (version >= 50001)
                       {
                         g_livestreamingmethod = ClientTimeshift;
                       }
                       else
                       {
                         g_livestreamingmethod = RealTime;
-                        XBMC->QueueNotification(QUEUE_ERROR,"Upgrade to NextPVR version 5.0.1 or higher");
+                        XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30051), "5.0.1+");
                       }
                     }
                   }
+                  else
+                  {
+                    if (g_livestreamingmethod == Transcoded)
+                    {
+                        g_livestreamingmethod = RealTime;
+                        XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30051), "5");
+                    }
+                  }
+
                 }
                 TiXmlElement* liveTimeshiftNode = settingsDoc.RootElement()->FirstChildElement("LiveTimeshift");
                 if ( (liveTimeshiftNode != NULL && g_livestreamingmethod != RealTime) || g_livestreamingmethod == ClientTimeshift)
@@ -305,7 +322,7 @@ bool cPVRClientNextPVR::Connect()
                   XBMC->Log(LOG_NOTICE, "time shift buffer in seconds == %d\n", g_timeShiftBufferSeconds);
                   if (g_livestreamingmethod == RollingFile && version < 40204 )
                   {
-                    XBMC->QueueNotification(QUEUE_ERROR,"v4.2.4 required for Extended mode");
+                    XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30051), "4.2.5+");
                     Sleep(2000);
                     g_livestreamingmethod = Timeshift;
                   }
@@ -444,6 +461,15 @@ bool cPVRClientNextPVR::IsUp()
     else
     {
       m_lastRecordingUpdateTime = time(0);
+    }
+  }
+  else if (g_NowPlaying == Transcoding)
+  {
+    if ( m_livePlayer->IsRealTimeStream() == false)
+    {
+      //m_livePlayer->Close();
+      g_NowPlaying = NotPlaying;
+      m_livePlayer = nullptr;
     }
   }
   return m_bConnected;
@@ -854,7 +880,10 @@ PVR_ERROR cPVRClientNextPVR::GetChannels(ADDON_HANDLE handle, bool bRadio)
         {
           tag.bIsRadio = false;
           if (!IsChannelAPlugin(tag.iUniqueId))
-            PVR_STRCPY(tag.strInputFormat, "video/mp2t");
+            if (g_livestreamingmethod == Transcoded)
+              PVR_STRCPY(tag.strInputFormat, "application/x-mpegURL");
+            else
+              PVR_STRCPY(tag.strInputFormat, "video/MP2T");
         }
         if (bRadio != tag.bIsRadio)
           continue;
@@ -967,11 +996,38 @@ PVR_ERROR cPVRClientNextPVR::GetChannelGroups(ADDON_HANDLE handle, bool bRadio)
 
 PVR_ERROR cPVRClientNextPVR::GetChannelStreamProperties(const PVR_CHANNEL &channel, PVR_NAMED_VALUE *properties, unsigned int *iPropertiesCount)
 {
-  if (IsChannelAPlugin(channel.iUniqueId)!= 0)
+  LOG_API_CALL(__FUNCTION__);
+    XBMC->Log(LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
+  bool liveStream = IsChannelAPlugin(channel.iUniqueId);
+  if (liveStream || ( g_livestreamingmethod == Transcoded && !channel.bIsRadio) )
   {
-    strncpy(properties[0].strName, PVR_STREAM_PROPERTY_STREAMURL, sizeof(properties[0].strName) - 1);
-    strncpy(properties[0].strValue,m_liveStreams[channel.iUniqueId].c_str(), sizeof(properties[0].strValue) - 1);
+    strncpy(properties[0].strName, PVR_STREAM_PROPERTY_STREAMURL,sizeof(properties[0].strName) - 1);
+    if (liveStream)
+    {
+      strncpy(properties[0].strValue,m_liveStreams[channel.iUniqueId].c_str(), sizeof(properties[0].strValue) - 1);
+    }
+    else
+    {
+      char line[256];
+      if (m_livePlayer != nullptr)
+      {
+        m_livePlayer->Close();
+        g_NowPlaying = NotPlaying;
+        m_livePlayer = nullptr;
+      }
+      sprintf(line, "http://%s:%d/services/service?method=channel.transcode.m3u8&sid=%s", g_szHostname.c_str(), g_iPort,m_sid);
+      m_livePlayer = m_timeshiftBuffer;
+      m_livePlayer->Channel(channel.iUniqueId);
+      if (m_livePlayer->Open(line))
+      {
+        g_NowPlaying = Transcoding;
+      }
+      strncpy(properties[0].strValue,line, sizeof(properties[0].strValue) - 1);
+    }
     *iPropertiesCount = 1;
+    strcpy(properties[1].strName, PVR_STREAM_PROPERTY_ISREALTIMESTREAM);
+    strcpy(properties[1].strValue,"true");
+    *iPropertiesCount = 2;
     return PVR_ERROR_NO_ERROR;
   }
   return PVR_ERROR_NOT_IMPLEMENTED;
@@ -981,7 +1037,7 @@ PVR_ERROR cPVRClientNextPVR::GetChannelStreamProperties(const PVR_CHANNEL &chann
 bool cPVRClientNextPVR::IsChannelAPlugin(int uid)
 {
   if (m_liveStreams.count(uid)!= 0)
-    if (StringUtils::StartsWith(m_liveStreams[uid],"plugin:"))
+    if (StringUtils::StartsWith(m_liveStreams[uid],"plugin:") || StringUtils::EndsWithNoCase(m_liveStreams[uid],".m3u8"))
       return true;
 
   return false;
@@ -2297,6 +2353,10 @@ PVR_ERROR cPVRClientNextPVR::SignalStatus(PVR_SIGNAL_STATUS &signalStatus)
 {
   LOG_API_CALL(__FUNCTION__);
   // Not supported yet
+  if (g_NowPlaying == Transcoding)
+  {
+    m_livePlayer->Lease();
+  }
   return PVR_ERROR_NO_ERROR;
 }
 
@@ -2483,7 +2543,7 @@ bool cPVRClientNextPVR::SaveSettings(std::string name, std::string value)
   }
   else
   {
-    XBMC->Log(LOG_ERROR, "Error loading setting.xml %s", settings);
+    XBMC->Log(LOG_ERROR, "Error loading settings.xml %s", settings);
   }
   XBMC->FreeString(settings);
   return true;

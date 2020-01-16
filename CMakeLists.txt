@@ -21,6 +21,7 @@ set(NEXTPVR_SOURCES src/client.cpp
                     src/BackendRequest.cpp
                     src/buffers/Buffer.cpp
                     src/buffers/DummyBuffer.cpp
+                    src/buffers/TranscodedBuffer.cpp
                     src/buffers/ClientTimeshift.cpp
                     src/buffers/TimeshiftBuffer.cpp
                     src/buffers/RecordingBuffer.cpp
@@ -38,6 +39,7 @@ set(NEXTPVR_HEADERS src/client.h
                     src/BackendRequest.h
                     src/buffers/Buffer.h
                     src/buffers/DummyBuffer.h
+                    src/buffers/TranscodedBuffer.h
                     src/buffers/ClientTimeshift.h
                     src/buffers/TimeshiftBuffer.h
                     src/buffers/RecordingBuffer.h
