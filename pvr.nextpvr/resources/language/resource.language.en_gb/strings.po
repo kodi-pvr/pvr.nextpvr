@@ -183,9 +183,5 @@ msgid "Live TV Stream"
 msgstr ""
 
 msgctxt "#30173"
-msgid "Resolution"
-msgstr ""
-
-msgctxt "#30174"
-msgid "Bitrate (Kbps)"
+msgid "Streaming Profile"
 msgstr ""

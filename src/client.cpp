@@ -43,7 +43,6 @@ bool             g_wol_enabled;
 bool             g_KodiLook;
 bool             g_eraseIcons = false;
 int              g_iResolution;
-int              g_iBitrate;
 
 /* Client member variables */
 ADDON_STATUS           m_CurStatus    = ADDON_STATUS_UNKNOWN;
@@ -230,11 +229,6 @@ void ADDON_ReadSettings(void)
     g_iResolution = atoi(buffer);
   }
 
-  if (!XBMC->GetSetting("bitrate", &g_iBitrate))
-  {
-    g_iBitrate = 1000;
-  }
-
   /* Log the current settings for debugging purposes */
   XBMC->Log(LOG_DEBUG, "settings: host='%s', port=%i, mac=%4.4s...", g_szHostname.c_str(), g_iPort, g_host_mac.c_str());
 
@@ -356,14 +350,6 @@ ADDON_STATUS ADDON_SetSetting(const char *settingName, const void *settingValue)
     if (g_iResolution != *(int*) settingValue)
     {
       g_iResolution = *(int*) settingValue;
-      return ADDON_STATUS_NEED_RESTART;
-    }
-  }
-  else if (str == "bitrate")
-  {
-    if (g_iBitrate != *(int*) settingValue)
-    {
-      g_iBitrate = *(int*) settingValue;
       return ADDON_STATUS_NEED_RESTART;
     }
   }

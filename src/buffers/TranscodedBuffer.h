@@ -31,7 +31,7 @@ namespace timeshift {
   public:
     TranscodedBuffer() : DummyBuffer()
     {
-      m_profile << "&profile=" << g_iResolution << "p+-+" << g_iBitrate << "Kbps";
+      m_profile << "&profile=" << g_iResolution << "p";
       XBMC->Log(LOG_NOTICE, "TranscodedBuffer created! %s", m_profile.str().c_str());
     }
 

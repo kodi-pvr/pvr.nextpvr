@@ -69,7 +69,6 @@ extern int16_t          g_timeShiftBufferSeconds;
 extern eStreamingMethod g_livestreamingmethod;
 extern eNowPlaying g_NowPlaying;
 extern int              g_iResolution;
-extern int              g_iBitrate;
 
 extern ADDON::CHelper_libXBMC_addon *XBMC;
 extern CHelper_libXBMC_pvr          *PVR;

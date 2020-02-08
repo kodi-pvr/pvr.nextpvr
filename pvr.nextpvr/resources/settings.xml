@@ -11,8 +11,7 @@
   <category label="30041">
     <setting id="usetimeshift" type="bool" label="30003" default="false" visible="false" />
     <setting id="livestreamingmethod" type="enum" label="30172" values="Timeshift|Extended Timeshift|Real Time|Transcoded" default="2"/>
-    <setting id="resolution" label="30173" type="labelenum" visible="eq(-1,3)" values="1080|720|576|504|480|360" default="720"  />
-    <setting id="bitrate" label="30174" option="int" range="250,250,4000" type="slider" visible="eq(-2,3)" default="1000"  />
+    <setting id="resolution" label="30173" type="labelenum" visible="eq(-1,3)" values="1080|720|576|504|480|360|240|144" default="720"  />
     <setting id="chunklivetv" label="30167" option="int" range="16,16,96" type="slider" default="64"  />
     <setting id="chunkrecording" label="30168" option="int" range="16,16,96" type="slider"  default="32"  />
     <setting id="prebuffer" label="30162" option="int" range="0,1,15" type="slider" default="1"  />

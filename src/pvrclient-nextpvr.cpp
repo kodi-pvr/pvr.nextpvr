@@ -880,10 +880,7 @@ PVR_ERROR cPVRClientNextPVR::GetChannels(ADDON_HANDLE handle, bool bRadio)
         {
           tag.bIsRadio = false;
           if (!IsChannelAPlugin(tag.iUniqueId))
-            if (g_livestreamingmethod == Transcoded)
-              PVR_STRCPY(tag.strInputFormat, "application/x-mpegURL");
-            else
-              PVR_STRCPY(tag.strInputFormat, "video/MP2T");
+            PVR_STRCPY(tag.strInputFormat, "video/MP2T");
         }
         if (bRadio != tag.bIsRadio)
           continue;
@@ -1005,6 +1002,9 @@ PVR_ERROR cPVRClientNextPVR::GetChannelStreamProperties(const PVR_CHANNEL &chann
     if (liveStream)
     {
       strncpy(properties[0].strValue,m_liveStreams[channel.iUniqueId].c_str(), sizeof(properties[0].strValue) - 1);
+      strcpy(properties[1].strName, PVR_STREAM_PROPERTY_ISREALTIMESTREAM);
+      strcpy(properties[1].strValue,"true");
+      *iPropertiesCount = 2;
     }
     else
     {
@@ -1022,12 +1022,18 @@ PVR_ERROR cPVRClientNextPVR::GetChannelStreamProperties(const PVR_CHANNEL &chann
       {
         g_NowPlaying = Transcoding;
       }
+      else
+      {
+        XBMC->Log(LOG_ERROR, "Transcoding Error");
+        return PVR_ERROR_FAILED;
+      }
       strncpy(properties[0].strValue,line, sizeof(properties[0].strValue) - 1);
+      strcpy(properties[1].strName, PVR_STREAM_PROPERTY_ISREALTIMESTREAM);
+      strcpy(properties[1].strValue,"true");
+      strcpy(properties[2].strName, PVR_STREAM_PROPERTY_MIMETYPE );
+      strcpy(properties[2].strValue,"application/x-mpegURL");
+      *iPropertiesCount = 3;
     }
-    *iPropertiesCount = 1;
-    strcpy(properties[1].strName, PVR_STREAM_PROPERTY_ISREALTIMESTREAM);
-    strcpy(properties[1].strValue,"true");
-    *iPropertiesCount = 2;
     return PVR_ERROR_NO_ERROR;
   }
   return PVR_ERROR_NOT_IMPLEMENTED;
