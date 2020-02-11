@@ -1,5 +1,6 @@
 v4.3.0
 - implement v5 timeshifting
+- added v5 transcoded playback (not timeshifted)
 - improve playback of in progress recordings
 - added original air date as firstAired
 - live and new flags modify firstAired

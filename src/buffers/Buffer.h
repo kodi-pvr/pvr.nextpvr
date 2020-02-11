@@ -38,8 +38,6 @@
 #define SLEEP(ms) usleep(ms*1000)
 #endif
 
-using namespace ADDON;
-
 namespace timeshift {
 
   /**
@@ -180,6 +178,8 @@ namespace timeshift {
       m_channel_id = channel_id;
     }
 
+    virtual int Lease();
+
   protected:
 
     time_t m_nextRoll;
@@ -187,7 +187,6 @@ namespace timeshift {
     time_t m_nextStreamInfo;
     bool m_isLeaseRunning;
     std::thread m_leaseThread;
-    int Lease();
     void LeaseWorker();
     virtual bool GetStreamInfo() {return true;}
     bool m_complete;

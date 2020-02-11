@@ -200,7 +200,7 @@ bool ClientTimeShift::GetStreamInfo()
           }
           else
           {
-            XBMC->QueueNotification(QUEUE_INFO, "Tuner required.  Navigation disabled");
+            XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30053));
           }
         }
         XBMC->Log(LOG_DEBUG,"CT channel.stream.info %lld %lld %d %lld",m_stream_length.load(), stream_duration,m_complete, m_rollingStartSeconds.load());
