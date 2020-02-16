@@ -127,3 +127,35 @@ msgstr "Sadece yeni"
 msgctxt "#30161"
 msgid "All"
 msgstr "Hepsi"
+
+msgctxt "#30162"
+msgid "Pre-buffer time in seconds"
+msgstr "Ön tampon süresi saniye olarak"
+
+msgctxt "#30163"
+msgid "Enable Wake On LAN"
+msgstr "LAN'dan Uyandırma'yı etkinleştir"
+
+msgctxt "#30164"
+msgid "Wait for server after wake in seconds"
+msgstr "Sunucunun ardından bekle saniyeler içinde uyan"
+
+msgctxt "#30165"
+msgid "NextPVR server MAC address"
+msgstr "NextPVR sunucusu MAC adresi"
+
+msgctxt "#30166"
+msgid "Failed Recordings"
+msgstr "Başarısız Kayıtlar"
+
+msgctxt "#30167"
+msgid "Live TV Chunk Size"
+msgstr "Canlı TV Parça Boyutu"
+
+msgctxt "#30168"
+msgid "Recording Chunk Size"
+msgstr "Kayıt Parça Boyutu"
+
+msgctxt "#30169"
+msgid "Kodi Style Recordings"
+msgstr "Kodi Style Kayıtları"
