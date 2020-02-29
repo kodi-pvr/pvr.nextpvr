@@ -1,3 +1,6 @@
+v3.3.19
+- enable skipping while paused
+
 v3.3.18
 - fix uninitialized variable in Extended Timeshift
 
