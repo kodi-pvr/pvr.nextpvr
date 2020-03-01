@@ -103,7 +103,8 @@ bool ClientTimeShift::Open(const std::string inputUrl)
 
 void ClientTimeShift::Close()
 {
-  Buffer::Close();
+  if (m_active)
+    Buffer::Close();
   m_isLeaseRunning = false;
 
   if (m_leaseThread.joinable())
@@ -141,17 +142,14 @@ int64_t ClientTimeShift::Seek(int64_t position, int whence)
   XBMC->Log(LOG_DEBUG, "%s:%d: %lld %d %lld %d", __FUNCTION__, __LINE__, position, whence, m_stream_duration.load(), m_isPaused);
   if ( m_isPaused == true)
   {
-    // skip while paused
+    // skip while paused new restart position
     m_streamPosition = position;
   }
-  else
+  const std::string seekingInput = m_sourceURL + std::to_string(position ) + "-";
+  if ( Buffer::Open(seekingInput.c_str(), 0) == false)
   {
-    std::string seekingInput = m_sourceURL + std::to_string(position ) + "-";
-    if ( Buffer::Open(seekingInput.c_str(), 0) == false)
-    {
-      XBMC->Log(LOG_ERROR, "Could not open file on seek");
-      return  -1;
-    }
+    XBMC->Log(LOG_ERROR, "Could not open file on seek");
+    return  -1;
   }
   return position;
 }
@@ -200,7 +198,7 @@ bool ClientTimeShift::GetStreamInfo()
           }
           else
           {
-            XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30053));
+            XBMC->QueueNotification(QUEUE_INFO, "Tuner required.  Navigation disabled");
           }
         }
         XBMC->Log(LOG_DEBUG,"CT channel.stream.info %lld %lld %d %lld",m_stream_length.load(), stream_duration,m_complete, m_rollingStartSeconds.load());
