@@ -88,7 +88,7 @@ void Buffer::LeaseWorker(void)
     {
       std::this_thread::yield();
       std::unique_lock<std::mutex> lock(m_mutex);
-      int retval = Lease();
+      int retval = Buffer::Lease();
       if ( retval == HTTP_OK)
       {
         m_nextLease = now + 7;
@@ -96,7 +96,7 @@ void Buffer::LeaseWorker(void)
       else if (retval == HTTP_BADREQUEST)
       {
         complete = true;
-        XBMC->QueueNotification(QUEUE_INFO, "Tuner required for recording");
+        XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30053));
       }
       else
       {

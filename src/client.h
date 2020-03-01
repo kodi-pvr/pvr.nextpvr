@@ -32,7 +32,8 @@ enum eStreamingMethod
   Timeshift = 0,
   RollingFile = 1,
   RealTime = 2,
-  ClientTimeshift = 3
+  Transcoded = 3,
+  ClientTimeshift = 4
 };
 
 enum eNowPlaying
@@ -40,7 +41,8 @@ enum eNowPlaying
   NotPlaying = 0,
   TV = 1,
   Radio = 2,
-  Recording = 3
+  Recording = 3,
+  Transcoding
 };
 
 #define DEFAULT_HOST                  "127.0.0.1"
@@ -61,13 +63,12 @@ extern std::string      g_szPin;
 extern std::string      g_host_mac;
 extern int              g_wol_timeout;
 extern bool             g_wol_enabled;
-extern bool             g_bRadioEnabled;
-extern bool             g_bUseTimeshift;
 extern bool             g_KodiLook;
 extern bool             g_eraseIcons;
 extern int16_t          g_timeShiftBufferSeconds;
 extern eStreamingMethod g_livestreamingmethod;
 extern eNowPlaying g_NowPlaying;
+extern int              g_iResolution;
 
 extern ADDON::CHelper_libXBMC_addon *XBMC;
 extern CHelper_libXBMC_pvr          *PVR;

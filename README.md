@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/kodi-pvr/pvr.nextpvr.svg?branch=Matrix)](https://travis-ci.org/kodi-pvr/pvr.nextpvr/branches)
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/kodi-pvr/pvr.nextpvr?branch=Matrix&svg=true)](https://ci.appveyor.com/project/kodi-pvr/pvr-nextpvr?branch=Matrix)
+[![Build Status](https://dev.azure.com/teamkodi/kodi-pvr/_apis/build/status/kodi-pvr.pvr.nextpvr?branchName=Matrix)](https://dev.azure.com/teamkodi/kodi-pvr/_build/latest?definitionId=64&branchName=Matrix)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/5120/badge.svg)](https://scan.coverity.com/projects/5120)
 
 # NextPVR PVR

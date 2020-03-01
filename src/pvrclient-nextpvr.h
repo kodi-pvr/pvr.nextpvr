@@ -30,6 +30,7 @@
 #include "p8-platform/threads/threads.h"
 #include "tinyxml.h"
 #include "buffers/DummyBuffer.h"
+#include "buffers/TranscodedBuffer.h"
 #include "buffers/TimeshiftBuffer.h"
 #include "buffers/RecordingBuffer.h"
 #include "buffers/RollingFile.h"

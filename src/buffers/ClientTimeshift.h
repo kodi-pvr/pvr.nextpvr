@@ -25,7 +25,6 @@
 
 std::string UriEncode(const std::string sSrc);
 
-using namespace ADDON;
 namespace timeshift {
 
   class ClientTimeShift : public RollingFile

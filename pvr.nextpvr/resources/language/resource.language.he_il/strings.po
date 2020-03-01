@@ -127,3 +127,35 @@ msgstr "חדש בלבד"
 msgctxt "#30161"
 msgid "All"
 msgstr "הכל"
+
+msgctxt "#30162"
+msgid "Pre-buffer time in seconds"
+msgstr "זמן אגירת קדם בשניות"
+
+msgctxt "#30163"
+msgid "Enable Wake On LAN"
+msgstr "הפעלת השכמה דרך הרשת (WOL)"
+
+msgctxt "#30164"
+msgid "Wait for server after wake in seconds"
+msgstr "זמן ההמתנה לשרת לאחר ההשכמה בשניות"
+
+msgctxt "#30165"
+msgid "NextPVR server MAC address"
+msgstr "כתובת חומרה (MAC) של שרת ה־NextPVR"
+
+msgctxt "#30166"
+msgid "Failed Recordings"
+msgstr "ההקלטות נכשלו"
+
+msgctxt "#30167"
+msgid "Live TV Chunk Size"
+msgstr "גודל נתח שידורי טלוויזיה חיים"
+
+msgctxt "#30168"
+msgid "Recording Chunk Size"
+msgstr "גודל נתח הקלטה"
+
+msgctxt "#30169"
+msgid "Kodi Style Recordings"
+msgstr "הקלטות בסגנון Kodi"
