@@ -59,10 +59,8 @@ namespace timeshift {
     {
       if ((m_isPaused = bPause))
       {
-        // pause
+        // pause save restart position
         m_streamPosition = XBMC->GetFilePosition(m_inputHandle);
-        if (!m_complete)
-          Buffer::Close();
       }
       else
       {
