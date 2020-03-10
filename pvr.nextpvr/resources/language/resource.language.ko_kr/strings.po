@@ -159,3 +159,19 @@ msgstr "녹화 단위 데이터 크기"
 msgctxt "#30169"
 msgid "Kodi Style Recordings"
 msgstr "Kodi 스타일 녹화"
+
+msgctxt "#30170"
+msgid "Erase Channel Icons"
+msgstr "채널 아이콘 지움"
+
+msgctxt "#30171"
+msgid "Repeating (advanced)"
+msgstr "반복 (고급)"
+
+msgctxt "#30172"
+msgid "Live TV Stream"
+msgstr "라이브 TV 스트림"
+
+msgctxt "#30173"
+msgid "Streaming Profile"
+msgstr "스트리밍 프로필"

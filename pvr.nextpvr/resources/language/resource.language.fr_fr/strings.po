@@ -159,3 +159,19 @@ msgstr "Taille de bloc d'enregistrement"
 msgctxt "#30169"
 msgid "Kodi Style Recordings"
 msgstr "Enregistrements style Kodi"
+
+msgctxt "#30170"
+msgid "Erase Channel Icons"
+msgstr "Supprimer les icônes de chaînes"
+
+msgctxt "#30171"
+msgid "Repeating (advanced)"
+msgstr "Répétition (avancée)"
+
+msgctxt "#30172"
+msgid "Live TV Stream"
+msgstr "Flux TV en direct"
+
+msgctxt "#30173"
+msgid "Streaming Profile"
+msgstr "Profil de diffusion"

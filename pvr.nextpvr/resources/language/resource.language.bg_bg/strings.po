@@ -159,3 +159,19 @@ msgstr "Размер на частите при запис"
 msgctxt "#30169"
 msgid "Kodi Style Recordings"
 msgstr "Записи в стила на Kodi"
+
+msgctxt "#30170"
+msgid "Erase Channel Icons"
+msgstr "Изтриване на иконките на каналите"
+
+msgctxt "#30171"
+msgid "Repeating (advanced)"
+msgstr "Повтаряемо (за напреднали)"
+
+msgctxt "#30172"
+msgid "Live TV Stream"
+msgstr "Поток на ТВ на живо"
+
+msgctxt "#30173"
+msgid "Streaming Profile"
+msgstr "Профил за поточно излъчване"

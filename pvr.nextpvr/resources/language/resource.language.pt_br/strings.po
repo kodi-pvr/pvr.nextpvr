@@ -159,3 +159,19 @@ msgstr "Tamanho do pacote de gravação"
 msgctxt "#30169"
 msgid "Kodi Style Recordings"
 msgstr "Gravações ao estilo do Kodi"
+
+msgctxt "#30170"
+msgid "Erase Channel Icons"
+msgstr "Excluir Ícones dos Canais"
+
+msgctxt "#30171"
+msgid "Repeating (advanced)"
+msgstr "Repetição (avançado)"
+
+msgctxt "#30172"
+msgid "Live TV Stream"
+msgstr "Stream de TV Ao Vivo"
+
+msgctxt "#30173"
+msgid "Streaming Profile"
+msgstr "Perfil de Streaming"

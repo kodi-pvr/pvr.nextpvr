@@ -127,3 +127,47 @@ msgstr "Vain uudet"
 msgctxt "#30161"
 msgid "All"
 msgstr "Kaikki"
+
+msgctxt "#30162"
+msgid "Pre-buffer time in seconds"
+msgstr "Esipuskuroinnin koko sekunteina"
+
+msgctxt "#30163"
+msgid "Enable Wake On LAN"
+msgstr "Käytä Wake On LAN -toimintoa"
+
+msgctxt "#30164"
+msgid "Wait for server after wake in seconds"
+msgstr "Odotusaika palvelimen vastaukselle herätyksen jälkeen"
+
+msgctxt "#30165"
+msgid "NextPVR server MAC address"
+msgstr "NextPVR-palvelimen MAC-osoite"
+
+msgctxt "#30166"
+msgid "Failed Recordings"
+msgstr "Epäonnistuneet tallennukset"
+
+msgctxt "#30167"
+msgid "Live TV Chunk Size"
+msgstr "Tv-lähetyksen Chunk Size"
+
+msgctxt "#30168"
+msgid "Recording Chunk Size"
+msgstr "Tallenteiden Chunk Size"
+
+msgctxt "#30169"
+msgid "Kodi Style Recordings"
+msgstr "Kodi-tyyliset tallenteet"
+
+msgctxt "#30170"
+msgid "Erase Channel Icons"
+msgstr "Poista kanavalogot"
+
+msgctxt "#30171"
+msgid "Repeating (advanced)"
+msgstr "Toistuva (edistynyt)"
+
+msgctxt "#30173"
+msgid "Streaming Profile"
+msgstr "Suoratoistoprofiili"
