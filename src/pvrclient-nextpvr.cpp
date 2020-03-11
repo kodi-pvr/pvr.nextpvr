@@ -613,7 +613,7 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t
       TiXmlElement* pListingNode;
       for( pListingNode = listingsNode->FirstChildElement("l"); pListingNode; pListingNode=pListingNode->NextSiblingElement())
       {
-        memset(&broadcast, 0, sizeof(EPG_TAG));
+        broadcast = {};
 
         string title;
         string description;
@@ -676,35 +676,37 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t
         else
         {
           // genre type
-          broadcast.iGenreType = XmlGetInt(pListingNode,"genre_type");;
-          broadcast.iGenreSubType = XmlGetInt(pListingNode,"genre_subtype");;
+          broadcast.iGenreType = XmlGetInt(pListingNode,"genre_type");
+          broadcast.iGenreSubType = XmlGetInt(pListingNode,"genre_subtype");
         }
 
-        broadcast.iSeriesNumber = XmlGetInt(pListingNode,"season");;
-        broadcast.iEpisodeNumber = XmlGetInt(pListingNode,"episode");;
+        int value = 0;
+        XMLUtils::GetInt(pListingNode,"season",value);
+        if ( value == 0 )
+          broadcast.iSeriesNumber = EPG_TAG_INVALID_SERIES_EPISODE;
+        else
+          broadcast.iSeriesNumber = value;
+
+        value = 0;
+        XMLUtils::GetInt(pListingNode,"episode",value);
+        if ( value == 0 )
+          broadcast.iEpisodeNumber = EPG_TAG_INVALID_SERIES_EPISODE;
+        else
+          broadcast.iEpisodeNumber = value;
+
+        broadcast.iEpisodePartNumber = EPG_TAG_INVALID_SERIES_EPISODE;
 
         std::string original;
-        if (XMLUtils::GetString(pListingNode,"original",original))
-        {
-          int year, month ,day;
-          int count;
-          count = sscanf(original.c_str(), "%4d-%2d-%2d", &year, &month, &day);
-          if (count==3)
-          {
-            struct tm oad = {0};
-            oad.tm_year = year - 1900;
-            oad.tm_mon = month - 1;
-            oad.tm_mday = day;
-            oad.tm_hour = 12;
-            broadcast.firstAired = mktime(&oad);
-          }
-        }
-        // two hacks to set a different first aired date until Kodi supports additional flags
         original.clear();
-        XMLUtils::GetString(pListingNode,"significance",original);
-        if (original == "Live")
+        XMLUtils::GetString(pListingNode,"original",original);
+        broadcast.strFirstAired = original.c_str();
+
+        std::string significance;
+        significance.clear();
+        XMLUtils::GetString(pListingNode,"significance",significance);
+        if (significance == "Live")
         {
-          broadcast.firstAired = broadcast.startTime;
+          broadcast.iFlags = EPG_TAG_FLAG_IS_NEW;
         }
         else
         {
@@ -712,7 +714,7 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t
           if (XMLUtils::GetBoolean(pListingNode,"firstrun",firstrun))
           {
             if (firstrun)
-              broadcast.firstAired = broadcast.startTime;
+              broadcast.iFlags = EPG_TAG_FLAG_IS_NEW;
           }
         }
         PVR->TransferEpgEntry(handle, &broadcast);
@@ -1136,7 +1138,7 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
       TiXmlElement* pRecordingNode;
       for( pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode=pRecordingNode->NextSiblingElement())
       {
-        memset(&tag, 0, sizeof(PVR_RECORDING));
+       tag = {};
         if (UpdatePvrRecording(pRecordingNode, &tag))
         {
           recordingCount++;
@@ -1218,6 +1220,10 @@ bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_REC
 
   PVR_STRCPY(tag->strRecordingId, pRecordingNode->FirstChildElement("id")->FirstChild()->Value());
   PVR_STRCPY(tag->strTitle, pRecordingNode->FirstChildElement("name")->FirstChild()->Value());
+
+  tag->iSeriesNumber = PVR_RECORDING_INVALID_SERIES_EPISODE;
+  tag->iEpisodeNumber = PVR_RECORDING_INVALID_SERIES_EPISODE;
+
   if (pRecordingNode->FirstChildElement("subtitle") != NULL && pRecordingNode->FirstChildElement("subtitle")->FirstChild() != NULL)
   {
     if (g_KodiLook)
@@ -1250,6 +1256,11 @@ bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_REC
   else
   {
     tag->iChannelUid = PVR_CHANNEL_INVALID_UID;
+  }
+
+  if (pRecordingNode->FirstChildElement("channel") != NULL && pRecordingNode->FirstChildElement("channel")->FirstChild() != NULL)
+  {
+    PVR_STRCPY(tag->strChannelName,pRecordingNode->FirstChildElement("channel")->FirstChild()->Value());
   }
 
   if (pRecordingNode->FirstChildElement("file") != NULL && pRecordingNode->FirstChildElement("file")->FirstChild() != NULL)
@@ -1326,6 +1337,7 @@ void cPVRClientNextPVR::ParseNextPVRSubtitle( const char *episodeName, PVR_RECOR
     string strEpisodeName =  episodeName;
     std::regex base_regex("S(\\d\\d)E(\\d+) - ?(.+)?");
     std::smatch base_match;
+    // note NextPVR does not support S0 for specials
     if (std::regex_match(strEpisodeName , base_match, base_regex))
     {
       if (base_match.size() == 3 || base_match.size() == 4)
