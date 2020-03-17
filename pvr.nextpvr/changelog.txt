@@ -1,3 +1,16 @@
+v4.3.3
+- Update PVR API 6.2.0 - strFirstAired and EPG New flag
+- add channel name to recordings
+- default recording and EPG series/episode numbers to invalid
+
+v4.3.2
+- Updated language files from Transifex
+
+v4.3.1
+- Replace AppVeyor with Azure for test build (better performance)
+- Add p8-platform to addon depends instead of from kodi
+- enable skipping while paused
+
 v4.3.0
 - implement v5 timeshifting
 - added v5 transcoded playback (not timeshifted)
