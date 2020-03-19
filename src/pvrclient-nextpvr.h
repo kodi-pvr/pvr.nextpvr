@@ -201,6 +201,8 @@ private:
   std::map<std::string, std::string> m_hostFilenames;
   std::map<int, bool> m_channelTypes;  // returns isRadio
   std::map<int, std::string> m_liveStreams;
+  std::map<std::string,int> m_epgOidLookup;
+  bool                    m_showNew;
 
   void SendWakeOnLan();
   bool SaveSettings(std::string name, std::string value);

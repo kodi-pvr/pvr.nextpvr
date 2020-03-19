@@ -159,6 +159,10 @@ cPVRClientNextPVR::~cPVRClientNextPVR()
   delete m_timeshiftBuffer;
   delete m_recordingBuffer;
   delete m_realTimeBuffer;
+  m_epgOidLookup.clear();
+  m_hostFilenames.clear();
+  m_channelTypes.clear();
+  m_liveStreams.clear();
 }
 
 std::vector<std::string> cPVRClientNextPVR::split(const std::string& s, const std::string& delim, const bool keep_empty)
@@ -345,6 +349,10 @@ bool cPVRClientNextPVR::Connect()
                   m_iDefaultPrePadding = atoi(settingsDoc.RootElement()->FirstChildElement("PrePadding")->FirstChild()->Value());
                   m_iDefaultPostPadding = atoi( settingsDoc.RootElement()->FirstChildElement("PostPadding")->FirstChild()->Value());
                 }
+
+                m_showNew = false;
+                XMLUtils::GetBoolean(settingsDoc.RootElement(),"ShowNewInGuide",m_showNew);
+                XBMC->Log(LOG_NOTICE, "Show new %d",m_showNew);
 
                 if ( settingsDoc.RootElement()->FirstChildElement("RecordingDirectories") != NULL &&  settingsDoc.RootElement()->FirstChildElement("RecordingDirectories")->FirstChild() != NULL)
                 {
@@ -605,27 +613,22 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t
         broadcast = {};
 
         string title;
+        title.clear();
         string description;
+        description.clear();
         string subtitle;
+        subtitle.clear();
         XMLUtils::GetString(pListingNode,"name",title);
-        if ( ! XMLUtils::GetString(pListingNode,"description",description))
-          description = "";
+        XMLUtils::GetString(pListingNode,"description",description);
 
         if (XMLUtils::GetString(pListingNode,"subtitle",subtitle))
         {
-          if (description == subtitle + ":")
-          {
-            description.clear();
-          }
-          else if (StringUtils::StartsWith(description,subtitle + ": "))
+          if (description != subtitle + ":" && StringUtils::StartsWith(description,subtitle + ": "))
           {
             description = description.substr(subtitle.length()+2);
           }
         }
-        else
-        {
-          subtitle.clear();
-        }
+
         broadcast.iYear = XmlGetInt(pListingNode,"year");;
 
         string startTime, endTime;
@@ -633,12 +636,17 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t
         startTime.resize(10);
         XMLUtils::GetString(pListingNode,"end",endTime);
         endTime.resize(10);
-        broadcast.iUniqueBroadcastId = XmlGetInt(pListingNode,"id");
+
+        const std::string oidLookup(endTime + ":" + to_string(iChannelUid));
+
+        const int epgOid = XmlGetInt(pListingNode,"id");
+        m_epgOidLookup[oidLookup] = epgOid;
 
         broadcast.strTitle            = title.c_str();
         broadcast.strEpisodeName      = subtitle.c_str();
         broadcast.iUniqueChannelId    = iChannelUid;
         broadcast.startTime           = stol(startTime);
+        broadcast.iUniqueBroadcastId  = stoi(endTime);
         broadcast.endTime             = stol(endTime);
         broadcast.strPlotOutline      = NULL; //unused
         broadcast.strPlot             = description.c_str();
@@ -653,7 +661,7 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t
         artworkPath[0] = '\0';
         if (g_bDownloadGuideArtwork)
         {
-          snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=channel.show.artwork&sid=%s&event_id=%d", g_szHostname.c_str(), g_iPort, m_sid, broadcast.iUniqueBroadcastId);
+          snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=channel.show.artwork&sid=%s&event_id=%d", g_szHostname.c_str(), g_iPort, m_sid, epgOid);
           broadcast.strIconPath         = artworkPath;
         }
         std::string sGenre;
@@ -697,7 +705,8 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t
         {
           broadcast.iFlags = EPG_TAG_FLAG_IS_NEW;
         }
-        else
+
+        if (m_showNew)
         {
           bool firstrun;
           if (XMLUtils::GetBoolean(pListingNode,"firstrun",firstrun))
@@ -1190,20 +1199,15 @@ bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_REC
      XBMC->Log(LOG_ERROR, "Unknown status %s",status.c_str());
      return false;
   }
-  if (status == "Recording")
+
+  if (status == "Recording" || status == "Pending"  )
   {
     if (pRecordingNode->FirstChildElement("epg_event_oid"))
     {
-      // EPG Event ID is not valid on most older recordings
-      if (atoi(pRecordingNode->FirstChildElement("recurring_parent")->FirstChild()->Value()) != 0 && pRecordingNode->FirstChildElement("epg_event_oid") != NULL && pRecordingNode->FirstChildElement("epg_event_oid")->FirstChild() != NULL)
-      {
-        tag->iEpgEventId = atoi(pRecordingNode->FirstChildElement("epg_event_oid")->FirstChild()->Value());
-      }
-      else
-      {
-        // need check for older one offs
-        tag->iEpgEventId = atoi(pRecordingNode->FirstChildElement("epg_event_oid")->FirstChild()->Value());
-      }
+      // EPG Event ID is likely not valid on most older recordings so current or pending only
+      // Linked tags need to be on end time because recordingTime can change because of pre-padding
+
+      tag->iEpgEventId = tag->recordingTime + tag->iDuration;
     }
   }
 
@@ -2097,10 +2101,13 @@ PVR_ERROR cPVRClientNextPVR::AddTimer(const PVR_TIMER &timerinfo)
   else
     strcpy(preventDuplicates, "false");
 
-  std::string encodedName = UriEncode(timerinfo.strTitle);
-  std::string encodedKeyword = UriEncode(timerinfo.strEpgSearchString);
-  std::string days = GetDayString(timerinfo.iWeekdays);
-  std:string directory = UriEncode( m_recordingDirectories[timerinfo.iRecordingGroup]);
+  const std::string encodedName = UriEncode(timerinfo.strTitle);
+  const std::string encodedKeyword = UriEncode(timerinfo.strEpgSearchString);
+  const std::string days = GetDayString(timerinfo.iWeekdays);
+  const std::string directory = UriEncode( m_recordingDirectories[timerinfo.iRecordingGroup]);
+  const std::string oidKey = to_string(timerinfo.iEpgUid) + ":" + to_string(timerinfo.iClientChannelUid);
+  const int epgOid = m_epgOidLookup[oidKey];
+  XBMC->Log(LOG_DEBUG, "TIMER_%d %s",epgOid,oidKey.c_str());
   switch (timerinfo.iTimerType)
   {
   case TIMER_ONCE_MANUAL:
@@ -2122,7 +2129,7 @@ PVR_ERROR cPVRClientNextPVR::AddTimer(const PVR_TIMER &timerinfo)
     // build one-off recording request
     snprintf(request, sizeof(request), "/service?method=recording.save&recording_id=%d&event_id=%d&pre_padding=%d&post_padding=%d&directory_id=%s",
       timerinfo.iClientIndex,
-      timerinfo.iEpgUid,
+      epgOid,
       (int)timerinfo.iMarginStart,
       (int)timerinfo.iMarginEnd,
       directory.c_str());
@@ -2153,7 +2160,7 @@ PVR_ERROR cPVRClientNextPVR::AddTimer(const PVR_TIMER &timerinfo)
       // build recurring recording request
       snprintf(request, sizeof(request), "/service?method=recording.recurring.save&recurring_id=%d&event_id=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s&only_new=%s",
         timerinfo.iClientIndex,
-        timerinfo.iEpgUid,
+        epgOid,
         (int)timerinfo.iMaxRecordings,
         (int)timerinfo.iMarginStart,
         (int)timerinfo.iMarginEnd,
