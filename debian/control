@@ -2,8 +2,8 @@ Source: kodi-pvr-nextpvr
 Priority: extra
 Maintainer: Nobody <nobody@kodi.tv>
 Build-Depends: debhelper (>= 9.0.0), cmake, libtinyxml-dev,
-               libp8-platform-dev, kodi-addon-dev
-Standards-Version: 3.9.4
+               libkodiplatform-dev (>= 16.0.0), kodi-addon-dev
+Standards-Version: 4.1.2
 Section: libs
 Homepage: http://www.nextpvr.com
 
