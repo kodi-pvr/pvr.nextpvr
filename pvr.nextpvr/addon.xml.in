@@ -169,5 +169,8 @@
     <disclaimer lang="zh_CN">此插件仍在开发中，请自行把握试用风险。</disclaimer>
     <disclaimer lang="zh_TW">這個程式尚在開發中。使用上您須自行考慮到可能有的風險。</disclaimer>
     <platform>@PLATFORM@</platform>
+    <assets>
+      <icon>icon.png</icon>
+    </assets>
   </extension>
 </addon>
