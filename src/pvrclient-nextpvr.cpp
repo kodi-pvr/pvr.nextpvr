@@ -613,11 +613,8 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t
         broadcast = {};
 
         string title;
-        title.clear();
         string description;
-        description.clear();
         string subtitle;
-        subtitle.clear();
         XMLUtils::GetString(pListingNode,"name",title);
         XMLUtils::GetString(pListingNode,"description",description);
 
@@ -694,25 +691,32 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t
         broadcast.iEpisodePartNumber = EPG_TAG_INVALID_SERIES_EPISODE;
 
         std::string original;
-        original.clear();
         XMLUtils::GetString(pListingNode,"original",original);
         broadcast.strFirstAired = original.c_str();
 
-        std::string significance;
-        significance.clear();
-        XMLUtils::GetString(pListingNode,"significance",significance);
-        if (significance == "Live")
+        bool firstrun;
+        if (XMLUtils::GetBoolean(pListingNode,"firstrun",firstrun))
         {
-          broadcast.iFlags = EPG_TAG_FLAG_IS_NEW;
-        }
-
-        if (m_showNew)
-        {
-          bool firstrun;
-          if (XMLUtils::GetBoolean(pListingNode,"firstrun",firstrun))
+          if (firstrun)
           {
-            if (firstrun)
+            std::string significance;
+            XMLUtils::GetString(pListingNode,"significance",significance);
+            if (significance == "Live")
+            {
+              broadcast.iFlags = EPG_TAG_FLAG_IS_LIVE;
+            }
+            else if (significance.find("Premiere") != string::npos)
+            {
+              broadcast.iFlags = EPG_TAG_FLAG_IS_PREMIERE;
+            }
+            else if (significance.find("Finale") != string::npos)
+            {
+              broadcast.iFlags = EPG_TAG_FLAG_IS_FINALE;
+            }
+            else if (m_showNew)
+            {
               broadcast.iFlags = EPG_TAG_FLAG_IS_NEW;
+            }
           }
         }
         PVR->TransferEpgEntry(handle, &broadcast);
@@ -1293,6 +1297,17 @@ bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_REC
     tag->iGenreType = EPG_GENRE_USE_STRING;
     tag->iGenreSubType = 0;
     PVR_STRCPY(tag->strGenreDescription,genres.c_str());
+  }
+
+  std::string significance;
+  XMLUtils::GetString(pRecordingNode,"significance",significance);
+  if (significance.find("Premiere") != string::npos)
+  {
+    tag->iFlags = PVR_RECORDING_FLAG_IS_PREMIERE;
+  }
+  else if (significance.find("Finale") != string::npos)
+  {
+    tag->iFlags = PVR_RECORDING_FLAG_IS_FINALE;
   }
 
   return true;

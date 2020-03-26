@@ -1,3 +1,8 @@
+v4.3.6
+- Cache EPG event ID to make system usable after daily update. Lose link to recordings.
+- Disable New flag from backend
+- Add Live, Premiere and Finale flags
+
 v4.3.5
 - PVR API 6.3.0
 
