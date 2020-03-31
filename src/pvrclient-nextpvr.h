@@ -12,7 +12,7 @@
 
 /* Master defines for client control */
 #include "kodi/xbmc_pvr_types.h"
-#include "kodi/kodi_vfs_types.h"
+#include "kodi/libXBMC_addon.h"
 
 /* Local includes */
 #include "Socket.h"
