@@ -271,7 +271,10 @@ class Socket
 
     bool is_valid() const;
 
-	bool read_ready();
+    bool SetSocketOption(int level, int option, char* setting, int value);
+    int BroadcastSendTo(int port, const char* msg, int len);
+    int BroadcastReceiveFrom(char* payload, int payloadLength);
+    bool read_ready();
 
   private:
 

@@ -7,6 +7,8 @@
  */
 
 #include  "BackendRequest.h"
+#include "Socket.h"
+#include <p8-platform/util/StringUtils.h>
 
 using namespace ADDON;
 
@@ -96,5 +98,54 @@ namespace NextPVR
       return true;
     }
     return false;
+  }
+  std::vector<std::string> Request::Discovery()
+  {
+    std::vector<std::string> foundAddress;
+    Socket* socket = new Socket(af_inet, pf_inet, sock_dgram, udp);
+    if (socket->create())
+    {
+      bool optResult;
+      int broadcast = 1;
+      if (optResult = socket->SetSocketOption(SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char*>(&broadcast), sizeof(broadcast)))
+        XBMC->Log(LOG_ERROR, "SO_REUSEADDR %d", optResult);
+      broadcast = 1;
+      if (optResult = socket->SetSocketOption(SOL_SOCKET, SO_BROADCAST, reinterpret_cast<char*>(&broadcast), sizeof(broadcast)))
+        XBMC->Log(LOG_ERROR, "SO_BROADCAST %d", optResult);
+#if defined(TARGET_WINDOWS)
+      DWORD timeout = 5 * 1000;
+      if (optResult = socket->SetSocketOption(SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>(&timeout), sizeof(timeout)))
+        XBMC->Log(LOG_ERROR, "WINDOWS SO_RCVTIMEO %d", optResult);
+#else
+      struct timeval tv;
+      tv.tv_sec = 5;
+      tv.tv_usec = 0;
+      if (optResult = socket->SetSocketOption( SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>(&tv), sizeof(tv)))
+        XBMC->Log(LOG_ERROR, "SO_RCVTIMEO %d", optResult);
+#endif
+
+      const char msg[] = "Kodi pvr.nextpvr broadcast";
+      if (socket->BroadcastSendTo(16891, msg, sizeof(msg)) > 0)
+      {
+        int sockResult;
+        do {
+          char response[512]{ 0 };
+          if (sockResult = socket->BroadcastReceiveFrom(response, 512) > 0)
+          {
+            std::vector<std::string> parseResponse = StringUtils::Split(response, ":");
+            if (parseResponse.size() >= 3)
+            {
+              XBMC->Log(LOG_INFO, "Broadcast received %s %s", parseResponse[0].c_str(), parseResponse[1].c_str());
+              if (foundAddress.empty())
+              {
+                foundAddress = parseResponse;
+              }
+            }
+          }
+        } while (sockResult > 0);
+      }
+    }
+    socket->close();
+    return foundAddress;
   }
 }
