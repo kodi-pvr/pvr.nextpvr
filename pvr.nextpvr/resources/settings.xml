@@ -1,25 +1,279 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<settings>
-  <!-- Connection -->
-  <category label="30040">
-    <setting id="host" type="text" label="30000" option="urlencoded" default="127.0.0.1" />
-    <setting id="port" type="number" label="30001" default="8866" />
-    <setting id="pin" type="text" label="30002" default="0000" />
-  </category>
-
-  <!-- advanced -->
-  <category label="30041">
-    <setting id="usetimeshift" type="bool" label="30003" default="false" visible="false" />
-    <setting id="livestreamingmethod" type="enum" label="30172" values="Timeshift|Extended Timeshift|Real Time|Transcoded" default="2"/>
-    <setting id="resolution" label="30173" type="labelenum" visible="eq(-1,3)" values="1080|720|576|504|480|360|240|144" default="720"  />
-    <setting id="chunklivetv" label="30167" option="int" range="16,16,96" type="slider" default="64"  />
-    <setting id="chunkrecording" label="30168" option="int" range="16,16,96" type="slider"  default="32"  />
-    <setting id="prebuffer" label="30162" option="int" range="0,1,15" type="slider" default="1"  />
-    <setting id="reseticons" label="30170" type="bool" default="false"/>
-    <setting id="wolenable" label="30163" type="bool" default="false"/>
-    <setting id="woltimeout" label="30164" option="int" range="5,5,45" type="slider" visible="eq(-1,true)" default="20"  />
-    <setting id="host_mac" label="30165" type="text" enable="false" default="00:00:00:00:00:00"  visible="eq(-2,true)" />
-    <setting id="guideartwork" type="bool" label="30004" default="false"/>
-    <setting id="kodilook" type="bool" label="30169" default="false"/>
-  </category>
+<?xml version="1.0" ?>
+<settings version="1">
+  <section id="pvr.nextpvr">
+    <category help="" id="connection" label="30040">
+      <group id="0">
+        <setting help="" id="legacy" label="30177" type="boolean">
+          <level>1</level>
+          <default>false</default>
+          <control type="toggle"/>
+        </setting>
+        <setting help="" id="host" label="30000" type="urlencodedstring">
+          <level>0</level>
+          <default>127.0.0.1</default>
+          <control format="urlencoded" type="edit">
+            <heading>30000</heading>
+          </control>
+        </setting>
+        <setting help="" id="port" label="30001" type="integer">
+          <level>0</level>
+          <default>8866</default>
+          <control format="integer" type="edit">
+            <heading>30001</heading>
+          </control>
+        </setting>
+        <setting help="" id="pin" label="30002" type="string">
+          <level>0</level>
+          <default>0000</default>
+          <control format="string" type="edit">
+            <heading>30002</heading>
+          </control>
+        </setting>
+      </group>
+      <group id="8">
+        <setting help="" id="wolenable" label="30163" type="boolean">
+          <level>2</level>
+          <default>false</default>
+          <control type="toggle"/>
+        </setting>
+        <setting help="" id="woltimeout" label="30164" type="integer">
+          <level>1</level>
+          <default>20</default>
+          <constraints>
+            <minimum>5</minimum>
+            <step>5</step>
+            <maximum>45</maximum>
+          </constraints>
+          <dependencies>
+            <dependency type="visible">
+              <condition operator="is" setting="wolenable">true</condition>
+            </dependency>
+          </dependencies>
+          <control format="integer" type="slider">
+            <popup>false</popup>
+          </control>
+        </setting>
+        <setting help="" id="host_mac" label="30165" type="string">
+          <level>1</level>
+          <default>00:00:00:00:00:00</default>
+          <dependencies>
+            <dependency type="visible">
+              <condition operator="is" setting="wolenable">true</condition>
+            </dependency>
+          </dependencies>
+          <control format="string" type="edit">
+            <heading>30165</heading>
+          </control>
+        </setting>
+        <setting help="" id="uselivestreams" label="30176" type="boolean">
+          <level>3</level>
+          <default>false</default>
+          <control type="toggle"/>
+        </setting>
+      </group>
+    </category>
+    <category help="" id="advanced" label="30174">
+      <group id="01">
+        <setting help="Timeshift" id="livestreamingmethod" label="30172" type="integer">
+          <level>0</level>
+          <default>2</default>
+          <constraints>
+            <options>
+              <option label="Timeshift">0</option>
+              <option label="Extended Timeshift">1</option>
+              <option label="Real Time">2</option>
+            </options>
+          </constraints>
+          <control format="string" type="spinner"/>
+          <dependencies>
+            <dependency type="visible">
+              <condition operator="is" setting="legacy">true</condition>
+            </dependency>
+          </dependencies>
+        </setting>
+        <setting help="" id="prebuffer" label="30162" type="integer">
+          <level>2</level>
+          <default>8</default>
+          <constraints>
+            <minimum>0</minimum>
+            <step>1</step>
+            <maximum>16</maximum>
+          </constraints>
+          <dependencies>
+            <dependency type="visible">
+              <condition operator="is" setting="livestreamingmethod">2</condition>
+              <condition operator="is" setting="legacy">true</condition>
+            </dependency>
+          </dependencies>
+          <control format="integer" type="slider">
+            <popup>false</popup>
+          </control>
+        </setting>
+      </group>
+      <group id="501">
+        <setting help="" id="livestreamingmethod5" label="30172" type="integer">
+          <level>0</level>
+          <default>-1</default>
+          <constraints>
+            <options>
+              <option label="Real Time">2</option>
+              <option label="Timeshift">0</option>
+              <option label="Transcoded">3</option>
+            </options>
+          </constraints>
+          <control format="string" type="spinner"/>
+          <dependencies>
+            <dependency type="visible">
+              <condition operator="is" setting="legacy">false</condition>
+            </dependency>
+          </dependencies>
+        </setting>
+        <setting help="" id="resolution" label="30173" type="string" parent="livestreamingmethod5">
+          <level>1</level>
+          <default>720</default>
+          <constraints>
+            <options>
+              <option>1080</option>
+              <option>720</option>
+              <option>576</option>
+              <option>504</option>
+              <option>480</option>
+              <option>360</option>
+              <option>240</option>
+              <option>144</option>
+            </options>
+          </constraints>
+          <dependencies>
+            <dependency type="visible">
+              <condition operator="is" setting="livestreamingmethod5">3</condition>
+              <condition operator="is" setting="legacy">false</condition>
+            </dependency>
+          </dependencies>
+          <control format="string" type="spinner"/>
+        </setting>
+        <setting help="" id="prebuffer5" label="30162" type="integer" parent="livestreamingmethod5">
+          <level>2</level>
+          <default>1</default>
+          <constraints>
+            <minimum>0</minimum>
+            <step>1</step>
+            <maximum>5</maximum>
+          </constraints>
+          <control format="integer" type="slider">
+            <popup>false</popup>
+          </control>
+          <dependencies>
+            <dependency type="visible">
+              <condition operator="is" setting="livestreamingmethod5">2</condition>
+              <condition operator="is" setting="legacy">false</condition>
+            </dependency>
+          </dependencies>
+        </setting>
+      </group>
+      <group id="10">
+      </group>
+      <group id="11">
+        <setting help="" id="chunklivetv" label="30167" type="integer">
+          <level>3</level>
+          <default>64</default>
+          <constraints>
+            <minimum>16</minimum>
+            <step>16</step>
+            <maximum>96</maximum>
+          </constraints>
+          <control format="integer" type="slider">
+            <popup>false</popup>
+          </control>
+        </setting>
+        <setting help="" id="chunkrecording" label="30168" type="integer">
+          <level>3</level>
+          <default>32</default>
+          <constraints>
+            <minimum>16</minimum>
+            <step>16</step>
+            <maximum>96</maximum>
+          </constraints>
+          <control format="integer" type="slider">
+            <popup>false</popup>
+          </control>
+        </setting>
+      </group>
+    </category>
+    <category help="" id="advanced5" label="30175">
+      <group id="12">
+        <setting help="30670" id="reseticons" label="30170" type="boolean">
+          <level>2</level>
+          <default>false</default>
+          <control type="toggle"/>
+          <dependencies>
+            <dependency type="visible">
+              <condition operator="is" setting="legacy">false</condition>
+            </dependency>
+          </dependencies>
+        </setting>
+        <setting help="" id="remoteaccess" label="30179" type="boolean">
+          <level>2</level>
+          <default>false</default>
+          <control type="toggle"/>
+          <dependencies>
+            <dependency type="visible">
+              <condition operator="is" setting="legacy">false</condition>
+              <condition operator="!is" setting="pin">0000</condition>
+            </dependency>
+          </dependencies>
+        </setting>
+        <setting help="30504" id="guideartwork" label="30004" type="boolean">
+          <level>1</level>
+          <default>false</default>
+          <control type="toggle"/>
+          <dependencies>
+            <dependency type="visible">
+              <condition operator="is" setting="legacy">false</condition>
+              <condition operator="is" setting="remoteaccess">false</condition>
+            </dependency>
+          </dependencies>
+        </setting>
+        <setting help="30504" id="guideartworkportrait" label="30181" type="boolean" parent="guideartwork">
+          <level>1</level>
+          <default>false</default>
+          <control type="toggle"/>
+          <dependencies>
+            <dependency type="visible">
+              <condition operator="is" setting="guideartwork">true</condition>
+            </dependency>
+          </dependencies>
+        </setting>
+        <setting help="30569" id="kodilook" label="30169" type="boolean">
+          <level>1</level>
+          <default>false</default>
+          <control type="toggle"/>
+        </setting>
+        <setting help="30680" id="flattenrecording" label="30180" type="boolean">
+          <level>2</level>
+          <default>false</default>
+          <control type="toggle"/>
+        </setting>
+        <setting help="30678" id="recordingsize" label="30178" type="boolean">
+          <level>3</level>
+          <default>false</default>
+          <control type="toggle"/>
+          <dependencies>
+            <dependency type="visible">
+              <condition operator="is" setting="legacy">false</condition>
+            </dependency>
+          </dependencies>
+        </setting>
+      </group>
+    </category>
+    <category help="" id="deadsettings" label="">
+      <!-- Avoid Kodi creating many log messages for obsolete user settings -->>
+      <group id="13">
+        <setting help="" id="usetimeshift" label="" type="boolean" option="hidden">
+          <level>4</level>
+          <default>false</default>
+          <control type="toggle"/>
+        </setting>
+      </group>
+    </category>
+  </section>
 </settings>
