@@ -1343,6 +1343,12 @@ bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_REC
     tag->iFlags = PVR_RECORDING_FLAG_IS_FINALE;
   }
 
+  bool played = false;
+  if (XMLUtils::GetBoolean(pRecordingNode, "played", played))
+  {
+    tag->iPlayCount = 1;
+  }
+
   return true;
 }
 

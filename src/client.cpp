@@ -383,6 +383,7 @@ PVR_ERROR GetCapabilities(PVR_ADDON_CAPABILITIES *pCapabilities)
   pCapabilities->bSupportsRecordingsRename   = false;
   pCapabilities->bSupportsRecordingsLifetimeChange = false;
   pCapabilities->bSupportsDescrambleInfo = false;
+  pCapabilities->bSupportsRecordingPlayCount = true;
 
   return PVR_ERROR_NO_ERROR;
 }
@@ -778,15 +779,18 @@ PVR_ERROR GetStreamReadChunkSize(int* chunksize)
   return PVR_ERROR_SERVER_ERROR;
 }
 
+PVR_ERROR SetRecordingPlayCount(const PVR_RECORDING& recording, int count)
+{
+  XBMC->Log(LOG_DEBUG, "Play count %s %d", recording.strTitle,count);
+  return PVR_ERROR_NO_ERROR;
+}
+
 /** UNUSED API FUNCTIONS */
 DemuxPacket* DemuxRead(void) { return NULL; }
 void DemuxAbort(void) {}
 void DemuxReset(void) {}
 void DemuxFlush(void) {}
 void FillBuffer(bool mode) {}
-
-PVR_ERROR SetRecordingPlayCount(const PVR_RECORDING &recording, int count) { return PVR_ERROR_NOT_IMPLEMENTED; }
-
 bool SeekTime(double,bool,double*) { return false; }
 void SetSpeed(int) {};
 PVR_ERROR UndeleteRecording(const PVR_RECORDING& recording) { return PVR_ERROR_NOT_IMPLEMENTED; }
