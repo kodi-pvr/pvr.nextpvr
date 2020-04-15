@@ -526,6 +526,29 @@ bool Socket::is_valid() const
   return (_sd != INVALID_SOCKET);
 }
 
+bool Socket::SetSocketOption(int level, int option, char* setting, int value)
+{
+  if (_sd == INVALID_SOCKET)
+  {
+    return false;
+  }
+  return setsockopt(_sd, level, option, setting, value);
+}
+
+int Socket::BroadcastSendTo(int port, const char* msg, int len)
+{
+  _sockaddr.sin_family = _family;
+  _sockaddr.sin_port = htons(port);
+  _sockaddr.sin_addr.s_addr = inet_addr("255.255.255.255");
+  return sendto(msg, len);
+}
+
+int Socket::BroadcastReceiveFrom(char* payload, int payloadLength)
+{
+  socklen_t len = sizeof(_sockaddr);
+  return recvfrom(payload, payloadLength, (sockaddr*)&_sockaddr, &len);
+}
+
 #if defined(TARGET_WINDOWS)
 bool Socket::set_non_blocking ( const bool b )
 {

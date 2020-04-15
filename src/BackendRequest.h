@@ -31,6 +31,7 @@ namespace NextPVR
       void setSID(char *newsid) {strcpy(m_sid,newsid);};
       bool PingBackend();
       const char *getSID() {return m_sid;};
+      std::vector<std::string> Discovery();
       Request(void){};
       virtual ~Request() {};
     private:
