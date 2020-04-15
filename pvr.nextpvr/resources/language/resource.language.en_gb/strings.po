@@ -242,3 +242,7 @@ msgstr ""
 msgctxt "#30181"
 msgid "TV guide portrait format"
 msgstr ""
+
+msgctxt "#30182"
+msgid "NextPVR server %s:%d"
+msgstr ""

@@ -45,7 +45,7 @@ int g_ServerTimeOffset = 0;
 
 /* PVR client version (don't forget to update also the addon.xml and the Changelog.txt files) */
 #define PVRCLIENT_NEXTPVR_VERSION_STRING    "1.0.0.0"
-#define NEXTPVRC_MIN_VERSION_STRING         "3.6.0"
+#define NEXTPVRC_MIN_VERSION_STRING         "4.2.4"
 
 #define DEBUGGING_XML 0
 #if DEBUGGING_XML
@@ -144,7 +144,7 @@ cPVRClientNextPVR::cPVRClientNextPVR()
   m_recordingBuffer = new timeshift::RecordingBuffer();
   m_realTimeBuffer = new timeshift::DummyBuffer();
   m_livePlayer = nullptr;
-
+  m_backendVersion = 0;
   CreateThread();
 }
 
@@ -191,17 +191,14 @@ std::vector<std::string> cPVRClientNextPVR::split(const std::string& s, const st
   return result;
 }
 
-bool cPVRClientNextPVR::Connect()
+ADDON_STATUS cPVRClientNextPVR::Connect()
 {
   string result;
   m_bConnected = false;
+  ADDON_STATUS status = ADDON_STATUS_UNKNOWN;
   // initiate session
   std::string response;
 
-  if (g_eraseIcons)
-  {
-    DeleteChannelIcons();
-  }
   SendWakeOnLan();
   if (DoRequest("/service?method=session.initiate&ver=1.0&device=xbmc", response) == HTTP_OK)
   {
@@ -251,126 +248,62 @@ bool cPVRClientNextPVR::Connect()
             std::string settings;
             if (DoRequest("/service?method=setting.list", settings) == HTTP_OK)
             {
-              // if it's a NextPVR server, check the verions. WinTV Extend servers work a slightly different way.
               TiXmlDocument settingsDoc;
-              int version = 0;
               if (settingsDoc.Parse(settings.c_str()) != NULL)
               {
                 //XBMC->Log(LOG_INFO, "Settings:\n");
                 //dump_to_log(&settingsDoc, 0);
-                TiXmlElement* versionNode = settingsDoc.RootElement()->FirstChildElement("NextPVRVersion");
-                if (versionNode == NULL)
-                {
-                  // WinTV Extend server
-                }
-                else
+                if (XMLUtils::GetInt(settingsDoc.RootElement(), "NextPVRVersion", m_backendVersion))
                 {
                   // NextPVR server
-                  version = atoi(versionNode->FirstChild()->Value());
-                  XBMC->Log(LOG_DEBUG, "NextPVR version: %d", version);
+                  XBMC->Log(LOG_INFO, "NextPVR version: %d", m_backendVersion);
 
                   // is the server new enough
-                  if (version < 30600)
+                  if (m_backendVersion < 40204)
                   {
-                    XBMC->Log(LOG_ERROR, "Your NextPVR version '%d' is too old. Please upgrade to '%s' or higher!", version, NEXTPVRC_MIN_VERSION_STRING);
+                    XBMC->Log(LOG_ERROR, "Your NextPVR version '%d' is too old. Please upgrade to '%s' or higher!", m_backendVersion, NEXTPVRC_MIN_VERSION_STRING);
                     XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30050));
                     XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30051), NEXTPVRC_MIN_VERSION_STRING);
-                    return false;
-                  }
-                  else if (version >= 50000)
-                  {
-                    if ( g_livestreamingmethod != RealTime)
-                    {
-                      if (g_livestreamingmethod == Transcoded)
-                      {
-                        delete m_timeshiftBuffer;
-                        m_timeshiftBuffer = new timeshift::TranscodedBuffer();
-                      }
-                      else if (version >= 50001)
-                      {
-                        g_livestreamingmethod = ClientTimeshift;
-                      }
-                      else
-                      {
-                        g_livestreamingmethod = RealTime;
-                        XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30051), "5.0.1+");
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (g_livestreamingmethod == Transcoded)
-                    {
-                        g_livestreamingmethod = RealTime;
-                        XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30051), "5");
-                    }
-                  }
-
-                }
-                TiXmlElement* liveTimeshiftNode = settingsDoc.RootElement()->FirstChildElement("LiveTimeshift");
-                if ( (liveTimeshiftNode != NULL && g_livestreamingmethod != RealTime) || g_livestreamingmethod == ClientTimeshift)
-                {
-                  m_supportsLiveTimeshift = true;
-                  g_timeShiftBufferSeconds = atoi(settingsDoc.RootElement()->FirstChildElement("SlipSeconds")->FirstChild()->Value());
-                  XBMC->Log(LOG_INFO, "time shift buffer in seconds == %d\n", g_timeShiftBufferSeconds);
-                  if (g_livestreamingmethod == RollingFile && version < 40204 )
-                  {
-                    XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30051), "4.2.5+");
-                    Sleep(2000);
-                    g_livestreamingmethod = Timeshift;
-                  }
-                  if (g_livestreamingmethod != Timeshift )
-                  {
-                    delete m_timeshiftBuffer;
-                    if (version < 50000 )
-                    {
-                      XBMC->Log(LOG_INFO, "Rolling File Based Buffering");
-                      m_timeshiftBuffer = new timeshift::RollingFile();
-                    }
-                    else
-                    {
-                      XBMC->Log(LOG_INFO, "Client Timeshift Based Buffering");
-                      m_timeshiftBuffer = new timeshift::ClientTimeShift();
-                    }
-                  }
-                  else
-                  {
-                    XBMC->Log(LOG_INFO, "Timeshift is true!!");
-                    delete m_timeshiftBuffer;
-                    m_timeshiftBuffer = new timeshift::TimeshiftBuffer();
+                    return ADDON_STATUS_PERMANENT_FAILURE;
                   }
                 }
 
                 // load padding defaults
                 m_iDefaultPrePadding = 1;
+                XMLUtils::GetInt(settingsDoc.RootElement(), "PrePadding", m_iDefaultPrePadding);
+
                 m_iDefaultPostPadding = 2;
-                if ( settingsDoc.RootElement()->FirstChildElement("PrePadding") != NULL &&  settingsDoc.RootElement()->FirstChildElement("PrePadding")->FirstChild() != NULL)
-                {
-                  m_iDefaultPrePadding = atoi(settingsDoc.RootElement()->FirstChildElement("PrePadding")->FirstChild()->Value());
-                  m_iDefaultPostPadding = atoi( settingsDoc.RootElement()->FirstChildElement("PostPadding")->FirstChild()->Value());
-                }
+                XMLUtils::GetInt(settingsDoc.RootElement(), "PostPadding", m_iDefaultPostPadding);
 
                 m_showNew = false;
                 XMLUtils::GetBoolean(settingsDoc.RootElement(),"ShowNewInGuide",m_showNew);
-                XBMC->Log(LOG_INFO, "Show new %d",m_showNew);
 
-                if ( settingsDoc.RootElement()->FirstChildElement("RecordingDirectories") != NULL &&  settingsDoc.RootElement()->FirstChildElement("RecordingDirectories")->FirstChild() != NULL)
+                std::string recordingDirectories;
+                if (XMLUtils::GetString(settingsDoc.RootElement(),"RecordingDirectories",recordingDirectories))
                 {
-                  vector<std::string> directories = split(settingsDoc.RootElement()->FirstChildElement("RecordingDirectories")->FirstChild()->Value(), ",", false);
+                  vector<std::string> directories = split(recordingDirectories, ",", false);
                   for (size_t i = 0; i < directories.size(); i++)
                   {
                     m_recordingDirectories.push_back(directories[i]);
                   }
                 }
-                if ( settingsDoc.RootElement()->FirstChildElement("TimeEpoch") != NULL)
+
+                int serverTimestamp;
+                if (XMLUtils::GetInt(settingsDoc.RootElement(), "TimeEpoch", serverTimestamp))
                 {
-                  g_ServerTimeOffset = time(nullptr) - atoi(settingsDoc.RootElement()->FirstChildElement("TimeEpoch")->FirstChild()->Value());
-                  XBMC->Log(LOG_INFO, "Server time offset in seconds: %d", g_ServerTimeOffset);
+                  g_ServerTimeOffset = time(nullptr) - serverTimestamp;
+                  XBMC->Log(LOG_NOTICE, "Server time offset in seconds: %d", g_ServerTimeOffset);
                 }
-                if ( settingsDoc.RootElement()->FirstChildElement("ServerMAC") != NULL && settingsDoc.RootElement()->FirstChildElement("ServerMAC")->FirstChild() != NULL)
+
+                if (XMLUtils::GetInt(settingsDoc.RootElement(), "SlipSeconds", g_timeShiftBufferSeconds))
+                  XBMC->Log(LOG_NOTICE, "time shift buffer in seconds == %d\n", g_timeShiftBufferSeconds);
+
+                std::string serverMac;
+                if (XMLUtils::GetString(settingsDoc.RootElement(),"ServerMAC",serverMac))
                 {
+                  // only available from Windows backend
                   char rawMAC[13];
-                  PVR_STRCPY(rawMAC,settingsDoc.RootElement()->FirstChildElement("ServerMAC")->FirstChild()->Value());
+                  PVR_STRCPY(rawMAC,serverMac.c_str());
                   if (strlen(rawMAC)==12)
                   {
                     char mac[18];
@@ -385,11 +318,13 @@ bool cPVRClientNextPVR::Connect()
                 }
               }
             }
+            // set additional options are based on the backend
+
+            SetVersionSpecificSettings();
 
             m_bConnected = true;
-            LoadLiveStreams();
             XBMC->Log(LOG_DEBUG, "session.login successful");
-            return true;
+            status = ADDON_STATUS_OK;
           }
         }
         else
@@ -397,6 +332,7 @@ bool cPVRClientNextPVR::Connect()
           XBMC->Log(LOG_DEBUG, "session.login failed");
           PVR->ConnectionStateChange( "Access denied", PVR_CONNECTION_STATE_ACCESS_DENIED, XBMC->GetLocalizedString(30052));
           m_bConnected = false;
+          status = ADDON_STATUS_LOST_CONNECTION;
         }
       }
     }
@@ -404,9 +340,10 @@ bool cPVRClientNextPVR::Connect()
   else
   {
     PVR->ConnectionStateChange( "Could not connect to server", PVR_CONNECTION_STATE_SERVER_UNREACHABLE ,NULL);
+    status = ADDON_STATUS_NEED_SETTINGS;
   }
 
-  return false;
+  return status;
 }
 
 void cPVRClientNextPVR::Disconnect()
@@ -414,6 +351,100 @@ void cPVRClientNextPVR::Disconnect()
   string result;
 
   m_bConnected = false;
+}
+
+void cPVRClientNextPVR::SetVersionSpecificSettings()
+{
+  char buffer[1024];
+  //NextPVR::m_backEnd->Discovery();
+  g_livestreamingmethod = DEFAULT_LIVE_STREAM;
+
+  if (XBMC->GetSetting("livestreamingmethod", &g_livestreamingmethod))
+  {
+    // has v4 setting
+    if (m_backendVersion < 50000)
+    {
+      // previous Matrix clients had a transcoding option
+      if (g_livestreamingmethod == eStreamingMethod::Transcoded)
+      {
+        g_livestreamingmethod = eStreamingMethod::RealTime;
+        XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30051), "5");
+      }
+    }
+    else  if (m_backendVersion < 50002)
+    {
+      g_livestreamingmethod = eStreamingMethod::RealTime;
+      XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30051), "5.0.2+");
+    }
+    else
+    {
+      // check for new v5 setting
+      if (!XBMC->GetSetting("livestreamingmethod5", &g_livestreamingmethod))
+        if (g_livestreamingmethod == RollingFile)
+          g_livestreamingmethod = eStreamingMethod::Timeshift;
+    }
+  }
+  if (g_livestreamingmethod != eStreamingMethod::RealTime)
+  {
+    if (m_backendVersion >= 50000)
+    {
+      delete m_timeshiftBuffer;
+      if (g_livestreamingmethod == eStreamingMethod::Transcoded)
+      {
+        m_timeshiftBuffer = new timeshift::TranscodedBuffer();
+      }
+      else
+      {
+        m_supportsLiveTimeshift = true;
+        g_livestreamingmethod = eStreamingMethod::ClientTimeshift;
+        XBMC->Log(LOG_NOTICE, "Client Timeshift Based Buffering");
+        m_timeshiftBuffer = new timeshift::ClientTimeShift();
+      }
+    }
+    else
+    {
+      delete m_timeshiftBuffer;
+      m_supportsLiveTimeshift = true;
+      if (g_livestreamingmethod != eStreamingMethod::Timeshift)
+      {
+        m_timeshiftBuffer = new timeshift::RollingFile();
+      }
+      else
+      {
+        XBMC->Log(LOG_NOTICE, "Timeshift is true");
+        m_timeshiftBuffer = new timeshift::TimeshiftBuffer();
+      }
+    }
+  }
+
+  if (m_backendVersion >= 50000)
+  {
+    g_sendSidWithMetadata = false;
+    bool remote;
+    if (g_szPin != "0000" && XBMC->GetSetting("remoteaccess", &remote))
+    {
+      if (remote)
+      {
+        g_bDownloadGuideArtwork = false;
+        g_sendSidWithMetadata = true;
+      }
+    }
+  }
+  else
+  {
+    g_sendSidWithMetadata = true;
+  }
+
+  bool liveStreams;
+  if (XBMC->GetSetting("uselivestreams", &liveStreams))
+    if (liveStreams)
+      LoadLiveStreams();
+
+  bool resetIcons;
+  if (XBMC->GetSetting("reseticons", &resetIcons))
+  if (resetIcons)
+      DeleteChannelIcons();
+
 }
 
 /* IsUp()
@@ -547,7 +578,7 @@ const char* cPVRClientNextPVR::GetBackendName(void)
 
   if (m_BackendName.length() == 0)
   {
-    m_BackendName = "NextPVR  (";
+    m_BackendName = "NextPVR (";
     m_BackendName += g_szHostname.c_str();
     m_BackendName += ")";
   }
@@ -555,13 +586,15 @@ const char* cPVRClientNextPVR::GetBackendName(void)
   return m_BackendName.c_str();
 }
 
-const char* cPVRClientNextPVR::GetBackendVersion(void)
+const char* cPVRClientNextPVR::GetBackendVersionString()
 {
   LOG_API_CALL(__FUNCTION__);
   if (!m_bConnected)
-    return "0.0";
+    return "Unknown";
 
-  return "1.0";
+  XBMC->Log(LOG_DEBUG, "->GetBackendVersion()");
+  std::string version = to_string(m_backendVersion);
+  return version.c_str();
 }
 
 const char* cPVRClientNextPVR::GetConnectionString(void)
@@ -2528,6 +2561,7 @@ PVR_ERROR cPVRClientNextPVR::GetStreamReadChunkSize(int* chunksize)
   LOG_API_IRET(__FUNCTION__, *chunksize);
   return rez;
 }
+
 bool cPVRClientNextPVR::SaveSettings(std::string name, std::string value)
 {
   bool found = false;
@@ -2541,9 +2575,9 @@ bool cPVRClientNextPVR::SaveSettings(std::string name, std::string value)
     if (rootNode)
     {
       TiXmlElement* childNode;
+      std::string key_value;
       for( childNode = rootNode->FirstChildElement("setting"); childNode; childNode=childNode->NextSiblingElement())
       {
-        std::string key_value;
         if ( childNode->QueryStringAttribute("id", &key_value)==TIXML_SUCCESS)
         {
           if (key_value == name)
@@ -2577,7 +2611,6 @@ bool cPVRClientNextPVR::SaveSettings(std::string name, std::string value)
   XBMC->FreeString(settings);
   return true;
 }
-
 
 #if DEBUGGING_XML
 

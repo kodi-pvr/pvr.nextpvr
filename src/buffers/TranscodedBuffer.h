@@ -20,8 +20,7 @@ namespace timeshift {
   public:
     TranscodedBuffer() : DummyBuffer()
     {
-      m_profile << "&profile=" << g_iResolution << "p";
-      XBMC->Log(LOG_INFO, "TranscodedBuffer created! %s", m_profile.str().c_str());
+      XBMC->Log(LOG_NOTICE, "TranscodedBuffer created");
     }
 
     ~TranscodedBuffer() {}
@@ -39,7 +38,6 @@ namespace timeshift {
     bool GetStreamInfo();
 
   private:
-    std::ostringstream m_profile;
 
   };
 

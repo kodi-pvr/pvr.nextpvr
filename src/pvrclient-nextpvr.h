@@ -74,15 +74,17 @@ public:
   ~cPVRClientNextPVR();
 
   /* Server handling */
-  bool Connect();
+  ADDON_STATUS Connect();
   void Disconnect();
   bool IsUp();
   void OnSystemSleep();
   void OnSystemWake();
+  void LoadLiveStreams();
+  int GetBackendVersion() { return m_backendVersion; };
 
   /* General handling */
   const char* GetBackendName(void);
-  const char* GetBackendVersion(void);
+  const char* GetBackendVersionString();
   const char* GetConnectionString(void);
   PVR_ERROR GetDriveSpace(long long *iTotal, long long *iUsed);
   PVR_ERROR GetBackendTime(time_t *localTime, int *gmtOffset);
@@ -161,6 +163,7 @@ private:
   std::string GetChannelIcon(int channelID);
   std::string GetChannelIconFileName(int channelID);
   void DeleteChannelIcons();
+  void SetVersionSpecificSettings();
 
   void Close();
 
@@ -201,12 +204,14 @@ private:
   std::map<std::string, std::string> m_hostFilenames;
   std::map<int, bool> m_channelTypes;  // returns isRadio
   std::map<int, std::string> m_liveStreams;
+
+  //Matrix changes
   std::map<std::string,int> m_epgOidLookup;
-  bool                    m_showNew;
+  bool m_showNew;
+  int m_backendVersion;
 
   void SendWakeOnLan();
   bool SaveSettings(std::string name, std::string value);
-  void LoadLiveStreams();
 
   bool GetAdditiveString(const TiXmlNode* pRootNode, const char* strTag,
         const std::string& strSeparator, std::string& strStringValue,

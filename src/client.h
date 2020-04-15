@@ -51,18 +51,22 @@ extern std::string      g_host_mac;
 extern int              g_wol_timeout;
 extern bool             g_wol_enabled;
 extern bool             g_KodiLook;
-extern bool             g_eraseIcons;
-extern int16_t          g_timeShiftBufferSeconds;
+extern int g_ServerTimeOffset;
+
+extern int              g_timeShiftBufferSeconds;
 extern eStreamingMethod g_livestreamingmethod;
 extern eNowPlaying g_NowPlaying;
-extern int              g_iResolution;
+
 
 extern ADDON::CHelper_libXBMC_addon *XBMC;
 extern CHelper_libXBMC_pvr          *PVR;
 
 extern int              g_iTVServerXBMCBuild;
 
-extern int g_ServerTimeOffset;
+//Matrix variable
+extern int g_iResolution;
+extern bool g_sendSidWithMetadata;
+extern eEventArt g_eventArtFormat;
 
 typedef unsigned char byte;
 

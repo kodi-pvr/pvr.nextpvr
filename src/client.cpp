@@ -23,30 +23,33 @@ using namespace ADDON;
 std::string      g_szHostname             = DEFAULT_HOST;                  ///< The Host name or IP of the NextPVR server
 std::string      g_szPin                  = DEFAULT_PIN;                   ///< The PIN for the NextPVR server
 int              g_iPort                  = DEFAULT_PORT;                  ///< The web listening port (default: 8866)
-int16_t          g_timeShiftBufferSeconds = 0;
+int g_timeShiftBufferSeconds = 0;
 std::string      g_host_mac = "";
 eStreamingMethod g_livestreamingmethod = RealTime;
 eNowPlaying      g_NowPlaying = NotPlaying;
 int              g_wol_timeout;
 bool             g_wol_enabled;
 bool             g_KodiLook;
-bool             g_eraseIcons = false;
-int              g_iResolution;
 
 /* Client member variables */
 ADDON_STATUS           m_CurStatus    = ADDON_STATUS_UNKNOWN;
 cPVRClientNextPVR     *g_client       = NULL;
 std::string            g_szUserPath   = "";
 std::string            g_szClientPath = "";
-bool             g_bUseTimeshift;  /* obsolete but settings.xml might have it */
 
 CHelper_libXBMC_addon *XBMC           = NULL;
 CHelper_libXBMC_pvr   *PVR            = NULL;
 bool                   g_bDownloadGuideArtwork = false;
 
+int g_backendVersion{ 0 };
+bool g_sendSidWithMetadata{ false };
+bool g_readLiveStreams{ false };
+bool g_showRecordingSize{ false };
+eEventArt g_eventArtFormat{ eEventArt::Landscape };
+
 extern "C" {
 
-void ADDON_ReadSettings(void);
+void ADDON_ReadSettings();
 
 /***********************************************************
  * Standard AddOn related public library functions
@@ -86,18 +89,35 @@ ADDON_STATUS ADDON_Create(void* hdl, void* props)
 
   ADDON_ReadSettings();
 
-  /* Create connection to NextPVR XBMC TV client */
+  /* Create connection to NextPVR KODI TV client */
   g_client       = new cPVRClientNextPVR();
-  if (!g_client->Connect())
+  m_CurStatus = g_client->Connect();
+  if (m_CurStatus == ADDON_STATUS_NEED_SETTINGS && g_szHostname == DEFAULT_HOST)
+  {
+    // if there is no settings.xml try discovery
+    if (!XBMC->FileExists("special://profile/addon_data/pvr.nextpvr/settings.xml",false))
+    {
+      XBMC->Log(LOG_ERROR, "Couldn't connect default connection");
+      std::vector<std::string> foundAddress = NextPVR::m_backEnd->Discovery();
+      if (!foundAddress.empty())
+      {
+        g_szHostname = foundAddress[0];
+        g_iPort = stoi(foundAddress[1]);
+        m_CurStatus = g_client->Connect();
+        if (m_CurStatus == ADDON_STATUS_OK)
+        {
+          XBMC->QueueNotification(QUEUE_INFO,XBMC->GetLocalizedString(30182),g_szHostname.c_str(),g_iPort);
+        }
+      }
+    }
+  }
+
+  if (m_CurStatus != ADDON_STATUS_OK)
   {
     SAFE_DELETE(g_client);
     SAFE_DELETE(PVR);
     SAFE_DELETE(XBMC);
-    m_CurStatus = ADDON_STATUS_LOST_CONNECTION;
-    return m_CurStatus;
   }
-
-  m_CurStatus = ADDON_STATUS_OK;
 
   return m_CurStatus;
 }
@@ -168,19 +188,11 @@ void ADDON_ReadSettings(void)
     g_szPin = DEFAULT_PIN;
   }
 
-  /* Read setting "livestreamingmethod" from settings.xml */
-  if (!XBMC->GetSetting("livestreamingmethod", &g_livestreamingmethod))
-  {
-    /* If setting is unknown fallback to defaults */
-    XBMC->Log(LOG_ERROR, "Couldn't get 'livestreamingmethod' setting");
-    g_livestreamingmethod = DEFAULT_LIVE_STREAM;
-  }
-
   /* Read setting "guideartwork" from settings.xml */
   if (!XBMC->GetSetting("guideartwork", &g_bDownloadGuideArtwork))
   {
     /* If setting is unknown fallback to defaults */
-    XBMC->Log(LOG_ERROR, "Couldn't get 'guideartwork' setting, falling back to 'true' as default");
+    XBMC->Log(LOG_ERROR, "Couldn't get 'guideartwork' setting, falling back to 'false' as default");
     g_bDownloadGuideArtwork = DEFAULT_GUIDE_ARTWORK;
   }
 
@@ -202,20 +214,6 @@ void ADDON_ReadSettings(void)
   if (!XBMC->GetSetting("kodilook", &g_KodiLook))
   {
     g_KodiLook = false;
-  }
-
-  if (!XBMC->GetSetting("reseticons", &g_eraseIcons))
-  {
-    g_eraseIcons = false;
-  }
-
-  if (!XBMC->GetSetting("resolution", &buffer))
-  {
-    g_iResolution = 720;
-  }
-  else
-  {
-    g_iResolution = atoi(buffer);
   }
 
   /* Log the current settings for debugging purposes */
@@ -266,15 +264,6 @@ ADDON_STATUS ADDON_SetSetting(const char *settingName, const void *settingValue)
       return ADDON_STATUS_NEED_RESTART;
     }
   }
-  else if (str == "usetimeshift")
-  {
-    if (g_bUseTimeshift != *(bool *)settingValue)
-    {
-      XBMC->Log(LOG_INFO, "Changed setting 'usetimeshift' from %u to %u", g_bUseTimeshift, *(bool*) settingValue);
-      g_bUseTimeshift = *(bool*) settingValue;
-      return ADDON_STATUS_NEED_RESTART;
-    }
-  }
   else if (str == "guideartwork")
   {
     if ( g_bDownloadGuideArtwork != *(bool*)settingValue)
@@ -295,21 +284,31 @@ ADDON_STATUS ADDON_SetSetting(const char *settingName, const void *settingValue)
   }
   else if (str == "livestreamingmethod")
   {
-    eStreamingMethod  setting_livestreamingmethod = *(eStreamingMethod*) settingValue;
-    if (g_livestreamingmethod == ClientTimeshift)
+    if (g_client)
     {
-        if (setting_livestreamingmethod == RealTime)
-        {
-            g_livestreamingmethod = RealTime;
-            return ADDON_STATUS_NEED_RESTART;
-        }
-    }
-    else
-    {
-      if (g_livestreamingmethod != setting_livestreamingmethod)
+      if (g_client->GetBackendVersion() < 50000)
       {
-        g_livestreamingmethod = setting_livestreamingmethod;
-        return ADDON_STATUS_NEED_RESTART;
+        eStreamingMethod  setting_livestreamingmethod = *(eStreamingMethod*)settingValue;
+        if (g_livestreamingmethod != setting_livestreamingmethod)
+        {
+          g_livestreamingmethod = setting_livestreamingmethod;
+          return ADDON_STATUS_NEED_RESTART;
+        }
+      }
+    }
+  }
+  else if (str ==  "livestreamingmethod5")
+  {
+    if (g_client)
+    {
+      if (g_client->GetBackendVersion() >= 50000)
+      {
+        eStreamingMethod  setting_livestreamingmethod = *(eStreamingMethod*)settingValue;
+        if (g_livestreamingmethod != setting_livestreamingmethod)
+        {
+          g_livestreamingmethod = setting_livestreamingmethod;
+          return ADDON_STATUS_NEED_RESTART;
+        }
       }
     }
   }
@@ -324,25 +323,16 @@ ADDON_STATUS ADDON_SetSetting(const char *settingName, const void *settingValue)
   }
   else if (str == "reseticons")
   {
-    if ( g_eraseIcons != *(bool*)settingValue )
+    if (*(bool*)settingValue == true)
     {
-      g_eraseIcons = *(bool*)settingValue;
-      if (g_eraseIcons )
-      {
-        XBMC->Log(LOG_INFO, "Flagging icon reset");
-      }
+      XBMC->Log(LOG_INFO, "Flagging icon reset");
       return ADDON_STATUS_NEED_RESTART;
     }
   }
-  else if (str == "resolution")
+  else
   {
-    if (g_iResolution != *(int*) settingValue)
-    {
-      g_iResolution = *(int*) settingValue;
-      return ADDON_STATUS_NEED_RESTART;
-    }
+    XBMC->Log(LOG_DEBUG, "Skipping setting %s",str.c_str());
   }
-
 
   return ADDON_STATUS_OK;
 }
@@ -378,7 +368,6 @@ PVR_ERROR GetCapabilities(PVR_ADDON_CAPABILITIES *pCapabilities)
 {
   XBMC->Log(LOG_DEBUG, "->GetProperties()");
 
-  //pCapabilities->bSupportsTimeshift          = true; //removed from Frodo API
   pCapabilities->bSupportsEPG                = true;
   pCapabilities->bSupportsRecordings         = true;
   pCapabilities->bSupportsRecordingsUndelete = false;
@@ -420,7 +409,7 @@ const char * GetBackendName(void)
 const char * GetBackendVersion(void)
 {
   if (g_client)
-    return g_client->GetBackendVersion();
+    return g_client->GetBackendVersionString();
   else
     return "";
 }

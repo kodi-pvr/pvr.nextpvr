@@ -32,7 +32,7 @@ namespace timeshift {
   public:
     ClientTimeShift() : RollingFile()
     {
-      if (!XBMC->GetSetting("prebuffer", &m_prebuffer))
+      if (!XBMC->GetSetting("prebuffer5", &m_prebuffer))
       {
         m_prebuffer = 0;
       }

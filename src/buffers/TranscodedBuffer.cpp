@@ -24,8 +24,19 @@ bool TranscodedBuffer::Open(const std::string inputUrl)
       Close();
     }
     XBMC->Log(LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
+
+    int resolution;
+    char buffer[64];
+    if (!XBMC->GetSetting("resolution", &buffer))
+      resolution = 720;
+    else
+      resolution = atoi(buffer);
+
+    std::ostringstream profile;
+    profile << "&profile=" << resolution << "p";
+
     std::string response;
-    std::string formattedRequest = "/services/service?method=channel.transcode.initiate&force=true&channel_id=" + std::to_string(m_channel_id) + m_profile.str();
+    std::string formattedRequest = "/services/service?method=channel.transcode.initiate&force=true&channel_id=" + std::to_string(m_channel_id) + profile.str();
     if (NextPVR::m_backEnd->DoRequest( formattedRequest.c_str(), response) != HTTP_OK)
     {
       return false;
