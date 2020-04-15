@@ -686,13 +686,22 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t
         broadcast.strWriter           = NULL; // unused
         broadcast.strIMDBNumber       = NULL; // unused
 
-        // artwork URL
-        char artworkPath[128];
-        artworkPath[0] = '\0';
         if (g_bDownloadGuideArtwork)
         {
-          snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=channel.show.artwork&sid=%s&event_id=%d", g_szHostname.c_str(), g_iPort, m_sid, epgOid);
-          broadcast.strIconPath         = artworkPath;
+          // artwork URL
+          char artworkPath[512];
+          if (m_backendVersion < 50000)
+            snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=channel.show.artwork&sid=%s&event_id=%d", g_szHostname.c_str(), g_iPort, m_sid, epgOid);
+          else
+          {
+            if (g_sendSidWithMetadata)
+              snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=channel.show.artwork&sid=%s&name=%s", g_szHostname.c_str(), g_iPort, m_sid,UriEncode(title).c_str());
+            else
+              snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=channel.show.artwork&name=%s", g_szHostname.c_str(), g_iPort, UriEncode(title).c_str());
+            if (g_eventArtFormat == Portrait)
+              strcat(artworkPath, "&prefer=poster");
+          }
+          broadcast.strIconPath = artworkPath;
         }
         std::string sGenre;
         if (XMLUtils::GetString(pListingNode,"genre",sGenre))
@@ -1317,10 +1326,23 @@ bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_REC
   if (tag->channelType != PVR_RECORDING_CHANNEL_TYPE_RADIO)
   {
     char artworkPath[512];
-    snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=recording.artwork&sid=%s&recording_id=%s", g_szHostname.c_str(), g_iPort, m_sid, tag->strRecordingId);
-    PVR_STRCPY(tag->strThumbnailPath, artworkPath);
-    snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=recording.fanart&sid=%s&recording_id=%s", g_szHostname.c_str(), g_iPort, m_sid, tag->strRecordingId);
-    PVR_STRCPY(tag->strFanartPath, artworkPath);
+    if (m_backendVersion < 50000)
+    {
+      snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=recording.artwork&sid=%s&recording_id=%s", g_szHostname.c_str(), g_iPort, m_sid, tag->strRecordingId);
+      PVR_STRCPY(tag->strThumbnailPath, artworkPath);
+      snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=recording.fanart&sid=%s&recording_id=%s", g_szHostname.c_str(), g_iPort, m_sid, tag->strRecordingId);
+      PVR_STRCPY(tag->strFanartPath, artworkPath);
+    }
+    else
+    {
+      if (g_sendSidWithMetadata)
+        snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=channel.show.artwork&sid=%s&name=%s", g_szHostname.c_str(), g_iPort, m_sid, UriEncode(tag->strTitle).c_str());
+      else
+        snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=channel.show.artwork&name=%s", g_szHostname.c_str(), g_iPort, UriEncode(tag->strTitle).c_str());
+      PVR_STRCPY(tag->strFanartPath, artworkPath);
+      strcat(artworkPath, "&prefer=poster");
+      PVR_STRCPY(tag->strThumbnailPath, artworkPath);
+    }
   }
   if (pRecordingNode->FirstChildElement("genres") != NULL)
   {

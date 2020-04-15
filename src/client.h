@@ -32,6 +32,12 @@ enum eNowPlaying
   Transcoding
 };
 
+enum eEventArt
+{
+  Portrait = 0,
+  Landscape = 1
+};
+
 #define DEFAULT_HOST                  "127.0.0.1"
 #define DEFAULT_PORT                  8866
 #define DEFAULT_PIN                   "0000"
