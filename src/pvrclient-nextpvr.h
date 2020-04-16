@@ -209,6 +209,7 @@ private:
   std::map<std::string,int> m_epgOidLookup;
   bool m_showNew;
   int m_backendVersion;
+  bool m_recordingSize;
 
   void SendWakeOnLan();
   bool SaveSettings(std::string name, std::string value);

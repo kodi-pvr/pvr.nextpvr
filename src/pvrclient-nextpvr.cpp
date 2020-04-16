@@ -435,6 +435,9 @@ void cPVRClientNextPVR::SetVersionSpecificSettings()
     g_sendSidWithMetadata = true;
   }
 
+  if (!XBMC->GetSetting("recordingsize", &m_recordingSize))
+    m_recordingSize = false;
+
   bool liveStreams;
   if (XBMC->GetSetting("uselivestreams", &liveStreams))
     if (liveStreams)
@@ -1302,14 +1305,31 @@ bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_REC
     PVR_STRCPY(tag->strChannelName,pRecordingNode->FirstChildElement("channel")->FirstChild()->Value());
   }
 
-  if (pRecordingNode->FirstChildElement("file") != NULL && pRecordingNode->FirstChildElement("file")->FirstChild() != NULL)
+  std::string recordingFile;
+  if (XMLUtils::GetString(pRecordingNode, "file", recordingFile))
   {
-    m_hostFilenames[tag->strRecordingId] = pRecordingNode->FirstChildElement("file")->FirstChild()->Value();
+    if (m_recordingSize)
+    {
+      StringUtils::Replace(recordingFile, '\\', '/');
+      if (StringUtils::StartsWith(recordingFile, "//"))
+      {
+        recordingFile = "smb:" + recordingFile;
+      }
+      if (XBMC->FileExists(recordingFile.c_str(), READ_NO_CACHE))
+      {
+        void* fileHandle = XBMC->OpenFile(recordingFile.c_str(), READ_NO_CACHE);
+        tag->sizeInBytes = XBMC->GetFileLength(fileHandle);
+        XBMC->CloseFile(fileHandle);
+      }
+      else
+      {
+        // don't play recording as file
+        recordingFile.clear();
+      }
+    }
   }
-  else
-  {
-    m_hostFilenames[tag->strRecordingId] = "";
-  }
+
+  m_hostFilenames[tag->strRecordingId] = recordingFile;
 
   // if we use unknown Kodi logs warning and turns it to TV so save some steps
   tag->channelType = PVR_RECORDING_CHANNEL_TYPE_TV;
