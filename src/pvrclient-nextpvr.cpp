@@ -636,7 +636,7 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t
       XBMC->Log(LOG_DEBUG, "Skipping expired EPG data %d %ld %lld",iChannelUid,iStart, iEnd);
       return PVR_ERROR_INVALID_PARAMETERS;
   }
-  sprintf(request, "/service?method=channel.listings&channel_id=%d&start=%d&end=%d", iChannelUid, (int)iStart, (int)iEnd);
+  sprintf(request, "/service?method=channel.listings&channel_id=%d&start=%d&end=%d&genre=all", iChannelUid, (int)iStart, (int)iEnd);
   if (DoRequest(request, response) == HTTP_OK)
   {
     TiXmlDocument doc;
@@ -718,7 +718,22 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t
           broadcast.iGenreType = XmlGetInt(pListingNode,"genre_type");
           broadcast.iGenreSubType = XmlGetInt(pListingNode,"genre_subtype");
         }
-
+        if (pListingNode->FirstChildElement("genres") != NULL)
+        {
+          std::string  allGenres;
+          if (GetAdditiveString(pListingNode->FirstChildElement("genres"), "genre", EPG_STRING_TOKEN_SEPARATOR, allGenres, true))
+          {
+            if (allGenres.find(EPG_STRING_TOKEN_SEPARATOR) != std::string::npos)
+            {
+              if (broadcast.iGenreType != EPG_GENRE_USE_STRING)
+              {
+                broadcast.iGenreSubType = EPG_GENRE_USE_STRING;
+              }
+              sGenre = allGenres;
+              broadcast.strGenreDescription = sGenre.c_str();
+            }
+          }
+        }
         int value = 0;
         XMLUtils::GetInt(pListingNode,"season",value);
         if ( value == 0 )
@@ -1368,7 +1383,7 @@ bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_REC
   {
     std::string genres;
     TiXmlElement* pGenresNode = pRecordingNode->FirstChildElement("genres");
-    GetAdditiveString(pGenresNode,"genre",", ",genres,true);
+    GetAdditiveString(pGenresNode,"genre",EPG_STRING_TOKEN_SEPARATOR,genres,true);
     tag->iGenreType = EPG_GENRE_USE_STRING;
     tag->iGenreSubType = 0;
     PVR_STRCPY(tag->strGenreDescription,genres.c_str());
