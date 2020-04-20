@@ -1,3 +1,6 @@
+v4.3.7
+- Update: PVR API 6.4.0
+
 v4.3.6
 - Cache EPG event ID to make system usable after daily update. Lose link to recordings.
 - Disable New flag from backend
