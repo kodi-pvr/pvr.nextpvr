@@ -1099,10 +1099,22 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
       PVR_RECORDING   tag;
       TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
       TiXmlElement* pRecordingNode;
+      std::map<std::string, int> names;
+      if (m_settings.m_flattenRecording)
+      {
+        for (pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
+        {
+          string title;
+          XMLUtils::GetString(pRecordingNode, "name", title);
+          names[title]++;
+        }
+      }
       for( pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode=pRecordingNode->NextSiblingElement())
       {
-       tag = {};
-        if (UpdatePvrRecording(pRecordingNode, &tag))
+        tag = {};
+        string title;
+        XMLUtils::GetString(pRecordingNode, "name", title);
+        if (UpdatePvrRecording(pRecordingNode, &tag, title, names[title] == 1))
         {
           recordingCount++;
           PVR->TransferRecordingEntry(handle, &tag);
@@ -1121,7 +1133,7 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
   return returnValue;
 }
 
-bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_RECORDING *tag)
+bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_RECORDING *tag, std::string title, bool flatten)
 {
 
   tag->recordingTime = atol(pRecordingNode->FirstChildElement("start_time_ticks")->FirstChild()->Value());
@@ -1136,7 +1148,10 @@ bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_REC
 
   if (status == "Ready" || status == "Pending" || status == "Recording")
   {
-    snprintf(tag->strDirectory,sizeof(tag->strDirectory),"/%s",pRecordingNode->FirstChildElement("name")->FirstChild()->Value());
+    if (!flatten)
+    {
+      snprintf(tag->strDirectory, sizeof(tag->strDirectory), "/%s", title.c_str());
+    }
     if (pRecordingNode->FirstChildElement("desc") != NULL && pRecordingNode->FirstChildElement("desc")->FirstChild() != NULL)
     {
       PVR_STRCPY(tag->strPlot, pRecordingNode->FirstChildElement("desc")->FirstChild()->Value());
@@ -1144,7 +1159,7 @@ bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_REC
   }
   else if (status == "Failed")
   {
-    snprintf(tag->strDirectory,sizeof(tag->strDirectory),"/%s/%s",XBMC->GetLocalizedString(30166),pRecordingNode->FirstChildElement("name")->FirstChild()->Value());
+    snprintf(tag->strDirectory,sizeof(tag->strDirectory),"/%s/%s",XBMC->GetLocalizedString(30166), title.c_str());
     if (pRecordingNode->FirstChildElement("reason") != NULL && pRecordingNode->FirstChildElement("reason")->FirstChild() != NULL)
     {
       PVR_STRCPY(tag->strPlot, pRecordingNode->FirstChildElement("reason")->FirstChild()->Value());
@@ -1177,14 +1192,14 @@ bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_REC
   }
 
   PVR_STRCPY(tag->strRecordingId, pRecordingNode->FirstChildElement("id")->FirstChild()->Value());
-  PVR_STRCPY(tag->strTitle, pRecordingNode->FirstChildElement("name")->FirstChild()->Value());
+  PVR_STRCPY(tag->strTitle, title.c_str());
 
   tag->iSeriesNumber = PVR_RECORDING_INVALID_SERIES_EPISODE;
   tag->iEpisodeNumber = PVR_RECORDING_INVALID_SERIES_EPISODE;
 
   if (pRecordingNode->FirstChildElement("subtitle") != NULL && pRecordingNode->FirstChildElement("subtitle")->FirstChild() != NULL)
   {
-    if (m_settings.m_kodiLook)
+    if (m_settings.m_kodiLook || flatten)
     {
       ParseNextPVRSubtitle(pRecordingNode->FirstChildElement("subtitle")->FirstChild()->Value(), tag);
     }

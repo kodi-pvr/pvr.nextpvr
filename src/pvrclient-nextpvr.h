@@ -124,7 +124,7 @@ public:
   int GetRecordingLastPlayedPosition(const PVR_RECORDING &recording);
   PVR_ERROR GetRecordingEdl(const PVR_RECORDING& recording, PVR_EDL_ENTRY[], int *size);
   PVR_ERROR GetRecordingStreamProperties(const PVR_RECORDING*, PVR_NAMED_VALUE*, unsigned int*);
-  bool UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_RECORDING *tag);
+  bool UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_RECORDING *tag, std::string title, bool flatten);
   void ParseNextPVRSubtitle( const char *episodeName, PVR_RECORDING   *tag);
 
   /* Timer handling */
