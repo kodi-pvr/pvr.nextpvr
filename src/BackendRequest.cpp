@@ -23,9 +23,9 @@ namespace NextPVR
     char strURL[1024];
 
     if (strstr(resource, "method=session") == NULL)
-      snprintf(strURL,sizeof(strURL),"http://%s:%d%s&sid=%s", g_szHostname.c_str(), g_iPort, resource, m_sid);
+      snprintf(strURL,sizeof(strURL),"http://%s:%d%s&sid=%s", m_settings.m_hostname.c_str(), m_settings.m_port, resource, m_sid);
     else
-      snprintf(strURL,sizeof(strURL),"http://%s:%d%s", g_szHostname.c_str(), g_iPort, resource);
+      snprintf(strURL,sizeof(strURL),"http://%s:%d%s", m_settings.m_hostname.c_str(), m_settings.m_port, resource);
 
     // ask XBMC to read the URL for us
     int resultCode = HTTP_NOTFOUND;
@@ -57,7 +57,7 @@ namespace NextPVR
 
     char strURL[1024];
     char separator = (strchr(resource,'?') == nullptr) ?  '?' : '&';
-    snprintf(strURL,sizeof(strURL),"http://%s:%d%s%csid=%s", g_szHostname.c_str(), g_iPort, resource, separator, m_sid);
+    snprintf(strURL,sizeof(strURL),"http://%s:%d%s%csid=%s", m_settings.m_hostname.c_str(), m_settings.m_port, resource, separator, m_sid);
 
     // ask XBMC to read the URL for us
     int resultCode = HTTP_NOTFOUND;
@@ -90,7 +90,7 @@ namespace NextPVR
   bool Request::PingBackend()
   {
     char strURL[1024];
-    snprintf(strURL,sizeof(strURL),"http://%s:%d%s|connection-timeout=2", g_szHostname.c_str(), g_iPort, "/service?method=recording.lastupdated");
+    snprintf(strURL,sizeof(strURL),"http://%s:%d%s|connection-timeout=2", m_settings.m_hostname.c_str(), m_settings.m_port, "/service?method=recording.lastupdated");
     void* fileHandle = XBMC->OpenFile(strURL, READ_NO_CACHE);
     if (fileHandle)
     {

@@ -8,11 +8,11 @@
 
 #pragma once
 
+#include "Settings.h"
+#include "client.h"
 #include <ctime>
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "client.h"
 #include "p8-platform/threads/mutex.h"
 
 #define HTTP_OK 200
@@ -35,6 +35,7 @@ namespace NextPVR
       Request(void){};
       virtual ~Request() {};
     private:
+      Settings& m_settings = Settings::GetInstance();
       P8PLATFORM::CMutex        m_mutexRequest;
       time_t m_start;
       char m_sid[64];

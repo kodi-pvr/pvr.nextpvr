@@ -14,7 +14,7 @@
 #include <list>
 
 std::string UriEncode(const std::string sSrc);
-
+using namespace NextPVR;
 using namespace ADDON;
 namespace timeshift {
 
@@ -32,14 +32,6 @@ namespace timeshift {
   public:
     ClientTimeShift() : RollingFile()
     {
-      if (!XBMC->GetSetting("prebuffer5", &m_prebuffer))
-      {
-        m_prebuffer = 0;
-      }
-      if (!XBMC->GetSetting("chunklivetv", &m_liveChunkSize))
-      {
-        m_liveChunkSize = 64;
-      }
       m_lastClose = 0;
       m_channel_id = 0;
       XBMC->Log(LOG_INFO, "ClientTimeShift Buffer created!");
@@ -60,7 +52,7 @@ namespace timeshift {
 
     virtual ~ClientTimeShift() {}
 
-    virtual bool Open(const std::string inputUrl) override;
+    virtual bool Open(const std::string inputUrl, bool isRadio = false) override;
     virtual void Close() override;
 
     virtual bool GetStreamInfo();

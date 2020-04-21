@@ -9,10 +9,9 @@
 #include "client.h"
 #include "kodi/xbmc_pvr_dll.h"
 #include "pvrclient-nextpvr.h"
-#include "uri.h"
 
-using namespace std;
 using namespace ADDON;
+using namespace NextPVR;
 
 #define PVR_MIN_API_VERSION "1.2.0"
 
@@ -20,32 +19,18 @@ using namespace ADDON;
  * Default values are defined inside client.h
  * and exported to the other source files.
  */
-std::string      g_szHostname             = DEFAULT_HOST;                  ///< The Host name or IP of the NextPVR server
-std::string      g_szPin                  = DEFAULT_PIN;                   ///< The PIN for the NextPVR server
-int              g_iPort                  = DEFAULT_PORT;                  ///< The web listening port (default: 8866)
-int g_timeShiftBufferSeconds = 0;
-std::string      g_host_mac = "";
-eStreamingMethod g_livestreamingmethod = RealTime;
-eNowPlaying      g_NowPlaying = NotPlaying;
-int              g_wol_timeout;
-bool             g_wol_enabled;
-bool             g_KodiLook;
 
 /* Client member variables */
 ADDON_STATUS           m_CurStatus    = ADDON_STATUS_UNKNOWN;
-cPVRClientNextPVR     *g_client       = NULL;
+cPVRClientNextPVR     *g_client       = nullptr;
 std::string            g_szUserPath   = "";
 std::string            g_szClientPath = "";
 
+Settings& settings = Settings::GetInstance();
+
 CHelper_libXBMC_addon *XBMC           = NULL;
 CHelper_libXBMC_pvr   *PVR            = NULL;
-bool                   g_bDownloadGuideArtwork = false;
 
-int g_backendVersion{ 0 };
-bool g_sendSidWithMetadata{ false };
-bool g_readLiveStreams{ false };
-bool g_showRecordingSize{ false };
-eEventArt g_eventArtFormat{ eEventArt::Landscape };
 
 extern "C" {
 
@@ -88,27 +73,31 @@ ADDON_STATUS ADDON_Create(void* hdl, void* props)
   g_szClientPath = pvrprops->strClientPath;
 
   ADDON_ReadSettings();
+  settings.ReadFromAddon();
 
   /* Create connection to NextPVR KODI TV client */
   g_client       = new cPVRClientNextPVR();
   m_CurStatus = g_client->Connect();
-  if (m_CurStatus == ADDON_STATUS_NEED_SETTINGS && g_szHostname == DEFAULT_HOST)
+  if (m_CurStatus == ADDON_STATUS_NEED_SETTINGS && settings.m_hostname == DEFAULT_HOST)
   {
     // if there is no settings.xml try discovery
-    if (!XBMC->FileExists("special://profile/addon_data/pvr.nextpvr/settings.xml",false))
+    if (!XBMC->FileExists("special://profile/addon_data/pvr.nextpvr/settings.xml", false))
     {
       XBMC->Log(LOG_ERROR, "Couldn't connect default connection");
       std::vector<std::string> foundAddress = NextPVR::m_backEnd->Discovery();
       if (!foundAddress.empty())
       {
-        g_szHostname = foundAddress[0];
-        g_iPort = stoi(foundAddress[1]);
+        settings.UpdateServerPort(foundAddress[0], stoi(foundAddress[1]));
         m_CurStatus = g_client->Connect();
         if (m_CurStatus == ADDON_STATUS_OK)
         {
-          XBMC->QueueNotification(QUEUE_INFO,XBMC->GetLocalizedString(30182),g_szHostname.c_str(),g_iPort);
+          XBMC->QueueNotification(QUEUE_INFO, XBMC->GetLocalizedString(30182), settings.m_hostname.c_str(), settings.m_port);
         }
       }
+    }
+    else
+    {
+      m_CurStatus = ADDON_STATUS_PERMANENT_FAILURE;
     }
   }
 
@@ -150,75 +139,8 @@ ADDON_STATUS ADDON_GetStatus()
 
 void ADDON_ReadSettings(void)
 {
-  /* Read setting "host" from settings.xml */
-  char buffer[1024];
-
   if (!XBMC)
     return;
-
-  /* Connection settings */
-  /***********************/
-  if (XBMC->GetSetting("host", &buffer))
-  {
-    g_szHostname = buffer;
-    uri::decode(g_szHostname);
-  }
-  else
-  {
-    /* If setting is unknown fallback to defaults */
-    XBMC->Log(LOG_ERROR, "Couldn't get 'host' setting, falling back to '127.0.0.1' as default");
-    g_szHostname = DEFAULT_HOST;
-  }
-
-  /* Read setting "port" from settings.xml */
-  if (!XBMC->GetSetting("port", &g_iPort))
-  {
-    /* If setting is unknown fallback to defaults */
-    XBMC->Log(LOG_ERROR, "Couldn't get 'port' setting, falling back to '8866' as default");
-    g_iPort = DEFAULT_PORT;
-  }
-
-  /* Read setting "pin" from settings.xml */
-  if (XBMC->GetSetting("pin", &buffer))
-  {
-    g_szPin = buffer;
-  }
-  else
-  {
-    g_szPin = DEFAULT_PIN;
-  }
-
-  /* Read setting "guideartwork" from settings.xml */
-  if (!XBMC->GetSetting("guideartwork", &g_bDownloadGuideArtwork))
-  {
-    /* If setting is unknown fallback to defaults */
-    XBMC->Log(LOG_ERROR, "Couldn't get 'guideartwork' setting, falling back to 'false' as default");
-    g_bDownloadGuideArtwork = DEFAULT_GUIDE_ARTWORK;
-  }
-
-  if (XBMC->GetSetting("host_mac", &buffer))
-  {
-    g_host_mac = buffer;
-  }
-
-  if (!XBMC->GetSetting("wolenable", &g_wol_enabled))
-  {
-    g_wol_enabled = false;
-  }
-
-  if (!XBMC->GetSetting("woltimeout", &g_wol_timeout))
-  {
-    g_wol_timeout = 20;
-  }
-
-  if (!XBMC->GetSetting("kodilook", &g_KodiLook))
-  {
-    g_KodiLook = false;
-  }
-
-  /* Log the current settings for debugging purposes */
-  XBMC->Log(LOG_DEBUG, "settings: host='%s', port=%i, mac=%4.4s...", g_szHostname.c_str(), g_iPort, g_host_mac.c_str());
-
 }
 
 //-- SetSetting ---------------------------------------------------------------
@@ -227,114 +149,23 @@ void ADDON_ReadSettings(void)
 //-----------------------------------------------------------------------------
 ADDON_STATUS ADDON_SetSetting(const char *settingName, const void *settingValue)
 {
-  string str = settingName;
+  std::string str = settingName;
 
   // SetSetting can occur when the addon is enabled, but TV support still
   // disabled. In that case the addon is not loaded, so we should not try
   // to change its settings.
-  if (!XBMC)
+  if (!XBMC || !g_client)
     return ADDON_STATUS_OK;
 
-  if (str == "host")
+  ADDON_STATUS  status = settings.SetValue(settingName, settingValue);
+  if (status == ADDON_STATUS_NEED_SETTINGS)
   {
-    string tmp_sHostname = (const char*) settingValue;
-    if (tmp_sHostname != g_szHostname)
-    {
-      XBMC->Log(LOG_INFO, "Changed Setting 'host' from %s to %s", g_szHostname.c_str(), tmp_sHostname.c_str());
-      g_szHostname = tmp_sHostname;
-      return ADDON_STATUS_NEED_RESTART;
-    }
-  }
-  else if (str == "port")
-  {
-    if (g_iPort != *(int*) settingValue)
-    {
-      XBMC->Log(LOG_INFO, "Changed Setting 'port' from %u to %u", g_iPort, *(int*) settingValue);
-      g_iPort = *(int*) settingValue;
-      return ADDON_STATUS_NEED_RESTART;
-    }
-  }
-  else if (str == "pin")
-  {
-    string tmp_sPin = (const char*) settingValue;
-    if (tmp_sPin != g_szPin)
-    {
-      XBMC->Log(LOG_INFO, "Changed Setting 'pin'");
-      g_szPin = tmp_sPin;
-      return ADDON_STATUS_NEED_RESTART;
-    }
-  }
-  else if (str == "guideartwork")
-  {
-    if ( g_bDownloadGuideArtwork != *(bool*)settingValue)
-    {
-      XBMC->Log(LOG_INFO, "Changed setting 'guideartwork' from %u to %u", g_bDownloadGuideArtwork, *(bool*)settingValue);
-      g_bDownloadGuideArtwork = *(bool*)settingValue;
-    }
-  }
-  else if (str == "kodilook")
-  {
-    if ( g_KodiLook != *(bool*)settingValue)
-    {
-      XBMC->Log(LOG_INFO, "Changed setting 'kodilook' from %u to %u", g_KodiLook, *(bool*)settingValue);
-      g_KodiLook = *(bool*)settingValue;
-      if (g_client)
-        PVR->TriggerRecordingUpdate();
-    }
-  }
-  else if (str == "livestreamingmethod")
-  {
-    if (g_client)
-    {
-      if (g_client->GetBackendVersion() < 50000)
-      {
-        eStreamingMethod  setting_livestreamingmethod = *(eStreamingMethod*)settingValue;
-        if (g_livestreamingmethod != setting_livestreamingmethod)
-        {
-          g_livestreamingmethod = setting_livestreamingmethod;
-          return ADDON_STATUS_NEED_RESTART;
-        }
-      }
-    }
-  }
-  else if (str ==  "livestreamingmethod5")
-  {
-    if (g_client)
-    {
-      if (g_client->GetBackendVersion() >= 50000)
-      {
-        eStreamingMethod  setting_livestreamingmethod = *(eStreamingMethod*)settingValue;
-        if (g_livestreamingmethod != setting_livestreamingmethod)
-        {
-          g_livestreamingmethod = setting_livestreamingmethod;
-          return ADDON_STATUS_NEED_RESTART;
-        }
-      }
-    }
-  }
-  else if (str == "host_mac")
-  {
-    if ( g_host_mac != (const char *)settingValue )
-    {
-      XBMC->Log(LOG_INFO, "Changed setting 'host_mac' from %4.4s... to %4.4s...", g_host_mac.c_str(), (const char *)settingValue );
-      g_host_mac = (const char *) settingValue;
-      return ADDON_STATUS_OK ;
-    }
-  }
-  else if (str == "reseticons")
-  {
-    if (*(bool*)settingValue == true)
-    {
-      XBMC->Log(LOG_INFO, "Flagging icon reset");
-      return ADDON_STATUS_NEED_RESTART;
-    }
-  }
-  else
-  {
-    XBMC->Log(LOG_DEBUG, "Skipping setting %s",str.c_str());
+    status = ADDON_STATUS_OK;
+    // need to trigger recording update;
+    g_client->ForceRecordingUpdate();
   }
 
-  return ADDON_STATUS_OK;
+  return status;
 }
 
 /***********************************************************
@@ -371,7 +202,7 @@ PVR_ERROR GetCapabilities(PVR_ADDON_CAPABILITIES *pCapabilities)
   pCapabilities->bSupportsEPG                = true;
   pCapabilities->bSupportsRecordings         = true;
   pCapabilities->bSupportsRecordingsUndelete = false;
-  pCapabilities->bSupportsRecordingSize = true;
+  pCapabilities->bSupportsRecordingSize = settings.m_showRecordingSize;
   pCapabilities->bSupportsTimers             = true;
   pCapabilities->bSupportsTV                 = true;
   pCapabilities->bSupportsRadio              = true;
@@ -411,7 +242,7 @@ const char * GetBackendName(void)
 const char * GetBackendVersion(void)
 {
   if (g_client)
-    return g_client->GetBackendVersionString();
+    return g_client->GetBackendVersion();
   else
     return "";
 }
@@ -432,7 +263,7 @@ const char * GetConnectionString(void)
 //-----------------------------------------------------------------------------
 const char * GetBackendHostname(void)
 {
-  return g_szHostname.c_str();
+  return settings.m_hostname.c_str();
 }
 
 //-- GetDriveSpace ------------------------------------------------------------

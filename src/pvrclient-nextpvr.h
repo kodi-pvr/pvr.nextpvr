@@ -16,15 +16,17 @@
 
 /* Local includes */
 #include "Socket.h"
-#include "p8-platform/threads/mutex.h"
-#include "p8-platform/threads/threads.h"
-#include "tinyxml.h"
+#include "Settings.h"
 #include "buffers/DummyBuffer.h"
 #include "buffers/TranscodedBuffer.h"
 #include "buffers/TimeshiftBuffer.h"
 #include "buffers/RecordingBuffer.h"
 #include "buffers/RollingFile.h"
 #include "buffers/ClientTimeshift.h"
+
+#include "p8-platform/threads/mutex.h"
+#include "p8-platform/threads/threads.h"
+#include "tinyxml.h"
 #include <map>
 
 #define SAFE_DELETE(p)       do { delete (p);     (p)=NULL; } while (0)
@@ -66,6 +68,15 @@ typedef enum
   NEXTPVR_LIMIT_10 = 10
 } nextpvr_recordinglimit_t;
 
+enum eNowPlaying
+{
+  NotPlaying = 0,
+  TV = 1,
+  Radio = 2,
+  Recording = 3,
+  Transcoding
+};
+
 class cPVRClientNextPVR : P8PLATFORM::CThread
 {
 public:
@@ -80,11 +91,10 @@ public:
   void OnSystemSleep();
   void OnSystemWake();
   void LoadLiveStreams();
-  int GetBackendVersion() { return m_backendVersion; };
 
   /* General handling */
   const char* GetBackendName(void);
-  const char* GetBackendVersionString();
+  const char* GetBackendVersion();
   const char* GetConnectionString(void);
   PVR_ERROR GetDriveSpace(long long *iTotal, long long *iUsed);
   PVR_ERROR GetBackendTime(time_t *localTime, int *gmtOffset);
@@ -146,6 +156,7 @@ public:
   int ReadRecordedStream(unsigned char *pBuffer, unsigned int iBufferSize);
   long long SeekRecordedStream(long long iPosition, int iWhence = SEEK_SET);
   long long LengthRecordedStream(void);
+  void ForceRecordingUpdate() { m_lastRecordingUpdateTime = 0;}
 
   /* background connection monitoring */
   void *Process(void);
@@ -163,7 +174,7 @@ private:
   std::string GetChannelIcon(int channelID);
   std::string GetChannelIconFileName(int channelID);
   void DeleteChannelIcons();
-  void SetVersionSpecificSettings();
+  void ConfigurePostConnectionOptions();
 
   void Close();
 
@@ -178,10 +189,6 @@ private:
   bool                    m_supportsLiveTimeshift;
   long long               m_currentLiveLength;
   long long               m_currentLivePosition;
-  int                     m_iDefaultPrePadding;
-  int                     m_iDefaultPostPadding;
-
-  std::vector< std::string > m_recordingDirectories;
 
   int64_t                 m_lastRecordingUpdateTime;
 
@@ -206,13 +213,11 @@ private:
   std::map<int, std::string> m_liveStreams;
 
   //Matrix changes
+  NextPVR::Settings& m_settings = NextPVR::Settings::GetInstance();
   std::map<std::string,int> m_epgOidLookup;
-  bool m_showNew;
-  int m_backendVersion;
-  bool m_recordingSize;
+  eNowPlaying m_nowPlaying = NotPlaying;
 
   void SendWakeOnLan();
-  bool SaveSettings(std::string name, std::string value);
 
   bool GetAdditiveString(const TiXmlNode* pRootNode, const char* strTag,
         const std::string& strSeparator, std::string& strStringValue,

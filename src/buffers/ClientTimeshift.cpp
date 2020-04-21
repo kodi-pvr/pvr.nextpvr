@@ -16,7 +16,7 @@
 
 using namespace timeshift;
 
-bool ClientTimeShift::Open(const std::string inputUrl)
+bool ClientTimeShift::Open(const std::string inputUrl, bool isRadio)
 {
   m_isPaused = false;
   m_stream_length = 0;
@@ -29,14 +29,7 @@ bool ClientTimeShift::Open(const std::string inputUrl)
   m_bytesPerSecond = 0;
   m_complete = false;
 
-  if (g_NowPlaying == TV)
-  {
-    m_chunkSize = m_liveChunkSize;
-  }
-  else
-    m_chunkSize = 4;
-
-  XBMC->Log(LOG_DEBUG, "%s:%d: %d", __FUNCTION__, __LINE__, m_chunkSize);
+  m_prebuffer = m_settings.m_prebuffer5;
 
   if (m_channel_id != 0)
   {
@@ -58,7 +51,7 @@ bool ClientTimeShift::Open(const std::string inputUrl)
     SLEEP(1000);
     if ( ClientTimeShift::GetStreamInfo())
     {
-      if  ( m_stream_duration  > m_prebuffer )
+      if  ( m_stream_duration  > m_settings.m_prebuffer )
       {
         break;
       }
@@ -120,9 +113,9 @@ int64_t ClientTimeShift::Seek(int64_t position, int whence)
     Buffer::Close();
   ClientTimeShift::GetStreamInfo();
 
-  if (m_stream_duration > g_timeShiftBufferSeconds)
+  if (m_stream_duration > m_settings.m_timeshiftBufferSeconds)
   {
-    int64_t startSlipBuffer = m_stream_length - (g_timeShiftBufferSeconds * m_stream_length/m_stream_duration);
+    int64_t startSlipBuffer = m_stream_length - (m_settings.m_timeshiftBufferSeconds * m_stream_length/m_stream_duration);
     XBMC->Log(LOG_DEBUG, "%s:%d: %lld %lld %lld", __FUNCTION__, __LINE__, startSlipBuffer, position, m_stream_length.load());
     if (position < startSlipBuffer)
       position = startSlipBuffer;
@@ -173,16 +166,16 @@ bool ClientTimeShift::GetStreamInfo()
         {
           m_stream_length = strtoll(filesNode->FirstChildElement("stream_length")->GetText(),nullptr,0);
           m_stream_duration = stream_duration/1000;
-          if (m_stream_duration > g_timeShiftBufferSeconds)
+          if (m_stream_duration > m_settings.m_timeshiftBufferSeconds)
           {
-              m_rollingStartSeconds = m_streamStart + m_stream_duration - g_timeShiftBufferSeconds;
+              m_rollingStartSeconds = m_streamStart + m_stream_duration - m_settings.m_timeshiftBufferSeconds;
           }
           XMLUtils::GetBoolean(filesNode,"complete",m_complete);
           if (m_complete == false)
           {
             if (m_nextRoll < time(nullptr))
             {
-              m_nextRoll = time(nullptr) + g_timeShiftBufferSeconds/3 + g_ServerTimeOffset;
+              m_nextRoll = time(nullptr) + m_settings.m_timeshiftBufferSeconds/3 + m_settings.m_serverTimeOffset;
             }
           }
           else
