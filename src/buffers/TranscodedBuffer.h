@@ -20,7 +20,7 @@ namespace timeshift {
   public:
     TranscodedBuffer() : DummyBuffer()
     {
-      XBMC->Log(LOG_NOTICE, "TranscodedBuffer created");
+      XBMC->Log(LOG_INFO, "TranscodedBuffer created");
     }
 
     ~TranscodedBuffer() {}

@@ -2333,7 +2333,7 @@ bool cPVRClientNextPVR::OpenLiveStream(const PVR_CHANNEL &channelinfo)
     sprintf(line, "http://%s:%d/live?channeloid=%d&client=XBMC-%s", m_settings.m_hostname.c_str(), m_settings.m_port, channelinfo.iUniqueId, m_sid);
     m_livePlayer = m_realTimeBuffer;
   }
-  XBMC->Log(LOG_NOTICE, "Calling Open(%s) on tsb!", line);
+  XBMC->Log(LOG_INFO, "Calling Open(%s) on tsb!", line);
   if (m_livePlayer->Open(line, channelinfo.bIsRadio))
   {
     return true;

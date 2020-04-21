@@ -112,7 +112,6 @@ ADDON_STATUS Settings::ReadBackendSettings()
     TiXmlDocument settingsDoc;
     if (settingsDoc.Parse(settings.c_str()) != NULL)
     {
-      //XBMC->Log(LOG_NOTICE, "Settings:\n");
       //dump_to_log(&settingsDoc, 0);
       if (XMLUtils::GetInt(settingsDoc.RootElement(), "NextPVRVersion", m_backendVersion))
       {
@@ -156,11 +155,11 @@ ADDON_STATUS Settings::ReadBackendSettings()
       if (XMLUtils::GetInt(settingsDoc.RootElement(), "TimeEpoch", serverTimestamp))
       {
         m_serverTimeOffset = time(nullptr) - serverTimestamp;
-        XBMC->Log(LOG_NOTICE, "Server time offset in seconds: %d", m_serverTimeOffset);
+        XBMC->Log(LOG_INFO, "Server time offset in seconds: %d", m_serverTimeOffset);
       }
 
       if (XMLUtils::GetInt(settingsDoc.RootElement(), "SlipSeconds", m_timeshiftBufferSeconds))
-        XBMC->Log(LOG_NOTICE, "time shift buffer in seconds == %d\n", m_timeshiftBufferSeconds);
+        XBMC->Log(LOG_INFO, "time shift buffer in seconds == %d\n", m_timeshiftBufferSeconds);
 
       std::string serverMac;
       if (XMLUtils::GetString(settingsDoc.RootElement(), "ServerMAC", serverMac))
