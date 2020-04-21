@@ -160,7 +160,7 @@ cPVRClientNextPVR::~cPVRClientNextPVR()
   delete m_realTimeBuffer;
   m_epgOidLookup.clear();
   m_hostFilenames.clear();
-  m_channelTypes.clear();
+  m_channelDetails.clear();
   m_liveStreams.clear();
 }
 
@@ -503,6 +503,15 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t
   std::string response;
   char request[512];
   LOG_API_CALL(__FUNCTION__);
+
+  pair<bool, bool> channelDetail;
+  channelDetail = m_channelDetails[iChannelUid];
+  if (channelDetail.first == true)
+  {
+    XBMC->Log(LOG_DEBUG, "Skipping %d", iChannelUid);
+    return PVR_ERROR_NO_ERROR;
+  }
+
   if ( iEnd < (time(nullptr) - 24 * 3600))
   {
       XBMC->Log(LOG_DEBUG, "Skipping expired EPG data %d %ld %lld",iChannelUid,iStart, iEnd);
@@ -789,10 +798,17 @@ PVR_ERROR cPVRClientNextPVR::GetChannels(ADDON_HANDLE handle, bool bRadio)
   std::string      stream;
   LOG_API_CALL(__FUNCTION__);
 
-  m_channelTypes.clear();
+  std::map<int, std::pair<bool, bool>>::iterator  itr = m_channelDetails.begin();
+  while (itr != m_channelDetails.end()) {
+    if ( itr->second.second == (bRadio == true) )
+      m_channelDetails.erase(itr);
+    else
+      ++itr;
+  }
+
   int channelCount = 0;
   std::string response;
-  if (DoRequest("/service?method=channel.list", response) == HTTP_OK)
+  if (DoRequest("/service?method=channel.list&extras=true", response) == HTTP_OK)
   {
     TiXmlDocument doc;
     if (doc.Parse(response.c_str()) != NULL)
@@ -840,10 +856,14 @@ PVR_ERROR cPVRClientNextPVR::GetChannels(ADDON_HANDLE handle, bool bRadio)
             PVR_STRCPY(tag.strIconPath, iconFile.c_str());
           }
         }
-        if ( !m_channelTypes[tag.iUniqueId])
-        {
-          m_channelTypes[tag.iUniqueId] = tag.bIsRadio;
-        }
+
+        // V5 has the EPG source type info.
+        string epg;
+        if (XMLUtils::GetString(pChannelNode, "epg", epg))
+          m_channelDetails[tag.iUniqueId] = make_pair(epg == "None", tag.bIsRadio);
+        else
+          m_channelDetails[tag.iUniqueId] = make_pair(false, tag.bIsRadio);
+
         // transfer channel to XBMC
         PVR->TransferChannelEntry(handle, &tag);
         channelCount++;
@@ -881,6 +901,15 @@ int cPVRClientNextPVR::GetChannelGroupsAmount(void)
   }
 
   return groups;
+}
+
+PVR_RECORDING_CHANNEL_TYPE cPVRClientNextPVR::GetChannelType(unsigned int uid)
+{
+  // when uid is invalid we assume TV because Kodi will
+  if (m_channelDetails.count(uid) > 0 && m_channelDetails[uid].second == true)
+    return PVR_RECORDING_CHANNEL_TYPE_RADIO;
+
+  return PVR_RECORDING_CHANNEL_TYPE_TV;
 }
 
 PVR_ERROR cPVRClientNextPVR::GetChannelGroups(ADDON_HANDLE handle, bool bRadio)
@@ -1219,17 +1248,7 @@ bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_REC
   m_hostFilenames[tag->strRecordingId] = recordingFile;
 
   // if we use unknown Kodi logs warning and turns it to TV so save some steps
-  tag->channelType = PVR_RECORDING_CHANNEL_TYPE_TV;
-  if ( tag->iChannelUid != PVR_CHANNEL_INVALID_UID)
-  {
-    if ( m_channelTypes[tag->iChannelUid])
-    {
-      if ( m_channelTypes[tag->iChannelUid] == true)
-      {
-        tag->channelType = PVR_RECORDING_CHANNEL_TYPE_RADIO;
-      }
-    }
-  }
+  tag->channelType = GetChannelType(tag->iChannelUid);
   if (tag->channelType != PVR_RECORDING_CHANNEL_TYPE_RADIO)
   {
     char artworkPath[512];

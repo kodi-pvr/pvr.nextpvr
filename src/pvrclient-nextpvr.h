@@ -209,15 +209,17 @@ private:
   timeshift::RecordingBuffer *m_recordingBuffer;
 
   std::map<std::string, std::string> m_hostFilenames;
-  std::map<int, bool> m_channelTypes;  // returns isRadio
   std::map<int, std::string> m_liveStreams;
 
   //Matrix changes
   NextPVR::Settings& m_settings = NextPVR::Settings::GetInstance();
   std::map<std::string,int> m_epgOidLookup;
   eNowPlaying m_nowPlaying = NotPlaying;
+  std::map<int, std::pair<bool, bool>> m_channelDetails;
 
   void SendWakeOnLan();
+
+  PVR_RECORDING_CHANNEL_TYPE GetChannelType(unsigned int uid);
 
   bool GetAdditiveString(const TiXmlNode* pRootNode, const char* strTag,
         const std::string& strSeparator, std::string& strStringValue,
