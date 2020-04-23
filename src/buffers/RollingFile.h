@@ -67,7 +67,7 @@ namespace timeshift {
         m_liveChunkSize = 64;
       }
       m_lastClose = 0;
-      XBMC->Log(LOG_NOTICE, "EPG Based Buffer created!");
+      XBMC->Log(LOG_INFO, "EPG Based Buffer created!");
     }
 
     virtual ~RollingFile() {}

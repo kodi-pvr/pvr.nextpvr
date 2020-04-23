@@ -26,7 +26,7 @@ namespace timeshift {
     std::string m_recordingURL;
 
   public:
-    RecordingBuffer() : Buffer() { m_Duration = 0; XBMC->Log(LOG_NOTICE, "RecordingBuffer created!"); }
+    RecordingBuffer() : Buffer() { m_Duration = 0; XBMC->Log(LOG_INFO, "RecordingBuffer created!"); }
     virtual ~RecordingBuffer() {}
 
     virtual int Read(byte *buffer, size_t length) override;

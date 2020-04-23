@@ -42,7 +42,7 @@ namespace timeshift {
       }
       m_lastClose = 0;
       m_channel_id = 0;
-      XBMC->Log(LOG_NOTICE, "ClientTimeShift Buffer created!");
+      XBMC->Log(LOG_INFO, "ClientTimeShift Buffer created!");
     }
 
     virtual void PauseStream(bool bPause) override
