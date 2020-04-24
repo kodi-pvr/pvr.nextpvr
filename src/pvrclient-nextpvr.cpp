@@ -256,7 +256,7 @@ bool cPVRClientNextPVR::Connect()
               int version = 0;
               if (settingsDoc.Parse(settings.c_str()) != NULL)
               {
-                //XBMC->Log(LOG_NOTICE, "Settings:\n");
+                //XBMC->Log(LOG_INFO, "Settings:\n");
                 //dump_to_log(&settingsDoc, 0);
                 TiXmlElement* versionNode = settingsDoc.RootElement()->FirstChildElement("NextPVRVersion");
                 if (versionNode == NULL)
@@ -312,7 +312,7 @@ bool cPVRClientNextPVR::Connect()
                 {
                   m_supportsLiveTimeshift = true;
                   g_timeShiftBufferSeconds = atoi(settingsDoc.RootElement()->FirstChildElement("SlipSeconds")->FirstChild()->Value());
-                  XBMC->Log(LOG_NOTICE, "time shift buffer in seconds == %d\n", g_timeShiftBufferSeconds);
+                  XBMC->Log(LOG_INFO, "time shift buffer in seconds == %d\n", g_timeShiftBufferSeconds);
                   if (g_livestreamingmethod == RollingFile && version < 40204 )
                   {
                     XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30051), "4.2.5+");
@@ -324,18 +324,18 @@ bool cPVRClientNextPVR::Connect()
                     delete m_timeshiftBuffer;
                     if (version < 50000 )
                     {
-                      XBMC->Log(LOG_NOTICE, "Rolling File Based Buffering");
+                      XBMC->Log(LOG_INFO, "Rolling File Based Buffering");
                       m_timeshiftBuffer = new timeshift::RollingFile();
                     }
                     else
                     {
-                      XBMC->Log(LOG_NOTICE, "Client Timeshift Based Buffering");
+                      XBMC->Log(LOG_INFO, "Client Timeshift Based Buffering");
                       m_timeshiftBuffer = new timeshift::ClientTimeShift();
                     }
                   }
                   else
                   {
-                    XBMC->Log(LOG_NOTICE, "Timeshift is true!!");
+                    XBMC->Log(LOG_INFO, "Timeshift is true!!");
                     delete m_timeshiftBuffer;
                     m_timeshiftBuffer = new timeshift::TimeshiftBuffer();
                   }
@@ -352,7 +352,7 @@ bool cPVRClientNextPVR::Connect()
 
                 m_showNew = false;
                 XMLUtils::GetBoolean(settingsDoc.RootElement(),"ShowNewInGuide",m_showNew);
-                XBMC->Log(LOG_NOTICE, "Show new %d",m_showNew);
+                XBMC->Log(LOG_INFO, "Show new %d",m_showNew);
 
                 if ( settingsDoc.RootElement()->FirstChildElement("RecordingDirectories") != NULL &&  settingsDoc.RootElement()->FirstChildElement("RecordingDirectories")->FirstChild() != NULL)
                 {
@@ -365,7 +365,7 @@ bool cPVRClientNextPVR::Connect()
                 if ( settingsDoc.RootElement()->FirstChildElement("TimeEpoch") != NULL)
                 {
                   g_ServerTimeOffset = time(nullptr) - atoi(settingsDoc.RootElement()->FirstChildElement("TimeEpoch")->FirstChild()->Value());
-                  XBMC->Log(LOG_NOTICE, "Server time offset in seconds: %d", g_ServerTimeOffset);
+                  XBMC->Log(LOG_INFO, "Server time offset in seconds: %d", g_ServerTimeOffset);
                 }
                 if ( settingsDoc.RootElement()->FirstChildElement("ServerMAC") != NULL && settingsDoc.RootElement()->FirstChildElement("ServerMAC")->FirstChild() != NULL)
                 {
@@ -865,7 +865,7 @@ PVR_ERROR cPVRClientNextPVR::GetChannels(ADDON_HANDLE handle, bool bRadio)
     TiXmlDocument doc;
     if (doc.Parse(response.c_str()) != NULL)
     {
-      //XBMC->Log(LOG_NOTICE, "Channels:\n");
+      //XBMC->Log(LOG_INFO, "Channels:\n");
       //dump_to_log(&doc, 0);
       channelCount = 0;
       TiXmlElement* channelsNode = doc.RootElement()->FirstChildElement("channels");
@@ -2331,7 +2331,7 @@ bool cPVRClientNextPVR::OpenLiveStream(const PVR_CHANNEL &channelinfo)
     sprintf(line, "http://%s:%d/live?channeloid=%d&client=XBMC-%s", g_szHostname.c_str(), g_iPort, channelinfo.iUniqueId, m_sid);
     m_livePlayer = m_realTimeBuffer;
   }
-  XBMC->Log(LOG_NOTICE, "Calling Open(%s) on tsb!", line);
+  XBMC->Log(LOG_INFO, "Calling Open(%s) on tsb!", line);
   if (m_livePlayer->Open(line))
   {
     return true;
@@ -2616,24 +2616,24 @@ int dump_attribs_to_stdout(TiXmlElement* pElement, unsigned int indent)
   int ival;
   double dval;
   const char* pIndent=getIndent(indent);
-  // XBMC->Log(LOG_NOTICE, "\n");
+  // XBMC->Log(LOG_INFO, "\n");
   while (pAttrib)
   {
     char buf[1024];
     sprintf(buf, "%s%s: value=[%s]", pIndent, pAttrib->Name(), pAttrib->Value());
-    // XBMC->Log(LOG_NOTICE,  "%s%s: value=[%s]", pIndent, pAttrib->Name(), pAttrib->Value());
+    // XBMC->Log(LOG_INFO,  "%s%s: value=[%s]", pIndent, pAttrib->Name(), pAttrib->Value());
 
     if (pAttrib->QueryIntValue(&ival)==TIXML_SUCCESS)
     {
       sprintf(buf + strlen(buf), " int=%d", ival);
-      // XBMC->Log(LOG_NOTICE,  " int=%d", ival);
+      // XBMC->Log(LOG_INFO,  " int=%d", ival);
     }
     if (pAttrib->QueryDoubleValue(&dval)==TIXML_SUCCESS)
     {
       sprintf(buf + strlen(buf), " d=%1.1f", dval);
-      // XBMC->Log(LOG_NOTICE,  " d=%1.1f", dval);
+      // XBMC->Log(LOG_INFO,  " d=%1.1f", dval);
     }
-    XBMC->Log(LOG_NOTICE,  "%s", buf );
+    XBMC->Log(LOG_INFO,  "%s", buf );
     i++;
     pAttrib=pAttrib->Next();
   }
@@ -2649,56 +2649,56 @@ void dump_to_log( TiXmlNode* pParent, unsigned int indent)
   TiXmlText* pText;
   int t = pParent->Type();
   sprintf(buf, "%s", getIndent(indent));
-  // XBMC->Log(LOG_NOTICE,  "%s", getIndent(indent));
+  // XBMC->Log(LOG_INFO,  "%s", getIndent(indent));
   int num;
 
   switch ( t )
   {
   case TiXmlNode::TINYXML_DOCUMENT:
     sprintf(buf + strlen(buf), "Document");
-    // XBMC->Log(LOG_NOTICE,  "Document" );
+    // XBMC->Log(LOG_INFO,  "Document" );
     break;
 
   case TiXmlNode::TINYXML_ELEMENT:
     sprintf(buf + strlen(buf), "Element [%s]", pParent->Value());
-    // XBMC->Log(LOG_NOTICE,  "Element [%s]", pParent->Value() );
+    // XBMC->Log(LOG_INFO,  "Element [%s]", pParent->Value() );
     num=dump_attribs_to_stdout(pParent->ToElement(), indent+1);
     switch(num)
     {
       case 0:
         sprintf(buf + strlen(buf), " (No attributes)");
-        // XBMC->Log(LOG_NOTICE,  " (No attributes)");
+        // XBMC->Log(LOG_INFO,  " (No attributes)");
         break;
       case 1:
         sprintf(buf + strlen(buf), "%s1 attribute", getIndentAlt(indent));
-        // XBMC->Log(LOG_NOTICE,  "%s1 attribute", getIndentAlt(indent));
+        // XBMC->Log(LOG_INFO,  "%s1 attribute", getIndentAlt(indent));
         break;
       default:
         sprintf(buf + strlen(buf), "%s%d attributes", getIndentAlt(indent), num);
-        // XBMC->Log(LOG_NOTICE,  "%s%d attributes", getIndentAlt(indent), num);
+        // XBMC->Log(LOG_INFO,  "%s%d attributes", getIndentAlt(indent), num);
         break;
     }
     break;
 
   case TiXmlNode::TINYXML_COMMENT:
     sprintf(buf + strlen(buf), "Comment: [%s]", pParent->Value());
-    //XBMC->Log(LOG_NOTICE,  "Comment: [%s]", pParent->Value());
+    //XBMC->Log(LOG_INFO,  "Comment: [%s]", pParent->Value());
     break;
 
   case TiXmlNode::TINYXML_UNKNOWN:
     sprintf(buf + strlen(buf), "Unknown");
-    // XBMC->Log(LOG_NOTICE,  "Unknown" );
+    // XBMC->Log(LOG_INFO,  "Unknown" );
     break;
 
   case TiXmlNode::TINYXML_TEXT:
     pText = pParent->ToText();
     sprintf(buf + strlen(buf), "Text: [%s]", pText->Value());
-    // XBMC->Log(LOG_NOTICE,  "Text: [%s]", pText->Value() );
+    // XBMC->Log(LOG_INFO,  "Text: [%s]", pText->Value() );
     break;
 
   case TiXmlNode::TINYXML_DECLARATION:
     sprintf(buf + strlen(buf), "Declaration");
-    // XBMC->Log(LOG_NOTICE,  "Declaration" );
+    // XBMC->Log(LOG_INFO,  "Declaration" );
     break;
   default:
     break;
