@@ -61,7 +61,7 @@ ADDON_STATUS ADDON_Create(void* hdl, void* props)
   if (!hdl || !props)
     return ADDON_STATUS_UNKNOWN;
 
-  PVR_PROPERTIES* pvrprops = (PVR_PROPERTIES*)props;
+  AddonProperties_PVR* pvrprops = (AddonProperties_PVR*)props;
 
   XBMC = new CHelper_libXBMC_addon;
   if (!XBMC->RegisterMe(hdl))
