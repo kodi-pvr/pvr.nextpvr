@@ -195,7 +195,6 @@ private:
   char                    m_sid[64];
 
   // update these at end of counting loop can be called during action
-  int                     m_iChannelCount = -1;
   int                     m_iRecordingCount = -1;
   int                     m_iTimerCount = -1;
 

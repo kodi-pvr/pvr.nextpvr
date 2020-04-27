@@ -29,7 +29,6 @@
 
 #include <algorithm>
 
-
 using namespace std;
 using namespace ADDON;
 using namespace NextPVR;
@@ -116,8 +115,6 @@ std::string UriEncode(const std::string sSrc)
   return sResult;
 }
 
-
-
 /************************************************************/
 /** Class interface */
 
@@ -128,7 +125,7 @@ cPVRClientNextPVR::cPVRClientNextPVR()
   m_streamingclient        = new NextPVR::Socket(NextPVR::af_inet, NextPVR::pf_inet, NextPVR::sock_stream, NextPVR::tcp);
   m_bConnected             = false;
   NextPVR::m_backEnd       = new NextPVR::Request();
-  m_iChannelCount          = 0;
+  m_iChannelCount          = -1;
   m_currentRecordingLength = 0;
 
   m_supportsLiveTimeshift  = false;
@@ -682,28 +679,24 @@ int cPVRClientNextPVR::XmlGetInt(TiXmlElement * node, const char* name)
 int cPVRClientNextPVR::GetNumChannels(void)
 {
   LOG_API_CALL(__FUNCTION__);
-  if (m_iChannelCount != -1)
-    return m_iChannelCount;
-
-
   // need something more optimal, but this will do for now...
   std::string response;
+  int channelCount = 0;
   if (DoRequest("/service?method=channel.list", response) == HTTP_OK)
   {
     TiXmlDocument doc;
     if (doc.Parse(response.c_str()) != NULL)
     {
-      m_iChannelCount = 0;
       TiXmlElement* channelsNode = doc.RootElement()->FirstChildElement("channels");
       TiXmlElement* pChannelNode;
       for( pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode=pChannelNode->NextSiblingElement())
       {
-        m_iChannelCount++;
+        channelCount++;
       }
     }
   }
 
-  return m_iChannelCount;
+  return channelCount;
 }
 
 std::string cPVRClientNextPVR::GetChannelIcon(int channelID)
@@ -806,7 +799,6 @@ PVR_ERROR cPVRClientNextPVR::GetChannels(ADDON_HANDLE handle, bool bRadio)
       ++itr;
   }
 
-  int channelCount = 0;
   std::string response;
   if (DoRequest("/service?method=channel.list&extras=true", response) == HTTP_OK)
   {
@@ -815,7 +807,6 @@ PVR_ERROR cPVRClientNextPVR::GetChannels(ADDON_HANDLE handle, bool bRadio)
     {
       //XBMC->Log(LOG_INFO, "Channels:\n");
       //dump_to_log(&doc, 0);
-      channelCount = 0;
       TiXmlElement* channelsNode = doc.RootElement()->FirstChildElement("channels");
       TiXmlElement* pChannelNode;
       for( pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode=pChannelNode->NextSiblingElement())
@@ -866,10 +857,8 @@ PVR_ERROR cPVRClientNextPVR::GetChannels(ADDON_HANDLE handle, bool bRadio)
 
         // transfer channel to XBMC
         PVR->TransferChannelEntry(handle, &tag);
-        channelCount++;
       }
     }
-    m_iChannelCount = channelCount;
   }
   return PVR_ERROR_NO_ERROR;
 }
@@ -1135,7 +1124,6 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
 
 bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_RECORDING *tag, std::string title, bool flatten)
 {
-
   tag->recordingTime = atol(pRecordingNode->FirstChildElement("start_time_ticks")->FirstChild()->Value());
 
   std::string status = pRecordingNode->FirstChildElement("status")->FirstChild()->Value();
