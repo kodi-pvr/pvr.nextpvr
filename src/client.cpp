@@ -157,7 +157,7 @@ ADDON_STATUS ADDON_SetSetting(const char *settingName, const void *settingValue)
   if (!XBMC || !g_client)
     return ADDON_STATUS_OK;
 
-  ADDON_STATUS  status = settings.SetValue(settingName, settingValue);
+  ADDON_STATUS status = settings.SetValue(settingName, settingValue);
   if (status == ADDON_STATUS_NEED_SETTINGS)
   {
     status = ADDON_STATUS_OK;
@@ -613,7 +613,7 @@ PVR_ERROR GetStreamReadChunkSize(int* chunksize)
 
 PVR_ERROR SetRecordingPlayCount(const PVR_RECORDING& recording, int count)
 {
-  XBMC->Log(LOG_DEBUG, "Play count %s %d", recording.strTitle,count);
+  XBMC->Log(LOG_DEBUG, "Play count %s %d", recording.strTitle, count);
   return PVR_ERROR_NO_ERROR;
 }
 

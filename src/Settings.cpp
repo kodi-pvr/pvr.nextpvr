@@ -141,7 +141,7 @@ ADDON_STATUS Settings::ReadBackendSettings()
       std::string recordingDirectories;
       if (XMLUtils::GetString(settingsDoc.RootElement(),"RecordingDirectories",recordingDirectories))
       {
-        m_recordingDirectories = StringUtils::Split(recordingDirectories,",",0);
+        m_recordingDirectories = StringUtils::Split(recordingDirectories, ",", 0);
         /*
         vector<std::string> directories = split(recordingDirectories, ",", false);
         for (size_t i = 0; i < directories.size(); i++)
@@ -170,8 +170,8 @@ ADDON_STATUS Settings::ReadBackendSettings()
         if (strlen(rawMAC) == 12)
         {
           char mac[18];
-          sprintf(mac, "%2.2s:%2.2s:%2.2s:%2.2s:%2.2s:%2.2s", rawMAC,&rawMAC[2], &rawMAC[4], &rawMAC[6], &rawMAC[8], &rawMAC[10]);
-          XBMC->Log(LOG_DEBUG, "Server MAC addres %4.4s...",mac);
+          sprintf(mac, "%2.2s:%2.2s:%2.2s:%2.2s:%2.2s:%2.2s", rawMAC, &rawMAC[2], &rawMAC[4], &rawMAC[6], &rawMAC[8], &rawMAC[10]);
+          XBMC->Log(LOG_DEBUG, "Server MAC addres %4.4s...", mac);
           std::string smac = mac;
           if (m_hostMACAddress != smac)
           {
@@ -186,7 +186,6 @@ ADDON_STATUS Settings::ReadBackendSettings()
 
 void Settings::SetVersionSpecificSettings()
 {
-
   m_liveStreamingMethod = DEFAULT_LIVE_STREAM;
 
   if (XBMC->GetSetting("livestreamingmethod", &m_liveStreamingMethod))
@@ -212,7 +211,7 @@ void Settings::SetVersionSpecificSettings()
       eStreamingMethod oldMethod = m_liveStreamingMethod;
       XBMC->GetSetting("livestreamingmethod5", &m_liveStreamingMethod);
 
-      if (m_liveStreamingMethod == Default)
+      if (m_liveStreamingMethod == eStreamingMethod::Default)
         m_liveStreamingMethod = oldMethod;
 
       if (m_liveStreamingMethod == RollingFile || m_liveStreamingMethod == Timeshift)

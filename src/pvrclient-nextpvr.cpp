@@ -125,7 +125,6 @@ cPVRClientNextPVR::cPVRClientNextPVR()
   m_streamingclient        = new NextPVR::Socket(NextPVR::af_inet, NextPVR::pf_inet, NextPVR::sock_stream, NextPVR::tcp);
   m_bConnected             = false;
   NextPVR::m_backEnd       = new NextPVR::Request();
-  m_iChannelCount          = -1;
   m_currentRecordingLength = 0;
 
   m_supportsLiveTimeshift  = false;
@@ -307,8 +306,10 @@ void cPVRClientNextPVR:: ConfigurePostConnectionOptions()
 
   bool liveStreams;
   if (XBMC->GetSetting("uselivestreams", &liveStreams))
+  {
     if (liveStreams)
       LoadLiveStreams();
+  }
 
   bool resetIcons;
   if (XBMC->GetSetting("reseticons", &resetIcons))
@@ -514,7 +515,7 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t
       XBMC->Log(LOG_DEBUG, "Skipping expired EPG data %d %ld %lld",iChannelUid,iStart, iEnd);
       return PVR_ERROR_INVALID_PARAMETERS;
   }
-  sprintf(request, "/service?method=channel.listings&channel_id=%d&start=%d&end=%d&genre=all", iChannelUid, (int)iStart, (int)iEnd);
+  sprintf(request, "/service?method=channel.listings&channel_id=%d&start=%d&end=%d&genre=all", iChannelUid, static_cast<int>(iStart), static_cast<int>(iEnd));
   if (DoRequest(request, response) == HTTP_OK)
   {
     TiXmlDocument doc;
@@ -567,22 +568,22 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t
         broadcast.strWriter           = NULL; // unused
         broadcast.strIMDBNumber       = NULL; // unused
 
+        std::string artworkPath;
         if (m_settings.m_downloadGuideArtwork)
         {
           // artwork URL
-          char artworkPath[512];
           if (m_settings.m_backendVersion < 50000)
-            snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=channel.show.artwork&sid=%s&event_id=%d", m_settings.m_hostname.c_str(), m_settings.m_port, m_sid, epgOid);
+            artworkPath = StringUtils::Format("http://%s:%d/service?method=channel.show.artwork&sid=%s&event_id=%d", m_settings.m_hostname.c_str(), m_settings.m_port, m_sid, epgOid);
           else
           {
             if (m_settings.m_sendSidWithMetadata)
-              snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_hostname.c_str(), m_settings.m_port, m_sid,UriEncode(title).c_str());
+              artworkPath = StringUtils::Format("http://%s:%d/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_hostname.c_str(), m_settings.m_port, m_sid,UriEncode(title).c_str());
             else
-              snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=channel.show.artwork&name=%s", m_settings.m_hostname.c_str(), m_settings.m_port, UriEncode(title).c_str());
+              artworkPath = StringUtils::Format("http://%s:%d/service?method=channel.show.artwork&name=%s", m_settings.m_hostname.c_str(), m_settings.m_port, UriEncode(title).c_str());
             if (m_settings.m_guideArtPortrait)
-              strcat(artworkPath, "&prefer=poster");
+              artworkPath += "&prefer=poster";
           }
-          broadcast.strIconPath = artworkPath;
+          broadcast.strIconPath = artworkPath.c_str();
         }
         std::string sGenre;
         if (XMLUtils::GetString(pListingNode,"genre",sGenre))
@@ -598,7 +599,7 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t
         }
         if (pListingNode->FirstChildElement("genres") != NULL)
         {
-          std::string  allGenres;
+          std::string allGenres;
           if (GetAdditiveString(pListingNode->FirstChildElement("genres"), "genre", EPG_STRING_TOKEN_SEPARATOR, allGenres, true))
           {
             if (allGenres.find(EPG_STRING_TOKEN_SEPARATOR) != std::string::npos)
@@ -792,9 +793,10 @@ PVR_ERROR cPVRClientNextPVR::GetChannels(ADDON_HANDLE handle, bool bRadio)
   LOG_API_CALL(__FUNCTION__);
 
   std::map<int, std::pair<bool, bool>>::iterator  itr = m_channelDetails.begin();
-  while (itr != m_channelDetails.end()) {
-    if ( itr->second.second == (bRadio == true) )
-      m_channelDetails.erase(itr);
+  while (itr != m_channelDetails.end())
+  {
+    if (itr->second.second == (bRadio == true))
+      itr = m_channelDetails.erase(itr);
     else
       ++itr;
   }
@@ -1122,7 +1124,7 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
   return returnValue;
 }
 
-bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_RECORDING *tag, std::string title, bool flatten)
+bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_RECORDING *tag, const std::string& title, bool flatten)
 {
   tag->recordingTime = atol(pRecordingNode->FirstChildElement("start_time_ticks")->FirstChild()->Value());
 
@@ -1277,7 +1279,7 @@ bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_REC
   {
     std::string genres;
     TiXmlElement* pGenresNode = pRecordingNode->FirstChildElement("genres");
-    GetAdditiveString(pGenresNode,"genre",EPG_STRING_TOKEN_SEPARATOR,genres,true);
+    GetAdditiveString(pGenresNode,"genre", EPG_STRING_TOKEN_SEPARATOR, genres, true);
     tag->iGenreType = EPG_GENRE_USE_STRING;
     tag->iGenreSubType = 0;
     PVR_STRCPY(tag->strGenreDescription,genres.c_str());
