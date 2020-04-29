@@ -671,12 +671,12 @@ long long LengthLiveStream(void)
     return g_client->LengthLiveStream();
 }
 
-PVR_ERROR SignalStatus(PVR_SIGNAL_STATUS &signalStatus)
+PVR_ERROR GetSignalStatus(int channelUid, PVR_SIGNAL_STATUS *signalStatus)
 {
   if (!g_client)
     return PVR_ERROR_SERVER_ERROR;
   else
-    return g_client->SignalStatus(signalStatus);
+    return g_client->GetSignalStatus(signalStatus);
 }
 
 PVR_ERROR GetChannelStreamProperties(const PVR_CHANNEL* channel, PVR_NAMED_VALUE* properties, unsigned int* iPropertiesCount)
@@ -804,7 +804,7 @@ PVR_ERROR UndeleteRecording(const PVR_RECORDING& recording) { return PVR_ERROR_N
 PVR_ERROR DeleteAllRecordingsFromTrash() { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR GetRecordingSize(const PVR_RECORDING* recording, int64_t* sizeInBytes) { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR SetEPGTimeFrame(int) { return PVR_ERROR_NOT_IMPLEMENTED; }
-PVR_ERROR GetDescrambleInfo(PVR_DESCRAMBLE_INFO*) { return PVR_ERROR_NOT_IMPLEMENTED; }
+PVR_ERROR GetDescrambleInfo(int, PVR_DESCRAMBLE_INFO*) { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR SetRecordingLifetime(const PVR_RECORDING*) { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR GetRecordingStreamProperties(const PVR_RECORDING*, PVR_NAMED_VALUE*, unsigned int*) { return PVR_ERROR_NOT_IMPLEMENTED; }
 PVR_ERROR IsEPGTagRecordable(const EPG_TAG*, bool*) { return PVR_ERROR_NOT_IMPLEMENTED; }

@@ -129,7 +129,7 @@ public:
   bool OpenLiveStream(const PVR_CHANNEL &channel);
   void CloseLiveStream();
   int ReadLiveStream(unsigned char *pBuffer, unsigned int iBufferSize);
-  PVR_ERROR SignalStatus(PVR_SIGNAL_STATUS &signalStatus);
+  PVR_ERROR GetSignalStatus(PVR_SIGNAL_STATUS *signalStatus);
   long long SeekLiveStream(long long iPosition, int iWhence = SEEK_SET);
   long long LengthLiveStream(void);
   bool CanPauseStream(void);

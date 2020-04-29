@@ -2378,7 +2378,7 @@ long long cPVRClientNextPVR::LengthLiveStream(void)
   return m_livePlayer->Length();
 }
 
-PVR_ERROR cPVRClientNextPVR::SignalStatus(PVR_SIGNAL_STATUS &signalStatus)
+PVR_ERROR cPVRClientNextPVR::GetSignalStatus(PVR_SIGNAL_STATUS *signalStatus)
 {
   LOG_API_CALL(__FUNCTION__);
   // Not supported yet
