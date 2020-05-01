@@ -183,13 +183,8 @@ msgid "Separate season and episode for skin - Forced them in subtitle when off (
 msgstr ""
 
 msgctxt "#30170"
-msgid "Reset channel icons"
+msgid "Refresh cache for channel icons"
 msgstr ""
-
-msgctxt "#30670"
-msgid "Erase cached icons on next restart"
-msgstr ""
-
 
 msgctxt "#30171"
 msgid "Repeating (advanced)"
@@ -245,4 +240,20 @@ msgstr ""
 
 msgctxt "#30182"
 msgid "NextPVR server %s:%d"
+msgstr ""
+
+msgctxt "#30183"
+msgid "Reset channel icon"
+msgstr ""
+
+msgctxt "#30184"
+msgid "Forget recording"
+msgstr ""
+
+msgctxt "#30185"
+msgid "Update all channels"
+msgstr ""
+
+msgctxt "#30186"
+msgid "Update all channel groups"
 msgstr ""

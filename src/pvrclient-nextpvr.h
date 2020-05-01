@@ -15,7 +15,6 @@
 #include "kodi/libXBMC_addon.h"
 
 /* Local includes */
-#include "Socket.h"
 #include "Settings.h"
 #include "buffers/DummyBuffer.h"
 #include "buffers/TranscodedBuffer.h"
@@ -101,6 +100,8 @@ public:
   PVR_ERROR GetStreamTimes(PVR_STREAM_TIMES *stimes);
   PVR_ERROR GetStreamReadChunkSize(int* chunksize);
   int XmlGetInt(TiXmlElement * node, const char* name);
+  PVR_ERROR CallMenuHook(const PVR_MENUHOOK& menuhook, const PVR_MENUHOOK_DATA& item);
+  void ConfigureMenuhook();
 
   /* EPG handling */
   PVR_ERROR GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t iStart = 0, time_t iEnd = 0);
@@ -126,6 +127,7 @@ public:
   PVR_ERROR GetRecordingStreamProperties(const PVR_RECORDING*, PVR_NAMED_VALUE*, unsigned int*);
   bool UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_RECORDING *tag, const std::string& title, bool flatten);
   void ParseNextPVRSubtitle( const char *episodeName, PVR_RECORDING   *tag);
+  bool ForgetRecording(const PVR_RECORDING& recording);
 
   /* Timer handling */
   int GetNumTimers(void);
@@ -173,6 +175,7 @@ private:
   int DoRequest(const char *resource, std::string &response);
   std::string GetChannelIcon(int channelID);
   std::string GetChannelIconFileName(int channelID);
+  void DeleteChannelIcon(int channelID);
   void DeleteChannelIcons();
   void ConfigurePostConnectionOptions();
 

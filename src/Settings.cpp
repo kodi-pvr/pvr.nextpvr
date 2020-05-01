@@ -10,7 +10,6 @@
 #include "Settings.h"
 #include "BackendRequest.h"
 
-
 #include <kodi/util/XMLUtils.h>
 #include <p8-platform/util/StringUtils.h>
 #include <tinyxml.h>
@@ -74,9 +73,6 @@ void Settings::ReadFromAddon()
 
   if (!XBMC->GetSetting("flattenrecording", &m_flattenRecording))
     m_flattenRecording = false;
-
-  if (!XBMC->GetSetting("reseticons", &m_resetIcons))
-    m_resetIcons = false;
 
   if (!XBMC->GetSetting("kodilook", &m_kodiLook))
     m_kodiLook = false;
@@ -313,8 +309,6 @@ ADDON_STATUS Settings::SetValue(const std::string& settingName, const void* sett
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_showRecordingSize, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
   else if (settingName == "flattenrecording")
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_flattenRecording, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
-  else if (settingName == "reseticons")
-    return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_resetIcons, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
   else if (settingName == "kodilook")
     return SetSetting<bool ,ADDON_STATUS>(settingName, settingValue, m_kodiLook, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
   else if (settingName == "host_mac")

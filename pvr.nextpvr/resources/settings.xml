@@ -201,16 +201,6 @@
     </category>
     <category help="" id="advanced5" label="30175">
       <group id="12">
-        <setting help="30670" id="reseticons" label="30170" type="boolean">
-          <level>2</level>
-          <default>false</default>
-          <control type="toggle"/>
-          <dependencies>
-            <dependency type="visible">
-              <condition operator="is" setting="legacy">false</condition>
-            </dependency>
-          </dependencies>
-        </setting>
         <setting help="" id="remoteaccess" label="30179" type="boolean">
           <level>2</level>
           <default>false</default>

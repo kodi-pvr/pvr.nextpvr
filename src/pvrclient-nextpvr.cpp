@@ -160,31 +160,71 @@ cPVRClientNextPVR::~cPVRClientNextPVR()
   m_liveStreams.clear();
 }
 
-std::vector<std::string> cPVRClientNextPVR::split(const std::string& s, const std::string& delim, const bool keep_empty)
+PVR_ERROR cPVRClientNextPVR::CallMenuHook(const PVR_MENUHOOK& menuhook, const PVR_MENUHOOK_DATA& item)
 {
-  std::vector<std::string> result;
-  if (delim.empty())
+  if (item.cat == PVR_MENUHOOK_CHANNEL && menuhook.iHookId == 1)
   {
-    result.push_back(s);
-    return result;
+    DeleteChannelIcon(item.data.channel.iUniqueId);
+    PVR->TriggerChannelUpdate();
   }
-  std::string::const_iterator substart = s.begin(), subend;
-  while (true)
+  else if (item.cat == PVR_MENUHOOK_RECORDING && menuhook.iHookId == 1)
   {
-    subend = search(substart, s.end(), delim.begin(), delim.end());
-    std::string temp(substart, subend);
-    if (keep_empty || !temp.empty())
-    {
-      result.push_back(temp);
-    }
-    if (subend == s.end())
-    {
-      break;
-    }
-    substart = subend + delim.size();
+    ForgetRecording(item.data.recording);
   }
-  return result;
+  else if (item.cat == PVR_MENUHOOK_SETTING && menuhook.iHookId == 1)
+  {
+    DeleteChannelIcons();
+    PVR->TriggerChannelUpdate();
+  }
+  else if (item.cat == PVR_MENUHOOK_SETTING && menuhook.iHookId == 2)
+  {
+    PVR->TriggerChannelUpdate();
+  }
+  else if (item.cat == PVR_MENUHOOK_RECORDING && menuhook.iHookId == 3)
+  {
+   PVR->TriggerChannelGroupsUpdate();
+  }
+  return PVR_ERROR_NO_ERROR;
 }
+
+void cPVRClientNextPVR::ConfigureMenuhook()
+{
+  PVR_MENUHOOK menuHook;
+  menuHook = { 0 };
+  menuHook.category = PVR_MENUHOOK_CHANNEL;
+  menuHook.iHookId = 1;
+  menuHook.iLocalizedStringId = 30183;
+  PVR->AddMenuHook(&menuHook);
+
+  menuHook = { 0 };
+  menuHook.category = PVR_MENUHOOK_SETTING;
+  menuHook.iHookId = 1;
+  menuHook.iLocalizedStringId = 30170;
+  PVR->AddMenuHook(&menuHook);
+
+  menuHook = { 0 };
+  menuHook.category = PVR_MENUHOOK_SETTING;
+  menuHook.iHookId = 2;
+  menuHook.iLocalizedStringId = 30185;
+  PVR->AddMenuHook(&menuHook);
+
+  menuHook = { 0 };
+  menuHook.category = PVR_MENUHOOK_SETTING;
+  menuHook.iHookId = 3;
+  menuHook.iLocalizedStringId = 30186;
+  PVR->AddMenuHook(&menuHook);
+
+  if (m_settings.m_backendVersion >= 50000)
+  {
+    menuHook = { 0 };
+    menuHook.category = PVR_MENUHOOK_RECORDING;
+    menuHook.iHookId = 1;
+    menuHook.iLocalizedStringId = 30184;
+    PVR->AddMenuHook(&menuHook);
+  }
+}
+
+
 
 ADDON_STATUS cPVRClientNextPVR::Connect()
 {
@@ -281,6 +321,7 @@ void cPVRClientNextPVR::Disconnect()
 void cPVRClientNextPVR:: ConfigurePostConnectionOptions()
 {
   m_settings.SetVersionSpecificSettings();
+  ConfigureMenuhook();
   if (m_settings.m_liveStreamingMethod != eStreamingMethod::RealTime)
   {
     delete m_timeshiftBuffer;
@@ -310,14 +351,6 @@ void cPVRClientNextPVR:: ConfigurePostConnectionOptions()
     if (liveStreams)
       LoadLiveStreams();
   }
-
-  bool resetIcons;
-  if (XBMC->GetSetting("reseticons", &resetIcons))
-    if (resetIcons)
-    {
-      DeleteChannelIcons();
-      PVR->TriggerChannelUpdate();
-    }
 
 }
 
@@ -725,26 +758,33 @@ std::string cPVRClientNextPVR::GetChannelIconFileName(int channelID)
 {
   char filename[64];
   snprintf(filename, sizeof(filename), "nextpvr-ch%d.png", channelID);
-  std::string iconFilePath("special://userdata/addon_data/pvr.nextpvr/");
+  const std::string iconFilePath("special://userdata/addon_data/pvr.nextpvr/");
 
   return iconFilePath + filename;
+}
+
+void  cPVRClientNextPVR::DeleteChannelIcon(int channelID)
+{
+  #if defined(TARGET_WINDOWS)
+    #undef DeleteFile
+  #endif
+  XBMC->DeleteFile(GetChannelIconFileName(channelID).c_str());
 }
 
 void  cPVRClientNextPVR::DeleteChannelIcons()
 {
   VFSDirEntry* icons;
   unsigned int count;
-  if (XBMC->GetDirectory("special://userdata/addon_data/pvr.nextpvr/","nextpvr-ch*.png",&icons,&count))
+  if (XBMC->GetDirectory("special://userdata/addon_data/pvr.nextpvr/","nextpvr-ch*.png", &icons, &count))
   {
     XBMC->Log(LOG_INFO, "Deleting %d channel icons", count);
     for (unsigned int i = 0; i < count; ++i)
     {
       VFSDirEntry& f = icons[i];
-      std::string deleteme = f.path;
+      const std::string deleteme = f.path;
       XBMC->Log(LOG_DEBUG,"DeleteFile %s rc:%d",XBMC->TranslateSpecialProtocol(f.path),remove(XBMC->TranslateSpecialProtocol(f.path)));
     }
   }
-  m_settings.SaveSettings("reseticons", "false");
 }
 
 void cPVRClientNextPVR::LoadLiveStreams()
@@ -782,6 +822,7 @@ void cPVRClientNextPVR::LoadLiveStreams()
           }
         }
       }
+      XBMC->FreeString(liveStreams);
     }
   }
 }
@@ -1382,6 +1423,16 @@ PVR_ERROR cPVRClientNextPVR::DeleteRecording(const PVR_RECORDING &recording)
     XBMC->Log(LOG_DEBUG, "DeleteRecording failed");
   }
   return PVR_ERROR_FAILED;
+}
+
+bool cPVRClientNextPVR::ForgetRecording(const PVR_RECORDING& recording)
+{
+  LOG_API_CALL(__FUNCTION__);
+  // tell backend to forget recording history so it can re recorded.
+  std::string request = "/service?method=recording.forget&recording_id=";
+  request.append(recording.strRecordingId);
+  std::string response;
+  return DoRequest(request.c_str(), response) == HTTP_OK;
 }
 
 PVR_ERROR cPVRClientNextPVR::SetRecordingLastPlayedPosition(const PVR_RECORDING &recording, int lastplayedposition)

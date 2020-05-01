@@ -9,7 +9,6 @@
 
 #pragma once
 
-
 #include "client.h"
 
 #include <kodi/AddonBase.h>
@@ -84,7 +83,6 @@ namespace NextPVR
     int m_backendVersion = 0;
 
     //Channel
-    bool m_resetIcons = false;
 
     //EPG
     bool m_showNew = false;
