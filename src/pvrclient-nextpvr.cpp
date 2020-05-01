@@ -305,7 +305,7 @@ ADDON_STATUS cPVRClientNextPVR::Connect()
   else
   {
     PVR->ConnectionStateChange( "Could not connect to server", PVR_CONNECTION_STATE_SERVER_UNREACHABLE ,NULL);
-    status = ADDON_STATUS_NEED_SETTINGS;
+    status = ADDON_STATUS_PERMANENT_FAILURE;
   }
 
   return status;

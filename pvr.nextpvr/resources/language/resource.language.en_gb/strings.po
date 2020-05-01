@@ -257,3 +257,7 @@ msgstr ""
 msgctxt "#30186"
 msgid "Update all channel groups"
 msgstr ""
+
+msgctxt "#30187"
+msgid "Select NextPVR IP address"
+msgstr ""

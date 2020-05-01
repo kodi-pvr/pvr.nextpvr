@@ -31,7 +31,6 @@ Settings& settings = Settings::GetInstance();
 CHelper_libXBMC_addon *XBMC           = NULL;
 CHelper_libXBMC_pvr   *PVR            = NULL;
 
-
 extern "C" {
 
 void ADDON_ReadSettings();
@@ -72,34 +71,18 @@ ADDON_STATUS ADDON_Create(void* hdl, void* props)
   g_szUserPath   = pvrprops->strUserPath;
   g_szClientPath = pvrprops->strClientPath;
 
-  ADDON_ReadSettings();
+  if (!XBMC->DirectoryExists("special://userdata/addon_data/pvr.nextpvr/"))
+  {
+    NextPVR::m_backEnd = new NextPVR::Request();
+    NextPVR::m_backEnd->OneTimeSetup(hdl);
+    NextPVR::m_backEnd->~Request();
+  }
+
   settings.ReadFromAddon();
 
   /* Create connection to NextPVR KODI TV client */
   g_client       = new cPVRClientNextPVR();
   m_CurStatus = g_client->Connect();
-  if (m_CurStatus == ADDON_STATUS_NEED_SETTINGS && settings.m_hostname == DEFAULT_HOST)
-  {
-    // if there is no settings.xml try discovery
-    if (!XBMC->FileExists("special://profile/addon_data/pvr.nextpvr/settings.xml", false))
-    {
-      XBMC->Log(LOG_ERROR, "Couldn't connect default connection");
-      std::vector<std::string> foundAddress = NextPVR::m_backEnd->Discovery();
-      if (!foundAddress.empty())
-      {
-        settings.UpdateServerPort(foundAddress[0], stoi(foundAddress[1]));
-        m_CurStatus = g_client->Connect();
-        if (m_CurStatus == ADDON_STATUS_OK)
-        {
-          XBMC->QueueNotification(QUEUE_INFO, XBMC->GetLocalizedString(30182), settings.m_hostname.c_str(), settings.m_port);
-        }
-      }
-    }
-    else
-    {
-      m_CurStatus = ADDON_STATUS_PERMANENT_FAILURE;
-    }
-  }
 
   if (m_CurStatus != ADDON_STATUS_OK)
   {
@@ -284,7 +267,10 @@ PVR_ERROR OpenDialogChannelScan()
 
 PVR_ERROR CallMenuHook(const PVR_MENUHOOK &menuhook, const PVR_MENUHOOK_DATA &item)
 {
-  return PVR_ERROR_NOT_IMPLEMENTED;
+  if (!g_client)
+    return PVR_ERROR_SERVER_ERROR;
+  else
+    return g_client->CallMenuHook(menuhook, item);
 }
 
 
