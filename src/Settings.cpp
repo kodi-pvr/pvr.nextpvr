@@ -103,7 +103,8 @@ ADDON_STATUS Settings::ReadBackendSettings()
 {
   // check server version
   std::string settings;
-  if (NextPVR::m_backEnd->DoRequest("/service?method=setting.list", settings) == HTTP_OK)
+  Request& request = Request::GetInstance();
+  if (request.DoRequest("/service?method=setting.list", settings) == HTTP_OK)
   {
     TiXmlDocument settingsDoc;
     if (settingsDoc.Parse(settings.c_str()) != NULL)

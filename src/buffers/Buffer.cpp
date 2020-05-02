@@ -104,5 +104,5 @@ void Buffer::LeaseWorker(void)
 int Buffer::Lease()
 {
   std::string response;
-  return NextPVR::m_backEnd->DoRequest("/service?method=channel.transcode.lease", response);
+  return m_request.DoRequest("/service?method=channel.transcode.lease", response);
 }

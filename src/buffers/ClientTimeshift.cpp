@@ -35,7 +35,7 @@ bool ClientTimeShift::Open(const std::string inputUrl, bool isRadio)
   {
     std::string timeshift = "/services/service?method=channel.stream.start&channel_id=" + std::to_string(m_channel_id);
     std::string response;
-    if (NextPVR::m_backEnd->DoRequest(timeshift.c_str(), response) != HTTP_OK)
+    if (m_request.DoRequest(timeshift.c_str(), response) != HTTP_OK)
     {
       return false;
     }
@@ -100,7 +100,7 @@ void ClientTimeShift::Close()
 void ClientTimeShift::StreamStop()
 {
   std::string response;
-  if (NextPVR::m_backEnd->DoRequest("/services/service?method=channel.stream.stop", response) != HTTP_OK)
+  if (m_request.DoRequest("/services/service?method=channel.stream.stop", response) != HTTP_OK)
   {
     XBMC->Log(LOG_ERROR, "%s:%d:", __FUNCTION__, __LINE__);
   }
@@ -153,7 +153,7 @@ bool ClientTimeShift::GetStreamInfo()
     XBMC->Log(LOG_ERROR, "NextPVR not updating completed rolling file");
     return ( m_stream_length != 0 );
   }
-  if (NextPVR::m_backEnd->DoRequest("/services/service?method=channel.stream.info", response) == HTTP_OK)
+  if (m_request.DoRequest("/services/service?method=channel.stream.info", response) == HTTP_OK)
   {
     TiXmlDocument doc;
     if (doc.Parse(response.c_str()) != NULL)

@@ -124,7 +124,6 @@ cPVRClientNextPVR::cPVRClientNextPVR()
   m_tcpclient              = new NextPVR::Socket(NextPVR::af_inet, NextPVR::pf_inet, NextPVR::sock_stream, NextPVR::tcp);
   m_streamingclient        = new NextPVR::Socket(NextPVR::af_inet, NextPVR::pf_inet, NextPVR::sock_stream, NextPVR::tcp);
   m_bConnected             = false;
-  NextPVR::m_backEnd       = new NextPVR::Request();
   m_currentRecordingLength = 0;
 
   m_supportsLiveTimeshift  = false;
@@ -248,7 +247,7 @@ ADDON_STATUS cPVRClientNextPVR::Connect()
         // extract and store sid
         PVR_STRCLR(m_sid);
         PVR_STRCPY(m_sid, sidNode->FirstChild()->Value());
-        NextPVR::m_backEnd->setSID(m_sid);
+        m_request.setSID(m_sid);
         // extract salt
         char salt[64];
         PVR_STRCLR(salt);
@@ -457,7 +456,7 @@ void cPVRClientNextPVR::SendWakeOnLan()
     int count = 0;
     for (;count < m_settings.m_timeoutWOL; count++)
     {
-      if (NextPVR::m_backEnd->PingBackend())
+      if (m_request.PingBackend())
       {
         return;
       }
@@ -746,7 +745,7 @@ std::string cPVRClientNextPVR::GetChannelIcon(int channelID)
   }
   char strURL[256];
   sprintf(strURL, "/service?method=channel.icon&channel_id=%d", channelID);
-  if (NextPVR::m_backEnd->FileCopy(strURL, iconFilename) == HTTP_OK)
+  if (m_request.FileCopy(strURL, iconFilename) == HTTP_OK)
   {
     return iconFilename;
   }
@@ -792,7 +791,7 @@ void cPVRClientNextPVR::LoadLiveStreams()
   char strURL[256];
   sprintf(strURL, "/public/LiveStreams.xml");
   m_liveStreams.clear();
-  if (NextPVR::m_backEnd->FileCopy(strURL, "special://userdata/addon_data/pvr.nextpvr/LiveStreams.xml") == HTTP_OK)
+  if (m_request.FileCopy(strURL, "special://userdata/addon_data/pvr.nextpvr/LiveStreams.xml") == HTTP_OK)
   {
     TiXmlDocument doc;
     char *liveStreams = XBMC->TranslateSpecialProtocol("special://userdata/addon_data/pvr.nextpvr/LiveStreams.xml");
@@ -2516,7 +2515,7 @@ long long  cPVRClientNextPVR::LengthRecordedStream(void)
 /** http handling */
 int cPVRClientNextPVR::DoRequest(const char *resource, std::string &response)
 {
-  int resultCode =  NextPVR::m_backEnd->DoRequest(resource, response);
+  int resultCode = m_request.DoRequest(resource, response);
   return resultCode;
 }
 

@@ -73,9 +73,8 @@ ADDON_STATUS ADDON_Create(void* hdl, void* props)
 
   if (!XBMC->DirectoryExists("special://userdata/addon_data/pvr.nextpvr/"))
   {
-    NextPVR::m_backEnd = new NextPVR::Request();
-    NextPVR::m_backEnd->OneTimeSetup(hdl);
-    NextPVR::m_backEnd->~Request();
+    Request& request = Request::GetInstance();
+    request.OneTimeSetup(hdl);
   }
 
   settings.ReadFromAddon();

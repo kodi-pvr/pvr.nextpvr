@@ -15,7 +15,6 @@ using namespace ADDON;
 
 namespace NextPVR
 {
-  Request *m_backEnd;
   int Request::DoRequest(const char *resource, std::string &response)
   {
     P8PLATFORM::CLockObject lock(m_mutexRequest);

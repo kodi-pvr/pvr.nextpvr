@@ -106,7 +106,7 @@ bool RollingFile::RollingFileOpen()
   #if defined(TESTURL)
     strcpy(strURL,TESTURL);
   #else
-    snprintf(strURL,sizeof(strURL),"http://%s:%d/stream?f=%s&mode=http&sid=%s", m_settings.m_hostname.c_str(), m_settings.m_port, UriEncode(m_activeFilename).c_str(), NextPVR::m_backEnd->getSID());
+    snprintf(strURL,sizeof(strURL),"http://%s:%d/stream?f=%s&mode=http&sid=%s", m_settings.m_hostname.c_str(), m_settings.m_port, UriEncode(m_activeFilename).c_str(), m_request.getSID());
     if (m_isRadio && m_activeLength == -1)
     {
       // reduce buffer for radio when playing in-progess slip file
@@ -135,7 +135,7 @@ bool RollingFile::GetStreamInfo()
     XBMC->Log(LOG_ERROR, "NextPVR not updating completed rolling file");
     return ( m_stream_length != 0 );
   }
-  if (NextPVR::m_backEnd->DoRequest("/services/service?method=channel.stream.info", response) == HTTP_OK)
+  if (m_request.DoRequest("/services/service?method=channel.stream.info", response) == HTTP_OK)
   {
     TiXmlDocument doc;
     if (doc.Parse(response.c_str()) != NULL)

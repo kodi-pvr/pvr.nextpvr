@@ -52,6 +52,7 @@ namespace timeshift {
     virtual ~Buffer();
 
     NextPVR::Settings& m_settings = NextPVR::Settings::GetInstance();
+    NextPVR::Request& m_request = NextPVR::Request::GetInstance();
     /**
      * Opens the input handle
      * @return whether the input was successfully opened

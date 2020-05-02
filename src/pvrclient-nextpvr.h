@@ -215,6 +215,7 @@ private:
 
   //Matrix changes
   NextPVR::Settings& m_settings = NextPVR::Settings::GetInstance();
+  NextPVR::Request& m_request = NextPVR::Request::GetInstance();
   std::map<std::string,int> m_epgOidLookup;
   eNowPlaying m_nowPlaying = NotPlaying;
   std::map<int, std::pair<bool, bool>> m_channelDetails;

@@ -10,7 +10,6 @@
 #pragma once
 
 #include "client.h"
-
 #include <kodi/AddonBase.h>
 #include <p8-platform/util/StringUtils.h>
 #include <string>
