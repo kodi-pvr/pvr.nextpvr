@@ -261,3 +261,11 @@ msgstr ""
 msgctxt "#30187"
 msgid "Select NextPVR IP address"
 msgstr ""
+
+msgctxt "#30188"
+msgid "Show radio channels"
+msgstr ""
+
+msgctxt "#30688"
+msgid "Also use skin settings to control radio main menu display"
+msgstr ""

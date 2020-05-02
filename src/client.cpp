@@ -187,7 +187,7 @@ PVR_ERROR GetCapabilities(PVR_ADDON_CAPABILITIES *pCapabilities)
   pCapabilities->bSupportsRecordingSize = settings.m_showRecordingSize;
   pCapabilities->bSupportsTimers             = true;
   pCapabilities->bSupportsTV                 = true;
-  pCapabilities->bSupportsRadio              = true;
+  pCapabilities->bSupportsRadio              = settings.m_showRadio;
   pCapabilities->bSupportsChannelGroups      = true;
   pCapabilities->bHandlesInputStream         = true;
   pCapabilities->bHandlesDemuxing            = false;

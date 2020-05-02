@@ -12,6 +12,7 @@ v4.4.0
 - Only get EPG listing when backend has EPG for channel - V5
 - Fix GetNumChannels() return count of all channels.
 - Add menuhooks to reset channels, icons, and groups and also to 'Forget' recording
+- Add setting to disable radio
 
 v4.3.8
 - Update: PVR API 6.5.0

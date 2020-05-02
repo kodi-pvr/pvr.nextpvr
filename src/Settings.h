@@ -82,6 +82,7 @@ namespace NextPVR
     int m_backendVersion = 0;
 
     //Channel
+    bool m_showRadio = true;
 
     //EPG
     bool m_showNew = false;

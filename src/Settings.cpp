@@ -94,6 +94,9 @@ void Settings::ReadFromAddon()
   else
     m_resolution = "720";
 
+  if (!XBMC->GetSetting("showradio", &m_showRadio))
+    m_showRadio = true;
+
 /* Log the current settings for debugging purposes */
   XBMC->Log(LOG_DEBUG, "settings: host='%s', port=%i, mac=%4.4s...", m_hostname.c_str(), m_port, m_hostMACAddress.c_str());
 
@@ -302,6 +305,8 @@ ADDON_STATUS Settings::SetValue(const std::string& settingName, const void* sett
     return SetStringSetting<ADDON_STATUS>(settingName, settingValue, m_PIN, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
   else if (settingName == "remoteaccess")
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_remoteAccess, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
+  else if (settingName == "showradio")
+    return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_showRadio, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
   else if (settingName == "guideartwork")
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_downloadGuideArtwork, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
   else if (settingName == "guideartworkportrait")

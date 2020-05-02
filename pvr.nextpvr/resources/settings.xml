@@ -171,8 +171,6 @@
         </setting>
       </group>
       <group id="10">
-      </group>
-      <group id="11">
         <setting help="" id="chunklivetv" label="30167" type="integer">
           <level>3</level>
           <default>64</default>
@@ -196,6 +194,13 @@
           <control format="integer" type="slider">
             <popup>false</popup>
           </control>
+        </setting>
+      </group>
+      <group id="11">
+        <setting help="30688" id="showradio" label="30188" type="boolean">
+          <level>0</level>
+          <default>true</default>
+          <control type="toggle"/>
         </setting>
       </group>
     </category>
