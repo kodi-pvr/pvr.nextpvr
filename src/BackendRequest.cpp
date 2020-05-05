@@ -194,7 +194,7 @@ namespace NextPVR
             if (parseResponse.size() >= 3)
             {
               XBMC->Log(LOG_INFO, "Broadcast received %s %s", parseResponse[0].c_str(), parseResponse[1].c_str());
-              foundAddress.push_back (parseResponse);
+              foundAddress.push_back(parseResponse);
             }
           }
         } while (sockResult > 0);

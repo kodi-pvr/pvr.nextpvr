@@ -161,25 +161,25 @@ cPVRClientNextPVR::~cPVRClientNextPVR()
 
 PVR_ERROR cPVRClientNextPVR::CallMenuHook(const PVR_MENUHOOK& menuhook, const PVR_MENUHOOK_DATA& item)
 {
-  if (item.cat == PVR_MENUHOOK_CHANNEL && menuhook.iHookId == 1)
+  if (item.cat == PVR_MENUHOOK_CHANNEL && menuhook.iHookId == PVR_MENUHOOK_CHANNEL_DELETE_SINGLE_CHANNEL_ICON)
   {
     DeleteChannelIcon(item.data.channel.iUniqueId);
     PVR->TriggerChannelUpdate();
   }
-  else if (item.cat == PVR_MENUHOOK_RECORDING && menuhook.iHookId == 1)
+  else if (item.cat == PVR_MENUHOOK_RECORDING && menuhook.iHookId == PVR_MENUHOOK_RECORDING_FORGET_RECORDING)
   {
     ForgetRecording(item.data.recording);
   }
-  else if (item.cat == PVR_MENUHOOK_SETTING && menuhook.iHookId == 1)
+  else if (item.cat == PVR_MENUHOOK_SETTING && menuhook.iHookId == PVR_MENUHOOK_SETTING_DELETE_ALL_CHANNNEL_ICONS)
   {
     DeleteChannelIcons();
     PVR->TriggerChannelUpdate();
   }
-  else if (item.cat == PVR_MENUHOOK_SETTING && menuhook.iHookId == 2)
+  else if (item.cat == PVR_MENUHOOK_SETTING && menuhook.iHookId == PVR_MENUHOOK_SETTING_UPDATE_CHANNNELS)
   {
     PVR->TriggerChannelUpdate();
   }
-  else if (item.cat == PVR_MENUHOOK_RECORDING && menuhook.iHookId == 3)
+  else if (item.cat == PVR_MENUHOOK_SETTING && menuhook.iHookId == PVR_MENUHOOK_SETTING_UPDATE_CHANNNEL_GROUPS)
   {
    PVR->TriggerChannelGroupsUpdate();
   }
@@ -191,25 +191,25 @@ void cPVRClientNextPVR::ConfigureMenuhook()
   PVR_MENUHOOK menuHook;
   menuHook = { 0 };
   menuHook.category = PVR_MENUHOOK_CHANNEL;
-  menuHook.iHookId = 1;
+  menuHook.iHookId = PVR_MENUHOOK_CHANNEL_DELETE_SINGLE_CHANNEL_ICON;
   menuHook.iLocalizedStringId = 30183;
   PVR->AddMenuHook(&menuHook);
 
   menuHook = { 0 };
   menuHook.category = PVR_MENUHOOK_SETTING;
-  menuHook.iHookId = 1;
+  menuHook.iHookId = PVR_MENUHOOK_SETTING_DELETE_ALL_CHANNNEL_ICONS;
   menuHook.iLocalizedStringId = 30170;
   PVR->AddMenuHook(&menuHook);
 
   menuHook = { 0 };
   menuHook.category = PVR_MENUHOOK_SETTING;
-  menuHook.iHookId = 2;
+  menuHook.iHookId = PVR_MENUHOOK_SETTING_UPDATE_CHANNNELS;
   menuHook.iLocalizedStringId = 30185;
   PVR->AddMenuHook(&menuHook);
 
   menuHook = { 0 };
   menuHook.category = PVR_MENUHOOK_SETTING;
-  menuHook.iHookId = 3;
+  menuHook.iHookId = PVR_MENUHOOK_SETTING_UPDATE_CHANNNEL_GROUPS;
   menuHook.iLocalizedStringId = 30186;
   PVR->AddMenuHook(&menuHook);
 
@@ -217,7 +217,7 @@ void cPVRClientNextPVR::ConfigureMenuhook()
   {
     menuHook = { 0 };
     menuHook.category = PVR_MENUHOOK_RECORDING;
-    menuHook.iHookId = 1;
+    menuHook.iHookId = PVR_MENUHOOK_RECORDING_FORGET_RECORDING;
     menuHook.iLocalizedStringId = 30184;
     PVR->AddMenuHook(&menuHook);
   }
