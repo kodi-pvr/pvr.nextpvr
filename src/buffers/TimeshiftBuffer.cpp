@@ -57,7 +57,7 @@ TimeshiftBuffer::~TimeshiftBuffer()
   TimeshiftBuffer::Close();
 }
 
-bool TimeshiftBuffer::Open(const std::string inputUrl)
+bool TimeshiftBuffer::Open(const std::string inputUrl, bool isRadio)
 {
   XBMC->Log(LOG_DEBUG, "TimeshiftBuffer::Open()");
   Buffer::Open(""); // To set the time stream starts
@@ -70,9 +70,9 @@ bool TimeshiftBuffer::Open(const std::string inputUrl)
     return false;
   }
 
-  if (!m_streamingclient->connect(g_szHostname, g_iPort))
+  if (!m_streamingclient->connect(m_settings.m_hostname, m_settings.m_port))
   {
-    XBMC->Log(LOG_ERROR, "%s:%d: Could not connect to NextPVR backend (%s:%d) for streaming", __FUNCTION__, __LINE__, g_szHostname.c_str(), g_iPort);
+    XBMC->Log(LOG_ERROR, "%s:%d: Could not connect to NextPVR backend (%s:%d) for streaming", __FUNCTION__, __LINE__, m_settings.m_hostname.c_str(), m_settings.m_port);
     return false;
   }
 
@@ -487,11 +487,11 @@ bool TimeshiftBuffer::WriteData(const byte *buf, unsigned int size, uint64_t blo
      // Now perform the calculations
      time_t elapsed = now - tsbStartTime;
      //XBMC->Log(LOG_ERROR, "TSBTimerProc: time_diff: %d, tsbStartTime: %d", elapsed, tsbStartTime);
-     if (elapsed > g_timeShiftBufferSeconds)
+     if (elapsed > m_settings.m_timeshiftBufferSeconds)
      {
        // Roll the tsb forward
-       int tsbRoll = elapsed - g_timeShiftBufferSeconds;
-       elapsed = g_timeShiftBufferSeconds;
+       int tsbRoll = elapsed - m_settings.m_timeshiftBufferSeconds;
+       elapsed = m_settings.m_timeshiftBufferSeconds;
        tsbStart += (tsbRoll * iBytesPerSecond);
        tsbStartTime += tsbRoll;
        // XBMC->Log(LOG_ERROR, "startTime: %d, start: %lli, isPaused: %d, tsbRoll: %d", tsbStartTime, tsbStart, isPaused, tsbRoll);

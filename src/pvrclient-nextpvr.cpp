@@ -29,9 +29,9 @@
 
 #include <algorithm>
 
-
 using namespace std;
 using namespace ADDON;
+using namespace NextPVR;
 
 extern "C"
 {
@@ -40,12 +40,10 @@ extern "C"
 
 /* Globals */
 int g_iNextPVRXBMCBuild = 0;
-extern bool g_bDownloadGuideArtwork;
-int g_ServerTimeOffset = 0;
 
 /* PVR client version (don't forget to update also the addon.xml and the Changelog.txt files) */
 #define PVRCLIENT_NEXTPVR_VERSION_STRING    "1.0.0.0"
-#define NEXTPVRC_MIN_VERSION_STRING         "3.6.0"
+#define NEXTPVRC_MIN_VERSION_STRING         "4.2.4"
 
 #define DEBUGGING_XML 0
 #if DEBUGGING_XML
@@ -117,8 +115,6 @@ std::string UriEncode(const std::string sSrc)
   return sResult;
 }
 
-
-
 /************************************************************/
 /** Class interface */
 
@@ -128,8 +124,6 @@ cPVRClientNextPVR::cPVRClientNextPVR()
   m_tcpclient              = new NextPVR::Socket(NextPVR::af_inet, NextPVR::pf_inet, NextPVR::sock_stream, NextPVR::tcp);
   m_streamingclient        = new NextPVR::Socket(NextPVR::af_inet, NextPVR::pf_inet, NextPVR::sock_stream, NextPVR::tcp);
   m_bConnected             = false;
-  NextPVR::m_backEnd       = new NextPVR::Request();
-  m_iChannelCount          = 0;
   m_currentRecordingLength = 0;
 
   m_supportsLiveTimeshift  = false;
@@ -144,7 +138,7 @@ cPVRClientNextPVR::cPVRClientNextPVR()
   m_recordingBuffer = new timeshift::RecordingBuffer();
   m_realTimeBuffer = new timeshift::DummyBuffer();
   m_livePlayer = nullptr;
-
+  m_nowPlaying = NotPlaying;
   CreateThread();
 }
 
@@ -161,47 +155,84 @@ cPVRClientNextPVR::~cPVRClientNextPVR()
   delete m_realTimeBuffer;
   m_epgOidLookup.clear();
   m_hostFilenames.clear();
-  m_channelTypes.clear();
+  m_channelDetails.clear();
   m_liveStreams.clear();
 }
 
-std::vector<std::string> cPVRClientNextPVR::split(const std::string& s, const std::string& delim, const bool keep_empty)
+PVR_ERROR cPVRClientNextPVR::CallMenuHook(const PVR_MENUHOOK& menuhook, const PVR_MENUHOOK_DATA& item)
 {
-  std::vector<std::string> result;
-  if (delim.empty())
+  if (item.cat == PVR_MENUHOOK_CHANNEL && menuhook.iHookId == PVR_MENUHOOK_CHANNEL_DELETE_SINGLE_CHANNEL_ICON)
   {
-    result.push_back(s);
-    return result;
+    DeleteChannelIcon(item.data.channel.iUniqueId);
+    PVR->TriggerChannelUpdate();
   }
-  std::string::const_iterator substart = s.begin(), subend;
-  while (true)
+  else if (item.cat == PVR_MENUHOOK_RECORDING && menuhook.iHookId == PVR_MENUHOOK_RECORDING_FORGET_RECORDING)
   {
-    subend = search(substart, s.end(), delim.begin(), delim.end());
-    std::string temp(substart, subend);
-    if (keep_empty || !temp.empty())
-    {
-      result.push_back(temp);
-    }
-    if (subend == s.end())
-    {
-      break;
-    }
-    substart = subend + delim.size();
+    ForgetRecording(item.data.recording);
   }
-  return result;
+  else if (item.cat == PVR_MENUHOOK_SETTING && menuhook.iHookId == PVR_MENUHOOK_SETTING_DELETE_ALL_CHANNNEL_ICONS)
+  {
+    DeleteChannelIcons();
+    PVR->TriggerChannelUpdate();
+  }
+  else if (item.cat == PVR_MENUHOOK_SETTING && menuhook.iHookId == PVR_MENUHOOK_SETTING_UPDATE_CHANNNELS)
+  {
+    PVR->TriggerChannelUpdate();
+  }
+  else if (item.cat == PVR_MENUHOOK_SETTING && menuhook.iHookId == PVR_MENUHOOK_SETTING_UPDATE_CHANNNEL_GROUPS)
+  {
+   PVR->TriggerChannelGroupsUpdate();
+  }
+  return PVR_ERROR_NO_ERROR;
 }
 
-bool cPVRClientNextPVR::Connect()
+void cPVRClientNextPVR::ConfigureMenuhook()
+{
+  PVR_MENUHOOK menuHook;
+  menuHook = { 0 };
+  menuHook.category = PVR_MENUHOOK_CHANNEL;
+  menuHook.iHookId = PVR_MENUHOOK_CHANNEL_DELETE_SINGLE_CHANNEL_ICON;
+  menuHook.iLocalizedStringId = 30183;
+  PVR->AddMenuHook(&menuHook);
+
+  menuHook = { 0 };
+  menuHook.category = PVR_MENUHOOK_SETTING;
+  menuHook.iHookId = PVR_MENUHOOK_SETTING_DELETE_ALL_CHANNNEL_ICONS;
+  menuHook.iLocalizedStringId = 30170;
+  PVR->AddMenuHook(&menuHook);
+
+  menuHook = { 0 };
+  menuHook.category = PVR_MENUHOOK_SETTING;
+  menuHook.iHookId = PVR_MENUHOOK_SETTING_UPDATE_CHANNNELS;
+  menuHook.iLocalizedStringId = 30185;
+  PVR->AddMenuHook(&menuHook);
+
+  menuHook = { 0 };
+  menuHook.category = PVR_MENUHOOK_SETTING;
+  menuHook.iHookId = PVR_MENUHOOK_SETTING_UPDATE_CHANNNEL_GROUPS;
+  menuHook.iLocalizedStringId = 30186;
+  PVR->AddMenuHook(&menuHook);
+
+  if (m_settings.m_backendVersion >= 50000)
+  {
+    menuHook = { 0 };
+    menuHook.category = PVR_MENUHOOK_RECORDING;
+    menuHook.iHookId = PVR_MENUHOOK_RECORDING_FORGET_RECORDING;
+    menuHook.iLocalizedStringId = 30184;
+    PVR->AddMenuHook(&menuHook);
+  }
+}
+
+
+
+ADDON_STATUS cPVRClientNextPVR::Connect()
 {
   string result;
   m_bConnected = false;
+  ADDON_STATUS status = ADDON_STATUS_UNKNOWN;
   // initiate session
   std::string response;
 
-  if (g_eraseIcons)
-  {
-    DeleteChannelIcons();
-  }
   SendWakeOnLan();
   if (DoRequest("/service?method=session.initiate&ver=1.0&device=xbmc", response) == HTTP_OK)
   {
@@ -216,7 +247,7 @@ bool cPVRClientNextPVR::Connect()
         // extract and store sid
         PVR_STRCLR(m_sid);
         PVR_STRCPY(m_sid, sidNode->FirstChild()->Value());
-        NextPVR::m_backEnd->setSID(m_sid);
+        m_request.setSID(m_sid);
         // extract salt
         char salt[64];
         PVR_STRCLR(salt);
@@ -226,7 +257,7 @@ bool cPVRClientNextPVR::Connect()
         XBMC->Log(LOG_DEBUG, "session.initiate returns: sid=%s salt=%s", m_sid, salt);
 
 
-        std::string pinMD5 = PVRXBMC::XBMC_MD5::GetMD5(g_szPin);
+        std::string pinMD5 = PVRXBMC::XBMC_MD5::GetMD5(m_settings.m_PIN);
         StringUtils::ToLower(pinMD5);
 
         // calculate combined MD5
@@ -245,151 +276,19 @@ bool cPVRClientNextPVR::Connect()
         sprintf(request, "/service?method=session.login&sid=%s&md5=%s", m_sid, md5.c_str());
         if (DoRequest(request, loginResponse) == HTTP_OK)
         {
-          if (strstr(loginResponse.c_str(), "<rsp stat=\"ok\">"))
+          if ( m_settings.ReadBackendSettings() == ADDON_STATUS_OK)
           {
-            // check server version
-            std::string settings;
-            if (DoRequest("/service?method=setting.list", settings) == HTTP_OK)
-            {
-              // if it's a NextPVR server, check the verions. WinTV Extend servers work a slightly different way.
-              TiXmlDocument settingsDoc;
-              int version = 0;
-              if (settingsDoc.Parse(settings.c_str()) != NULL)
-              {
-                //XBMC->Log(LOG_INFO, "Settings:\n");
-                //dump_to_log(&settingsDoc, 0);
-                TiXmlElement* versionNode = settingsDoc.RootElement()->FirstChildElement("NextPVRVersion");
-                if (versionNode == NULL)
-                {
-                  // WinTV Extend server
-                }
-                else
-                {
-                  // NextPVR server
-                  version = atoi(versionNode->FirstChild()->Value());
-                  XBMC->Log(LOG_DEBUG, "NextPVR version: %d", version);
-
-                  // is the server new enough
-                  if (version < 30600)
-                  {
-                    XBMC->Log(LOG_ERROR, "Your NextPVR version '%d' is too old. Please upgrade to '%s' or higher!", version, NEXTPVRC_MIN_VERSION_STRING);
-                    XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30050));
-                    XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30051), NEXTPVRC_MIN_VERSION_STRING);
-                    return false;
-                  }
-                  else if (version >= 50000)
-                  {
-                    if ( g_livestreamingmethod != RealTime)
-                    {
-                      if (g_livestreamingmethod == Transcoded)
-                      {
-                        delete m_timeshiftBuffer;
-                        m_timeshiftBuffer = new timeshift::TranscodedBuffer();
-                      }
-                      else if (version >= 50001)
-                      {
-                        g_livestreamingmethod = ClientTimeshift;
-                      }
-                      else
-                      {
-                        g_livestreamingmethod = RealTime;
-                        XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30051), "5.0.1+");
-                      }
-                    }
-                  }
-                  else
-                  {
-                    if (g_livestreamingmethod == Transcoded)
-                    {
-                        g_livestreamingmethod = RealTime;
-                        XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30051), "5");
-                    }
-                  }
-
-                }
-                TiXmlElement* liveTimeshiftNode = settingsDoc.RootElement()->FirstChildElement("LiveTimeshift");
-                if ( (liveTimeshiftNode != NULL && g_livestreamingmethod != RealTime) || g_livestreamingmethod == ClientTimeshift)
-                {
-                  m_supportsLiveTimeshift = true;
-                  g_timeShiftBufferSeconds = atoi(settingsDoc.RootElement()->FirstChildElement("SlipSeconds")->FirstChild()->Value());
-                  XBMC->Log(LOG_INFO, "time shift buffer in seconds == %d\n", g_timeShiftBufferSeconds);
-                  if (g_livestreamingmethod == RollingFile && version < 40204 )
-                  {
-                    XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30051), "4.2.5+");
-                    Sleep(2000);
-                    g_livestreamingmethod = Timeshift;
-                  }
-                  if (g_livestreamingmethod != Timeshift )
-                  {
-                    delete m_timeshiftBuffer;
-                    if (version < 50000 )
-                    {
-                      XBMC->Log(LOG_INFO, "Rolling File Based Buffering");
-                      m_timeshiftBuffer = new timeshift::RollingFile();
-                    }
-                    else
-                    {
-                      XBMC->Log(LOG_INFO, "Client Timeshift Based Buffering");
-                      m_timeshiftBuffer = new timeshift::ClientTimeShift();
-                    }
-                  }
-                  else
-                  {
-                    XBMC->Log(LOG_INFO, "Timeshift is true!!");
-                    delete m_timeshiftBuffer;
-                    m_timeshiftBuffer = new timeshift::TimeshiftBuffer();
-                  }
-                }
-
-                // load padding defaults
-                m_iDefaultPrePadding = 1;
-                m_iDefaultPostPadding = 2;
-                if ( settingsDoc.RootElement()->FirstChildElement("PrePadding") != NULL &&  settingsDoc.RootElement()->FirstChildElement("PrePadding")->FirstChild() != NULL)
-                {
-                  m_iDefaultPrePadding = atoi(settingsDoc.RootElement()->FirstChildElement("PrePadding")->FirstChild()->Value());
-                  m_iDefaultPostPadding = atoi( settingsDoc.RootElement()->FirstChildElement("PostPadding")->FirstChild()->Value());
-                }
-
-                m_showNew = false;
-                XMLUtils::GetBoolean(settingsDoc.RootElement(),"ShowNewInGuide",m_showNew);
-                XBMC->Log(LOG_INFO, "Show new %d",m_showNew);
-
-                if ( settingsDoc.RootElement()->FirstChildElement("RecordingDirectories") != NULL &&  settingsDoc.RootElement()->FirstChildElement("RecordingDirectories")->FirstChild() != NULL)
-                {
-                  vector<std::string> directories = split(settingsDoc.RootElement()->FirstChildElement("RecordingDirectories")->FirstChild()->Value(), ",", false);
-                  for (size_t i = 0; i < directories.size(); i++)
-                  {
-                    m_recordingDirectories.push_back(directories[i]);
-                  }
-                }
-                if ( settingsDoc.RootElement()->FirstChildElement("TimeEpoch") != NULL)
-                {
-                  g_ServerTimeOffset = time(nullptr) - atoi(settingsDoc.RootElement()->FirstChildElement("TimeEpoch")->FirstChild()->Value());
-                  XBMC->Log(LOG_INFO, "Server time offset in seconds: %d", g_ServerTimeOffset);
-                }
-                if ( settingsDoc.RootElement()->FirstChildElement("ServerMAC") != NULL && settingsDoc.RootElement()->FirstChildElement("ServerMAC")->FirstChild() != NULL)
-                {
-                  char rawMAC[13];
-                  PVR_STRCPY(rawMAC,settingsDoc.RootElement()->FirstChildElement("ServerMAC")->FirstChild()->Value());
-                  if (strlen(rawMAC)==12)
-                  {
-                    char mac[18];
-                    sprintf(mac,"%2.2s:%2.2s:%2.2s:%2.2s:%2.2s:%2.2s",rawMAC,&rawMAC[2],&rawMAC[4],&rawMAC[6],&rawMAC[8],&rawMAC[10]);
-                    XBMC->Log(LOG_DEBUG, "Server MAC addres %4.4s...",mac);
-                    std::string smac = mac;
-                    if (g_host_mac != smac)
-                    {
-                      SaveSettings("host_mac", smac);
-                    }
-                  }
-                }
-              }
-            }
-
+            // set additional options based on the backend
+            ConfigurePostConnectionOptions();
             m_bConnected = true;
-            LoadLiveStreams();
             XBMC->Log(LOG_DEBUG, "session.login successful");
-            return true;
+            status = ADDON_STATUS_OK;
+          }
+          else
+          {
+            PVR->ConnectionStateChange( "Version failure", PVR_CONNECTION_STATE_VERSION_MISMATCH, XBMC->GetLocalizedString(30050));
+            m_bConnected = false;
+            status = ADDON_STATUS_PERMANENT_FAILURE;
           }
         }
         else
@@ -397,6 +296,7 @@ bool cPVRClientNextPVR::Connect()
           XBMC->Log(LOG_DEBUG, "session.login failed");
           PVR->ConnectionStateChange( "Access denied", PVR_CONNECTION_STATE_ACCESS_DENIED, XBMC->GetLocalizedString(30052));
           m_bConnected = false;
+          status = ADDON_STATUS_LOST_CONNECTION;
         }
       }
     }
@@ -404,9 +304,10 @@ bool cPVRClientNextPVR::Connect()
   else
   {
     PVR->ConnectionStateChange( "Could not connect to server", PVR_CONNECTION_STATE_SERVER_UNREACHABLE ,NULL);
+    status = ADDON_STATUS_PERMANENT_FAILURE;
   }
 
-  return false;
+  return status;
 }
 
 void cPVRClientNextPVR::Disconnect()
@@ -414,6 +315,42 @@ void cPVRClientNextPVR::Disconnect()
   string result;
 
   m_bConnected = false;
+}
+
+void cPVRClientNextPVR:: ConfigurePostConnectionOptions()
+{
+  m_settings.SetVersionSpecificSettings();
+  ConfigureMenuhook();
+  if (m_settings.m_liveStreamingMethod != eStreamingMethod::RealTime)
+  {
+    delete m_timeshiftBuffer;
+    m_supportsLiveTimeshift = true;
+    if (m_settings.m_liveStreamingMethod == eStreamingMethod::Transcoded)
+    {
+      m_supportsLiveTimeshift = false;
+      m_timeshiftBuffer = new timeshift::TranscodedBuffer();
+    }
+    else if (m_settings.m_liveStreamingMethod == eStreamingMethod::ClientTimeshift)
+    {
+      m_timeshiftBuffer = new timeshift::ClientTimeShift();
+    }
+    else if ( m_settings.m_liveStreamingMethod != eStreamingMethod::Timeshift)
+    {
+      m_timeshiftBuffer = new timeshift::RollingFile();
+    }
+    else
+    {
+      m_timeshiftBuffer = new timeshift::TimeshiftBuffer();
+    }
+  }
+
+  bool liveStreams;
+  if (XBMC->GetSetting("uselivestreams", &liveStreams))
+  {
+    if (liveStreams)
+      LoadLiveStreams();
+  }
+
 }
 
 /* IsUp()
@@ -424,7 +361,7 @@ bool cPVRClientNextPVR::IsUp()
 {
   LOG_API_CALL(__FUNCTION__);
   // check time since last time Recordings were updated, update if it has been awhile
-  if (m_bConnected == true && g_NowPlaying == NotPlaying && m_lastRecordingUpdateTime != MAXINT64 &&  time(0) > (m_lastRecordingUpdateTime + 60 ))
+  if (m_bConnected == true && m_nowPlaying == NotPlaying && m_lastRecordingUpdateTime != MAXINT64 &&  time(0) > (m_lastRecordingUpdateTime + 60 ))
   {
     TiXmlDocument doc;
     char request[512];
@@ -460,12 +397,12 @@ bool cPVRClientNextPVR::IsUp()
       m_lastRecordingUpdateTime = time(0);
     }
   }
-  else if (g_NowPlaying == Transcoding)
+  else if (m_nowPlaying == Transcoding)
   {
     if ( m_livePlayer->IsRealTimeStream() == false)
     {
       //m_livePlayer->Close();
-      g_NowPlaying = NotPlaying;
+      m_nowPlaying = NotPlaying;
       m_livePlayer = nullptr;
     }
   }
@@ -510,21 +447,20 @@ void cPVRClientNextPVR::OnSystemWake()
 
 void cPVRClientNextPVR::SendWakeOnLan()
 {
-  if (g_wol_enabled == true )
+  if (m_settings.m_enableWOL == true )
   {
-    if (g_szHostname == "127.0.0.1" || g_szHostname == "localhost" || g_szHostname == "::1")
+    if (m_settings.m_hostname == "127.0.0.1" || m_settings.m_hostname == "localhost" || m_settings.m_hostname == "::1")
     {
-      g_wol_enabled = false;
       return;
     }
     int count = 0;
-    for (;count < g_wol_timeout; count++)
+    for (;count < m_settings.m_timeoutWOL; count++)
     {
-      if (NextPVR::m_backEnd->PingBackend())
+      if (m_request.PingBackend())
       {
         return;
       }
-      XBMC->WakeOnLan(g_host_mac.c_str());
+      XBMC->WakeOnLan(m_settings.m_hostMACAddress.c_str());
       XBMC->Log(LOG_DEBUG, "WOL sent %d",count);
       Sleep(1000);
     }
@@ -540,28 +476,30 @@ const char* cPVRClientNextPVR::GetBackendName(void)
   LOG_API_CALL(__FUNCTION__);
   if (!m_bConnected)
   {
-    return g_szHostname.c_str();
+    return m_settings.m_hostname.c_str();
   }
 
   XBMC->Log(LOG_DEBUG, "->GetBackendName()");
 
   if (m_BackendName.length() == 0)
   {
-    m_BackendName = "NextPVR  (";
-    m_BackendName += g_szHostname.c_str();
+    m_BackendName = "NextPVR (";
+    m_BackendName += m_settings.m_hostname.c_str();
     m_BackendName += ")";
   }
 
   return m_BackendName.c_str();
 }
 
-const char* cPVRClientNextPVR::GetBackendVersion(void)
+const char* cPVRClientNextPVR::GetBackendVersion()
 {
   LOG_API_CALL(__FUNCTION__);
   if (!m_bConnected)
-    return "0.0";
+    return "Unknown";
 
-  return "1.0";
+  XBMC->Log(LOG_DEBUG, "->GetBackendVersion()");
+  std::string version = to_string(m_settings.m_backendVersion);
+  return version.c_str();
 }
 
 const char* cPVRClientNextPVR::GetConnectionString(void)
@@ -595,12 +533,21 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t
   std::string response;
   char request[512];
   LOG_API_CALL(__FUNCTION__);
+
+  pair<bool, bool> channelDetail;
+  channelDetail = m_channelDetails[iChannelUid];
+  if (channelDetail.first == true)
+  {
+    XBMC->Log(LOG_DEBUG, "Skipping %d", iChannelUid);
+    return PVR_ERROR_NO_ERROR;
+  }
+
   if ( iEnd < (time(nullptr) - 24 * 3600))
   {
       XBMC->Log(LOG_DEBUG, "Skipping expired EPG data %d %ld %lld",iChannelUid,iStart, iEnd);
       return PVR_ERROR_INVALID_PARAMETERS;
   }
-  sprintf(request, "/service?method=channel.listings&channel_id=%d&start=%d&end=%d", iChannelUid, (int)iStart, (int)iEnd);
+  sprintf(request, "/service?method=channel.listings&channel_id=%d&start=%d&end=%d&genre=all", iChannelUid, static_cast<int>(iStart), static_cast<int>(iEnd));
   if (DoRequest(request, response) == HTTP_OK)
   {
     TiXmlDocument doc;
@@ -653,13 +600,22 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t
         broadcast.strWriter           = NULL; // unused
         broadcast.strIMDBNumber       = NULL; // unused
 
-        // artwork URL
-        char artworkPath[128];
-        artworkPath[0] = '\0';
-        if (g_bDownloadGuideArtwork)
+        std::string artworkPath;
+        if (m_settings.m_downloadGuideArtwork)
         {
-          snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=channel.show.artwork&sid=%s&event_id=%d", g_szHostname.c_str(), g_iPort, m_sid, epgOid);
-          broadcast.strIconPath         = artworkPath;
+          // artwork URL
+          if (m_settings.m_backendVersion < 50000)
+            artworkPath = StringUtils::Format("http://%s:%d/service?method=channel.show.artwork&sid=%s&event_id=%d", m_settings.m_hostname.c_str(), m_settings.m_port, m_sid, epgOid);
+          else
+          {
+            if (m_settings.m_sendSidWithMetadata)
+              artworkPath = StringUtils::Format("http://%s:%d/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_hostname.c_str(), m_settings.m_port, m_sid,UriEncode(title).c_str());
+            else
+              artworkPath = StringUtils::Format("http://%s:%d/service?method=channel.show.artwork&name=%s", m_settings.m_hostname.c_str(), m_settings.m_port, UriEncode(title).c_str());
+            if (m_settings.m_guideArtPortrait)
+              artworkPath += "&prefer=poster";
+          }
+          broadcast.strIconPath = artworkPath.c_str();
         }
         std::string sGenre;
         if (XMLUtils::GetString(pListingNode,"genre",sGenre))
@@ -673,7 +629,22 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t
           broadcast.iGenreType = XmlGetInt(pListingNode,"genre_type");
           broadcast.iGenreSubType = XmlGetInt(pListingNode,"genre_subtype");
         }
-
+        if (pListingNode->FirstChildElement("genres") != NULL)
+        {
+          std::string allGenres;
+          if (GetAdditiveString(pListingNode->FirstChildElement("genres"), "genre", EPG_STRING_TOKEN_SEPARATOR, allGenres, true))
+          {
+            if (allGenres.find(EPG_STRING_TOKEN_SEPARATOR) != std::string::npos)
+            {
+              if (broadcast.iGenreType != EPG_GENRE_USE_STRING)
+              {
+                broadcast.iGenreSubType = EPG_GENRE_USE_STRING;
+              }
+              sGenre = allGenres;
+              broadcast.strGenreDescription = sGenre.c_str();
+            }
+          }
+        }
         int value = 0;
         XMLUtils::GetInt(pListingNode,"season",value);
         if ( value == 0 )
@@ -713,7 +684,7 @@ PVR_ERROR cPVRClientNextPVR::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t
             {
               broadcast.iFlags = EPG_TAG_FLAG_IS_FINALE;
             }
-            else if (m_showNew)
+            else if (m_settings.m_showNew)
             {
               broadcast.iFlags = EPG_TAG_FLAG_IS_NEW;
             }
@@ -741,28 +712,24 @@ int cPVRClientNextPVR::XmlGetInt(TiXmlElement * node, const char* name)
 int cPVRClientNextPVR::GetNumChannels(void)
 {
   LOG_API_CALL(__FUNCTION__);
-  if (m_iChannelCount != -1)
-    return m_iChannelCount;
-
-
   // need something more optimal, but this will do for now...
   std::string response;
+  int channelCount = 0;
   if (DoRequest("/service?method=channel.list", response) == HTTP_OK)
   {
     TiXmlDocument doc;
     if (doc.Parse(response.c_str()) != NULL)
     {
-      m_iChannelCount = 0;
       TiXmlElement* channelsNode = doc.RootElement()->FirstChildElement("channels");
       TiXmlElement* pChannelNode;
       for( pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode=pChannelNode->NextSiblingElement())
       {
-        m_iChannelCount++;
+        channelCount++;
       }
     }
   }
 
-  return m_iChannelCount;
+  return channelCount;
 }
 
 std::string cPVRClientNextPVR::GetChannelIcon(int channelID)
@@ -772,13 +739,13 @@ std::string cPVRClientNextPVR::GetChannelIcon(int channelID)
   std::string iconFilename = GetChannelIconFileName(channelID);
 
   // do we already have the icon file?
-  if (XBMC->FileExists(iconFilename.c_str(), false))
+  if (XBMC->FileExists(XBMC->TranslateSpecialProtocol(iconFilename.c_str()), false))
   {
     return iconFilename;
   }
   char strURL[256];
   sprintf(strURL, "/service?method=channel.icon&channel_id=%d", channelID);
-  if (NextPVR::m_backEnd->FileCopy(strURL, iconFilename) == HTTP_OK)
+  if (m_request.FileCopy(strURL, iconFilename) == HTTP_OK)
   {
     return iconFilename;
   }
@@ -790,26 +757,33 @@ std::string cPVRClientNextPVR::GetChannelIconFileName(int channelID)
 {
   char filename[64];
   snprintf(filename, sizeof(filename), "nextpvr-ch%d.png", channelID);
-  std::string iconFilePath("special://userdata/addon_data/pvr.nextpvr/");
+  const std::string iconFilePath("special://userdata/addon_data/pvr.nextpvr/");
 
   return iconFilePath + filename;
+}
+
+void  cPVRClientNextPVR::DeleteChannelIcon(int channelID)
+{
+  #if defined(TARGET_WINDOWS)
+    #undef DeleteFile
+  #endif
+  XBMC->DeleteFile(GetChannelIconFileName(channelID).c_str());
 }
 
 void  cPVRClientNextPVR::DeleteChannelIcons()
 {
   VFSDirEntry* icons;
   unsigned int count;
-  if (XBMC->GetDirectory("special://userdata/addon_data/pvr.nextpvr/","nextpvr-ch*.png",&icons,&count))
+  if (XBMC->GetDirectory("special://userdata/addon_data/pvr.nextpvr/","nextpvr-ch*.png", &icons, &count))
   {
     XBMC->Log(LOG_INFO, "Deleting %d channel icons", count);
-    for (int i = 0; i < count; ++i)
+    for (unsigned int i = 0; i < count; ++i)
     {
       VFSDirEntry& f = icons[i];
-      std::string deleteme = f.path;
+      const std::string deleteme = f.path;
       XBMC->Log(LOG_DEBUG,"DeleteFile %s rc:%d",XBMC->TranslateSpecialProtocol(f.path),remove(XBMC->TranslateSpecialProtocol(f.path)));
     }
   }
-  SaveSettings("reseticons", "false");
 }
 
 void cPVRClientNextPVR::LoadLiveStreams()
@@ -817,7 +791,7 @@ void cPVRClientNextPVR::LoadLiveStreams()
   char strURL[256];
   sprintf(strURL, "/public/LiveStreams.xml");
   m_liveStreams.clear();
-  if (NextPVR::m_backEnd->FileCopy(strURL, "special://userdata/addon_data/pvr.nextpvr/LiveStreams.xml") == HTTP_OK)
+  if (m_request.FileCopy(strURL, "special://userdata/addon_data/pvr.nextpvr/LiveStreams.xml") == HTTP_OK)
   {
     TiXmlDocument doc;
     char *liveStreams = XBMC->TranslateSpecialProtocol("special://userdata/addon_data/pvr.nextpvr/LiveStreams.xml");
@@ -847,6 +821,7 @@ void cPVRClientNextPVR::LoadLiveStreams()
           }
         }
       }
+      XBMC->FreeString(liveStreams);
     }
   }
 }
@@ -857,17 +832,23 @@ PVR_ERROR cPVRClientNextPVR::GetChannels(ADDON_HANDLE handle, bool bRadio)
   std::string      stream;
   LOG_API_CALL(__FUNCTION__);
 
-  m_channelTypes.clear();
-  int channelCount = 0;
+  std::map<int, std::pair<bool, bool>>::iterator  itr = m_channelDetails.begin();
+  while (itr != m_channelDetails.end())
+  {
+    if (itr->second.second == (bRadio == true))
+      itr = m_channelDetails.erase(itr);
+    else
+      ++itr;
+  }
+
   std::string response;
-  if (DoRequest("/service?method=channel.list", response) == HTTP_OK)
+  if (DoRequest("/service?method=channel.list&extras=true", response) == HTTP_OK)
   {
     TiXmlDocument doc;
     if (doc.Parse(response.c_str()) != NULL)
     {
       //XBMC->Log(LOG_INFO, "Channels:\n");
       //dump_to_log(&doc, 0);
-      channelCount = 0;
       TiXmlElement* channelsNode = doc.RootElement()->FirstChildElement("channels");
       TiXmlElement* pChannelNode;
       for( pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode=pChannelNode->NextSiblingElement())
@@ -908,16 +889,18 @@ PVR_ERROR cPVRClientNextPVR::GetChannels(ADDON_HANDLE handle, bool bRadio)
             PVR_STRCPY(tag.strIconPath, iconFile.c_str());
           }
         }
-        if ( !m_channelTypes[tag.iUniqueId])
-        {
-          m_channelTypes[tag.iUniqueId] = tag.bIsRadio;
-        }
+
+        // V5 has the EPG source type info.
+        string epg;
+        if (XMLUtils::GetString(pChannelNode, "epg", epg))
+          m_channelDetails[tag.iUniqueId] = make_pair(epg == "None", tag.bIsRadio);
+        else
+          m_channelDetails[tag.iUniqueId] = make_pair(false, tag.bIsRadio);
+
         // transfer channel to XBMC
         PVR->TransferChannelEntry(handle, &tag);
-        channelCount++;
       }
     }
-    m_iChannelCount = channelCount;
   }
   return PVR_ERROR_NO_ERROR;
 }
@@ -949,6 +932,15 @@ int cPVRClientNextPVR::GetChannelGroupsAmount(void)
   }
 
   return groups;
+}
+
+PVR_RECORDING_CHANNEL_TYPE cPVRClientNextPVR::GetChannelType(unsigned int uid)
+{
+  // when uid is invalid we assume TV because Kodi will
+  if (m_channelDetails.count(uid) > 0 && m_channelDetails[uid].second == true)
+    return PVR_RECORDING_CHANNEL_TYPE_RADIO;
+
+  return PVR_RECORDING_CHANNEL_TYPE_TV;
 }
 
 PVR_ERROR cPVRClientNextPVR::GetChannelGroups(ADDON_HANDLE handle, bool bRadio)
@@ -998,9 +990,9 @@ PVR_ERROR cPVRClientNextPVR::GetChannelGroups(ADDON_HANDLE handle, bool bRadio)
 PVR_ERROR cPVRClientNextPVR::GetChannelStreamProperties(const PVR_CHANNEL &channel, PVR_NAMED_VALUE *properties, unsigned int *iPropertiesCount)
 {
   LOG_API_CALL(__FUNCTION__);
-    XBMC->Log(LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
+  XBMC->Log(LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
   bool liveStream = IsChannelAPlugin(channel.iUniqueId);
-  if (liveStream || ( g_livestreamingmethod == Transcoded && !channel.bIsRadio) )
+  if (liveStream || (  m_settings.m_liveStreamingMethod == Transcoded && !channel.bIsRadio) )
   {
     strncpy(properties[0].strName, PVR_STREAM_PROPERTY_STREAMURL,sizeof(properties[0].strName) - 1);
     if (liveStream)
@@ -1016,15 +1008,15 @@ PVR_ERROR cPVRClientNextPVR::GetChannelStreamProperties(const PVR_CHANNEL &chann
       if (m_livePlayer != nullptr)
       {
         m_livePlayer->Close();
-        g_NowPlaying = NotPlaying;
+        m_nowPlaying = NotPlaying;
         m_livePlayer = nullptr;
       }
-      sprintf(line, "http://%s:%d/services/service?method=channel.transcode.m3u8&sid=%s", g_szHostname.c_str(), g_iPort,m_sid);
+      sprintf(line, "http://%s:%d/services/service?method=channel.transcode.m3u8&sid=%s", m_settings.m_hostname.c_str(), m_settings.m_port,m_sid);
       m_livePlayer = m_timeshiftBuffer;
       m_livePlayer->Channel(channel.iUniqueId);
       if (m_livePlayer->Open(line))
       {
-        g_NowPlaying = Transcoding;
+        m_nowPlaying = Transcoding;
       }
       else
       {
@@ -1134,14 +1126,26 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
     TiXmlDocument doc;
     if (doc.Parse(response.c_str()) != NULL)
     {
-      dump_to_log(&doc, 0);
+      //dump_to_log(&doc, 0);
       PVR_RECORDING   tag;
       TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
       TiXmlElement* pRecordingNode;
+      std::map<std::string, int> names;
+      if (m_settings.m_flattenRecording)
+      {
+        for (pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
+        {
+          string title;
+          XMLUtils::GetString(pRecordingNode, "name", title);
+          names[title]++;
+        }
+      }
       for( pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode=pRecordingNode->NextSiblingElement())
       {
-       tag = {};
-        if (UpdatePvrRecording(pRecordingNode, &tag))
+        tag = {};
+        string title;
+        XMLUtils::GetString(pRecordingNode, "name", title);
+        if (UpdatePvrRecording(pRecordingNode, &tag, title, names[title] == 1))
         {
           recordingCount++;
           PVR->TransferRecordingEntry(handle, &tag);
@@ -1160,13 +1164,12 @@ PVR_ERROR cPVRClientNextPVR::GetRecordings(ADDON_HANDLE handle)
   return returnValue;
 }
 
-bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_RECORDING *tag)
+bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_RECORDING *tag, const std::string& title, bool flatten)
 {
-
   tag->recordingTime = atol(pRecordingNode->FirstChildElement("start_time_ticks")->FirstChild()->Value());
 
   std::string status = pRecordingNode->FirstChildElement("status")->FirstChild()->Value();
-  if (status=="Pending"  && tag->recordingTime > time(nullptr) + g_ServerTimeOffset)
+  if (status=="Pending"  && tag->recordingTime > time(nullptr) + m_settings.m_serverTimeOffset)
   {
     // skip timers
     return false;
@@ -1175,7 +1178,10 @@ bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_REC
 
   if (status == "Ready" || status == "Pending" || status == "Recording")
   {
-    snprintf(tag->strDirectory,sizeof(tag->strDirectory),"/%s",pRecordingNode->FirstChildElement("name")->FirstChild()->Value());
+    if (!flatten)
+    {
+      snprintf(tag->strDirectory, sizeof(tag->strDirectory), "/%s", title.c_str());
+    }
     if (pRecordingNode->FirstChildElement("desc") != NULL && pRecordingNode->FirstChildElement("desc")->FirstChild() != NULL)
     {
       PVR_STRCPY(tag->strPlot, pRecordingNode->FirstChildElement("desc")->FirstChild()->Value());
@@ -1183,7 +1189,7 @@ bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_REC
   }
   else if (status == "Failed")
   {
-    snprintf(tag->strDirectory,sizeof(tag->strDirectory),"/%s/%s",XBMC->GetLocalizedString(30166),pRecordingNode->FirstChildElement("name")->FirstChild()->Value());
+    snprintf(tag->strDirectory,sizeof(tag->strDirectory),"/%s/%s",XBMC->GetLocalizedString(30166), title.c_str());
     if (pRecordingNode->FirstChildElement("reason") != NULL && pRecordingNode->FirstChildElement("reason")->FirstChild() != NULL)
     {
       PVR_STRCPY(tag->strPlot, pRecordingNode->FirstChildElement("reason")->FirstChild()->Value());
@@ -1216,14 +1222,14 @@ bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_REC
   }
 
   PVR_STRCPY(tag->strRecordingId, pRecordingNode->FirstChildElement("id")->FirstChild()->Value());
-  PVR_STRCPY(tag->strTitle, pRecordingNode->FirstChildElement("name")->FirstChild()->Value());
+  PVR_STRCPY(tag->strTitle, title.c_str());
 
   tag->iSeriesNumber = PVR_RECORDING_INVALID_SERIES_EPISODE;
   tag->iEpisodeNumber = PVR_RECORDING_INVALID_SERIES_EPISODE;
 
   if (pRecordingNode->FirstChildElement("subtitle") != NULL && pRecordingNode->FirstChildElement("subtitle")->FirstChild() != NULL)
   {
-    if (g_KodiLook)
+    if (m_settings.m_kodiLook || flatten)
     {
       ParseNextPVRSubtitle(pRecordingNode->FirstChildElement("subtitle")->FirstChild()->Value(), tag);
     }
@@ -1260,40 +1266,60 @@ bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_REC
     PVR_STRCPY(tag->strChannelName,pRecordingNode->FirstChildElement("channel")->FirstChild()->Value());
   }
 
-  if (pRecordingNode->FirstChildElement("file") != NULL && pRecordingNode->FirstChildElement("file")->FirstChild() != NULL)
+  std::string recordingFile;
+  if (XMLUtils::GetString(pRecordingNode, "file", recordingFile))
   {
-    m_hostFilenames[tag->strRecordingId] = pRecordingNode->FirstChildElement("file")->FirstChild()->Value();
-  }
-  else
-  {
-    m_hostFilenames[tag->strRecordingId] = "";
-  }
-
-  // if we use unknown Kodi logs warning and turns it to TV so save some steps
-  tag->channelType = PVR_RECORDING_CHANNEL_TYPE_TV;
-  if ( tag->iChannelUid != PVR_CHANNEL_INVALID_UID)
-  {
-    if ( m_channelTypes[tag->iChannelUid])
+    if (m_settings.m_showRecordingSize)
     {
-      if ( m_channelTypes[tag->iChannelUid] == true)
+      StringUtils::Replace(recordingFile, '\\', '/');
+      if (StringUtils::StartsWith(recordingFile, "//"))
       {
-        tag->channelType = PVR_RECORDING_CHANNEL_TYPE_RADIO;
+        recordingFile = "smb:" + recordingFile;
+      }
+      if (XBMC->FileExists(recordingFile.c_str(), READ_NO_CACHE))
+      {
+        void* fileHandle = XBMC->OpenFile(recordingFile.c_str(), READ_NO_CACHE);
+        tag->sizeInBytes = XBMC->GetFileLength(fileHandle);
+        XBMC->CloseFile(fileHandle);
+      }
+      else
+      {
+        // don't play recording as file
+        recordingFile.clear();
       }
     }
   }
+
+  m_hostFilenames[tag->strRecordingId] = recordingFile;
+
+  // if we use unknown Kodi logs warning and turns it to TV so save some steps
+  tag->channelType = GetChannelType(tag->iChannelUid);
   if (tag->channelType != PVR_RECORDING_CHANNEL_TYPE_RADIO)
   {
     char artworkPath[512];
-    snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=recording.artwork&sid=%s&recording_id=%s", g_szHostname.c_str(), g_iPort, m_sid, tag->strRecordingId);
-    PVR_STRCPY(tag->strThumbnailPath, artworkPath);
-    snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=recording.fanart&sid=%s&recording_id=%s", g_szHostname.c_str(), g_iPort, m_sid, tag->strRecordingId);
-    PVR_STRCPY(tag->strFanartPath, artworkPath);
+    if (m_settings.m_backendVersion < 50000)
+    {
+      snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=recording.artwork&sid=%s&recording_id=%s", m_settings.m_hostname.c_str(), m_settings.m_port, m_sid, tag->strRecordingId);
+      PVR_STRCPY(tag->strThumbnailPath, artworkPath);
+      snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=recording.fanart&sid=%s&recording_id=%s", m_settings.m_hostname.c_str(), m_settings.m_port, m_sid, tag->strRecordingId);
+      PVR_STRCPY(tag->strFanartPath, artworkPath);
+    }
+    else
+    {
+      if (m_settings.m_sendSidWithMetadata)
+        snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_hostname.c_str(), m_settings.m_port, m_sid, UriEncode(title).c_str());
+      else
+        snprintf(artworkPath, sizeof(artworkPath), "http://%s:%d/service?method=channel.show.artwork&name=%s", m_settings.m_hostname.c_str(), m_settings.m_port, UriEncode(title).c_str());
+      PVR_STRCPY(tag->strFanartPath, artworkPath);
+      strcat(artworkPath, "&prefer=poster");
+      PVR_STRCPY(tag->strThumbnailPath, artworkPath);
+    }
   }
   if (pRecordingNode->FirstChildElement("genres") != NULL)
   {
     std::string genres;
     TiXmlElement* pGenresNode = pRecordingNode->FirstChildElement("genres");
-    GetAdditiveString(pGenresNode,"genre",", ",genres,true);
+    GetAdditiveString(pGenresNode,"genre", EPG_STRING_TOKEN_SEPARATOR, genres, true);
     tag->iGenreType = EPG_GENRE_USE_STRING;
     tag->iGenreSubType = 0;
     PVR_STRCPY(tag->strGenreDescription,genres.c_str());
@@ -1308,6 +1334,12 @@ bool cPVRClientNextPVR::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_REC
   else if (significance.find("Finale") != string::npos)
   {
     tag->iFlags = PVR_RECORDING_FLAG_IS_FINALE;
+  }
+
+  bool played = false;
+  if (XMLUtils::GetBoolean(pRecordingNode, "played", played))
+  {
+    tag->iPlayCount = 1;
   }
 
   return true;
@@ -1390,6 +1422,16 @@ PVR_ERROR cPVRClientNextPVR::DeleteRecording(const PVR_RECORDING &recording)
     XBMC->Log(LOG_DEBUG, "DeleteRecording failed");
   }
   return PVR_ERROR_FAILED;
+}
+
+bool cPVRClientNextPVR::ForgetRecording(const PVR_RECORDING& recording)
+{
+  LOG_API_CALL(__FUNCTION__);
+  // tell backend to forget recording history so it can re recorded.
+  std::string request = "/service?method=recording.forget&recording_id=";
+  request.append(recording.strRecordingId);
+  std::string response;
+  return DoRequest(request.c_str(), response) == HTTP_OK;
 }
 
 PVR_ERROR cPVRClientNextPVR::SetRecordingLastPlayedPosition(const PVR_RECORDING &recording, int lastplayedposition)
@@ -1630,9 +1672,9 @@ PVR_ERROR cPVRClientNextPVR::GetTimers(ADDON_HANDLE handle)
           {
             std::string recordingDirectoryID = pRulesNode->FirstChildElement("RecordingDirectoryID")->FirstChild()->Value();
             int i = 0;
-            for (auto it = m_recordingDirectories.begin(); it != m_recordingDirectories.end(); ++it, i++)
+            for (auto it = m_settings.m_recordingDirectories.begin(); it != m_settings.m_recordingDirectories.end(); ++it, i++)
             {
-              std::string bracketed = "[" + m_recordingDirectories[i] + "]";
+              std::string bracketed = "[" + m_settings.m_recordingDirectories[i] + "]";
               if (bracketed == recordingDirectoryID)
               {
                 tag.iRecordingGroup = i;
@@ -1765,7 +1807,7 @@ bool cPVRClientNextPVR::UpdatePvrTimer(TiXmlElement* pRecordingNode, PVR_TIMER *
   if (pRecordingNode->FirstChildElement("status") != NULL && pRecordingNode->FirstChildElement("status")->FirstChild() != NULL)
   {
     std::string status = pRecordingNode->FirstChildElement("status")->FirstChild()->Value();
-    if (status == "Recording" || (status == "Pending"  && tag->startTime < time(nullptr) + g_ServerTimeOffset) )
+    if (status == "Recording" || (status == "Pending"  && tag->startTime < time(nullptr) + m_settings.m_serverTimeOffset) )
     {
       tag->state = PVR_TIMER_STATE_RECORDING;
     }
@@ -1880,9 +1922,9 @@ PVR_ERROR cPVRClientNextPVR::GetTimerTypes(PVR_TIMER_TYPE types[], int *size)
   /* PVR_Timer.iRecordingGroup values and presentation */
   int i = 0;
   static std::vector< std::pair<int, std::string> > recordingGroupValues;
-  for (auto it = m_recordingDirectories.begin(); it != m_recordingDirectories.end(); ++it, i++)
+  for (auto it = m_settings.m_recordingDirectories.begin(); it != m_settings.m_recordingDirectories.end(); ++it, i++)
   {
-    recordingGroupValues.push_back(std::make_pair(i, m_recordingDirectories[i]));
+    recordingGroupValues.push_back(std::make_pair(i, m_settings.m_recordingDirectories[i]));
   }
 
   static const unsigned int TIMER_MANUAL_ATTRIBS
@@ -2119,7 +2161,7 @@ PVR_ERROR cPVRClientNextPVR::AddTimer(const PVR_TIMER &timerinfo)
   const std::string encodedName = UriEncode(timerinfo.strTitle);
   const std::string encodedKeyword = UriEncode(timerinfo.strEpgSearchString);
   const std::string days = GetDayString(timerinfo.iWeekdays);
-  const std::string directory = UriEncode( m_recordingDirectories[timerinfo.iRecordingGroup]);
+  const std::string directory = UriEncode( m_settings.m_recordingDirectories[timerinfo.iRecordingGroup]);
   const std::string oidKey = to_string(timerinfo.iEpgUid) + ":" + to_string(timerinfo.iClientChannelUid);
   const int epgOid = m_epgOidLookup[oidKey];
   XBMC->Log(LOG_DEBUG, "TIMER_%d %s",epgOid,oidKey.c_str());
@@ -2299,40 +2341,40 @@ bool cPVRClientNextPVR::OpenLiveStream(const PVR_CHANNEL &channelinfo)
   LOG_API_CALL(__FUNCTION__);
   if (channelinfo.bIsRadio == false)
   {
-    g_NowPlaying = TV;
+    m_nowPlaying = TV;
   }
   else
   {
-    g_NowPlaying = Radio;
+    m_nowPlaying = Radio;
   }
   if (m_liveStreams.count(channelinfo.iUniqueId)!= 0)
   {
     snprintf(line,sizeof(line),"%s",m_liveStreams[channelinfo.iUniqueId].c_str());
     m_livePlayer = m_realTimeBuffer;
   }
-  else if (channelinfo.bIsRadio == false && m_supportsLiveTimeshift && g_livestreamingmethod == Timeshift)
+  else if (channelinfo.bIsRadio == false && m_supportsLiveTimeshift && m_settings.m_liveStreamingMethod == Timeshift)
   {
     sprintf(line, "GET /live?channeloid=%d&mode=liveshift&client=XBMC-%s HTTP/1.0\r\n", channelinfo.iUniqueId, m_sid);
     m_livePlayer = m_timeshiftBuffer;
   }
-  else if (g_livestreamingmethod == RollingFile)
+  else if ( m_settings.m_liveStreamingMethod == RollingFile)
   {
-    sprintf(line, "http://%s:%d/live?channeloid=%d&client=XBMC-%s&epgmode=true", g_szHostname.c_str(), g_iPort, channelinfo.iUniqueId, m_sid);
+    sprintf(line, "http://%s:%d/live?channeloid=%d&client=XBMC-%s&epgmode=true", m_settings.m_hostname.c_str(), m_settings.m_port, channelinfo.iUniqueId, m_sid);
     m_livePlayer = m_timeshiftBuffer;
   }
-  else if (g_livestreamingmethod == ClientTimeshift)
+  else if ( m_settings.m_liveStreamingMethod == ClientTimeshift)
   {
-    sprintf(line, "http://%s:%d/live?channeloid=%d&client=%s&sid=%s", g_szHostname.c_str(), g_iPort, channelinfo.iUniqueId, m_sid,m_sid);
+    sprintf(line, "http://%s:%d/live?channeloid=%d&client=%s&sid=%s", m_settings.m_hostname.c_str(), m_settings.m_port, channelinfo.iUniqueId, m_sid,m_sid);
     m_livePlayer = m_timeshiftBuffer;
     m_livePlayer->Channel(channelinfo.iUniqueId);
   }
   else
   {
-    sprintf(line, "http://%s:%d/live?channeloid=%d&client=XBMC-%s", g_szHostname.c_str(), g_iPort, channelinfo.iUniqueId, m_sid);
+    sprintf(line, "http://%s:%d/live?channeloid=%d&client=XBMC-%s", m_settings.m_hostname.c_str(), m_settings.m_port, channelinfo.iUniqueId, m_sid);
     m_livePlayer = m_realTimeBuffer;
   }
   XBMC->Log(LOG_INFO, "Calling Open(%s) on tsb!", line);
-  if (m_livePlayer->Open(line))
+  if (m_livePlayer->Open(line, channelinfo.bIsRadio))
   {
     return true;
   }
@@ -2356,7 +2398,7 @@ void cPVRClientNextPVR::CloseLiveStream(void)
     m_livePlayer = nullptr;
   }
   XBMC->Log(LOG_DEBUG, "CloseLiveStream@exit");
-  g_NowPlaying = NotPlaying;
+  m_nowPlaying = NotPlaying;
 }
 
 
@@ -2382,7 +2424,7 @@ PVR_ERROR cPVRClientNextPVR::GetSignalStatus(PVR_SIGNAL_STATUS *signalStatus)
 {
   LOG_API_CALL(__FUNCTION__);
   // Not supported yet
-  if (g_NowPlaying == Transcoding)
+  if (m_nowPlaying == Transcoding)
   {
     m_livePlayer->Lease();
   }
@@ -2393,7 +2435,7 @@ PVR_ERROR cPVRClientNextPVR::GetSignalStatus(PVR_SIGNAL_STATUS *signalStatus)
 bool cPVRClientNextPVR::CanPauseStream(void)
 {
   LOG_API_CALL(__FUNCTION__);
-  if (g_NowPlaying == Recording )
+  if (m_nowPlaying == Recording )
   {
     return true;
   }
@@ -2407,7 +2449,7 @@ bool cPVRClientNextPVR::CanPauseStream(void)
 void cPVRClientNextPVR::PauseStream(bool bPaused)
 {
   LOG_API_CALL(__FUNCTION__);
-  if (g_NowPlaying == Recording )
+  if (m_nowPlaying == Recording )
     m_recordingBuffer->PauseStream(bPaused);
   else
     m_livePlayer->PauseStream(bPaused);
@@ -2416,7 +2458,7 @@ void cPVRClientNextPVR::PauseStream(bool bPaused)
 bool cPVRClientNextPVR::CanSeekStream(void)
 {
   LOG_API_CALL(__FUNCTION__);
-  if (g_NowPlaying == Recording )
+  if (m_nowPlaying == Recording )
     return true;
   else
     return m_livePlayer->CanSeekStream();
@@ -2434,9 +2476,9 @@ bool cPVRClientNextPVR::OpenRecordedStream(const PVR_RECORDING &recording)
   m_currentRecordingPosition = 0;
 
   char line[1024];
-  g_NowPlaying = Recording;
+  m_nowPlaying = Recording;
   strcpy(copyRecording.strDirectory,m_hostFilenames[recording.strRecordingId].c_str());
-  snprintf(line, sizeof(line), "http://%s:%d/live?recording=%s&client=XBMC-%s", g_szHostname.c_str(), g_iPort, recording.strRecordingId, m_sid);
+  snprintf(line, sizeof(line), "http://%s:%d/live?recording=%s&client=XBMC-%s", m_settings.m_hostname.c_str(), m_settings.m_port, recording.strRecordingId, m_sid);
   return m_recordingBuffer->Open(line,copyRecording);
 }
 
@@ -2447,7 +2489,7 @@ void cPVRClientNextPVR::CloseRecordedStream(void)
   m_recordingBuffer->SetDuration(0);
   m_currentRecordingLength = 0;
   m_currentRecordingPosition = 0;
-  g_NowPlaying = NotPlaying;
+  m_nowPlaying = NotPlaying;
 }
 
 int cPVRClientNextPVR::ReadRecordedStream(unsigned char *pBuffer, unsigned int iBufferSize)
@@ -2473,14 +2515,14 @@ long long  cPVRClientNextPVR::LengthRecordedStream(void)
 /** http handling */
 int cPVRClientNextPVR::DoRequest(const char *resource, std::string &response)
 {
-  int resultCode =  NextPVR::m_backEnd->DoRequest(resource, response);
+  int resultCode = m_request.DoRequest(resource, response);
   return resultCode;
 }
 
 bool cPVRClientNextPVR::IsTimeshifting()
 {
   LOG_API_CALL(__FUNCTION__);
-  if (g_NowPlaying == Recording )
+  if (m_nowPlaying == Recording )
     return false;
   else
     return m_livePlayer->IsTimeshifting();
@@ -2490,7 +2532,7 @@ bool cPVRClientNextPVR::IsRealTimeStream()
 {
   LOG_API_CALL(__FUNCTION__);
   bool retval;
-  if (g_NowPlaying == Recording )
+  if (m_nowPlaying == Recording )
   {
     retval = m_recordingBuffer->IsRealTimeStream();
   }
@@ -2505,7 +2547,7 @@ PVR_ERROR cPVRClientNextPVR::GetStreamTimes(PVR_STREAM_TIMES *stimes)
 {
   PVR_ERROR rez;
   LOG_API_CALL(__FUNCTION__);
-  if (g_NowPlaying == Recording )
+  if (m_nowPlaying == Recording )
     rez = m_recordingBuffer->GetStreamTimes(stimes);
   else
     rez = m_livePlayer->GetStreamTimes(stimes);
@@ -2520,64 +2562,17 @@ PVR_ERROR cPVRClientNextPVR::GetStreamTimes(PVR_STREAM_TIMES *stimes)
 
 PVR_ERROR cPVRClientNextPVR::GetStreamReadChunkSize(int* chunksize)
 {
-  PVR_ERROR rez;
-  if (g_NowPlaying == Recording )
-    rez = m_recordingBuffer->GetStreamReadChunkSize(chunksize);
+  PVR_ERROR rez = PVR_ERROR_NO_ERROR;
+  if (m_nowPlaying == Recording)
+    *chunksize = m_settings.m_chunkRecording * 1024;
+  else if (m_nowPlaying == Radio)
+    *chunksize = 4096;
   else
     rez = m_livePlayer->GetStreamReadChunkSize(chunksize);
+
   LOG_API_IRET(__FUNCTION__, *chunksize);
   return rez;
 }
-bool cPVRClientNextPVR::SaveSettings(std::string name, std::string value)
-{
-  bool found = false;
-  TiXmlDocument doc;
-
-  char *settings = XBMC->TranslateSpecialProtocol("special://profile/addon_data/pvr.nextpvr/settings.xml");
-  if (doc.LoadFile(settings))
-  {
-    //Get Root Node
-    TiXmlElement* rootNode = doc.FirstChildElement("settings");
-    if (rootNode)
-    {
-      TiXmlElement* childNode;
-      for( childNode = rootNode->FirstChildElement("setting"); childNode; childNode=childNode->NextSiblingElement())
-      {
-        std::string key_value;
-        if ( childNode->QueryStringAttribute("id", &key_value)==TIXML_SUCCESS)
-        {
-          if (key_value == name)
-          {
-            if (childNode->FirstChild() != NULL)
-            {
-              childNode->FirstChild()->SetValue( value );
-              found = true;
-              break;
-            }
-            return false;
-          }
-        }
-      }
-      if (found == false)
-      {
-        TiXmlElement *newSetting = new TiXmlElement( "setting" );
-        TiXmlText *newvalue = new TiXmlText( value );
-        newSetting->SetAttribute("id", name);
-        newSetting->LinkEndChild( newvalue );
-        rootNode->LinkEndChild( newSetting);
-      }
-      ADDON_SetSetting(name.c_str(),value.c_str());
-      doc.SaveFile(settings);
-    }
-  }
-  else
-  {
-    XBMC->Log(LOG_ERROR, "Error loading settings.xml %s", settings);
-  }
-  XBMC->FreeString(settings);
-  return true;
-}
-
 
 #if DEBUGGING_XML
 

@@ -21,13 +21,14 @@ using namespace timeshift;
 
 /* Rolling File mode functions */
 
-bool RollingFile::Open(const std::string inputUrl)
+bool RollingFile::Open(const std::string inputUrl, bool isRadio)
 {
   m_isPaused = false;
   m_nextLease = 0;
   m_nextStreamInfo = 0;
   m_nextRoll = 0;
   m_complete = false;
+  m_isRadio = isRadio;
 
   m_stream_duration = 0;
   m_bytesPerSecond = 0;
@@ -37,15 +38,6 @@ bool RollingFile::Open(const std::string inputUrl)
   slipFiles.clear();
   std::stringstream ss;
 
-  if (g_NowPlaying == TV)
-  {
-    m_chunkSize = m_liveChunkSize;
-  }
-  else
-    m_chunkSize = 4;
-
-
-  XBMC->Log(LOG_DEBUG, "%s:%d: %d", __FUNCTION__, __LINE__, m_chunkSize);
   ss << inputUrl ;//<< "|connection-timeout=" << 15;
   if (ss.str().find("&epgmode=true") != std::string::npos)
   {
@@ -62,7 +54,7 @@ bool RollingFile::Open(const std::string inputUrl)
     return false;
   }
   int waitTime = 0;
-  if (g_NowPlaying == TV)
+  if (m_isRadio == false)
   {
     waitTime = m_prebuffer;
   }
@@ -114,8 +106,8 @@ bool RollingFile::RollingFileOpen()
   #if defined(TESTURL)
     strcpy(strURL,TESTURL);
   #else
-    snprintf(strURL,sizeof(strURL),"http://%s:%d/stream?f=%s&mode=http&sid=%s", g_szHostname.c_str(), g_iPort, UriEncode(m_activeFilename).c_str(), NextPVR::m_backEnd->getSID());
-    if (g_NowPlaying == Radio && m_activeLength == -1)
+    snprintf(strURL,sizeof(strURL),"http://%s:%d/stream?f=%s&mode=http&sid=%s", m_settings.m_hostname.c_str(), m_settings.m_port, UriEncode(m_activeFilename).c_str(), m_request.getSID());
+    if (m_isRadio && m_activeLength == -1)
     {
       // reduce buffer for radio when playing in-progess slip file
       strcat(strURL,"&bufsize=32768&wait=true");
@@ -143,7 +135,7 @@ bool RollingFile::GetStreamInfo()
     XBMC->Log(LOG_ERROR, "NextPVR not updating completed rolling file");
     return ( m_stream_length != 0 );
   }
-  if (NextPVR::m_backEnd->DoRequest("/services/service?method=channel.stream.info", response) == HTTP_OK)
+  if (m_request.DoRequest("/services/service?method=channel.stream.info", response) == HTTP_OK)
   {
     TiXmlDocument doc;
     if (doc.Parse(response.c_str()) != NULL)
@@ -195,7 +187,7 @@ bool RollingFile::GetStreamInfo()
                 if (!m_isEpgBased)
                 {
                   duration = slipFiles.front().seconds - duration;
-                  m_rollingStartSeconds = now - g_timeShiftBufferSeconds;
+                  m_rollingStartSeconds = now - m_settings.m_timeshiftBufferSeconds;
                 }
               }
               break;
@@ -233,11 +225,11 @@ bool RollingFile::GetStreamInfo()
                 XBMC->Log(LOG_DEBUG,"channel.stream.info %d %d",startTime,endTime);
                 if (startTime < endTime)
                 {
-                  m_nextRoll = (time(nullptr) / 60) * 60 + (endTime - startTime) * 60 - 3 + g_ServerTimeOffset;
+                  m_nextRoll = (time(nullptr) / 60) * 60 + (endTime - startTime) * 60 - 3 + m_settings.m_serverTimeOffset;
                 }
                 else
                 {
-                  m_nextRoll = (time(nullptr) / 60) * 60 + (2400 - startTime + endTime) * 60 - 3  + g_ServerTimeOffset;
+                  m_nextRoll = (time(nullptr) / 60) * 60 + (2400 - startTime + endTime) * 60 - 3  + m_settings.m_serverTimeOffset;
                 }
               }
             }
@@ -249,7 +241,7 @@ bool RollingFile::GetStreamInfo()
           }
           if (!m_isEpgBased)
           {
-            m_nextRoll = time(nullptr) + g_timeShiftBufferSeconds/3 - 3 + g_ServerTimeOffset;
+            m_nextRoll = time(nullptr) + m_settings.m_timeshiftBufferSeconds/3 - 3 + m_settings.m_serverTimeOffset;
           }
           if (slipFiles.size() == 5)
           {
@@ -262,7 +254,7 @@ bool RollingFile::GetStreamInfo()
             }
             else
             {
-              m_rollingStartSeconds = time(nullptr) - g_timeShiftBufferSeconds;
+              m_rollingStartSeconds = time(nullptr) - m_settings.m_timeshiftBufferSeconds;
             }
 
           }

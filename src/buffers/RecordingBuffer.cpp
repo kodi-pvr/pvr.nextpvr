@@ -55,14 +55,11 @@ int RecordingBuffer::Duration(void)
 bool RecordingBuffer::Open(const std::string inputUrl,const PVR_RECORDING &recording)
 {
   m_Duration = recording.iDuration;
-  if (!XBMC->GetSetting("chunkrecording", &m_chunkSize))
-  {
-    m_chunkSize = 32;
-  }
+
   XBMC->Log(LOG_DEBUG, "RecordingBuffer::Open In Progress %d %lld", recording.iDuration, recording.recordingTime);
   if (recording.iDuration + recording.recordingTime > time(nullptr))
   {
-    m_recordingTime = recording.recordingTime + g_ServerTimeOffset;
+    m_recordingTime = recording.recordingTime +m_settings.m_serverTimeOffset;
     XBMC->Log(LOG_DEBUG, "RecordingBuffer::Open In Progress %d %lld", recording.iDuration, recording.recordingTime);
     m_isLive = true;
   }

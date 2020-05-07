@@ -15,20 +15,26 @@
 #include "kodi/libXBMC_addon.h"
 
 /* Local includes */
-#include "Socket.h"
-#include "p8-platform/threads/mutex.h"
-#include "p8-platform/threads/threads.h"
-#include "tinyxml.h"
+#include "Settings.h"
 #include "buffers/DummyBuffer.h"
 #include "buffers/TranscodedBuffer.h"
 #include "buffers/TimeshiftBuffer.h"
 #include "buffers/RecordingBuffer.h"
 #include "buffers/RollingFile.h"
 #include "buffers/ClientTimeshift.h"
+
+#include "p8-platform/threads/mutex.h"
+#include "p8-platform/threads/threads.h"
+#include "tinyxml.h"
 #include <map>
 
 #define SAFE_DELETE(p)       do { delete (p);     (p)=NULL; } while (0)
 
+#define PVR_MENUHOOK_CHANNEL_DELETE_SINGLE_CHANNEL_ICON 101
+#define PVR_MENUHOOK_RECORDING_FORGET_RECORDING 401
+#define PVR_MENUHOOK_SETTING_DELETE_ALL_CHANNNEL_ICONS 601
+#define PVR_MENUHOOK_SETTING_UPDATE_CHANNNELS 602
+#define PVR_MENUHOOK_SETTING_UPDATE_CHANNNEL_GROUPS 603
 
 /* timer type ids */
 #define TIMER_MANUAL_MIN          (PVR_TIMER_TYPE_NONE + 1)
@@ -66,6 +72,15 @@ typedef enum
   NEXTPVR_LIMIT_10 = 10
 } nextpvr_recordinglimit_t;
 
+enum eNowPlaying
+{
+  NotPlaying = 0,
+  TV = 1,
+  Radio = 2,
+  Recording = 3,
+  Transcoding
+};
+
 class cPVRClientNextPVR : P8PLATFORM::CThread
 {
 public:
@@ -74,21 +89,24 @@ public:
   ~cPVRClientNextPVR();
 
   /* Server handling */
-  bool Connect();
+  ADDON_STATUS Connect();
   void Disconnect();
   bool IsUp();
   void OnSystemSleep();
   void OnSystemWake();
+  void LoadLiveStreams();
 
   /* General handling */
   const char* GetBackendName(void);
-  const char* GetBackendVersion(void);
+  const char* GetBackendVersion();
   const char* GetConnectionString(void);
   PVR_ERROR GetDriveSpace(long long *iTotal, long long *iUsed);
   PVR_ERROR GetBackendTime(time_t *localTime, int *gmtOffset);
   PVR_ERROR GetStreamTimes(PVR_STREAM_TIMES *stimes);
   PVR_ERROR GetStreamReadChunkSize(int* chunksize);
   int XmlGetInt(TiXmlElement * node, const char* name);
+  PVR_ERROR CallMenuHook(const PVR_MENUHOOK& menuhook, const PVR_MENUHOOK_DATA& item);
+  void ConfigureMenuhook();
 
   /* EPG handling */
   PVR_ERROR GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t iStart = 0, time_t iEnd = 0);
@@ -112,8 +130,9 @@ public:
   int GetRecordingLastPlayedPosition(const PVR_RECORDING &recording);
   PVR_ERROR GetRecordingEdl(const PVR_RECORDING& recording, PVR_EDL_ENTRY[], int *size);
   PVR_ERROR GetRecordingStreamProperties(const PVR_RECORDING*, PVR_NAMED_VALUE*, unsigned int*);
-  bool UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_RECORDING *tag);
+  bool UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_RECORDING *tag, const std::string& title, bool flatten);
   void ParseNextPVRSubtitle( const char *episodeName, PVR_RECORDING   *tag);
+  bool ForgetRecording(const PVR_RECORDING& recording);
 
   /* Timer handling */
   int GetNumTimers(void);
@@ -144,6 +163,7 @@ public:
   int ReadRecordedStream(unsigned char *pBuffer, unsigned int iBufferSize);
   long long SeekRecordedStream(long long iPosition, int iWhence = SEEK_SET);
   long long LengthRecordedStream(void);
+  void ForceRecordingUpdate() { m_lastRecordingUpdateTime = 0;}
 
   /* background connection monitoring */
   void *Process(void);
@@ -160,7 +180,9 @@ private:
   int DoRequest(const char *resource, std::string &response);
   std::string GetChannelIcon(int channelID);
   std::string GetChannelIconFileName(int channelID);
+  void DeleteChannelIcon(int channelID);
   void DeleteChannelIcons();
+  void ConfigurePostConnectionOptions();
 
   void Close();
 
@@ -175,17 +197,12 @@ private:
   bool                    m_supportsLiveTimeshift;
   long long               m_currentLiveLength;
   long long               m_currentLivePosition;
-  int                     m_iDefaultPrePadding;
-  int                     m_iDefaultPostPadding;
-
-  std::vector< std::string > m_recordingDirectories;
 
   int64_t                 m_lastRecordingUpdateTime;
 
   char                    m_sid[64];
 
   // update these at end of counting loop can be called during action
-  int                     m_iChannelCount = -1;
   int                     m_iRecordingCount = -1;
   int                     m_iTimerCount = -1;
 
@@ -199,14 +216,18 @@ private:
   timeshift::RecordingBuffer *m_recordingBuffer;
 
   std::map<std::string, std::string> m_hostFilenames;
-  std::map<int, bool> m_channelTypes;  // returns isRadio
   std::map<int, std::string> m_liveStreams;
+
+  //Matrix changes
+  NextPVR::Settings& m_settings = NextPVR::Settings::GetInstance();
+  NextPVR::Request& m_request = NextPVR::Request::GetInstance();
   std::map<std::string,int> m_epgOidLookup;
-  bool                    m_showNew;
+  eNowPlaying m_nowPlaying = NotPlaying;
+  std::map<int, std::pair<bool, bool>> m_channelDetails;
 
   void SendWakeOnLan();
-  bool SaveSettings(std::string name, std::string value);
-  void LoadLiveStreams();
+
+  PVR_RECORDING_CHANNEL_TYPE GetChannelType(unsigned int uid);
 
   bool GetAdditiveString(const TiXmlNode* pRootNode, const char* strTag,
         const std::string& strSeparator, std::string& strStringValue,

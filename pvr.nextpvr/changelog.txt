@@ -1,3 +1,19 @@
+v4.4.0
+- Move to Matrix settings.xml format enable new Kodi and backend options
+- Major restructuring of internal settings variables and new Settings class
+- Change to Request Class
+- Move global varables to Settings
+- Add NextPVR UDP Discovery protocol, display to user
+- Support Matrix folder view count (by faking the play count)
+- Flatten one-off recordings
+- Support recording filesize via the filesystem
+- Changes for EPG persistance new uid and improved art API V5
+- Show multiple genres with colour tags from V5 backend
+- Only get EPG listing when backend has EPG for channel - V5
+- Fix GetNumChannels() return count of all channels.
+- Add menuhooks to reset channels, icons, and groups and also to 'Forget' recording
+- Add setting to disable radio
+
 v4.3.8
 - Update: PVR API 6.5.0
 

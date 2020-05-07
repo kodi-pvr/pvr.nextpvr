@@ -25,8 +25,8 @@ bool TranscodedBuffer::Open(const std::string inputUrl)
     }
     XBMC->Log(LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
     std::string response;
-    std::string formattedRequest = "/services/service?method=channel.transcode.initiate&force=true&channel_id=" + std::to_string(m_channel_id) + m_profile.str();
-    if (NextPVR::m_backEnd->DoRequest( formattedRequest.c_str(), response) != HTTP_OK)
+    std::string formattedRequest = "/services/service?method=channel.transcode.initiate&force=true&channel_id=" + std::to_string(m_channel_id) + "&profile=" + m_settings.m_resolution + "p";
+    if (m_request.DoRequest(formattedRequest.c_str(), response) != HTTP_OK)
     {
       return false;
     }
@@ -67,7 +67,7 @@ void TranscodedBuffer::Close()
       XBMC->Log(LOG_DEBUG, "%s:%d: %d", __FUNCTION__, __LINE__,m_leaseThread.joinable());
     }
     std::string response;
-    NextPVR::m_backEnd->DoRequest("/services/service?method=channel.transcode.stop", response);
+    m_request.DoRequest("/services/service?method=channel.transcode.stop", response);
   }
 }
 
@@ -75,7 +75,7 @@ int TranscodedBuffer::TranscodeStatus()
 {
   int percentage = -1;
   std::string response;
-  if (NextPVR::m_backEnd->DoRequest("/services/service?method=channel.transcode.status", response) == HTTP_OK)
+  if (m_request.DoRequest("/services/service?method=channel.transcode.status", response) == HTTP_OK)
   {
     TiXmlDocument doc;
     if (doc.Parse(response.c_str()) != NULL)

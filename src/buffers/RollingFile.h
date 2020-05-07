@@ -28,6 +28,7 @@ namespace timeshift {
   private:
     std::string m_activeFilename;
     int64_t m_activeLength;
+    bool m_isRadio = false;
 
   protected:
     void *m_slipHandle = nullptr;
@@ -41,7 +42,6 @@ namespace timeshift {
 
     bool m_isEpgBased;
     int m_prebuffer;
-    int m_liveChunkSize;
     time_t m_lastClose;
 
     bool m_isPaused;
@@ -58,21 +58,13 @@ namespace timeshift {
   public:
     RollingFile() : RecordingBuffer()
     {
-      if (!XBMC->GetSetting("prebuffer", &m_prebuffer))
-      {
-        m_prebuffer = 8;
-      }
-      if (!XBMC->GetSetting("chunklivetv", &m_liveChunkSize))
-      {
-        m_liveChunkSize = 64;
-      }
       m_lastClose = 0;
       XBMC->Log(LOG_INFO, "EPG Based Buffer created!");
     }
 
     virtual ~RollingFile() {}
 
-    virtual bool Open(const std::string inputUrl) override;
+    virtual bool Open(const std::string inputUrl, bool isRadio = false) override;
     virtual void Close() override;
 
     virtual void PauseStream(bool bPause) override
@@ -95,6 +87,11 @@ namespace timeshift {
 
     int64_t Seek(int64_t position, int whence) override;
 
+    virtual PVR_ERROR GetStreamReadChunkSize(int *chunksize) override
+    {
+      *chunksize = m_settings.m_liveChunkSize;
+      return PVR_ERROR_NO_ERROR;
+    }
 
     bool RollingFileOpen();
 

@@ -16,11 +16,12 @@
 #include <string>
 #include <ctime>
 #include <atomic>
-#include "../client.h"
+#include "../Settings.h"
 #include <mutex>
 #include <thread>
 #include  "../BackendRequest.h"
 
+using namespace NextPVR;
 
 #if defined(TARGET_WINDOWS)
 #define SLEEP(ms) Sleep(ms)
@@ -50,11 +51,13 @@ namespace timeshift {
       m_readTimeout(DEFAULT_READ_TIMEOUT) {XBMC->Log(LOG_INFO, "Buffer created!"); };
     virtual ~Buffer();
 
+    NextPVR::Settings& m_settings = NextPVR::Settings::GetInstance();
+    NextPVR::Request& m_request = NextPVR::Request::GetInstance();
     /**
      * Opens the input handle
      * @return whether the input was successfully opened
      */
-    virtual bool Open(const std::string inputUrl);
+    virtual bool Open(const std::string inputUrl, bool isRadio = false);
 
     /**
      * Opens the input handle with options  Kodi addons use 0
@@ -134,15 +137,10 @@ namespace timeshift {
     /**
      * The time the buffer was created
      */
-    int m_chunkSize = 16;
 
     virtual PVR_ERROR GetStreamReadChunkSize(int* chunksize)
     {
-      // Return 16K for recordings, and non-timeshift
-      if (g_NowPlaying == Radio)
-        *chunksize = 4096;
-      else
-        *chunksize = m_chunkSize * 1024;
+      *chunksize = 16 * 1024;
       return PVR_ERROR_NO_ERROR;
     }
 

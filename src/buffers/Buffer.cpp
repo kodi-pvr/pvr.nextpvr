@@ -16,7 +16,7 @@ using namespace ADDON;
 
 const int Buffer::DEFAULT_READ_TIMEOUT = 10;
 
-bool Buffer::Open(const std::string inputUrl)
+bool Buffer::Open(const std::string inputUrl, bool isRadio)
 {
   return Buffer::Open(inputUrl,READ_NO_CACHE);
 }
@@ -104,5 +104,5 @@ void Buffer::LeaseWorker(void)
 int Buffer::Lease()
 {
   std::string response;
-  return NextPVR::m_backEnd->DoRequest("/service?method=channel.transcode.lease", response);
+  return m_request.DoRequest("/service?method=channel.transcode.lease", response);
 }

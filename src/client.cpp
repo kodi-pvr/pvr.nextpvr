@@ -9,10 +9,9 @@
 #include "client.h"
 #include "kodi/xbmc_pvr_dll.h"
 #include "pvrclient-nextpvr.h"
-#include "uri.h"
 
-using namespace std;
 using namespace ADDON;
+using namespace NextPVR;
 
 #define PVR_MIN_API_VERSION "1.2.0"
 
@@ -20,33 +19,21 @@ using namespace ADDON;
  * Default values are defined inside client.h
  * and exported to the other source files.
  */
-std::string      g_szHostname             = DEFAULT_HOST;                  ///< The Host name or IP of the NextPVR server
-std::string      g_szPin                  = DEFAULT_PIN;                   ///< The PIN for the NextPVR server
-int              g_iPort                  = DEFAULT_PORT;                  ///< The web listening port (default: 8866)
-int16_t          g_timeShiftBufferSeconds = 0;
-std::string      g_host_mac = "";
-eStreamingMethod g_livestreamingmethod = RealTime;
-eNowPlaying      g_NowPlaying = NotPlaying;
-int              g_wol_timeout;
-bool             g_wol_enabled;
-bool             g_KodiLook;
-bool             g_eraseIcons = false;
-int              g_iResolution;
 
 /* Client member variables */
 ADDON_STATUS           m_CurStatus    = ADDON_STATUS_UNKNOWN;
-cPVRClientNextPVR     *g_client       = NULL;
+cPVRClientNextPVR     *g_client       = nullptr;
 std::string            g_szUserPath   = "";
 std::string            g_szClientPath = "";
-bool             g_bUseTimeshift;  /* obsolete but settings.xml might have it */
+
+Settings& settings = Settings::GetInstance();
 
 CHelper_libXBMC_addon *XBMC           = NULL;
 CHelper_libXBMC_pvr   *PVR            = NULL;
-bool                   g_bDownloadGuideArtwork = false;
 
 extern "C" {
 
-void ADDON_ReadSettings(void);
+void ADDON_ReadSettings();
 
 /***********************************************************
  * Standard AddOn related public library functions
@@ -84,20 +71,24 @@ ADDON_STATUS ADDON_Create(void* hdl, void* props)
   g_szUserPath   = pvrprops->strUserPath;
   g_szClientPath = pvrprops->strClientPath;
 
-  ADDON_ReadSettings();
+  if (!XBMC->DirectoryExists("special://userdata/addon_data/pvr.nextpvr/"))
+  {
+    Request& request = Request::GetInstance();
+    request.OneTimeSetup(hdl);
+  }
 
-  /* Create connection to NextPVR XBMC TV client */
+  settings.ReadFromAddon();
+
+  /* Create connection to NextPVR KODI TV client */
   g_client       = new cPVRClientNextPVR();
-  if (!g_client->Connect())
+  m_CurStatus = g_client->Connect();
+
+  if (m_CurStatus != ADDON_STATUS_OK)
   {
     SAFE_DELETE(g_client);
     SAFE_DELETE(PVR);
     SAFE_DELETE(XBMC);
-    m_CurStatus = ADDON_STATUS_LOST_CONNECTION;
-    return m_CurStatus;
   }
-
-  m_CurStatus = ADDON_STATUS_OK;
 
   return m_CurStatus;
 }
@@ -130,97 +121,8 @@ ADDON_STATUS ADDON_GetStatus()
 
 void ADDON_ReadSettings(void)
 {
-  /* Read setting "host" from settings.xml */
-  char buffer[1024];
-
   if (!XBMC)
     return;
-
-  /* Connection settings */
-  /***********************/
-  if (XBMC->GetSetting("host", &buffer))
-  {
-    g_szHostname = buffer;
-    uri::decode(g_szHostname);
-  }
-  else
-  {
-    /* If setting is unknown fallback to defaults */
-    XBMC->Log(LOG_ERROR, "Couldn't get 'host' setting, falling back to '127.0.0.1' as default");
-    g_szHostname = DEFAULT_HOST;
-  }
-
-  /* Read setting "port" from settings.xml */
-  if (!XBMC->GetSetting("port", &g_iPort))
-  {
-    /* If setting is unknown fallback to defaults */
-    XBMC->Log(LOG_ERROR, "Couldn't get 'port' setting, falling back to '8866' as default");
-    g_iPort = DEFAULT_PORT;
-  }
-
-  /* Read setting "pin" from settings.xml */
-  if (XBMC->GetSetting("pin", &buffer))
-  {
-    g_szPin = buffer;
-  }
-  else
-  {
-    g_szPin = DEFAULT_PIN;
-  }
-
-  /* Read setting "livestreamingmethod" from settings.xml */
-  if (!XBMC->GetSetting("livestreamingmethod", &g_livestreamingmethod))
-  {
-    /* If setting is unknown fallback to defaults */
-    XBMC->Log(LOG_ERROR, "Couldn't get 'livestreamingmethod' setting");
-    g_livestreamingmethod = DEFAULT_LIVE_STREAM;
-  }
-
-  /* Read setting "guideartwork" from settings.xml */
-  if (!XBMC->GetSetting("guideartwork", &g_bDownloadGuideArtwork))
-  {
-    /* If setting is unknown fallback to defaults */
-    XBMC->Log(LOG_ERROR, "Couldn't get 'guideartwork' setting, falling back to 'true' as default");
-    g_bDownloadGuideArtwork = DEFAULT_GUIDE_ARTWORK;
-  }
-
-  if (XBMC->GetSetting("host_mac", &buffer))
-  {
-    g_host_mac = buffer;
-  }
-
-  if (!XBMC->GetSetting("wolenable", &g_wol_enabled))
-  {
-    g_wol_enabled = false;
-  }
-
-  if (!XBMC->GetSetting("woltimeout", &g_wol_timeout))
-  {
-    g_wol_timeout = 20;
-  }
-
-  if (!XBMC->GetSetting("kodilook", &g_KodiLook))
-  {
-    g_KodiLook = false;
-  }
-
-  if (!XBMC->GetSetting("reseticons", &g_eraseIcons))
-  {
-    g_eraseIcons = false;
-  }
-
-  if (!XBMC->GetSetting("resolution", &buffer))
-  {
-    g_iResolution = 720;
-  }
-  else
-  {
-    g_iResolution = atoi(buffer);
-  }
-
-  /* Log the current settings for debugging purposes */
-  XBMC->Log(LOG_DEBUG, "settings: host='%s', port=%i, mac=%4.4s...", g_szHostname.c_str(), g_iPort, g_host_mac.c_str());
-
 }
 
 //-- SetSetting ---------------------------------------------------------------
@@ -229,122 +131,23 @@ void ADDON_ReadSettings(void)
 //-----------------------------------------------------------------------------
 ADDON_STATUS ADDON_SetSetting(const char *settingName, const void *settingValue)
 {
-  string str = settingName;
+  std::string str = settingName;
 
   // SetSetting can occur when the addon is enabled, but TV support still
   // disabled. In that case the addon is not loaded, so we should not try
   // to change its settings.
-  if (!XBMC)
+  if (!XBMC || !g_client)
     return ADDON_STATUS_OK;
 
-  if (str == "host")
+  ADDON_STATUS status = settings.SetValue(settingName, settingValue);
+  if (status == ADDON_STATUS_NEED_SETTINGS)
   {
-    string tmp_sHostname = (const char*) settingValue;
-    if (tmp_sHostname != g_szHostname)
-    {
-      XBMC->Log(LOG_INFO, "Changed Setting 'host' from %s to %s", g_szHostname.c_str(), tmp_sHostname.c_str());
-      g_szHostname = tmp_sHostname;
-      return ADDON_STATUS_NEED_RESTART;
-    }
-  }
-  else if (str == "port")
-  {
-    if (g_iPort != *(int*) settingValue)
-    {
-      XBMC->Log(LOG_INFO, "Changed Setting 'port' from %u to %u", g_iPort, *(int*) settingValue);
-      g_iPort = *(int*) settingValue;
-      return ADDON_STATUS_NEED_RESTART;
-    }
-  }
-  else if (str == "pin")
-  {
-    string tmp_sPin = (const char*) settingValue;
-    if (tmp_sPin != g_szPin)
-    {
-      XBMC->Log(LOG_INFO, "Changed Setting 'pin'");
-      g_szPin = tmp_sPin;
-      return ADDON_STATUS_NEED_RESTART;
-    }
-  }
-  else if (str == "usetimeshift")
-  {
-    if (g_bUseTimeshift != *(bool *)settingValue)
-    {
-      XBMC->Log(LOG_INFO, "Changed setting 'usetimeshift' from %u to %u", g_bUseTimeshift, *(bool*) settingValue);
-      g_bUseTimeshift = *(bool*) settingValue;
-      return ADDON_STATUS_NEED_RESTART;
-    }
-  }
-  else if (str == "guideartwork")
-  {
-    if ( g_bDownloadGuideArtwork != *(bool*)settingValue)
-    {
-      XBMC->Log(LOG_INFO, "Changed setting 'guideartwork' from %u to %u", g_bDownloadGuideArtwork, *(bool*)settingValue);
-      g_bDownloadGuideArtwork = *(bool*)settingValue;
-    }
-  }
-  else if (str == "kodilook")
-  {
-    if ( g_KodiLook != *(bool*)settingValue)
-    {
-      XBMC->Log(LOG_INFO, "Changed setting 'kodilook' from %u to %u", g_KodiLook, *(bool*)settingValue);
-      g_KodiLook = *(bool*)settingValue;
-      if (g_client)
-        PVR->TriggerRecordingUpdate();
-    }
-  }
-  else if (str == "livestreamingmethod")
-  {
-    eStreamingMethod  setting_livestreamingmethod = *(eStreamingMethod*) settingValue;
-    if (g_livestreamingmethod == ClientTimeshift)
-    {
-        if (setting_livestreamingmethod == RealTime)
-        {
-            g_livestreamingmethod = RealTime;
-            return ADDON_STATUS_NEED_RESTART;
-        }
-    }
-    else
-    {
-      if (g_livestreamingmethod != setting_livestreamingmethod)
-      {
-        g_livestreamingmethod = setting_livestreamingmethod;
-        return ADDON_STATUS_NEED_RESTART;
-      }
-    }
-  }
-  else if (str == "host_mac")
-  {
-    if ( g_host_mac != (const char *)settingValue )
-    {
-      XBMC->Log(LOG_INFO, "Changed setting 'host_mac' from %4.4s... to %4.4s...", g_host_mac.c_str(), (const char *)settingValue );
-      g_host_mac = (const char *) settingValue;
-      return ADDON_STATUS_OK ;
-    }
-  }
-  else if (str == "reseticons")
-  {
-    if ( g_eraseIcons != *(bool*)settingValue )
-    {
-      g_eraseIcons = *(bool*)settingValue;
-      if (g_eraseIcons )
-      {
-        XBMC->Log(LOG_INFO, "Flagging icon reset");
-      }
-      return ADDON_STATUS_NEED_RESTART;
-    }
-  }
-  else if (str == "resolution")
-  {
-    if (g_iResolution != *(int*) settingValue)
-    {
-      g_iResolution = *(int*) settingValue;
-      return ADDON_STATUS_NEED_RESTART;
-    }
+    status = ADDON_STATUS_OK;
+    // need to trigger recording update;
+    g_client->ForceRecordingUpdate();
   }
 
-
-  return ADDON_STATUS_OK;
+  return status;
 }
 
 /***********************************************************
@@ -378,13 +181,13 @@ PVR_ERROR GetCapabilities(PVR_ADDON_CAPABILITIES *pCapabilities)
 {
   XBMC->Log(LOG_DEBUG, "->GetProperties()");
 
-  //pCapabilities->bSupportsTimeshift          = true; //removed from Frodo API
   pCapabilities->bSupportsEPG                = true;
   pCapabilities->bSupportsRecordings         = true;
   pCapabilities->bSupportsRecordingsUndelete = false;
+  pCapabilities->bSupportsRecordingSize = settings.m_showRecordingSize;
   pCapabilities->bSupportsTimers             = true;
   pCapabilities->bSupportsTV                 = true;
-  pCapabilities->bSupportsRadio              = true;
+  pCapabilities->bSupportsRadio              = settings.m_showRadio;
   pCapabilities->bSupportsChannelGroups      = true;
   pCapabilities->bHandlesInputStream         = true;
   pCapabilities->bHandlesDemuxing            = false;
@@ -394,6 +197,7 @@ PVR_ERROR GetCapabilities(PVR_ADDON_CAPABILITIES *pCapabilities)
   pCapabilities->bSupportsRecordingsRename   = false;
   pCapabilities->bSupportsRecordingsLifetimeChange = false;
   pCapabilities->bSupportsDescrambleInfo = false;
+  pCapabilities->bSupportsRecordingPlayCount = true;
 
   return PVR_ERROR_NO_ERROR;
 }
@@ -441,7 +245,7 @@ const char * GetConnectionString(void)
 //-----------------------------------------------------------------------------
 const char * GetBackendHostname(void)
 {
-  return g_szHostname.c_str();
+  return settings.m_hostname.c_str();
 }
 
 //-- GetDriveSpace ------------------------------------------------------------
@@ -462,7 +266,10 @@ PVR_ERROR OpenDialogChannelScan()
 
 PVR_ERROR CallMenuHook(const PVR_MENUHOOK &menuhook, const PVR_MENUHOOK_DATA &item)
 {
-  return PVR_ERROR_NOT_IMPLEMENTED;
+  if (!g_client)
+    return PVR_ERROR_SERVER_ERROR;
+  else
+    return g_client->CallMenuHook(menuhook, item);
 }
 
 
@@ -789,15 +596,18 @@ PVR_ERROR GetStreamReadChunkSize(int* chunksize)
   return PVR_ERROR_SERVER_ERROR;
 }
 
+PVR_ERROR SetRecordingPlayCount(const PVR_RECORDING& recording, int count)
+{
+  XBMC->Log(LOG_DEBUG, "Play count %s %d", recording.strTitle, count);
+  return PVR_ERROR_NO_ERROR;
+}
+
 /** UNUSED API FUNCTIONS */
 DemuxPacket* DemuxRead(void) { return NULL; }
 void DemuxAbort(void) {}
 void DemuxReset(void) {}
 void DemuxFlush(void) {}
 void FillBuffer(bool mode) {}
-
-PVR_ERROR SetRecordingPlayCount(const PVR_RECORDING &recording, int count) { return PVR_ERROR_NOT_IMPLEMENTED; }
-
 bool SeekTime(double,bool,double*) { return false; }
 void SetSpeed(int) {};
 PVR_ERROR UndeleteRecording(const PVR_RECORDING& recording) { return PVR_ERROR_NOT_IMPLEMENTED; }

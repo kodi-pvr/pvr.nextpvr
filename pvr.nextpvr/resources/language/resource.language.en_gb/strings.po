@@ -17,11 +17,11 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgctxt "#30000"
-msgid "NextPVR Hostname"
+msgid "NextPVR hostname"
 msgstr ""
 
 msgctxt "#30001"
-msgid "NextPVR Port (usually 8866 or 7799)"
+msgid "NextPVR port (usually 8866)"
 msgstr ""
 
 msgctxt "#30002"
@@ -29,11 +29,15 @@ msgid "NextPVR PinCode"
 msgstr ""
 
 msgctxt "#30003"
-msgid "Enable TimeShift with Live TV"
+msgid "Enable timeshift with live TV"
 msgstr ""
 
 msgctxt "#30004"
-msgid "Download TV Guide Artwork"
+msgid "Download TV guide artwork"
+msgstr ""
+
+msgctxt "#30504"
+msgid "Not enabled for Matrix when remote"
 msgstr ""
 
 #empty strings from id 30005 to 30039
@@ -83,7 +87,7 @@ msgid "Repeating (guide)"
 msgstr ""
 
 msgctxt "#30144"
-msgid "Child Recording"
+msgid "Child recording"
 msgstr ""
 
 msgctxt "#30145"
@@ -155,23 +159,31 @@ msgid "NextPVR server MAC address"
 msgstr ""
 
 msgctxt "#30166"
-msgid "Failed Recordings"
+msgid "Failed recordings"
 msgstr ""
 
 msgctxt "#30167"
-msgid "Live TV Chunk Size"
+msgid "Live TV chunk size"
+msgstr ""
+
+msgctxt "#30567"
+msgid "Change chunk size for LAN performance"
 msgstr ""
 
 msgctxt "#30168"
-msgid "Recording Chunk Size"
+msgid "Recording chunk size"
 msgstr ""
 
 msgctxt "#30169"
-msgid "Kodi Style Recordings"
+msgid "Kodi skin styled recordings"
+msgstr ""
+
+msgctxt "#30569"
+msgid "Separate season and episode for skin - Forced them in subtitle when off (default)"
 msgstr ""
 
 msgctxt "#30170"
-msgid "Erase Channel Icons"
+msgid "Refresh cache for channel icons"
 msgstr ""
 
 msgctxt "#30171"
@@ -179,9 +191,81 @@ msgid "Repeating (advanced)"
 msgstr ""
 
 msgctxt "#30172"
-msgid "Live TV Stream"
+msgid "Live TV method"
 msgstr ""
 
 msgctxt "#30173"
-msgid "Streaming Profile"
+msgid "Transcoding profile"
+msgstr ""
+
+msgctxt "#30174"
+msgid "Streaming options"
+msgstr ""
+
+msgctxt "#30175"
+msgid "Display options"
+msgstr ""
+
+msgctxt "#30176"
+msgid "Enable direct streams"
+msgstr ""
+
+msgctxt "#30177"
+msgid "Use legacy (V4) setting"
+msgstr ""
+
+msgctxt "#30178"
+msgid "Include filesize with recordings"
+msgstr ""
+
+msgctxt "#30678"
+msgid "Use file system to get the recording size if available"
+msgstr ""
+
+msgctxt "#30179"
+msgid "Remote access"
+msgstr ""
+
+msgctxt "#30180"
+msgid "Single file display"
+msgstr ""
+
+msgctxt "#30680"
+msgid "Movies and single episode TV shows not shown in folders"
+msgstr ""
+
+msgctxt "#30181"
+msgid "TV guide portrait format"
+msgstr ""
+
+msgctxt "#30182"
+msgid "NextPVR server %s:%d"
+msgstr ""
+
+msgctxt "#30183"
+msgid "Reset channel icon"
+msgstr ""
+
+msgctxt "#30184"
+msgid "Forget recording"
+msgstr ""
+
+msgctxt "#30185"
+msgid "Update all channels"
+msgstr ""
+
+msgctxt "#30186"
+msgid "Update all channel groups"
+msgstr ""
+
+msgctxt "#30187"
+msgid "Select NextPVR IP address"
+msgstr ""
+
+msgctxt "#30188"
+msgid "Show radio channels"
+msgstr ""
+
+msgctxt "#30688"
+msgid "Also use skin settings to control radio main menu display"
 msgstr ""
