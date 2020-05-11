@@ -19,7 +19,11 @@ set(NEXTPVR_SOURCES src/client.cpp
                     src/Socket.cpp
                     src/uri.cpp
                     src/BackendRequest.cpp
+                    src/Channels.cpp
+                    src/EPG.cpp
+                    src/Recordings.cpp
                     src/Settings.cpp
+                    src/Timers.cpp
                     src/buffers/Buffer.cpp
                     src/buffers/DummyBuffer.cpp
                     src/buffers/TranscodedBuffer.cpp
@@ -38,7 +42,11 @@ set(NEXTPVR_HEADERS src/client.h
                     src/Socket.h
                     src/uri.h
                     src/BackendRequest.h
+                    src/Channels.h
+                    src/EPG.h
+                    src/Recordings.h
                     src/Settings.h
+                    src/Timers.h
                     src/buffers/Buffer.h
                     src/buffers/DummyBuffer.h
                     src/buffers/TranscodedBuffer.h

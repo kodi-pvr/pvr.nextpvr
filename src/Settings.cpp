@@ -9,11 +9,11 @@
 
 #include "Settings.h"
 #include "BackendRequest.h"
+#include "uri.h"
 
 #include <kodi/util/XMLUtils.h>
 #include <p8-platform/util/StringUtils.h>
 #include <tinyxml.h>
-#include "uri.h"
 
 using namespace std;
 using namespace ADDON;
@@ -45,7 +45,7 @@ void Settings::ReadFromAddon()
     XBMC->Log(LOG_ERROR, "Couldn't get 'port' setting, falling back to '8866' as default");
     m_port = DEFAULT_PORT;
   }
-    /* Read setting "pin" from settings.xml */
+  /* Read setting "pin" from settings.xml */
 
   if (!XBMC->GetSetting("pin", buffer))
     m_PIN = DEFAULT_PIN;
@@ -97,7 +97,7 @@ void Settings::ReadFromAddon()
   if (!XBMC->GetSetting("showradio", &m_showRadio))
     m_showRadio = true;
 
-/* Log the current settings for debugging purposes */
+  /* Log the current settings for debugging purposes */
   XBMC->Log(LOG_DEBUG, "settings: host='%s', port=%i, mac=%4.4s...", m_hostname.c_str(), m_port, m_hostMACAddress.c_str());
 
 }
@@ -136,19 +136,12 @@ ADDON_STATUS Settings::ReadBackendSettings()
       XMLUtils::GetInt(settingsDoc.RootElement(), "PostPadding", m_defaultPostPadding);
 
       m_showNew = false;
-      XMLUtils::GetBoolean(settingsDoc.RootElement(),"ShowNewInGuide",m_showNew);
+      XMLUtils::GetBoolean(settingsDoc.RootElement(), "ShowNewInGuide", m_showNew);
 
       std::string recordingDirectories;
-      if (XMLUtils::GetString(settingsDoc.RootElement(),"RecordingDirectories",recordingDirectories))
+      if (XMLUtils::GetString(settingsDoc.RootElement(), "RecordingDirectories", recordingDirectories))
       {
         m_recordingDirectories = StringUtils::Split(recordingDirectories, ",", 0);
-        /*
-        vector<std::string> directories = split(recordingDirectories, ",", false);
-        for (size_t i = 0; i < directories.size(); i++)
-        {
-          m_recordingDirectories.push_back(directories[i]);
-        }
-        */
       }
 
       int serverTimestamp;
@@ -164,7 +157,6 @@ ADDON_STATUS Settings::ReadBackendSettings()
       std::string serverMac;
       if (XMLUtils::GetString(settingsDoc.RootElement(), "ServerMAC", serverMac))
       {
-        // only available from Windows backend
         char rawMAC[13];
         PVR_STRCPY(rawMAC, serverMac.c_str());
         if (strlen(rawMAC) == 12)
@@ -248,7 +240,7 @@ bool Settings::SaveSettings(std::string name, std::string value)
   bool found = false;
   TiXmlDocument doc;
 
-  char *settings = XBMC->TranslateSpecialProtocol("special://profile/addon_data/pvr.nextpvr/settings.xml");
+  char* settings = XBMC->TranslateSpecialProtocol("special://profile/addon_data/pvr.nextpvr/settings.xml");
   if (doc.LoadFile(settings))
   {
     //Get Root Node
@@ -259,13 +251,13 @@ bool Settings::SaveSettings(std::string name, std::string value)
       std::string key_value;
       for (childNode = rootNode->FirstChildElement("setting"); childNode; childNode = childNode->NextSiblingElement())
       {
-        if ( childNode->QueryStringAttribute("id", &key_value) == TIXML_SUCCESS)
+        if (childNode->QueryStringAttribute("id", &key_value) == TIXML_SUCCESS)
         {
           if (key_value == name)
           {
             if (childNode->FirstChild() != NULL)
             {
-              childNode->FirstChild()->SetValue( value );
+              childNode->FirstChild()->SetValue(value);
               found = true;
               break;
             }
@@ -275,8 +267,8 @@ bool Settings::SaveSettings(std::string name, std::string value)
       }
       if (found == false)
       {
-        TiXmlElement *newSetting = new TiXmlElement("setting");
-        TiXmlText *newvalue = new TiXmlText(value);
+        TiXmlElement* newSetting = new TiXmlElement("setting");
+        TiXmlText* newvalue = new TiXmlText(value);
         newSetting->SetAttribute("id", name);
         newSetting->LinkEndChild(newvalue);
         rootNode->LinkEndChild(newSetting);
@@ -310,18 +302,18 @@ ADDON_STATUS Settings::SetValue(const std::string& settingName, const void* sett
   else if (settingName == "guideartwork")
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_downloadGuideArtwork, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
   else if (settingName == "guideartworkportrait")
-    return SetSetting<bool,ADDON_STATUS>(settingName, settingValue, m_guideArtPortrait, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
+    return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_guideArtPortrait, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
   else if (settingName == "recordingsize")
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_showRecordingSize, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
   else if (settingName == "flattenrecording")
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_flattenRecording, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
   else if (settingName == "kodilook")
-    return SetSetting<bool ,ADDON_STATUS>(settingName, settingValue, m_kodiLook, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
+    return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_kodiLook, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
   else if (settingName == "host_mac")
     return SetStringSetting<ADDON_STATUS>(settingName, settingValue, m_hostMACAddress, ADDON_STATUS_OK, ADDON_STATUS_OK);
-  else if (settingName == "livestreamingmethod" && g_client && m_backendVersion < 50000)
+  else if (settingName == "livestreamingmethod" && g_pvrclient && m_backendVersion < 50000)
     return SetSetting<eStreamingMethod, ADDON_STATUS>(settingName, settingValue, m_liveStreamingMethod, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
-  else if (settingName == "livestreamingmethod5" && g_client && m_backendVersion >= 50000 && *static_cast<const eStreamingMethod*>(settingValue) != Default)
+  else if (settingName == "livestreamingmethod5" && g_pvrclient && m_backendVersion >= 50000 && *static_cast<const eStreamingMethod*>(settingValue) != Default)
     return SetSetting<eStreamingMethod, ADDON_STATUS>(settingName, settingValue, m_liveStreamingMethod, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
   else if (settingName == "prebuffer")
     return SetSetting<int, ADDON_STATUS>(settingName, settingValue, m_prebuffer, ADDON_STATUS_OK, ADDON_STATUS_OK);

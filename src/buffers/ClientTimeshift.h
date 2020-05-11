@@ -13,7 +13,6 @@
 #include <thread>
 #include <list>
 
-std::string UriEncode(const std::string sSrc);
 using namespace NextPVR;
 using namespace ADDON;
 namespace timeshift {
