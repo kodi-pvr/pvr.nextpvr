@@ -21,7 +21,7 @@ namespace NextPVR
 {
 
 /* Master defines for client control */
-#define RECEIVE_TIMEOUT 6 //sec
+constexpr long RECEIVE_TIMEOUT=6; //sec
 
 Socket::Socket(const enum SocketFamily family, const enum SocketDomain domain, const enum SocketType type, const enum SocketProtocol protocol)
 {
@@ -56,7 +56,7 @@ bool Socket::setHostname ( const std::string& host )
   if (isalpha(host.c_str()[0]))
   {
     // host address is a name
-    struct hostent *he = NULL;
+    struct hostent *he = nullptr;
     if ((he = gethostbyname( host.c_str() )) == 0)
     {
       errormessage( getLastError(), "Socket::setHostname");
@@ -82,7 +82,7 @@ bool Socket::read_ready()
   struct timeval tv = { 1, 0 };
   //  tv.tv_sec = 1;
 
-  int retVal = select(_sd+1, &fdset, NULL, NULL, &tv);
+  int retVal = select(_sd+1, &fdset, nullptr, nullptr, &tv);
   if (retVal > 0)
     return true;
   return false;
@@ -239,7 +239,7 @@ int Socket::send ( const char* data, const unsigned int len )
   FD_SET(_sd, &set_w);
   FD_SET(_sd, &set_e);
 
-  result = select(FD_SETSIZE, &set_w, NULL, &set_e, &tv);
+  result = select(FD_SETSIZE, &set_w, nullptr, &set_e, &tv);
 
   if (result < 0)
   {
@@ -289,7 +289,7 @@ int Socket::sendto ( const char* data, unsigned int size, bool sendcompletebuffe
 
 int Socket::receive ( std::string& data, unsigned int minpacketsize ) const
 {
-  char * buf = NULL;
+  char * buf = nullptr;
   int status = 0;
 
   if (!is_valid())
@@ -358,7 +358,7 @@ bool Socket::ReadResponse (int &code, vector<string> &lines)
     FD_ZERO(&set_e);
     FD_SET(_sd, &set_r);
     FD_SET(_sd, &set_e);
-    result = select(FD_SETSIZE, &set_r, NULL, &set_e, &timeout);
+    result = select(FD_SETSIZE, &set_r, nullptr, &set_e, &timeout);
 
     if (result < 0)
     {
@@ -570,7 +570,7 @@ bool Socket::set_non_blocking ( const bool b )
 
 void Socket::errormessage( int errnum, const char* functionname) const
 {
-  const char* errmsg = NULL;
+  const char* errmsg = nullptr;
 
   switch (errnum)
   {
@@ -718,7 +718,7 @@ bool Socket::set_non_blocking ( const bool b )
 
 void Socket::errormessage( int errnum, const char* functionname) const
 {
-  const char* errmsg = NULL;
+  const char* errmsg = nullptr;
 
   switch ( errnum )
   {

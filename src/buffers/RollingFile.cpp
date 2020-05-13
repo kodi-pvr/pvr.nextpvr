@@ -99,21 +99,20 @@ bool RollingFile::RollingFileOpen()
   recording.iDuration = 5 * 60 * 60;
   memset(recording.strDirectory,0,sizeof(recording.strDirectory));
   #if !defined(TESTURL)
-    strcpy(recording.strDirectory, m_activeFilename.c_str());
+  strcpy(recording.strDirectory, m_activeFilename.c_str());
   #endif
 
-  char strURL[1024];
   #if defined(TESTURL)
-    strcpy(strURL,TESTURL);
+  const std::string URL = TESTURL;
   #else
-    snprintf(strURL,sizeof(strURL),"http://%s:%d/stream?f=%s&mode=http&sid=%s", m_settings.m_hostname.c_str(), m_settings.m_port, UriEncode(m_activeFilename).c_str(), m_request.getSID());
-    if (m_isRadio && m_activeLength == -1)
-    {
-      // reduce buffer for radio when playing in-progess slip file
-      strcat(strURL,"&bufsize=32768&wait=true");
-    }
+  std::string URL = StringUtils::Format("http://%s:%d/stream?f=%s&mode=http&sid=%s", m_settings.m_hostname.c_str(), m_settings.m_port, UriEncode(m_activeFilename).c_str(), m_request.getSID());
+  if (m_isRadio && m_activeLength == -1)
+  {
+    // reduce buffer for radio when playing in-progess slip file
+    URL += "&bufsize=32768&wait=true";
+  }
   #endif
-  return RecordingBuffer::Open(strURL,recording);
+  return RecordingBuffer::Open(URL.c_str(),recording);
 }
 
 bool RollingFile::GetStreamInfo()
@@ -138,10 +137,10 @@ bool RollingFile::GetStreamInfo()
   if (m_request.DoRequest("/services/service?method=channel.stream.info", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != NULL)
+    if (doc.Parse(response.c_str()) != nullptr)
     {
       TiXmlElement* filesNode = doc.FirstChildElement("Files");
-      if (filesNode != NULL)
+      if (filesNode != nullptr)
       {
         stream_length = strtoll(filesNode->FirstChildElement("Length")->GetText(),nullptr,0);
         duration = strtoll(filesNode->FirstChildElement("Duration")->GetText(),nullptr,0);

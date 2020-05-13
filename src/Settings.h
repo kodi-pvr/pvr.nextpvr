@@ -10,23 +10,15 @@
 #pragma once
 
 #include "client.h"
+#include <string>
 #include <kodi/AddonBase.h>
 #include <p8-platform/util/StringUtils.h>
-#include <string>
+
 
 using namespace ADDON;
 
 namespace NextPVR
 {
-  #define PVRCLIENT_NEXTPVR_VERSION_STRING "1.0.0.0"
-  #define NEXTPVRC_MIN_VERSION_STRING "4.2.4"
-  #define DEFAULT_HOST                  "127.0.0.1"
-  #define DEFAULT_PORT                  8866
-  #define DEFAULT_PIN                   "0000"
-  #define DEFAULT_RADIO                 true
-  #define DEFAULT_USE_TIMESHIFT         false
-  #define DEFAULT_GUIDE_ARTWORK         false
-  #define DEFAULT_LIVE_STREAM           RealTime
 
   enum eStreamingMethod
   {
@@ -43,6 +35,16 @@ namespace NextPVR
     Portrait = 0,
     Landscape = 1
   };
+
+  const static std::string PVRCLIENT_NEXTPVR_VERSION_STRING = "1.0.0.0";
+  constexpr char NEXTPVRC_MIN_VERSION_STRING[] = "4.2.4";
+  const static std::string DEFAULT_HOST = "127.0.0.1";
+  constexpr bool DEFAULT_PORT = 8866;
+  const static std::string DEFAULT_PIN = "0000";
+  constexpr bool DEFAULT_RADIO = true;
+  constexpr bool DEFAULT_USE_TIMESHIFT = false;
+  constexpr bool DEFAULT_GUIDE_ARTWORK = false;
+  constexpr eStreamingMethod DEFAULT_LIVE_STREAM = RealTime;
 
   class Settings
   {
@@ -99,7 +101,7 @@ namespace NextPVR
     //Timers
     int m_defaultPrePadding = 0;
     int m_defaultPostPadding = 0;
-    std::vector< std::string > m_recordingDirectories;
+    std::vector<std::string> m_recordingDirectories;
 
     //Timeshift
     int m_timeshiftBufferSeconds = 1200;

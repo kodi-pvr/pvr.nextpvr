@@ -12,8 +12,6 @@
 #include "tinyxml.h"
 #include "kodi/util/XMLUtils.h"
 
-//#define FMODE 1
-
 using namespace timeshift;
 
 bool ClientTimeShift::Open(const std::string inputUrl, bool isRadio)
@@ -156,10 +154,10 @@ bool ClientTimeShift::GetStreamInfo()
   if (m_request.DoRequest("/services/service?method=channel.stream.info", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != NULL)
+    if (doc.Parse(response.c_str()) != nullptr)
     {
       TiXmlElement* filesNode = doc.FirstChildElement("map");
-      if (filesNode != NULL)
+      if (filesNode != nullptr)
       {
         stream_duration = strtoll(filesNode->FirstChildElement("stream_duration")->GetText(),nullptr,0);
         if (stream_duration != 0)

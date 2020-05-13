@@ -14,8 +14,6 @@
 #include <mutex>
 #include <list>
 
-std::string UriEncode(const std::string sSrc);
-
 using namespace ADDON;
 namespace timeshift {
 
