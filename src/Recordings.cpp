@@ -26,7 +26,6 @@ int Recordings::GetNumRecordings(void)
   // need something more optimal, but this will do for now...
   // Return -1 on error.
 
-  LOG_API_CALL(__FUNCTION__);
   if (m_iRecordingCount != 0)
     return m_iRecordingCount;
 
@@ -48,7 +47,6 @@ int Recordings::GetNumRecordings(void)
       }
     }
   }
-  LOG_API_IRET(__FUNCTION__, m_iRecordingCount);
   return m_iRecordingCount;
 }
 
@@ -57,7 +55,6 @@ PVR_ERROR Recordings::GetRecordings(ADDON_HANDLE handle)
   // include already-completed recordings
   PVR_ERROR returnValue = PVR_ERROR_NO_ERROR;
   m_hostFilenames.clear();
-  LOG_API_CALL(__FUNCTION__);
   int recordingCount = 0;
   std::string response;
   if (m_request.DoRequest("/service?method=recording.list&filter=all", response) == HTTP_OK)
@@ -99,7 +96,6 @@ PVR_ERROR Recordings::GetRecordings(ADDON_HANDLE handle)
     returnValue = PVR_ERROR_SERVER_ERROR;
   }
   g_pvrclient->m_lastRecordingUpdateTime = time(0);
-  LOG_API_IRET(__FUNCTION__, returnValue);
   return returnValue;
 }
 
@@ -341,9 +337,6 @@ void Recordings::ParseNextPVRSubtitle(const std::string episodeName, PVR_RECORDI
 
 PVR_ERROR Recordings::DeleteRecording(const PVR_RECORDING& recording)
 {
-  LOG_API_CALL(__FUNCTION__);
-  XBMC->Log(LOG_DEBUG, "DeleteRecording");
-
   if (recording.recordingTime < time(nullptr) && recording.recordingTime + recording.iDuration > time(nullptr))
     return PVR_ERROR_RECORDING_RUNNING;
 
@@ -366,7 +359,6 @@ PVR_ERROR Recordings::DeleteRecording(const PVR_RECORDING& recording)
 
 bool Recordings::ForgetRecording(const PVR_RECORDING& recording)
 {
-  LOG_API_CALL(__FUNCTION__);
   // tell backend to forget recording history so it can re recorded.
   std::string request = "/service?method=recording.forget&recording_id=";
   request.append(recording.strRecordingId);
@@ -376,8 +368,6 @@ bool Recordings::ForgetRecording(const PVR_RECORDING& recording)
 
 PVR_ERROR Recordings::SetRecordingLastPlayedPosition(const PVR_RECORDING& recording, int lastplayedposition)
 {
-  LOG_API_CALL(__FUNCTION__);
-  XBMC->Log(LOG_DEBUG, "SetRecordingLastPlayedPosition");
   const std::string request = StringUtils::Format("/service?method=recording.watched.set&recording_id=%s&position=%d", recording.strRecordingId, lastplayedposition);
 
   std::string response;
@@ -395,16 +385,12 @@ PVR_ERROR Recordings::SetRecordingLastPlayedPosition(const PVR_RECORDING& record
 
 int Recordings::GetRecordingLastPlayedPosition(const PVR_RECORDING& recording)
 {
-  LOG_API_CALL(__FUNCTION__);
   return recording.iLastPlayedPosition;
 }
 
 PVR_ERROR Recordings::GetRecordingEdl(const PVR_RECORDING& recording, PVR_EDL_ENTRY entries[], int* size)
 {
-  LOG_API_CALL(__FUNCTION__);
-  XBMC->Log(LOG_DEBUG, "GetRecordingEdl");
   const std::string request = StringUtils::Format("/service?method=recording.edl&recording_id=%s", recording.strRecordingId);
-
   std::string response;
   if (m_request.DoRequest(request.c_str(), response) == HTTP_OK)
   {

@@ -21,11 +21,7 @@ using namespace NextPVR;
 PVR_ERROR EPG::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t iStart, time_t iEnd)
 {
   EPG_TAG broadcast;
-
   std::string response;
-
-  LOG_API_CALL(__FUNCTION__);
-
   std::pair<bool, bool> channelDetail;
   channelDetail = m_channelDetails[iChannelUid];
   if (channelDetail.first == true)

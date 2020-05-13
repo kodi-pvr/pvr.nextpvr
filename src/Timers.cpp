@@ -21,7 +21,6 @@ using namespace NextPVR;
 
 int Timers::GetNumTimers(void)
 {
-  LOG_API_CALL(__FUNCTION__);
   // Return -1 in case of error.
   if (m_iTimerCount != -1)
     return m_iTimerCount;
@@ -69,7 +68,6 @@ int Timers::GetNumTimers(void)
   {
     m_iTimerCount = timerCount + 1;
   }
-  LOG_API_IRET(__FUNCTION__, timerCount);
   return m_iTimerCount;
 }
 
@@ -77,7 +75,6 @@ PVR_ERROR Timers::GetTimers(ADDON_HANDLE& handle)
 {
   std::string response;
   PVR_ERROR returnValue = PVR_ERROR_NO_ERROR;
-  LOG_API_CALL(__FUNCTION__);
   int timerCount = 0;
   // first add the recurring recordings
   if (m_request.DoRequest("/service?method=recording.recurring.list", response) == HTTP_OK)
@@ -253,8 +250,6 @@ PVR_ERROR Timers::GetTimers(ADDON_HANDLE& handle)
   {
     returnValue = PVR_ERROR_SERVER_ERROR;
   }
-
-  LOG_API_IRET(__FUNCTION__, returnValue);
   return returnValue;
 }
 
@@ -371,7 +366,6 @@ namespace
 
 PVR_ERROR Timers::GetTimerTypes(PVR_TIMER_TYPE types[], int* size)
 {
-  LOG_API_CALL(__FUNCTION__);
   static const int MSG_ONETIME_MANUAL = 30140;
   static const int MSG_ONETIME_GUIDE = 30141;
   static const int MSG_REPEATING_MANUAL = 30142;
@@ -626,7 +620,6 @@ PVR_ERROR Timers::AddTimer(const PVR_TIMER& timerinfo)
 {
 
   char preventDuplicates[16];
-  LOG_API_CALL(__FUNCTION__);
   if (timerinfo.iPreventDuplicateEpisodes)
     strcpy(preventDuplicates, "true");
   else
@@ -775,7 +768,6 @@ PVR_ERROR Timers::AddTimer(const PVR_TIMER& timerinfo)
 
 PVR_ERROR Timers::DeleteTimer(const PVR_TIMER& timer, bool bForceDelete)
 {
-  LOG_API_CALL(__FUNCTION__);
   std::string request = StringUtils::Format("/service?method=recording.delete&recording_id=%d", timer.iClientIndex);
 
   // handle recurring recordings
@@ -801,7 +793,5 @@ PVR_ERROR Timers::DeleteTimer(const PVR_TIMER& timer, bool bForceDelete)
 
 PVR_ERROR Timers::UpdateTimer(const PVR_TIMER& timerinfo)
 {
-  LOG_API_CALL(__FUNCTION__);
-  // not supported
   return AddTimer(timerinfo);
 }

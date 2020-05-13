@@ -37,23 +37,6 @@ extern "C"
   ADDON_STATUS ADDON_SetSetting(const char* settingName, const void* settingValue);
 }
 
-/* Globals */
-int g_iNextPVRXBMCBuild = 0;
-
-/* PVR client version (don't forget to update also the addon.xml and the Changelog.txt files) */
-#define PVRCLIENT_NEXTPVR_VERSION_STRING "1.0.0.0"
-#define NEXTPVRC_MIN_VERSION_STRING "4.2.4"
-
-#define DEBUGGING_XML 0
-#define DEBUGGING_API 0
-#if DEBUGGING_API
-#define LOG_API_CALL(f) XBMC->Log(LOG_INFO, "%s:  called!", f)
-#define LOG_API_IRET(f, i) XBMC->Log(LOG_INFO, "%s: returns %d", f, i)
-#else
-#define LOG_API_CALL(f)
-#define LOG_API_IRET(f, i)
-#endif
-
 const char SAFE[256] = {
     /*      0 1 2 3  4 5 6 7  8 9 A B  C D E F */
     /* 0 */ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -265,7 +248,6 @@ void cPVRClientNextPVR::ConfigurePostConnectionOptions()
  */
 bool cPVRClientNextPVR::IsUp()
 {
-  LOG_API_CALL(__FUNCTION__);
   // check time since last time Recordings were updated, update if it has been awhile
   if (m_bConnected == true && m_nowPlaying == NotPlaying && m_lastRecordingUpdateTime != MAXINT64 && time(0) > (m_lastRecordingUpdateTime + 60))
   {
@@ -316,7 +298,6 @@ bool cPVRClientNextPVR::IsUp()
 
 void* cPVRClientNextPVR::Process(void)
 {
-  LOG_API_CALL(__FUNCTION__);
   while (!IsStopped())
   {
     IsUp();
@@ -378,7 +359,6 @@ void cPVRClientNextPVR::SendWakeOnLan()
 // Used among others for the server name string in the "Recordings" view
 const char* cPVRClientNextPVR::GetBackendName(void)
 {
-  LOG_API_CALL(__FUNCTION__);
   if (!m_bConnected)
   {
     return m_settings.m_hostname.c_str();
@@ -398,7 +378,6 @@ const char* cPVRClientNextPVR::GetBackendName(void)
 
 const char* cPVRClientNextPVR::GetBackendVersion()
 {
-  LOG_API_CALL(__FUNCTION__);
   if (!m_bConnected)
     return "Unknown";
 
@@ -415,7 +394,6 @@ const char* cPVRClientNextPVR::GetConnectionString(void)
 
 PVR_ERROR cPVRClientNextPVR::GetDriveSpace(long long* iTotal, long long* iUsed)
 {
-  LOG_API_CALL(__FUNCTION__);
   string result;
   vector<string> fields;
 
@@ -445,8 +423,6 @@ unsigned int cPVRClientNextPVR::XmlGetUInt(TiXmlElement* node, const char* name,
 
 PVR_ERROR cPVRClientNextPVR::GetChannelStreamProperties(const PVR_CHANNEL& channel, PVR_NAMED_VALUE* properties, unsigned int* iPropertiesCount)
 {
-  LOG_API_CALL(__FUNCTION__);
-  XBMC->Log(LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
   bool liveStream = m_channels.IsChannelAPlugin(channel.iUniqueId);
   if (liveStream || (m_settings.m_liveStreamingMethod == Transcoded && !channel.bIsRadio))
   {
@@ -495,7 +471,6 @@ PVR_ERROR cPVRClientNextPVR::GetChannelStreamProperties(const PVR_CHANNEL& chann
 bool cPVRClientNextPVR::OpenLiveStream(const PVR_CHANNEL& channelinfo)
 {
   std::string line;
-  LOG_API_CALL(__FUNCTION__);
   if (channelinfo.bIsRadio == false)
   {
     m_nowPlaying = TV;
@@ -540,21 +515,17 @@ bool cPVRClientNextPVR::OpenLiveStream(const PVR_CHANNEL& channelinfo)
 
 int cPVRClientNextPVR::ReadLiveStream(unsigned char* pBuffer, unsigned int iBufferSize)
 {
-  LOG_API_CALL(__FUNCTION__);
   return m_livePlayer->Read(pBuffer, iBufferSize);
 }
 
 void cPVRClientNextPVR::CloseLiveStream(void)
 {
-  LOG_API_CALL(__FUNCTION__);
   XBMC->Log(LOG_DEBUG, "CloseLiveStream");
   if (m_livePlayer != nullptr)
   {
-    XBMC->Log(LOG_DEBUG, "CloseLiveStream");
     m_livePlayer->Close();
     m_livePlayer = nullptr;
   }
-  XBMC->Log(LOG_DEBUG, "CloseLiveStream@exit");
   m_nowPlaying = NotPlaying;
 }
 
@@ -562,7 +533,6 @@ void cPVRClientNextPVR::CloseLiveStream(void)
 long long cPVRClientNextPVR::SeekLiveStream(long long iPosition, int iWhence)
 {
   long long retVal;
-  LOG_API_CALL(__FUNCTION__);
   XBMC->Log(LOG_DEBUG, "calling seek(%lli %d)", iPosition, iWhence);
   retVal = m_livePlayer->Seek(iPosition, iWhence);
   XBMC->Log(LOG_DEBUG, "returned from seek()");
@@ -572,14 +542,12 @@ long long cPVRClientNextPVR::SeekLiveStream(long long iPosition, int iWhence)
 
 long long cPVRClientNextPVR::LengthLiveStream(void)
 {
-  LOG_API_CALL(__FUNCTION__);
   XBMC->Log(LOG_DEBUG, "seek length(%lli)", m_livePlayer->Length());
   return m_livePlayer->Length();
 }
 
 PVR_ERROR cPVRClientNextPVR::GetSignalStatus(PVR_SIGNAL_STATUS* signalStatus)
 {
-  LOG_API_CALL(__FUNCTION__);
   // Not supported yet
   if (m_nowPlaying == Transcoding)
   {
@@ -591,7 +559,6 @@ PVR_ERROR cPVRClientNextPVR::GetSignalStatus(PVR_SIGNAL_STATUS* signalStatus)
 
 bool cPVRClientNextPVR::CanPauseStream(void)
 {
-  LOG_API_CALL(__FUNCTION__);
   if (m_nowPlaying == Recording)
   {
     return true;
@@ -605,7 +572,6 @@ bool cPVRClientNextPVR::CanPauseStream(void)
 
 void cPVRClientNextPVR::PauseStream(bool bPaused)
 {
-  LOG_API_CALL(__FUNCTION__);
   if (m_nowPlaying == Recording)
     m_recordingBuffer->PauseStream(bPaused);
   else
@@ -614,7 +580,6 @@ void cPVRClientNextPVR::PauseStream(bool bPaused)
 
 bool cPVRClientNextPVR::CanSeekStream(void)
 {
-  LOG_API_CALL(__FUNCTION__);
   if (m_nowPlaying == Recording)
     return true;
   else
@@ -628,7 +593,6 @@ bool cPVRClientNextPVR::CanSeekStream(void)
 bool cPVRClientNextPVR::OpenRecordedStream(const PVR_RECORDING& recording)
 {
   PVR_RECORDING copyRecording = recording;
-  LOG_API_CALL(__FUNCTION__);
   m_nowPlaying = Recording;
   strcpy(copyRecording.strDirectory, m_recordings.m_hostFilenames[recording.strRecordingId].c_str());
   const std::string line = StringUtils::Format("http://%s:%d/live?recording=%s&client=XBMC-%s", m_settings.m_hostname.c_str(), m_settings.m_port, recording.strRecordingId, m_sid);
@@ -637,7 +601,6 @@ bool cPVRClientNextPVR::OpenRecordedStream(const PVR_RECORDING& recording)
 
 void cPVRClientNextPVR::CloseRecordedStream(void)
 {
-  LOG_API_CALL(__FUNCTION__);
   m_recordingBuffer->Close();
   m_recordingBuffer->SetDuration(0);
   m_nowPlaying = NotPlaying;
@@ -645,26 +608,22 @@ void cPVRClientNextPVR::CloseRecordedStream(void)
 
 int cPVRClientNextPVR::ReadRecordedStream(unsigned char* pBuffer, unsigned int iBufferSize)
 {
-  LOG_API_CALL(__FUNCTION__);
   iBufferSize = m_recordingBuffer->Read(pBuffer, iBufferSize);
   return iBufferSize;
 }
 
 long long cPVRClientNextPVR::SeekRecordedStream(long long iPosition, int iWhence)
 {
-  LOG_API_CALL(__FUNCTION__);
   return m_recordingBuffer->Seek(iPosition, iWhence);
 }
 
 long long cPVRClientNextPVR::LengthRecordedStream(void)
 {
-  LOG_API_CALL(__FUNCTION__);
   return m_recordingBuffer->Length();
 }
 
 bool cPVRClientNextPVR::IsTimeshifting()
 {
-  LOG_API_CALL(__FUNCTION__);
   if (m_nowPlaying == Recording)
     return false;
   else
@@ -673,7 +632,6 @@ bool cPVRClientNextPVR::IsTimeshifting()
 
 bool cPVRClientNextPVR::IsRealTimeStream()
 {
-  LOG_API_CALL(__FUNCTION__);
   bool retval;
   if (m_nowPlaying == Recording)
   {
@@ -689,17 +647,10 @@ bool cPVRClientNextPVR::IsRealTimeStream()
 PVR_ERROR cPVRClientNextPVR::GetStreamTimes(PVR_STREAM_TIMES* stimes)
 {
   PVR_ERROR rez;
-  LOG_API_CALL(__FUNCTION__);
   if (m_nowPlaying == Recording)
     rez = m_recordingBuffer->GetStreamTimes(stimes);
   else
     rez = m_livePlayer->GetStreamTimes(stimes);
-#if DEBUGGING_API
-  XBMC->Log(LOG_ERROR, "GetStreamTimes: start: %d", stimes->startTime);
-  XBMC->Log(LOG_ERROR, "             ptsStart: %lld", stimes->ptsStart);
-  XBMC->Log(LOG_ERROR, "             ptsBegin: %lld", stimes->ptsBegin);
-  XBMC->Log(LOG_ERROR, "               ptsEnd: %lld", stimes->ptsEnd);
-#endif
   return rez;
 }
 
@@ -712,7 +663,5 @@ PVR_ERROR cPVRClientNextPVR::GetStreamReadChunkSize(int* chunksize)
     *chunksize = 4096;
   else
     rez = m_livePlayer->GetStreamReadChunkSize(chunksize);
-
-  LOG_API_IRET(__FUNCTION__, *chunksize);
   return rez;
 }

@@ -20,7 +20,6 @@ using namespace NextPVR;
 
 int Channels::GetNumChannels(void)
 {
-  LOG_API_CALL(__FUNCTION__);
   // need something more optimal, but this will do for now...
   std::string response;
   int channelCount = 0;
@@ -43,8 +42,6 @@ int Channels::GetNumChannels(void)
 
 std::string Channels::GetChannelIcon(int channelID)
 {
-  LOG_API_CALL(__FUNCTION__);
-
   std::string iconFilename = GetChannelIconFileName(channelID);
 
   // do we already have the icon file?
@@ -94,8 +91,6 @@ PVR_ERROR Channels::GetChannels(ADDON_HANDLE handle, bool bRadio)
 {
   PVR_CHANNEL     tag;
   std::string      stream;
-  LOG_API_CALL(__FUNCTION__);
-
   std::map<int, std::pair<bool, bool>>::iterator  itr = m_channelDetails.begin();
   while (itr != m_channelDetails.end())
   {
@@ -170,12 +165,7 @@ PVR_ERROR Channels::GetChannels(ADDON_HANDLE handle, bool bRadio)
 
 int Channels::GetChannelGroupsAmount(void)
 {
-  LOG_API_CALL(__FUNCTION__);
-  // Not directly possible at the moment
-  XBMC->Log(LOG_DEBUG, "GetChannelGroupsAmount");
-
   int groups = 0;
-
   std::string response;
   if (m_request.DoRequest("/service?method=channel.groups", response) == HTTP_OK)
   {
@@ -206,8 +196,6 @@ PVR_RECORDING_CHANNEL_TYPE Channels::GetChannelType(unsigned int uid)
 PVR_ERROR Channels::GetChannelGroups(ADDON_HANDLE handle, bool bRadio)
 {
   PVR_CHANNEL_GROUP tag;
-  LOG_API_CALL(__FUNCTION__);
-
   // nextpvr doesn't have a separate concept of radio channel groups
   if (bRadio)
     return PVR_ERROR_NO_ERROR;
@@ -251,8 +239,6 @@ PVR_ERROR Channels::GetChannelGroups(ADDON_HANDLE handle, bool bRadio)
 PVR_ERROR Channels::GetChannelGroupMembers(ADDON_HANDLE handle, const PVR_CHANNEL_GROUP &group)
 {
   std::string encodedGroupName = UriEncode(group.strGroupName);
-  LOG_API_CALL(__FUNCTION__);
-
   std::string request = "/service?method=channel.list&group_id=" + encodedGroupName;
   std::string response;
   if (m_request.DoRequest(request.c_str(), response) == HTTP_OK)

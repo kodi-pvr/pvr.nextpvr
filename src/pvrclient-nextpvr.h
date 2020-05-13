@@ -39,17 +39,6 @@
     delete (p); \
     (p) = nullptr; \
   } while (0)
-#define DEBUGGING_XML 0
-
-#define DEBUGGING_API 0
-#if DEBUGGING_API
-#define LOG_API_CALL(f) XBMC->Log(LOG_INFO, "%s:  called!", f)
-#define LOG_API_IRET(f, i) XBMC->Log(LOG_INFO, "%s: returns %d", f, i)
-#else
-#define LOG_API_CALL(f)
-#define LOG_API_IRET(f, i)
-#endif
-
 
 enum eNowPlaying
 {
