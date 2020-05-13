@@ -16,12 +16,6 @@
 
 #include <p8-platform/util/StringUtils.h>
 
-#if defined(TARGET_WINDOWS)
-#define atoll(S) _atoi64(S)
-#else
-#define MAXINT64 ULONG_MAX
-#endif
-
 using namespace NextPVR;
 
 /************************************************************/
@@ -40,10 +34,10 @@ int Recordings::GetNumRecordings(void)
   if (m_request.DoRequest("/service?method=recording.list&filter=ready", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != NULL)
+    if (doc.Parse(response.c_str()) != nullptr)
     {
       TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
-      if (recordingsNode != NULL)
+      if (recordingsNode != nullptr)
       {
         TiXmlElement* pRecordingNode;
         m_iRecordingCount = 0;
@@ -69,7 +63,7 @@ PVR_ERROR Recordings::GetRecordings(ADDON_HANDLE handle)
   if (m_request.DoRequest("/service?method=recording.list&filter=all", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != NULL)
+    if (doc.Parse(response.c_str()) != nullptr)
     {
       //dump_to_log(&doc, 0);
       PVR_RECORDING tag;
@@ -192,7 +186,7 @@ bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_RECORDING*
       buffer.copy(tag->strTitle, sizeof(tag->strTitle) - 1);
     }
   }
-  int lookup;
+  int lookup = 0;
   tag->iLastPlayedPosition = g_pvrclient->XmlGetInt(pRecordingNode,"playback_position",lookup);
   if (XMLUtils::GetInt(pRecordingNode, "channel_id", lookup))
   {
@@ -389,7 +383,7 @@ PVR_ERROR Recordings::SetRecordingLastPlayedPosition(const PVR_RECORDING& record
   std::string response;
   if (m_request.DoRequest(request.c_str(), response) == HTTP_OK)
   {
-    if (strstr(response.c_str(), "<rsp stat=\"ok\">") == NULL)
+    if (strstr(response.c_str(), "<rsp stat=\"ok\">") == nullptr)
     {
       XBMC->Log(LOG_DEBUG, "SetRecordingLastPlayedPosition failed");
       return PVR_ERROR_FAILED;
@@ -414,10 +408,10 @@ PVR_ERROR Recordings::GetRecordingEdl(const PVR_RECORDING& recording, PVR_EDL_EN
   std::string response;
   if (m_request.DoRequest(request.c_str(), response) == HTTP_OK)
   {
-    if (strstr(response.c_str(), "<rsp stat=\"ok\">") != NULL)
+    if (strstr(response.c_str(), "<rsp stat=\"ok\">") != nullptr)
     {
       TiXmlDocument doc;
-      if (doc.Parse(response.c_str()) != NULL)
+      if (doc.Parse(response.c_str()) != nullptr)
       {
         int index = 0;
         TiXmlElement* commercialsNode = doc.RootElement()->FirstChildElement("commercials");
@@ -425,8 +419,12 @@ PVR_ERROR Recordings::GetRecordingEdl(const PVR_RECORDING& recording, PVR_EDL_EN
         for (pCommercialNode = commercialsNode->FirstChildElement("commercial"); pCommercialNode; pCommercialNode = pCommercialNode->NextSiblingElement())
         {
           PVR_EDL_ENTRY entry;
-          entry.start = atoll(pCommercialNode->FirstChildElement("start")->FirstChild()->Value()) * 1000;
-          entry.end = atoll(pCommercialNode->FirstChildElement("end")->FirstChild()->Value()) * 1000;
+          std::string buffer;
+          XMLUtils::GetString(pCommercialNode,"start",buffer);
+          entry.start = std::stoll(buffer) * 1000;
+          buffer.clear();
+          XMLUtils::GetString(pCommercialNode,"end",buffer);
+          entry.end = std::stoll(buffer) * 1000;
           entry.type = PVR_EDL_TYPE_COMBREAK;
           entries[index] = entry;
           index++;

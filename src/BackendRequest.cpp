@@ -23,7 +23,7 @@ namespace NextPVR
     // build request string, adding SID if requred
     std::string URL;
 
-    if (strstr(resource, "method=session") == NULL)
+    if (strstr(resource, "method=session") == nullptr)
       URL = StringUtils::Format("http://%s:%d%s&sid=%s", m_settings.m_hostname.c_str(), m_settings.m_port, resource, m_sid);
     else
       URL = StringUtils::Format("http://%s:%d%s", m_settings.m_hostname.c_str(), m_settings.m_port, resource);
@@ -40,7 +40,7 @@ namespace NextPVR
       }
       XBMC->CloseFile(fileHandle);
       resultCode = HTTP_OK;
-      if ((response.empty() || strstr(response.c_str(), "<rsp stat=\"ok\">") == NULL) && strstr(resource, "method=channel.stream.info") == NULL)
+      if ((response.empty() || strstr(response.c_str(), "<rsp stat=\"ok\">") == nullptr) && strstr(resource, "method=channel.stream.info") == nullptr)
       {
         XBMC->Log(LOG_ERROR, "DoRequest failed, response=%s", response.c_str());
         resultCode = HTTP_BADREQUEST;
@@ -66,7 +66,7 @@ namespace NextPVR
     ssize_t datalen;
     if (inputFile)
     {
-      void* outputFile = XBMC->OpenFileForWrite(fileName.c_str(), true);
+      void* outputFile = XBMC->OpenFileForWrite(fileName.c_str(), READ_NO_CACHE);
       if (outputFile)
       {
         char buffer[1024];
@@ -145,7 +145,7 @@ namespace NextPVR
         XBMC->QueueNotification(QUEUE_INFO, XBMC->GetLocalizedString(30182), m_settings.m_hostname.c_str(), m_settings.m_port);
         char* settings = XBMC->TranslateSpecialProtocol("special://profile/addon_data/pvr.nextpvr/settings.xml");
         // create settings.xml with host and port
-        void* settingsFile = XBMC->OpenFileForWrite(settings, false);
+        void* settingsFile = XBMC->OpenFileForWrite(settings, READ_NO_CACHE);
         const char tmp[] = "<settings version=\"2\">\n</settings>\n";
         XBMC->WriteFile(settingsFile, tmp, strlen(tmp));
         XBMC->CloseFile(settingsFile);

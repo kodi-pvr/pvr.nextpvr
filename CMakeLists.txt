@@ -21,6 +21,7 @@ set(NEXTPVR_SOURCES src/client.cpp
                     src/BackendRequest.cpp
                     src/Channels.cpp
                     src/EPG.cpp
+                    src/MenuHook.cpp
                     src/Recordings.cpp
                     src/Settings.cpp
                     src/Timers.cpp
@@ -44,6 +45,7 @@ set(NEXTPVR_HEADERS src/client.h
                     src/BackendRequest.h
                     src/Channels.h
                     src/EPG.h
+                    src/MenuHook.h
                     src/Recordings.h
                     src/Settings.h
                     src/Timers.h

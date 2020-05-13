@@ -16,25 +16,25 @@ using namespace ADDON;
 
 namespace NextPVR
 {
+  /* timer type ids */
+  constexpr unsigned int TIMER_MANUAL_MIN = PVR_TIMER_TYPE_NONE + 1;
+  constexpr unsigned int TIMER_ONCE_MANUAL = TIMER_MANUAL_MIN;
+  constexpr unsigned int TIMER_ONCE_EPG = TIMER_MANUAL_MIN + 1;
+  constexpr unsigned int TIMER_ONCE_KEYWORD = TIMER_MANUAL_MIN + 2;
+  constexpr unsigned int TIMER_ONCE_MANUAL_CHILD = TIMER_MANUAL_MIN + 3;
+  constexpr unsigned int TIMER_ONCE_EPG_CHILD = TIMER_MANUAL_MIN + 4;
+  constexpr unsigned int TIMER_ONCE_KEYWORD_CHILD =TIMER_MANUAL_MIN + 5;
+  constexpr unsigned int TIMER_MANUAL_MAX = TIMER_MANUAL_MIN + 5;
+
+  constexpr unsigned int TIMER_REPEATING_MIN = TIMER_MANUAL_MAX + 1;
+  constexpr unsigned int TIMER_REPEATING_MANUAL = TIMER_REPEATING_MIN;
+  constexpr unsigned int TIMER_REPEATING_EPG = TIMER_REPEATING_MIN + 1;
+  constexpr unsigned int TIMER_REPEATING_KEYWORD = TIMER_REPEATING_MIN + 2;
+  constexpr unsigned int TIMER_REPEATING_ADVANCED = TIMER_REPEATING_MIN + 3;
+  constexpr unsigned int TIMER_REPEATING_MAX = TIMER_REPEATING_MIN + 3;
+
   class Timers
   {
-    /* timer type ids */
-    #define TIMER_MANUAL_MIN (PVR_TIMER_TYPE_NONE + 1)
-    #define TIMER_ONCE_MANUAL (TIMER_MANUAL_MIN + 0)
-    #define TIMER_ONCE_EPG (TIMER_MANUAL_MIN + 1)
-    #define TIMER_ONCE_KEYWORD (TIMER_MANUAL_MIN + 2)
-    #define TIMER_ONCE_MANUAL_CHILD (TIMER_MANUAL_MIN + 3)
-    #define TIMER_ONCE_EPG_CHILD (TIMER_MANUAL_MIN + 4)
-    #define TIMER_ONCE_KEYWORD_CHILD (TIMER_MANUAL_MIN + 5)
-    #define TIMER_MANUAL_MAX (TIMER_MANUAL_MIN + 5)
-
-    #define TIMER_REPEATING_MIN (TIMER_MANUAL_MAX + 1)
-    #define TIMER_REPEATING_MANUAL (TIMER_REPEATING_MIN + 0)
-    #define TIMER_REPEATING_EPG (TIMER_REPEATING_MIN + 1)
-    #define TIMER_REPEATING_KEYWORD (TIMER_REPEATING_MIN + 2)
-    #define TIMER_REPEATING_ADVANCED (TIMER_REPEATING_MIN + 3)
-    #define TIMER_REPEATING_MAX (TIMER_REPEATING_MIN + 3)
-
     typedef enum
     {
       NEXTPVR_SHOWTYPE_ANY = 0,

@@ -13,12 +13,6 @@
 
 #include <p8-platform/util/StringUtils.h>
 
-#if defined(TARGET_WINDOWS)
-#define atoll(S) _atoi64(S)
-#else
-#define MAXINT64 ULONG_MAX
-#endif
-
 using namespace NextPVR;
 
 /************************************************************/

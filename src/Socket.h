@@ -263,7 +263,7 @@ class Socket
      * \param fromlen    Optional, only required if 'from' is given: length of from struct
      * \return    Number of bytes received or SOCKET_ERROR
      */
-    int recvfrom ( char* data, const int buffersize, struct sockaddr* from = NULL, socklen_t* fromlen = NULL) const;
+    int recvfrom ( char* data, const int buffersize, struct sockaddr* from = nullptr, socklen_t* fromlen = nullptr) const;
 
     bool set_non_blocking ( const bool );
 
@@ -291,7 +291,7 @@ class Socket
       static int win_usage_count;       ///< Internal Windows usage counter used to prevent a global WSACleanup when more than one Socket object is used
     #endif
 
-    void errormessage( int errornum, const char* functionname = NULL) const;
+    void errormessage( int errornum, const char* functionname = nullptr) const;
     int getLastError(void) const;
     bool osInit();
     void osCleanup();

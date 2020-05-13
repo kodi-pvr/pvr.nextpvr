@@ -18,6 +18,7 @@
 
 #include "Channels.h"
 #include "EPG.h"
+#include "MenuHook.h"
 #include "Recordings.h"
 #include "Settings.h"
 #include "Timers.h"
@@ -36,14 +37,9 @@
   do \
   { \
     delete (p); \
-    (p) = NULL; \
+    (p) = nullptr; \
   } while (0)
 #define DEBUGGING_XML 0
-#define PVR_MENUHOOK_CHANNEL_DELETE_SINGLE_CHANNEL_ICON 101
-#define PVR_MENUHOOK_RECORDING_FORGET_RECORDING 401
-#define PVR_MENUHOOK_SETTING_DELETE_ALL_CHANNNEL_ICONS 601
-#define PVR_MENUHOOK_SETTING_UPDATE_CHANNNELS 602
-#define PVR_MENUHOOK_SETTING_UPDATE_CHANNNEL_GROUPS 603
 
 #define DEBUGGING_API 0
 #if DEBUGGING_API
@@ -88,8 +84,6 @@ public:
   PVR_ERROR GetStreamReadChunkSize(int* chunksize);
   int XmlGetInt(TiXmlElement* node, const char* name, const int setDefault = 0);
   unsigned int XmlGetUInt(TiXmlElement* node, const char* name, const unsigned setDefault = 0);
-  PVR_ERROR CallMenuHook(const PVR_MENUHOOK& menuhook, const PVR_MENUHOOK_DATA& item);
-  void ConfigureMenuhook();
 
   PVR_ERROR GetChannelStreamProperties(const PVR_CHANNEL& channel, PVR_NAMED_VALUE* properties, unsigned int* iPropertiesCount);
   bool IsChannelAPlugin(int uid);
@@ -120,6 +114,7 @@ public:
 
   Channels& m_channels = Channels::GetInstance();
   EPG& m_epg = EPG::GetInstance();
+  MenuHook& m_menuhook = MenuHook::GetInstance();
   Recordings& m_recordings = Recordings::GetInstance();
   Timers& m_timers = Timers::GetInstance();
   int64_t m_lastRecordingUpdateTime;
@@ -163,4 +158,3 @@ private:
   PVR_RECORDING_CHANNEL_TYPE GetChannelType(unsigned int uid);
 
 };
-

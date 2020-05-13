@@ -137,10 +137,10 @@ bool RollingFile::GetStreamInfo()
   if (m_request.DoRequest("/services/service?method=channel.stream.info", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != NULL)
+    if (doc.Parse(response.c_str()) != nullptr)
     {
       TiXmlElement* filesNode = doc.FirstChildElement("Files");
-      if (filesNode != NULL)
+      if (filesNode != nullptr)
       {
         stream_length = strtoll(filesNode->FirstChildElement("Length")->GetText(),nullptr,0);
         duration = strtoll(filesNode->FirstChildElement("Duration")->GetText(),nullptr,0);

@@ -14,12 +14,6 @@
 
 #include <p8-platform/util/StringUtils.h>
 
-#if defined(TARGET_WINDOWS)
-#define atoll(S) _atoi64(S)
-#else
-#define MAXINT64 ULONG_MAX
-#endif
-
 using namespace NextPVR;
 
 /************************************************************/
@@ -38,10 +32,10 @@ int Timers::GetNumTimers(void)
   if (m_request.DoRequest("/service?method=recording.recurring.list", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != NULL)
+    if (doc.Parse(response.c_str()) != nullptr)
     {
       TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recurrings");
-      if (recordingsNode != NULL)
+      if (recordingsNode != nullptr)
       {
         TiXmlElement* pRecordingNode;
         for (pRecordingNode = recordingsNode->FirstChildElement("recurring"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
@@ -58,10 +52,10 @@ int Timers::GetNumTimers(void)
   if (m_request.DoRequest("/service?method=recording.list&filter=pending", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != NULL)
+    if (doc.Parse(response.c_str()) != nullptr)
     {
       TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
-      if (recordingsNode != NULL)
+      if (recordingsNode != nullptr)
       {
         TiXmlElement* pRecordingNode;
         for (pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
@@ -89,7 +83,7 @@ PVR_ERROR Timers::GetTimers(ADDON_HANDLE& handle)
   if (m_request.DoRequest("/service?method=recording.recurring.list", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != NULL)
+    if (doc.Parse(response.c_str()) != nullptr)
     {
       PVR_TIMER tag;
       TiXmlElement* recurringsNode = doc.RootElement()->FirstChildElement("recurrings");
@@ -220,7 +214,7 @@ PVR_ERROR Timers::GetTimers(ADDON_HANDLE& handle)
     if (m_request.DoRequest("/service?method=recording.list&filter=pending", response) == HTTP_OK)
     {
       TiXmlDocument doc;
-      if (doc.Parse(response.c_str()) != NULL)
+      if (doc.Parse(response.c_str()) != nullptr)
       {
         PVR_TIMER tag;
 
@@ -238,7 +232,7 @@ PVR_ERROR Timers::GetTimers(ADDON_HANDLE& handle)
       if (m_request.DoRequest("/service?method=recording.list&filter=conflict", response) == HTTP_OK)
       {
         TiXmlDocument doc;
-        if (doc.Parse(response.c_str()) != NULL)
+        if (doc.Parse(response.c_str()) != nullptr)
         {
           PVR_TIMER tag;
           TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recordings");

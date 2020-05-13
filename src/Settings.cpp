@@ -110,7 +110,7 @@ ADDON_STATUS Settings::ReadBackendSettings()
   if (request.DoRequest("/service?method=setting.list", settings) == HTTP_OK)
   {
     TiXmlDocument settingsDoc;
-    if (settingsDoc.Parse(settings.c_str()) != NULL)
+    if (settingsDoc.Parse(settings.c_str()) != nullptr)
     {
       //dump_to_log(&settingsDoc, 0);
       if (XMLUtils::GetInt(settingsDoc.RootElement(), "NextPVRVersion", m_backendVersion))
@@ -157,18 +157,15 @@ ADDON_STATUS Settings::ReadBackendSettings()
       std::string serverMac;
       if (XMLUtils::GetString(settingsDoc.RootElement(), "ServerMAC", serverMac))
       {
-        char rawMAC[13];
-        PVR_STRCPY(rawMAC, serverMac.c_str());
-        if (strlen(rawMAC) == 12)
+        std::string macAddress = serverMac.substr(0,2) ;
+        for (int i = 2; i < 12; i+=2)
         {
-          char mac[18];
-          sprintf(mac, "%2.2s:%2.2s:%2.2s:%2.2s:%2.2s:%2.2s", rawMAC, &rawMAC[2], &rawMAC[4], &rawMAC[6], &rawMAC[8], &rawMAC[10]);
-          XBMC->Log(LOG_DEBUG, "Server MAC addres %4.4s...", mac);
-          std::string smac = mac;
-          if (m_hostMACAddress != smac)
-          {
-            SaveSettings("host_mac", smac);
-          }
+          macAddress+= ":" + serverMac.substr(i,2);
+        }
+        XBMC->Log(LOG_DEBUG, "Server MAC address %4.4s...", macAddress.c_str());
+        if (m_hostMACAddress != macAddress)
+        {
+          SaveSettings("host_mac", macAddress);
         }
       }
     }
@@ -255,7 +252,7 @@ bool Settings::SaveSettings(std::string name, std::string value)
         {
           if (key_value == name)
           {
-            if (childNode->FirstChild() != NULL)
+            if (childNode->FirstChild() != nullptr)
             {
               childNode->FirstChild()->SetValue(value);
               found = true;

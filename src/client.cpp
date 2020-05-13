@@ -13,23 +13,19 @@
 using namespace ADDON;
 using namespace NextPVR;
 
-#define PVR_MIN_API_VERSION "1.2.0"
-
 /* User adjustable settings are saved here.
  * Default values are defined inside client.h
  * and exported to the other source files.
  */
 
 /* Client member variables */
-ADDON_STATUS           m_CurStatus    = ADDON_STATUS_UNKNOWN;
-cPVRClientNextPVR     *g_pvrclient       = nullptr;
-std::string            g_szUserPath   = "";
-std::string            g_szClientPath = "";
+ADDON_STATUS m_CurStatus = ADDON_STATUS_UNKNOWN;
+cPVRClientNextPVR *g_pvrclient = nullptr;
 
 Settings& settings = Settings::GetInstance();
 
-CHelper_libXBMC_addon *XBMC           = NULL;
-CHelper_libXBMC_pvr   *PVR            = NULL;
+CHelper_libXBMC_addon *XBMC = nullptr;
+CHelper_libXBMC_pvr *PVR = nullptr;
 
 extern "C" {
 
@@ -68,8 +64,6 @@ ADDON_STATUS ADDON_Create(void* hdl, void* props)
   XBMC->Log(LOG_INFO, "Creating NextPVR PVR-Client");
 
   m_CurStatus    = ADDON_STATUS_UNKNOWN;
-  g_szUserPath   = pvrprops->strUserPath;
-  g_szClientPath = pvrprops->strClientPath;
 
   if (!XBMC->DirectoryExists("special://userdata/addon_data/pvr.nextpvr/"))
   {
@@ -80,7 +74,7 @@ ADDON_STATUS ADDON_Create(void* hdl, void* props)
   settings.ReadFromAddon();
 
   /* Create connection to NextPVR KODI TV client */
-  g_pvrclient = new cPVRClientNextPVR();
+  g_pvrclient       = new cPVRClientNextPVR();
   m_CurStatus = g_pvrclient->Connect();
 
   if (m_CurStatus != ADDON_STATUS_OK)
@@ -269,7 +263,7 @@ PVR_ERROR CallMenuHook(const PVR_MENUHOOK &menuhook, const PVR_MENUHOOK_DATA &it
   if (!g_pvrclient)
     return PVR_ERROR_SERVER_ERROR;
   else
-    return g_pvrclient->CallMenuHook(menuhook, item);
+    return g_pvrclient->m_menuhook.CallMenuHook(menuhook, item);
 }
 
 
@@ -603,7 +597,7 @@ PVR_ERROR SetRecordingPlayCount(const PVR_RECORDING& recording, int count)
 }
 
 /** UNUSED API FUNCTIONS */
-DemuxPacket* DemuxRead(void) { return NULL; }
+DemuxPacket* DemuxRead(void) { return nullptr; }
 void DemuxAbort(void) {}
 void DemuxReset(void) {}
 void DemuxFlush(void) {}

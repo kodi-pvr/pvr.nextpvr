@@ -139,70 +139,6 @@ cPVRClientNextPVR::~cPVRClientNextPVR()
   m_channels.m_liveStreams.clear();
 }
 
-PVR_ERROR cPVRClientNextPVR::CallMenuHook(const PVR_MENUHOOK& menuhook, const PVR_MENUHOOK_DATA& item)
-{
-  if (item.cat == PVR_MENUHOOK_CHANNEL && menuhook.iHookId == PVR_MENUHOOK_CHANNEL_DELETE_SINGLE_CHANNEL_ICON)
-  {
-    m_channels.DeleteChannelIcon(item.data.channel.iUniqueId);
-    PVR->TriggerChannelUpdate();
-  }
-  else if (item.cat == PVR_MENUHOOK_RECORDING && menuhook.iHookId == PVR_MENUHOOK_RECORDING_FORGET_RECORDING)
-  {
-    m_recordings.ForgetRecording(item.data.recording);
-  }
-  else if (item.cat == PVR_MENUHOOK_SETTING && menuhook.iHookId == PVR_MENUHOOK_SETTING_DELETE_ALL_CHANNNEL_ICONS)
-  {
-    m_channels.DeleteChannelIcons();
-    PVR->TriggerChannelUpdate();
-  }
-  else if (item.cat == PVR_MENUHOOK_SETTING && menuhook.iHookId == PVR_MENUHOOK_SETTING_UPDATE_CHANNNELS)
-  {
-    PVR->TriggerChannelUpdate();
-  }
-  else if (item.cat == PVR_MENUHOOK_SETTING && menuhook.iHookId == PVR_MENUHOOK_SETTING_UPDATE_CHANNNEL_GROUPS)
-  {
-    PVR->TriggerChannelGroupsUpdate();
-  }
-  return PVR_ERROR_NO_ERROR;
-}
-
-void cPVRClientNextPVR::ConfigureMenuhook()
-{
-  PVR_MENUHOOK menuHook;
-  menuHook = {0};
-  menuHook.category = PVR_MENUHOOK_CHANNEL;
-  menuHook.iHookId = PVR_MENUHOOK_CHANNEL_DELETE_SINGLE_CHANNEL_ICON;
-  menuHook.iLocalizedStringId = 30183;
-  PVR->AddMenuHook(&menuHook);
-
-  menuHook = {0};
-  menuHook.category = PVR_MENUHOOK_SETTING;
-  menuHook.iHookId = PVR_MENUHOOK_SETTING_DELETE_ALL_CHANNNEL_ICONS;
-  menuHook.iLocalizedStringId = 30170;
-  PVR->AddMenuHook(&menuHook);
-
-  menuHook = {0};
-  menuHook.category = PVR_MENUHOOK_SETTING;
-  menuHook.iHookId = PVR_MENUHOOK_SETTING_UPDATE_CHANNNELS;
-  menuHook.iLocalizedStringId = 30185;
-  PVR->AddMenuHook(&menuHook);
-
-  menuHook = {0};
-  menuHook.category = PVR_MENUHOOK_SETTING;
-  menuHook.iHookId = PVR_MENUHOOK_SETTING_UPDATE_CHANNNEL_GROUPS;
-  menuHook.iLocalizedStringId = 30186;
-  PVR->AddMenuHook(&menuHook);
-
-  if (m_settings.m_backendVersion >= 50000)
-  {
-    menuHook = {0};
-    menuHook.category = PVR_MENUHOOK_RECORDING;
-    menuHook.iHookId = PVR_MENUHOOK_RECORDING_FORGET_RECORDING;
-    menuHook.iLocalizedStringId = 30184;
-    PVR->AddMenuHook(&menuHook);
-  }
-}
-
 ADDON_STATUS cPVRClientNextPVR::Connect()
 {
   string result;
@@ -215,7 +151,7 @@ ADDON_STATUS cPVRClientNextPVR::Connect()
   if (m_request.DoRequest("/service?method=session.initiate&ver=1.0&device=xbmc", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != NULL)
+    if (doc.Parse(response.c_str()) != nullptr)
     {
       std::string salt;
       std::string sid;
@@ -273,7 +209,7 @@ ADDON_STATUS cPVRClientNextPVR::Connect()
   }
   else
   {
-    PVR->ConnectionStateChange("Could not connect to server", PVR_CONNECTION_STATE_SERVER_UNREACHABLE, NULL);
+    PVR->ConnectionStateChange("Could not connect to server", PVR_CONNECTION_STATE_SERVER_UNREACHABLE, nullptr);
     status = ADDON_STATUS_PERMANENT_FAILURE;
   }
 
@@ -290,7 +226,7 @@ void cPVRClientNextPVR::Disconnect()
 void cPVRClientNextPVR::ConfigurePostConnectionOptions()
 {
   m_settings.SetVersionSpecificSettings();
-  ConfigureMenuhook();
+  m_menuhook.ConfigureMenuHook();
   if (m_settings.m_liveStreamingMethod != eStreamingMethod::RealTime)
   {
     delete m_timeshiftBuffer;
@@ -338,10 +274,10 @@ bool cPVRClientNextPVR::IsUp()
     std::string response;
     if (m_request.DoRequest(request.c_str(), response) == HTTP_OK)
     {
-      if (doc.Parse(response.c_str()) != NULL)
+      if (doc.Parse(response.c_str()) != nullptr)
       {
         TiXmlElement* last_update = doc.RootElement()->FirstChildElement("last_update");
-        if (last_update != NULL)
+        if (last_update != nullptr)
         {
           int64_t update_time = atoll(last_update->GetText());
           if (update_time > m_lastRecordingUpdateTime)
@@ -386,26 +322,26 @@ void* cPVRClientNextPVR::Process(void)
     IsUp();
     Sleep(2500);
   }
-  return NULL;
+  return nullptr;
 }
 
 void cPVRClientNextPVR::OnSystemSleep()
 {
   m_lastRecordingUpdateTime = MAXINT64;
   Disconnect();
-  PVR->ConnectionStateChange("sleeping", PVR_CONNECTION_STATE_DISCONNECTED, NULL);
+  PVR->ConnectionStateChange("sleeping", PVR_CONNECTION_STATE_DISCONNECTED, nullptr);
   Sleep(1000);
 }
 
 void cPVRClientNextPVR::OnSystemWake()
 {
-  PVR->ConnectionStateChange("waking", PVR_CONNECTION_STATE_CONNECTING, NULL);
+  PVR->ConnectionStateChange("waking", PVR_CONNECTION_STATE_CONNECTING, nullptr);
   int count = 0;
   for (; count < 5; count++)
   {
     if (Connect())
     {
-      PVR->ConnectionStateChange("connected", PVR_CONNECTION_STATE_CONNECTED, NULL);
+      PVR->ConnectionStateChange("connected", PVR_CONNECTION_STATE_CONNECTED, nullptr);
       break;
     }
     Sleep(500);

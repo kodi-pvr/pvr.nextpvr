@@ -14,12 +14,6 @@
 
 #include <p8-platform/util/StringUtils.h>
 
-#if defined(TARGET_WINDOWS)
-#define atoll(S) _atoi64(S)
-#else
-#define MAXINT64 ULONG_MAX
-#endif
-
 using namespace NextPVR;
 
 /** Channel handling */
@@ -33,7 +27,7 @@ int Channels::GetNumChannels(void)
   if (m_request.DoRequest("/service?method=channel.list", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != NULL)
+    if (doc.Parse(response.c_str()) != nullptr)
     {
       TiXmlElement* channelsNode = doc.RootElement()->FirstChildElement("channels");
       TiXmlElement* pChannelNode;
@@ -115,7 +109,7 @@ PVR_ERROR Channels::GetChannels(ADDON_HANDLE handle, bool bRadio)
   if (m_request.DoRequest("/service?method=channel.list&extras=true", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != NULL)
+    if (doc.Parse(response.c_str()) != nullptr)
     {
       TiXmlElement* channelsNode = doc.RootElement()->FirstChildElement("channels");
       TiXmlElement* pChannelNode;
@@ -186,7 +180,7 @@ int Channels::GetChannelGroupsAmount(void)
   if (m_request.DoRequest("/service?method=channel.groups", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != NULL)
+    if (doc.Parse(response.c_str()) != nullptr)
     {
       TiXmlElement* groupsNode = doc.RootElement()->FirstChildElement("groups");
       TiXmlElement* pGroupNode;
@@ -223,7 +217,7 @@ PVR_ERROR Channels::GetChannelGroups(ADDON_HANDLE handle, bool bRadio)
   if (m_request.DoRequest("/service?method=channel.groups", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != NULL)
+    if (doc.Parse(response.c_str()) != nullptr)
     {
       TiXmlElement* groupsNode = doc.RootElement()->FirstChildElement("groups");
       TiXmlElement* pGroupNode;
@@ -266,7 +260,7 @@ PVR_ERROR Channels::GetChannelGroupMembers(ADDON_HANDLE handle, const PVR_CHANNE
     PVR_CHANNEL_GROUP_MEMBER tag;
 
     TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != NULL)
+    if (doc.Parse(response.c_str()) != nullptr)
     {
       TiXmlElement* channelsNode = doc.RootElement()->FirstChildElement("channels");
       TiXmlElement* pChannelNode;

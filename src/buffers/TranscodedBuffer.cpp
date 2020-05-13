@@ -78,10 +78,10 @@ int TranscodedBuffer::TranscodeStatus()
   if (m_request.DoRequest("/services/service?method=channel.transcode.status", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != NULL)
+    if (doc.Parse(response.c_str()) != nullptr)
     {
       TiXmlElement* rspNode = doc.FirstChildElement("rsp");
-      if (rspNode != NULL)
+      if (rspNode != nullptr)
       {
         bool final;
         XMLUtils::GetInt(rspNode,"percentage",percentage);
