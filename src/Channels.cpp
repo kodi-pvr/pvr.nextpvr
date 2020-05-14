@@ -89,8 +89,8 @@ void  Channels::DeleteChannelIcons()
 
 PVR_ERROR Channels::GetChannels(ADDON_HANDLE handle, bool bRadio)
 {
-  PVR_CHANNEL     tag;
-  std::string      stream;
+  PVR_CHANNEL tag;
+  std::string stream;
   std::map<int, std::pair<bool, bool>>::iterator  itr = m_channelDetails.begin();
   while (itr != m_channelDetails.end())
   {
