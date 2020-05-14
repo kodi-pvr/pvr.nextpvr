@@ -20,23 +20,25 @@ using namespace NextPVR;
 
 int Channels::GetNumChannels(void)
 {
-  // need something more optimal, but this will do for now...
-  std::string response;
-  int channelCount = 0;
-  if (m_request.DoRequest("/service?method=channel.list", response) == HTTP_OK)
+  // Kodi polls this while recordings are open avoid calls to backend
+  int channelCount = m_channelDetails.size();
+  if (channelCount == 0)
   {
-    TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != nullptr)
+    std::string response;
+    if (m_request.DoRequest("/service?method=channel.list", response) == HTTP_OK)
     {
-      TiXmlElement* channelsNode = doc.RootElement()->FirstChildElement("channels");
-      TiXmlElement* pChannelNode;
-      for( pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode=pChannelNode->NextSiblingElement())
+      TiXmlDocument doc;
+      if (doc.Parse(response.c_str()) != nullptr)
       {
-        channelCount++;
+        TiXmlElement* channelsNode = doc.RootElement()->FirstChildElement("channels");
+        TiXmlElement* pChannelNode;
+        for( pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode=pChannelNode->NextSiblingElement())
+        {
+          channelCount++;
+        }
       }
     }
   }
-
   return channelCount;
 }
 
