@@ -112,13 +112,6 @@ public:
 protected:
 
 private:
-  bool GetChannel(unsigned int number, PVR_CHANNEL& channeldata);
-  bool LoadGenreXML(const std::string& filename);
-
-  std::string GetChannelIcon(int channelID);
-  std::string GetChannelIconFileName(int channelID);
-  void DeleteChannelIcon(int channelID);
-  void DeleteChannelIcons();
   void ConfigurePostConnectionOptions();
 
   void Close();
@@ -143,7 +136,5 @@ private:
   eNowPlaying m_nowPlaying = NotPlaying;
 
   void SendWakeOnLan();
-
-  PVR_RECORDING_CHANNEL_TYPE GetChannelType(unsigned int uid);
 
 };

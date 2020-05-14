@@ -63,7 +63,7 @@ ADDON_STATUS ADDON_Create(void* hdl, void* props)
 
   XBMC->Log(LOG_INFO, "Creating NextPVR PVR-Client");
 
-  m_CurStatus    = ADDON_STATUS_UNKNOWN;
+  m_CurStatus = ADDON_STATUS_UNKNOWN;
 
   if (!XBMC->DirectoryExists("special://userdata/addon_data/pvr.nextpvr/"))
   {
@@ -74,7 +74,7 @@ ADDON_STATUS ADDON_Create(void* hdl, void* props)
   settings.ReadFromAddon();
 
   /* Create connection to NextPVR KODI TV client */
-  g_pvrclient       = new cPVRClientNextPVR();
+  g_pvrclient = new cPVRClientNextPVR();
   m_CurStatus = g_pvrclient->Connect();
 
   if (m_CurStatus != ADDON_STATUS_OK)
