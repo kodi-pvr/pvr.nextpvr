@@ -115,6 +115,24 @@ void ClientTimeShift::Close()
   m_lastClose = time(nullptr);
 }
 
+void ClientTimeShift::Resume()
+{
+  ClientTimeShift::GetStreamInfo();
+  if (m_stream_duration > g_timeShiftBufferSeconds)
+  {
+    int64_t startSlipBuffer = m_stream_length - (g_timeShiftBufferSeconds * m_stream_length/m_stream_duration);
+    XBMC->Log(LOG_DEBUG, "%s:%d: %lld %lld %lld", __FUNCTION__, __LINE__, startSlipBuffer, m_streamPosition, m_stream_length.load());
+    if (m_streamPosition < startSlipBuffer)
+    {
+      Seek(m_streamPosition, 0);
+    }
+  }
+  else
+  {
+    XBMC->Log(LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
+  }
+}
+
 void ClientTimeShift::StreamStop()
 {
   std::string response;

@@ -64,7 +64,7 @@ namespace timeshift {
       }
       else
       {
-        Seek(m_streamPosition,0);
+        Resume();
       }
     }
 
@@ -91,7 +91,8 @@ namespace timeshift {
 
     int64_t Seek(int64_t position, int whence) override;
 
-    void StreamStop(void);
+    void Resume();
+    void StreamStop();
 
   };
 }
