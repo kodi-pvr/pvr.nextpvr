@@ -118,7 +118,7 @@ cPVRClientNextPVR::~cPVRClientNextPVR()
   delete m_realTimeBuffer;
   m_timers.m_epgOidLookup.clear();
   m_recordings.m_hostFilenames.clear();
-  m_epg.m_channelDetails.clear();
+  m_channels.m_channelDetails.clear();
   m_channels.m_liveStreams.clear();
 }
 

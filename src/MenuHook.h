@@ -47,9 +47,10 @@ namespace NextPVR
     MenuHook() = default;
 
     MenuHook(MenuHook const&) = delete;
+    void operator=(MenuHook const&) = delete;
+
     Channels& m_channels = Channels::GetInstance();
     Recordings& m_recordings = Recordings::GetInstance();
     Settings& m_settings = Settings::GetInstance();
-
   };
 } // namespace NextPVR

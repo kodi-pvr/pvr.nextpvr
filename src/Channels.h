@@ -45,6 +45,7 @@ namespace NextPVR
     void DeleteChannelIcon(int channelID);
     void DeleteChannelIcons();
     PVR_RECORDING_CHANNEL_TYPE GetChannelType(unsigned int uid);
+    std::map<int, std::pair<bool, bool>> m_channelDetails;
 
   private:
     Channels() = default;
@@ -55,7 +56,5 @@ namespace NextPVR
     std::string GetChannelIcon(int channelID);
     Settings& m_settings = Settings::GetInstance();
     Request& m_request = Request::GetInstance();
-    std::map<int, std::pair<bool, bool>> m_channelDetails;
-
   };
 } // namespace NextPVR

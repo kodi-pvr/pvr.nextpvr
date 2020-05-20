@@ -1,6 +1,12 @@
+v5.0.1
+- C++ baseline fixes found during conversion
+
 v5.0.0
 - Update PVR API 6.5.1
 - Update Global API 1.2.0
+- C++ baseline code cleanups
+- NumChannels() performance improvement
+- Created Recording, Timer, EPG, Channels, MenuHook classes
 
 v4.4.0
 - Move to Matrix settings.xml format enable new Kodi and backend options
