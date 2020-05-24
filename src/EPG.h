@@ -11,6 +11,7 @@
 
 #include "BackendRequest.h"
 #include "tinyxml.h"
+#include "Channels.h"
 #include "Recordings.h"
 #include "Timers.h"
 
@@ -31,7 +32,6 @@ namespace NextPVR
     }
 
     PVR_ERROR GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t iStart = 0, time_t iEnd = 0);
-    std::map<int, std::pair<bool, bool>> m_channelDetails;
 
   private:
     EPG() = default;
@@ -43,5 +43,6 @@ namespace NextPVR
     Request& m_request = Request::GetInstance();
     Timers& m_timers = Timers::GetInstance();
     Recordings& m_recordings = Recordings::GetInstance();
+    Channels& m_channels = Channels::GetInstance();
   };
 } // namespace NextPVR

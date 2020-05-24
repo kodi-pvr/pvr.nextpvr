@@ -23,7 +23,7 @@ PVR_ERROR EPG::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t iStart, time_
   EPG_TAG broadcast;
   std::string response;
   std::pair<bool, bool> channelDetail;
-  channelDetail = m_channelDetails[iChannelUid];
+  channelDetail = m_channels.m_channelDetails[iChannelUid];
   if (channelDetail.first == true)
   {
     XBMC->Log(LOG_DEBUG, "Skipping %d", iChannelUid);

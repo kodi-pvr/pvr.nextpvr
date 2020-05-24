@@ -92,7 +92,7 @@ PVR_ERROR Timers::GetTimers(ADDON_HANDLE& handle)
         TiXmlElement* pRulesNode = pMatchRulesNode->FirstChildElement("Rules");
 
         tag.iClientIndex = g_pvrclient->XmlGetUInt(pRecurringNode, "id");
-        tag.iClientChannelUid = g_pvrclient->XmlGetInt(pRecurringNode, "ChannelOID");
+        tag.iClientChannelUid = g_pvrclient->XmlGetInt(pRulesNode, "ChannelOID");
 
         tag.iTimerType = pRulesNode->FirstChildElement("EPGTitle") ? TIMER_REPEATING_EPG : TIMER_REPEATING_MANUAL;
 
@@ -162,11 +162,11 @@ PVR_ERROR Timers::GetTimers(ADDON_HANDLE& handle)
         }
 
         // pre/post padding
-        tag.iMarginStart = g_pvrclient->XmlGetUInt(pRecurringNode, "PrePadding");
-        tag.iMarginEnd = g_pvrclient->XmlGetUInt(pRecurringNode, "PostPadding");
+        tag.iMarginStart = g_pvrclient->XmlGetUInt(pRulesNode, "PrePadding");
+        tag.iMarginEnd = g_pvrclient->XmlGetUInt(pRulesNode, "PostPadding");
 
         // number of recordings to keep
-        tag.iMaxRecordings = g_pvrclient->XmlGetInt(pRecurringNode, "Keep");
+        tag.iMaxRecordings = g_pvrclient->XmlGetInt(pRulesNode, "Keep");
 
         // prevent duplicates
         bool duplicate;
