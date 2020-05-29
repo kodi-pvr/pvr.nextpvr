@@ -20,8 +20,6 @@ extern class cPVRClientNextPVR *g_pvrclient;
 
 typedef unsigned char byte;
 
-#define READ_NO_CACHE 0
-
 std::string UriEncode(const std::string sSrc);
 
 #endif /* CLIENT_H */

@@ -483,6 +483,7 @@ bool cPVRClientNextPVR::OpenLiveStream(const PVR_CHANNEL& channelinfo)
   {
     line = m_channels.m_liveStreams[channelinfo.iUniqueId];
     m_livePlayer = m_realTimeBuffer;
+    return m_livePlayer->Open(line, XFILE::READ_CACHED);
   }
   else if (channelinfo.bIsRadio == false && m_supportsLiveTimeshift && m_settings.m_liveStreamingMethod == Timeshift)
   {
@@ -506,7 +507,7 @@ bool cPVRClientNextPVR::OpenLiveStream(const PVR_CHANNEL& channelinfo)
     m_livePlayer = m_realTimeBuffer;
   }
   XBMC->Log(LOG_INFO, "Calling Open(%s) on tsb!", line.c_str());
-  if (m_livePlayer->Open(line, channelinfo.bIsRadio))
+  if (m_livePlayer->Open(line))
   {
     return true;
   }

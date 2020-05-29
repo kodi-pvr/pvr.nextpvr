@@ -57,7 +57,7 @@ TimeshiftBuffer::~TimeshiftBuffer()
   TimeshiftBuffer::Close();
 }
 
-bool TimeshiftBuffer::Open(const std::string inputUrl, bool isRadio)
+bool TimeshiftBuffer::Open(const std::string inputUrl)
 {
   XBMC->Log(LOG_DEBUG, "TimeshiftBuffer::Open()");
   Buffer::Open(""); // To set the time stream starts

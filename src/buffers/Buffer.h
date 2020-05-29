@@ -57,7 +57,7 @@ namespace timeshift {
      * Opens the input handle
      * @return whether the input was successfully opened
      */
-    virtual bool Open(const std::string inputUrl, bool isRadio = false);
+    virtual bool Open(const std::string inputUrl);
 
     /**
      * Opens the input handle with options  Kodi addons use 0

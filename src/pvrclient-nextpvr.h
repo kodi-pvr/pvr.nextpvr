@@ -89,6 +89,7 @@ public:
   bool CanSeekStream(void);
   bool IsTimeshifting(void);
   bool IsRealTimeStream(void);
+  bool IsRadio() { return m_nowPlaying == Radio; };
 
   /* Record stream handling */
   bool OpenRecordedStream(const PVR_RECORDING& recording);

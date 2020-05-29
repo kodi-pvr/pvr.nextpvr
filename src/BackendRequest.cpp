@@ -30,7 +30,7 @@ namespace NextPVR
 
     // ask XBMC to read the URL for us
     int resultCode = HTTP_NOTFOUND;
-    void* fileHandle = XBMC->OpenFile(URL.c_str(), READ_NO_CACHE);
+    void* fileHandle = XBMC->OpenFile(URL.c_str(), XFILE::READ_NO_CACHE);
     if (fileHandle)
     {
       char buffer[1024];
@@ -62,11 +62,11 @@ namespace NextPVR
 
     // ask XBMC to read the URL for us
     int resultCode = HTTP_NOTFOUND;
-    void* inputFile = XBMC->OpenFile(URL.c_str(), READ_NO_CACHE);
+    void* inputFile = XBMC->OpenFile(URL.c_str(), XFILE::READ_NO_CACHE);
     ssize_t datalen;
     if (inputFile)
     {
-      void* outputFile = XBMC->OpenFileForWrite(fileName.c_str(), READ_NO_CACHE);
+      void* outputFile = XBMC->OpenFileForWrite(fileName.c_str(), XFILE::READ_NO_CACHE);
       if (outputFile)
       {
         char buffer[1024];
@@ -91,7 +91,7 @@ namespace NextPVR
   bool Request::PingBackend()
   {
     const std::string URL = StringUtils::Format("http://%s:%d%s|connection-timeout=2", m_settings.m_hostname.c_str(), m_settings.m_port, "/service?method=recording.lastupdated");
-    void* fileHandle = XBMC->OpenFile(URL.c_str(), READ_NO_CACHE);
+    void* fileHandle = XBMC->OpenFile(URL.c_str(), XFILE::READ_NO_CACHE);
     if (fileHandle)
     {
       XBMC->CloseFile(fileHandle);
@@ -106,7 +106,7 @@ namespace NextPVR
 #undef CreateDirectory
 #endif
     const std::string backend = "http://127.0.0.1:8866/service?method=recording.lastupdated|connection-timeout=2";
-    void* fileHandle = XBMC->OpenFile(backend.c_str(), READ_NO_CACHE);
+    void* fileHandle = XBMC->OpenFile(backend.c_str(), XFILE::READ_NO_CACHE);
     if (fileHandle)
     {
       XBMC->CloseFile(fileHandle);
@@ -145,7 +145,7 @@ namespace NextPVR
         XBMC->QueueNotification(QUEUE_INFO, XBMC->GetLocalizedString(30182), m_settings.m_hostname.c_str(), m_settings.m_port);
         char* settings = XBMC->TranslateSpecialProtocol("special://profile/addon_data/pvr.nextpvr/settings.xml");
         // create settings.xml with host and port
-        void* settingsFile = XBMC->OpenFileForWrite(settings, READ_NO_CACHE);
+        void* settingsFile = XBMC->OpenFileForWrite(settings, XFILE::READ_NO_CACHE);
         const char tmp[] = "<settings version=\"2\">\n</settings>\n";
         XBMC->WriteFile(settingsFile, tmp, strlen(tmp));
         XBMC->CloseFile(settingsFile);

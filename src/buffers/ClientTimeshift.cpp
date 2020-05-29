@@ -14,7 +14,7 @@
 
 using namespace timeshift;
 
-bool ClientTimeShift::Open(const std::string inputUrl, bool isRadio)
+bool ClientTimeShift::Open(const std::string inputUrl)
 {
   m_isPaused = false;
   m_stream_length = 0;

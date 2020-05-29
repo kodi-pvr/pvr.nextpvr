@@ -62,7 +62,7 @@ namespace timeshift {
 
     virtual ~RollingFile() {}
 
-    virtual bool Open(const std::string inputUrl, bool isRadio = false) override;
+    virtual bool Open(const std::string inputUrl) override;
     virtual void Close() override;
 
     virtual void PauseStream(bool bPause) override
