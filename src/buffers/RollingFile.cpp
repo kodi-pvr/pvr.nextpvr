@@ -66,7 +66,7 @@ bool RollingFile::Open(const std::string inputUrl)
   {
     m_isEpgBased = false;
   }
-  m_slipHandle = XBMC->OpenFile(ss.str().c_str(), READ_NO_CACHE );
+  m_slipHandle = XBMC->OpenFile(ss.str().c_str(), XFILE::READ_NO_CACHE);
   if (m_slipHandle == nullptr)
   {
     XBMC->Log(LOG_ERROR,"Could not open slipHandle file");

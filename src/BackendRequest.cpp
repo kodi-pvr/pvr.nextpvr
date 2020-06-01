@@ -40,7 +40,7 @@ namespace NextPVR
 
     // ask XBMC to read the URL for us
     int resultCode = HTTP_NOTFOUND;
-    void* fileHandle = XBMC->OpenFile(strURL, READ_NO_CACHE);
+    void* fileHandle = XBMC->OpenFile(strURL, XFILE::READ_NO_CACHE);
     if (fileHandle)
     {
       char buffer[1024];
@@ -72,7 +72,7 @@ namespace NextPVR
 
     // ask XBMC to read the URL for us
     int resultCode = HTTP_NOTFOUND;
-    void* inputFile = XBMC->OpenFile(strURL, READ_NO_CACHE);
+    void* inputFile = XBMC->OpenFile(strURL, XFILE::READ_NO_CACHE);
     int datalen;
     if (inputFile)
     {
@@ -102,7 +102,7 @@ namespace NextPVR
   {
     char strURL[1024];
     snprintf(strURL,sizeof(strURL),"http://%s:%d%s|connection-timeout=2", g_szHostname.c_str(), g_iPort, "/service?method=recording.lastupdated");
-    void* fileHandle = XBMC->OpenFile(strURL, READ_NO_CACHE);
+    void* fileHandle = XBMC->OpenFile(strURL, XFILE::READ_NO_CACHE);
     if (fileHandle)
     {
       XBMC->CloseFile(fileHandle);

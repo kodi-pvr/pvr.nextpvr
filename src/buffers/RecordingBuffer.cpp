@@ -84,7 +84,7 @@ bool RecordingBuffer::Open(const std::string inputUrl,const PVR_RECORDING &recor
     m_isLive = false;
   }
   m_recordingURL = inputUrl;
-  if (recording.strDirectory[0] != 0)
+  if (!m_isLive && recording.strDirectory[0] != 0)
   {
     char strDirectory [PVR_ADDON_URL_STRING_LENGTH];
     strcpy(strDirectory,recording.strDirectory);
@@ -112,10 +112,10 @@ bool RecordingBuffer::Open(const std::string inputUrl,const PVR_RECORDING &recor
     }
     if ( XBMC->FileExists(strDirectory,false))
     {
-      //m_recordingURL = strDirectory;
+      m_recordingURL = strDirectory;
     }
   }
-  return Buffer::Open(m_recordingURL,0);
+  return Buffer::Open(m_recordingURL, m_isLive ? XFILE::READ_NO_CACHE : XFILE::READ_CACHED);
 }
 
 int RecordingBuffer::Read(byte *buffer, size_t length)
@@ -128,7 +128,7 @@ int RecordingBuffer::Read(byte *buffer, size_t length)
     XBMC->Log(LOG_DEBUG, "%s:%d: %lld %lld", __FUNCTION__, __LINE__, XBMC->GetFileLength(m_inputHandle) ,XBMC->GetFilePosition(m_inputHandle));
     int64_t position = XBMC->GetFilePosition(m_inputHandle);
     Buffer::Close();
-    Buffer::Open(m_recordingURL,0);
+    Buffer::Open(m_recordingURL);
     Seek(position,0);
     dataRead = (int) XBMC->ReadFile(m_inputHandle, buffer, length);
     XBMC->Log(LOG_DEBUG, "%s:%d: %lld %lld", __FUNCTION__, __LINE__, XBMC->GetFileLength(m_inputHandle) ,XBMC->GetFilePosition(m_inputHandle));

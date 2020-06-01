@@ -84,7 +84,7 @@ bool ClientTimeShift::Open(const std::string inputUrl)
     return false;
   }
 
-  if (Buffer::Open(inputUrl, 0 ) == false)
+  if (Buffer::Open(inputUrl) == false)
   {
     XBMC->Log(LOG_ERROR,"Could not open streaming file");
     StreamStop();
@@ -164,7 +164,7 @@ int64_t ClientTimeShift::Seek(int64_t position, int whence)
     m_streamPosition = position;
   }
   const std::string seekingInput = m_sourceURL + std::to_string(position ) + "-";
-  if ( Buffer::Open(seekingInput.c_str(), 0) == false)
+  if (Buffer::Open(seekingInput.c_str()) == false)
   {
     XBMC->Log(LOG_ERROR, "Could not open file on seek");
     return  -1;
