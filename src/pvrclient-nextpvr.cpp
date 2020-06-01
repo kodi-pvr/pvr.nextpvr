@@ -209,7 +209,6 @@ void cPVRClientNextPVR::Disconnect()
 void cPVRClientNextPVR::ConfigurePostConnectionOptions()
 {
   m_settings.SetVersionSpecificSettings();
-  m_menuhook.ConfigureMenuHook();
   if (m_settings.m_liveStreamingMethod != eStreamingMethod::RealTime)
   {
     delete m_timeshiftBuffer;
