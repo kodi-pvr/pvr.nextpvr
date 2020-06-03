@@ -9,7 +9,7 @@
 
 #include "RollingFile.h"
 #include  "../BackendRequest.h"
-
+#include  "../pvrclient-nextpvr.h"
 #include <regex>
 #include <mutex>
 #include "tinyxml.h"
@@ -21,14 +21,14 @@ using namespace timeshift;
 
 /* Rolling File mode functions */
 
-bool RollingFile::Open(const std::string inputUrl, bool isRadio)
+bool RollingFile::Open(const std::string inputUrl)
 {
   m_isPaused = false;
   m_nextLease = 0;
   m_nextStreamInfo = 0;
   m_nextRoll = 0;
   m_complete = false;
-  m_isRadio = isRadio;
+  m_isRadio = g_pvrclient->IsRadio();
 
   m_stream_duration = 0;
   m_bytesPerSecond = 0;
@@ -47,7 +47,7 @@ bool RollingFile::Open(const std::string inputUrl, bool isRadio)
   {
     m_isEpgBased = false;
   }
-  m_slipHandle = XBMC->OpenFile(ss.str().c_str(), READ_NO_CACHE );
+  m_slipHandle = XBMC->OpenFile(ss.str().c_str(), XFILE::READ_NO_CACHE );
   if (m_slipHandle == nullptr)
   {
     XBMC->Log(LOG_ERROR,"Could not open slipHandle file");

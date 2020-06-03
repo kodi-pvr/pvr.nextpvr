@@ -215,9 +215,9 @@ bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_RECORDING*
       {
         recordingFile = "smb:" + recordingFile;
       }
-      if (XBMC->FileExists(recordingFile.c_str(), READ_NO_CACHE))
+      if (XBMC->FileExists(recordingFile.c_str(), XFILE::READ_NO_CACHE))
       {
-        void* fileHandle = XBMC->OpenFile(recordingFile.c_str(), READ_NO_CACHE);
+        void* fileHandle = XBMC->OpenFile(recordingFile.c_str(), XFILE::READ_NO_CACHE);
         tag->sizeInBytes = XBMC->GetFileLength(fileHandle);
         XBMC->CloseFile(fileHandle);
       }

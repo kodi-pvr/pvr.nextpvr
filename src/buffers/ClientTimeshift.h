@@ -45,13 +45,13 @@ namespace timeshift {
       }
       else
       {
-        Seek(m_streamPosition,0);
+        Resume();
       }
     }
 
     virtual ~ClientTimeShift() {}
 
-    virtual bool Open(const std::string inputUrl, bool isRadio = false) override;
+    virtual bool Open(const std::string inputUrl) override;
     virtual void Close() override;
 
     virtual bool GetStreamInfo();
@@ -70,9 +70,9 @@ namespace timeshift {
       return dataLen;
     }
 
+    void Resume();
     int64_t Seek(int64_t position, int whence) override;
-
-    void StreamStop(void);
+    void StreamStop();
 
   };
 }

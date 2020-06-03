@@ -16,9 +16,9 @@ using namespace ADDON;
 
 const int Buffer::DEFAULT_READ_TIMEOUT = 10;
 
-bool Buffer::Open(const std::string inputUrl, bool isRadio)
+bool Buffer::Open(const std::string inputUrl)
 {
-  return Buffer::Open(inputUrl,READ_NO_CACHE);
+  return Buffer::Open(inputUrl, XFILE::READ_NO_CACHE);
 }
 
 bool Buffer::Open(const std::string inputUrl, int optFlag)

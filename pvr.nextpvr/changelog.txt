@@ -1,3 +1,8 @@
+v5.0.2
+- Open most streams with the proper READ_NO_CACHE value
+- Move MenuHook to one time call, avoid issue OnWake
+- Port Live TV resume logic from Leia 3.3.20
+
 v5.0.1
 - C++ baseline fixes found during conversion
 

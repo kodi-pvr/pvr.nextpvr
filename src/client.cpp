@@ -84,6 +84,8 @@ ADDON_STATUS ADDON_Create(void* hdl, const char* globalApiVersion, void* props)
     SAFE_DELETE(XBMC);
   }
 
+  g_pvrclient->m_menuhook.ConfigureMenuHook();
+
   return m_CurStatus;
 }
 
