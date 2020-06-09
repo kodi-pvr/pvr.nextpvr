@@ -96,21 +96,25 @@ PVR_ERROR Timers::GetTimers(ADDON_HANDLE& handle)
 
         tag.iTimerType = pRulesNode->FirstChildElement("EPGTitle") ? TIMER_REPEATING_EPG : TIMER_REPEATING_MANUAL;
 
+        std::string buffer;
+
         // start/end time
 
-        std::string buffer;
-        if (XMLUtils::GetString(pRulesNode, "StartTimeTicks", buffer))
+        const int recordingType = g_pvrclient->XmlGetUInt(pRecurringNode, "type");
+
+        if (recordingType == 1 || recordingType == 2)
         {
-          tag.startTime = stoll(buffer);
-          if (tag.startTime < time(nullptr))
-          {
-            tag.startTime = 0;
-          }
-          else
-          {
-            if (XMLUtils::GetString(pRulesNode, "EndTimeTicks", buffer))
-              tag.endTime = stoll(buffer);
-          }
+          tag.startTime = 0;
+          tag.endTime = 0;
+          tag.bStartAnyTime = true;
+          tag.bEndAnyTime = true;
+        }
+        else
+        {
+          if (XMLUtils::GetString(pRulesNode, "StartTimeTicks", buffer))
+            tag.startTime = stoll(buffer);
+          if (XMLUtils::GetString(pRulesNode, "EndTimeTicks", buffer))
+            tag.endTime = stoll(buffer);
         }
 
         // keyword recordings
@@ -197,7 +201,13 @@ PVR_ERROR Timers::GetTimers(ADDON_HANDLE& handle)
         XMLUtils::GetString(pRecurringNode, "name", buffer);
         buffer.copy(tag.strTitle, sizeof(tag.strTitle) - 1);
 
-        tag.state = PVR_TIMER_STATE_SCHEDULED;
+        bool state = true;
+        XMLUtils::GetBoolean(pRulesNode, "enabled", state);
+
+        if (state == false)
+            tag.state = PVR_TIMER_STATE_DISABLED;
+        else
+            tag.state = PVR_TIMER_STATE_SCHEDULED;
 
         strcpy(tag.strSummary, "summary");
 
