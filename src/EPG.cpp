@@ -18,24 +18,23 @@ using namespace NextPVR;
 /************************************************************/
 /** EPG handling */
 
-PVR_ERROR EPG::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t iStart, time_t iEnd)
+PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::addon::PVREPGTagsResultSet& results)
 {
-  EPG_TAG broadcast;
   std::string response;
   std::pair<bool, bool> channelDetail;
-  channelDetail = m_channels.m_channelDetails[iChannelUid];
+  channelDetail = m_channels.m_channelDetails[channelUid];
   if (channelDetail.first == true)
   {
-    XBMC->Log(LOG_DEBUG, "Skipping %d", iChannelUid);
+    kodi::Log(ADDON_LOG_DEBUG, "Skipping %d", channelUid);
     return PVR_ERROR_NO_ERROR;
   }
 
-  if (iEnd < (time(nullptr) - 24 * 3600))
+  if (end < (time(nullptr) - 24 * 3600))
   {
-    XBMC->Log(LOG_DEBUG, "Skipping expired EPG data %d %ld %lld", iChannelUid, iStart, iEnd);
+    kodi::Log(ADDON_LOG_DEBUG, "Skipping expired EPG data %d %ld %lld", channelUid, start, end);
     return PVR_ERROR_INVALID_PARAMETERS;
   }
-  const std::string request = StringUtils::Format("/service?method=channel.listings&channel_id=%d&start=%d&end=%d&genre=all", iChannelUid, static_cast<int>(iStart), static_cast<int>(iEnd));
+  const std::string request = StringUtils::Format("/service?method=channel.listings&channel_id=%d&start=%d&end=%d&genre=all", channelUid, static_cast<int>(start), static_cast<int>(end));
   if (m_request.DoRequest(request.c_str(), response) == HTTP_OK)
   {
     TiXmlDocument doc;
@@ -44,7 +43,7 @@ PVR_ERROR EPG::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t iStart, time_
       TiXmlElement* listingsNode = doc.RootElement()->FirstChildElement("listings");
       for (TiXmlElement* pListingNode = listingsNode->FirstChildElement("l"); pListingNode; pListingNode = pListingNode->NextSiblingElement())
       {
-        broadcast = {0};
+        kodi::addon::PVREPGTag broadcast;
         std::string title;
         std::string description;
         std::string subtitle;
@@ -59,7 +58,7 @@ PVR_ERROR EPG::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t iStart, time_
           }
         }
 
-        broadcast.iYear = g_pvrclient->XmlGetInt(pListingNode, "year");
+        broadcast.SetYear(g_pvrclient->XmlGetInt(pListingNode, "year"));
 
         std::string startTime;
         std::string endTime;
@@ -68,18 +67,18 @@ PVR_ERROR EPG::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t iStart, time_
         XMLUtils::GetString(pListingNode, "end", endTime);
         endTime.resize(10);
 
-        const std::string oidLookup(endTime + ":" + std::to_string(iChannelUid));
+        const std::string oidLookup(endTime + ":" + std::to_string(channelUid));
 
         const int epgOid = g_pvrclient->XmlGetInt(pListingNode, "id");
         m_timers.m_epgOidLookup[oidLookup] = epgOid;
 
-        broadcast.strTitle = title.c_str();
-        broadcast.strEpisodeName = subtitle.c_str();
-        broadcast.iUniqueChannelId = iChannelUid;
-        broadcast.startTime = stol(startTime);
-        broadcast.iUniqueBroadcastId = stoi(endTime);
-        broadcast.endTime = stol(endTime);
-        broadcast.strPlot = description.c_str();
+        broadcast.SetTitle(title);
+        broadcast.SetEpisodeName(subtitle);
+        broadcast.SetUniqueChannelId(channelUid);
+        broadcast.SetStartTime(stol(startTime));
+        broadcast.SetUniqueBroadcastId(stoi(endTime));
+        broadcast.SetEndTime(stol(endTime));
+        broadcast.SetPlot(description);
 
         std::string artworkPath;
         if (m_settings.m_downloadGuideArtwork)
@@ -96,19 +95,19 @@ PVR_ERROR EPG::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t iStart, time_
             if (m_settings.m_guideArtPortrait)
               artworkPath += "&prefer=poster";
           }
-          broadcast.strIconPath = artworkPath.c_str();
+          broadcast.SetIconPath(artworkPath);
         }
         std::string sGenre;
         if (XMLUtils::GetString(pListingNode, "genre", sGenre))
         {
-          broadcast.strGenreDescription = sGenre.c_str();
-          broadcast.iGenreType = EPG_GENRE_USE_STRING;
+          broadcast.SetGenreDescription(sGenre);
+          broadcast.SetGenreType(EPG_GENRE_USE_STRING);
         }
         else
         {
           // genre type
-          broadcast.iGenreType = g_pvrclient->XmlGetInt(pListingNode, "genre_type");
-          broadcast.iGenreSubType = g_pvrclient->XmlGetInt(pListingNode, "genre_sub_type");
+          broadcast.SetGenreType(g_pvrclient->XmlGetInt(pListingNode, "genre_type"));
+          broadcast.SetGenreSubType(g_pvrclient->XmlGetInt(pListingNode, "genre_sub_type"));
 
         }
         std::string allGenres;
@@ -116,20 +115,20 @@ PVR_ERROR EPG::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t iStart, time_
         {
           if (allGenres.find(EPG_STRING_TOKEN_SEPARATOR) != std::string::npos)
           {
-            if (broadcast.iGenreType != EPG_GENRE_USE_STRING)
+            if (broadcast.GetGenreType() != EPG_GENRE_USE_STRING)
             {
-              broadcast.iGenreSubType = EPG_GENRE_USE_STRING;
+              broadcast.SetGenreSubType(EPG_GENRE_USE_STRING);
             }
-            broadcast.strGenreDescription = allGenres.c_str();
+            broadcast.SetGenreDescription(allGenres);
           }
         }
-        broadcast.iSeriesNumber = g_pvrclient->XmlGetInt(pListingNode, "season", EPG_TAG_INVALID_SERIES_EPISODE);
-        broadcast.iEpisodeNumber = g_pvrclient->XmlGetInt(pListingNode, "episode", EPG_TAG_INVALID_SERIES_EPISODE);
-        broadcast.iEpisodePartNumber = EPG_TAG_INVALID_SERIES_EPISODE;
+        broadcast.SetSeriesNumber(g_pvrclient->XmlGetInt(pListingNode, "season", EPG_TAG_INVALID_SERIES_EPISODE));
+        broadcast.SetEpisodeNumber(g_pvrclient->XmlGetInt(pListingNode, "episode", EPG_TAG_INVALID_SERIES_EPISODE));
+        broadcast.SetEpisodePartNumber(EPG_TAG_INVALID_SERIES_EPISODE);
 
         std::string original;
         XMLUtils::GetString(pListingNode, "original", original);
-        broadcast.strFirstAired = original.c_str();
+        broadcast.SetFirstAired(original);
 
         bool firstrun;
         if (XMLUtils::GetBoolean(pListingNode, "firstrun", firstrun))
@@ -140,25 +139,26 @@ PVR_ERROR EPG::GetEpg(ADDON_HANDLE handle, int iChannelUid, time_t iStart, time_
             XMLUtils::GetString(pListingNode, "significance", significance);
             if (significance == "Live")
             {
-              broadcast.iFlags = EPG_TAG_FLAG_IS_LIVE;
+              broadcast.SetFlags(EPG_TAG_FLAG_IS_LIVE);
             }
             else if (significance.find("Premiere") != std::string::npos)
             {
-              broadcast.iFlags = EPG_TAG_FLAG_IS_PREMIERE;
+              broadcast.SetFlags(EPG_TAG_FLAG_IS_PREMIERE);
             }
             else if (significance.find("Finale") != std::string::npos)
             {
-              broadcast.iFlags = EPG_TAG_FLAG_IS_FINALE;
+              broadcast.SetFlags(EPG_TAG_FLAG_IS_FINALE);
             }
             else if (m_settings.m_showNew)
             {
-              broadcast.iFlags = EPG_TAG_FLAG_IS_NEW;
+              broadcast.SetFlags(EPG_TAG_FLAG_IS_NEW);
             }
           }
         }
-        PVR->TransferEpgEntry(handle, &broadcast);
+        results.Add(broadcast);
       }
     }
+    return PVR_ERROR_NO_ERROR;
   }
 
   return PVR_ERROR_NO_ERROR;

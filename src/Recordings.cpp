@@ -9,7 +9,7 @@
 #include "Recordings.h"
 
 #include "kodi/util/XMLUtils.h"
-
+#include <kodi/General.h>
 #include "pvrclient-nextpvr.h"
 
 #include <regex>
@@ -21,13 +21,16 @@ using namespace NextPVR;
 /************************************************************/
 /** Record handling **/
 
-int Recordings::GetNumRecordings(void)
+PVR_ERROR Recordings::GetRecordingsAmount(bool deleted, int& amount)
 {
   // need something more optimal, but this will do for now...
   // Return -1 on error.
 
   if (m_iRecordingCount != 0)
-    return m_iRecordingCount;
+  {
+    amount = m_iRecordingCount;
+    return PVR_ERROR_NO_ERROR;
+  }
 
   std::string response;
   if (m_request.DoRequest("/service?method=recording.list&filter=ready", response) == HTTP_OK)
@@ -47,10 +50,11 @@ int Recordings::GetNumRecordings(void)
       }
     }
   }
-  return m_iRecordingCount;
+  amount = m_iRecordingCount;
+  return PVR_ERROR_NO_ERROR;
 }
 
-PVR_ERROR Recordings::GetRecordings(ADDON_HANDLE handle)
+PVR_ERROR Recordings::GetRecordings(bool deleted, kodi::addon::PVRRecordingsResultSet& results)
 {
   // include already-completed recordings
   PVR_ERROR returnValue = PVR_ERROR_NO_ERROR;
@@ -62,8 +66,6 @@ PVR_ERROR Recordings::GetRecordings(ADDON_HANDLE handle)
     TiXmlDocument doc;
     if (doc.Parse(response.c_str()) != nullptr)
     {
-      //dump_to_log(&doc, 0);
-      PVR_RECORDING tag;
       TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
       TiXmlElement* pRecordingNode;
       std::map<std::string, int> names;
@@ -78,18 +80,18 @@ PVR_ERROR Recordings::GetRecordings(ADDON_HANDLE handle)
       }
       for (pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
       {
-        tag = {};
+        kodi::addon::PVRRecording tag;
         std::string title;
         XMLUtils::GetString(pRecordingNode, "name", title);
-        if (UpdatePvrRecording(pRecordingNode, &tag, title, names[title] == 1))
+        if (UpdatePvrRecording(pRecordingNode, tag, title, names[title] == 1))
         {
           recordingCount++;
-          PVR->TransferRecordingEntry(handle, &tag);
+          results.Add(tag);
         }
       }
     }
     m_iRecordingCount = recordingCount;
-    XBMC->Log(LOG_DEBUG, "Updated recordings %lld", g_pvrclient->m_lastRecordingUpdateTime);
+    kodi::Log(ADDON_LOG_DEBUG, "Updated recordings %lld", g_pvrclient->m_lastRecordingUpdateTime);
   }
   else
   {
@@ -99,46 +101,49 @@ PVR_ERROR Recordings::GetRecordings(ADDON_HANDLE handle)
   return returnValue;
 }
 
-bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_RECORDING* tag, const std::string& title, bool flatten)
+bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::PVRRecording& tag, const std::string& title, bool flatten)
 {
   std::string buffer;
-  title.copy(tag->strTitle, sizeof(tag->strTitle) - 1);
+  tag.SetTitle(title);
 
-  tag->recordingTime = atol(pRecordingNode->FirstChildElement("start_time_ticks")->FirstChild()->Value());
+  XMLUtils::GetString(pRecordingNode, "start_time_ticks", buffer);
+  tag.SetRecordingTime(stol(buffer));
 
   std::string status;
   XMLUtils::GetString(pRecordingNode, "status", status);
-  if (status == "Pending" && tag->recordingTime > time(nullptr) + m_settings.m_serverTimeOffset)
+  if (status == "Pending" && tag.GetRecordingTime() > time(nullptr) + m_settings.m_serverTimeOffset)
   {
     // skip timers
     return false;
   }
-  tag->iDuration = atoi(pRecordingNode->FirstChildElement("duration_seconds")->FirstChild()->Value());
+  buffer.clear();
+  XMLUtils::GetString(pRecordingNode, "duration_seconds", buffer);
+  tag.SetDuration(stoi(buffer));
 
   if (status == "Ready" || status == "Pending" || status == "Recording")
   {
     if (!flatten)
     {
       buffer = StringUtils::Format("/%s", title.c_str());
-      buffer.copy(tag->strDirectory, sizeof(tag->strDirectory) - 1);
+      tag.SetDirectory(buffer);
     }
     buffer.clear();
     if (XMLUtils::GetString(pRecordingNode, "desc", buffer))
     {
-      buffer.copy(tag->strPlot, sizeof(tag->strPlot) - 1);
+      tag.SetPlot(buffer);
     }
   }
   else if (status == "Failed")
   {
-    buffer = StringUtils::Format("/%s/%s", XBMC->GetLocalizedString(30166), title.c_str());
-    buffer.copy(tag->strDirectory, sizeof(tag->strDirectory) - 1);
+    buffer = StringUtils::Format("/%s/%s", kodi::GetLocalizedString(30166).c_str(), title.c_str());
+    tag.SetDirectory(buffer);
     if (XMLUtils::GetString(pRecordingNode, "reason", buffer))
     {
-      buffer.copy(tag->strPlot, sizeof(tag->strPlot) - 1);
+      tag.SetPlot(buffer);
     }
-    if (tag->iDuration < 0)
+    if (tag.GetDuration() < 0)
     {
-      tag->iDuration = 0;
+      tag.SetDuration(0);
     }
   }
   else if (status == "Conflict")
@@ -148,28 +153,28 @@ bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_RECORDING*
   }
   else
   {
-    XBMC->Log(LOG_ERROR, "Unknown status %s", status.c_str());
+    kodi::Log(ADDON_LOG_ERROR, "Unknown status %s", status.c_str());
     return false;
   }
 
   if (status == "Recording" || status == "Pending")
   {
-    tag->iEpgEventId = g_pvrclient->XmlGetInt(pRecordingNode, "epg_event_oid", PVR_TIMER_NO_EPG_UID);
-    if (tag->iEpgEventId != PVR_TIMER_NO_EPG_UID)
+    tag.SetEPGEventId(g_pvrclient->XmlGetInt(pRecordingNode, "epg_event_oid", PVR_TIMER_NO_EPG_UID));
+    if (tag.GetEPGEventId() != PVR_TIMER_NO_EPG_UID)
     {
       // EPG Event ID is likely not valid on most older recordings so current or pending only
       // Linked tags need to be on end time because recordingTime can change because of pre-padding
 
-      tag->iEpgEventId = tag->recordingTime + tag->iDuration;
+      tag.SetEPGEventId(tag.GetRecordingTime() + tag.GetDuration());
     }
   }
 
   buffer.clear();
   XMLUtils::GetString(pRecordingNode, "id", buffer);
-  buffer.copy(tag->strRecordingId, buffer.length());
+  tag.SetRecordingId(buffer);
 
-  tag->iSeriesNumber = PVR_RECORDING_INVALID_SERIES_EPISODE;
-  tag->iEpisodeNumber = PVR_RECORDING_INVALID_SERIES_EPISODE;
+  tag.SetSeriesNumber(PVR_RECORDING_INVALID_SERIES_EPISODE);
+  tag.SetEpisodeNumber(PVR_RECORDING_INVALID_SERIES_EPISODE);
 
   if (XMLUtils::GetString(pRecordingNode, "subtitle", buffer))
   {
@@ -179,32 +184,33 @@ bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_RECORDING*
     }
     else
     {
-      buffer.copy(tag->strTitle, sizeof(tag->strTitle) - 1);
+      tag.SetTitle(buffer);
     }
   }
   int lookup = 0;
-  tag->iLastPlayedPosition = g_pvrclient->XmlGetInt(pRecordingNode,"playback_position",lookup);
+  tag.SetLastPlayedPosition(g_pvrclient->XmlGetInt(pRecordingNode, "playback_position", lookup));
   if (XMLUtils::GetInt(pRecordingNode, "channel_id", lookup))
   {
     if (lookup == 0)
     {
-      tag->iChannelUid = PVR_CHANNEL_INVALID_UID;
+      tag.SetChannelUid(PVR_CHANNEL_INVALID_UID);
     }
     else
     {
-      tag->iChannelUid = lookup;
-      strcpy(tag->strIconPath, g_pvrclient->m_channels.GetChannelIconFileName(tag->iChannelUid).c_str());
+      tag.SetChannelUid(lookup);
+      tag.SetIconPath(g_pvrclient->m_channels.GetChannelIconFileName(tag.GetChannelUid()));
     }
   }
   else
   {
-    tag->iChannelUid = PVR_CHANNEL_INVALID_UID;
+    tag.SetChannelUid(PVR_CHANNEL_INVALID_UID);
   }
+  buffer.clear();
   if (XMLUtils::GetString(pRecordingNode, "channel", buffer))
   {
-    buffer.copy(tag->strChannelName, buffer.length());
+    tag.SetChannelName(buffer);
   }
-
+  tag.SetSizeInBytes(0);
   std::string recordingFile;
   if (XMLUtils::GetString(pRecordingNode, "file", recordingFile))
   {
@@ -215,11 +221,14 @@ bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_RECORDING*
       {
         recordingFile = "smb:" + recordingFile;
       }
-      if (XBMC->FileExists(recordingFile.c_str(), XFILE::READ_NO_CACHE))
+      if (kodi::vfs::FileExists(recordingFile, ADDON_READ_NO_CACHE))
       {
-        void* fileHandle = XBMC->OpenFile(recordingFile.c_str(), XFILE::READ_NO_CACHE);
-        tag->sizeInBytes = XBMC->GetFileLength(fileHandle);
-        XBMC->CloseFile(fileHandle);
+        kodi::vfs::CFile fileSize;
+        if (fileSize.OpenFile(recordingFile, ADDON_READ_NO_CACHE))
+        {
+          tag.SetSizeInBytes(fileSize.GetLength());
+          fileSize.Close();
+        }
       }
       else
       {
@@ -229,19 +238,19 @@ bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_RECORDING*
     }
   }
 
-  m_hostFilenames[tag->strRecordingId] = recordingFile;
+  m_hostFilenames[tag.GetRecordingId()] = recordingFile;
 
   // if we use unknown Kodi logs warning and turns it to TV so save some steps
-  tag->channelType = g_pvrclient->m_channels.GetChannelType(tag->iChannelUid);
-  if (tag->channelType != PVR_RECORDING_CHANNEL_TYPE_RADIO)
+  tag.SetChannelType(g_pvrclient->m_channels.GetChannelType(tag.GetChannelUid()));
+  if (tag.GetChannelType() != PVR_RECORDING_CHANNEL_TYPE_RADIO)
   {
     std::string artworkPath;
     if (m_settings.m_backendVersion < 50000)
     {
-      artworkPath = StringUtils::Format("http://%s:%d/service?method=recording.artwork&sid=%s&recording_id=%s", m_settings.m_hostname.c_str(), m_settings.m_port, g_pvrclient->m_sid, tag->strRecordingId);
-      artworkPath.copy(tag->strThumbnailPath, sizeof(tag->strThumbnailPath) - 1);
-      artworkPath = StringUtils::Format("http://%s:%d/service?method=recording.fanart&sid=%s&recording_id=%s", m_settings.m_hostname.c_str(), m_settings.m_port, g_pvrclient->m_sid, tag->strRecordingId);
-      artworkPath.copy(tag->strFanartPath, sizeof(tag->strFanartPath) - 1);
+      artworkPath = StringUtils::Format("http://%s:%d/service?method=recording.artwork&sid=%s&recording_id=%s", m_settings.m_hostname.c_str(), m_settings.m_port, g_pvrclient->m_sid, tag.GetRecordingId().c_str());
+      tag.SetThumbnailPath(artworkPath);
+      artworkPath = StringUtils::Format("http://%s:%d/service?method=recording.fanart&sid=%s&recording_id=%s", m_settings.m_hostname.c_str(), m_settings.m_port, g_pvrclient->m_sid, tag.GetRecordingId().c_str());
+      tag.SetFanartPath(artworkPath);
     }
     else
     {
@@ -249,33 +258,33 @@ bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_RECORDING*
         artworkPath = StringUtils::Format("http://%s:%d/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_hostname.c_str(), m_settings.m_port, g_pvrclient->m_sid, UriEncode(title).c_str());
       else
         artworkPath = StringUtils::Format("http://%s:%d/service?method=channel.show.artwork&name=%s", m_settings.m_hostname.c_str(), m_settings.m_port, UriEncode(title).c_str());
-      artworkPath.copy(tag->strFanartPath, sizeof(tag->strFanartPath) - 1);
+      tag.SetFanartPath(artworkPath);
       artworkPath += "&prefer=poster";
-      artworkPath.copy(tag->strThumbnailPath, sizeof(tag->strThumbnailPath) - 1);
+      tag.SetThumbnailPath(artworkPath);
     }
   }
   if (GetAdditiveString(pRecordingNode->FirstChildElement("genres"), "genre", EPG_STRING_TOKEN_SEPARATOR, buffer, true))
   {
-    tag->iGenreType = EPG_GENRE_USE_STRING;
-    tag->iGenreSubType = 0;
-    buffer.copy(tag->strGenreDescription, sizeof(tag->strGenreDescription) - 1);
+    tag.SetGenreType(EPG_GENRE_USE_STRING);
+    tag.SetGenreSubType(0);
+    tag.SetGenreDescription(buffer);
   }
 
   std::string significance;
   XMLUtils::GetString(pRecordingNode, "significance", significance);
   if (significance.find("Premiere") != std::string::npos)
   {
-    tag->iFlags = PVR_RECORDING_FLAG_IS_PREMIERE;
+    tag.SetFlags(PVR_RECORDING_FLAG_IS_PREMIERE);
   }
   else if (significance.find("Finale") != std::string::npos)
   {
-    tag->iFlags = PVR_RECORDING_FLAG_IS_FINALE;
+    tag.SetFlags(PVR_RECORDING_FLAG_IS_FINALE);
   }
 
   bool played = false;
   if (XMLUtils::GetBoolean(pRecordingNode, "played", played))
   {
-    tag->iPlayCount = 1;
+    tag.SetPlayCount(1);
   }
 
   return true;
@@ -309,7 +318,7 @@ bool Recordings::GetAdditiveString(const TiXmlNode* pRootNode, const char* strTa
   return bResult;
 }
 
-void Recordings::ParseNextPVRSubtitle(const std::string episodeName, PVR_RECORDING* tag)
+void Recordings::ParseNextPVRSubtitle(const std::string episodeName, kodi::addon::PVRRecording& tag)
 {
   std::regex base_regex("S(\\d\\d)E(\\d+) - ?(.+)?");
   std::smatch base_match;
@@ -319,28 +328,28 @@ void Recordings::ParseNextPVRSubtitle(const std::string episodeName, PVR_RECORDI
     if (base_match.size() == 3 || base_match.size() == 4)
     {
       std::ssub_match base_sub_match = base_match[1];
-      tag->iSeriesNumber = std::stoi(base_sub_match.str());
+      tag.SetSeriesNumber(std::stoi(base_sub_match.str()));
       base_sub_match = base_match[2];
-      tag->iEpisodeNumber = std::stoi(base_sub_match.str());
+      tag.SetEpisodeNumber(std::stoi(base_sub_match.str()));
       if (base_match.size() == 4)
       {
         base_sub_match = base_match[3];
-        strcpy(tag->strEpisodeName, base_sub_match.str().c_str());
+        tag.SetEpisodeName(base_sub_match.str());
       }
     }
   }
   else
   {
-    episodeName.copy(tag->strEpisodeName, sizeof(tag->strEpisodeName) - 1);
+    tag.SetEpisodeName(episodeName);
   }
 }
 
-PVR_ERROR Recordings::DeleteRecording(const PVR_RECORDING& recording)
+PVR_ERROR Recordings::DeleteRecording(const kodi::addon::PVRRecording& recording)
 {
-  if (recording.recordingTime < time(nullptr) && recording.recordingTime + recording.iDuration > time(nullptr))
+  if (recording.GetRecordingTime() < time(nullptr) && recording.GetRecordingTime() + recording.GetDuration() > time(nullptr))
     return PVR_ERROR_RECORDING_RUNNING;
 
-  const std::string request = StringUtils::Format("/service?method=recording.delete&recording_id=%s", recording.strRecordingId);
+  const std::string request = "/service?method=recording.delete&recording_id=" + recording.GetRecordingId();
 
   std::string response;
   if (m_request.DoRequest(request.c_str(), response) == HTTP_OK)
@@ -352,30 +361,30 @@ PVR_ERROR Recordings::DeleteRecording(const PVR_RECORDING& recording)
   }
   else
   {
-    XBMC->Log(LOG_DEBUG, "DeleteRecording failed");
+    kodi::Log(ADDON_LOG_DEBUG, "DeleteRecording failed");
   }
   return PVR_ERROR_FAILED;
 }
 
-bool Recordings::ForgetRecording(const PVR_RECORDING& recording)
+bool Recordings::ForgetRecording(const kodi::addon::PVRRecording& recording)
 {
   // tell backend to forget recording history so it can re recorded.
   std::string request = "/service?method=recording.forget&recording_id=";
-  request.append(recording.strRecordingId);
+  request.append(recording.GetRecordingId());
   std::string response;
   return m_request.DoRequest(request.c_str(), response) == HTTP_OK;
 }
 
-PVR_ERROR Recordings::SetRecordingLastPlayedPosition(const PVR_RECORDING& recording, int lastplayedposition)
+PVR_ERROR Recordings::SetRecordingLastPlayedPosition(const kodi::addon::PVRRecording& recording, int lastplayedposition)
 {
-  const std::string request = StringUtils::Format("/service?method=recording.watched.set&recording_id=%s&position=%d", recording.strRecordingId, lastplayedposition);
+  const std::string request = StringUtils::Format("/service?method=recording.watched.set&recording_id=%s&position=%d", recording.GetRecordingId().c_str(), lastplayedposition);
 
   std::string response;
   if (m_request.DoRequest(request.c_str(), response) == HTTP_OK)
   {
     if (strstr(response.c_str(), "<rsp stat=\"ok\">") == nullptr)
     {
-      XBMC->Log(LOG_DEBUG, "SetRecordingLastPlayedPosition failed");
+      kodi::Log(ADDON_LOG_DEBUG, "SetRecordingLastPlayedPosition failed");
       return PVR_ERROR_FAILED;
     }
     g_pvrclient->m_lastRecordingUpdateTime = 0;
@@ -383,14 +392,17 @@ PVR_ERROR Recordings::SetRecordingLastPlayedPosition(const PVR_RECORDING& record
   return PVR_ERROR_NO_ERROR;
 }
 
-int Recordings::GetRecordingLastPlayedPosition(const PVR_RECORDING& recording)
+
+PVR_ERROR Recordings::GetRecordingLastPlayedPosition(const kodi::addon::PVRRecording& recording, int& position)
 {
-  return recording.iLastPlayedPosition;
+  position = recording.GetLastPlayedPosition();
+  return PVR_ERROR_NO_ERROR;
 }
 
-PVR_ERROR Recordings::GetRecordingEdl(const PVR_RECORDING& recording, PVR_EDL_ENTRY entries[], int* size)
+
+PVR_ERROR Recordings::GetRecordingEdl(const kodi::addon::PVRRecording& recording, std::vector<kodi::addon::PVREDLEntry>& edl)
 {
-  const std::string request = StringUtils::Format("/service?method=recording.edl&recording_id=%s", recording.strRecordingId);
+  const std::string request = "/service?method=recording.edl&recording_id=" + recording.GetRecordingId();
   std::string response;
   if (m_request.DoRequest(request.c_str(), response) == HTTP_OK)
   {
@@ -404,18 +416,16 @@ PVR_ERROR Recordings::GetRecordingEdl(const PVR_RECORDING& recording, PVR_EDL_EN
         TiXmlElement* pCommercialNode;
         for (pCommercialNode = commercialsNode->FirstChildElement("commercial"); pCommercialNode; pCommercialNode = pCommercialNode->NextSiblingElement())
         {
-          PVR_EDL_ENTRY entry;
+          kodi::addon::PVREDLEntry entry;
           std::string buffer;
-          XMLUtils::GetString(pCommercialNode,"start",buffer);
-          entry.start = std::stoll(buffer) * 1000;
+          XMLUtils::GetString(pCommercialNode, "start", buffer);
+          entry.SetStart(std::stoll(buffer) * 1000);
           buffer.clear();
-          XMLUtils::GetString(pCommercialNode,"end",buffer);
-          entry.end = std::stoll(buffer) * 1000;
-          entry.type = PVR_EDL_TYPE_COMBREAK;
-          entries[index] = entry;
-          index++;
+          XMLUtils::GetString(pCommercialNode, "end", buffer);
+          entry.SetEnd(std::stoll(buffer) * 1000);
+          entry.SetType(PVR_EDL_TYPE_COMBREAK);
+          edl.emplace_back(entry);
         }
-        *size = index;
         return PVR_ERROR_NO_ERROR;
       }
     }

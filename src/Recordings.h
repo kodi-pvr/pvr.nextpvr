@@ -10,9 +10,10 @@
 #pragma once
 
 #include "BackendRequest.h"
+#include <kodi/addon-instance/PVR.h>
 #include "tinyxml.h"
 
-using namespace ADDON;
+
 
 namespace NextPVR
 {
@@ -31,16 +32,16 @@ namespace NextPVR
     }
 
     /* Recording handling **/
-    int GetNumRecordings(void);
-    PVR_ERROR GetRecordings(ADDON_HANDLE handle);
-    PVR_ERROR DeleteRecording(const PVR_RECORDING& recording);
-    PVR_ERROR SetRecordingLastPlayedPosition(const PVR_RECORDING& recording, int lastplayedposition);
-    int GetRecordingLastPlayedPosition(const PVR_RECORDING& recording);
-    PVR_ERROR GetRecordingEdl(const PVR_RECORDING& recording, PVR_EDL_ENTRY[], int* size);
+    PVR_ERROR GetRecordingsAmount(bool deleted, int& amount);
+    PVR_ERROR GetRecordings(bool deleted, kodi::addon::PVRRecordingsResultSet& results);
+    PVR_ERROR DeleteRecording(const kodi::addon::PVRRecording& recording);
+    PVR_ERROR SetRecordingLastPlayedPosition(const kodi::addon::PVRRecording& recording, int lastplayedposition);
+    PVR_ERROR GetRecordingLastPlayedPosition(const kodi::addon::PVRRecording& recording, int& position);
+    PVR_ERROR GetRecordingEdl(const kodi::addon::PVRRecording& recording, std::vector<kodi::addon::PVREDLEntry>& edl);
     PVR_ERROR GetRecordingStreamProperties(const PVR_RECORDING*, PVR_NAMED_VALUE*, unsigned int*);
-    bool UpdatePvrRecording(TiXmlElement* pRecordingNode, PVR_RECORDING* tag, const std::string& title, bool flatten);
-    void ParseNextPVRSubtitle(const std::string episodeName, PVR_RECORDING* tag);
-    bool ForgetRecording(const PVR_RECORDING& recording);
+    bool UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::PVRRecording& tag, const std::string& title, bool flatten);
+    void ParseNextPVRSubtitle(const std::string episodeName, kodi::addon::PVRRecording& tag);
+    bool ForgetRecording(const kodi::addon::PVRRecording& recording);
     std::map<std::string, std::string> m_hostFilenames;
     bool GetAdditiveString(const TiXmlNode* pRootNode, const char* strTag, const std::string& strSeparator, std::string& strStringValue, bool clear);
 

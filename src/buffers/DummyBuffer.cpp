@@ -11,8 +11,7 @@
 
 using namespace timeshift;
 
-PVR_ERROR DummyBuffer::GetStreamTimes(PVR_STREAM_TIMES *stimes)
+PVR_ERROR DummyBuffer::GetStreamTimes(kodi::addon::PVRStreamTimes& stimes)
 {
   return Buffer::GetStreamTimes(stimes);
 }
-

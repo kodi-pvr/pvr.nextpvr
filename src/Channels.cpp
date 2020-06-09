@@ -7,9 +7,7 @@
  */
 
 #include "Channels.h"
-
 #include "kodi/util/XMLUtils.h"
-
 #include "pvrclient-nextpvr.h"
 
 #include <p8-platform/util/StringUtils.h>
@@ -18,7 +16,7 @@ using namespace NextPVR;
 
 /** Channel handling */
 
-int Channels::GetNumChannels(void)
+int Channels::GetNumChannels()
 {
   // Kodi polls this while recordings are open avoid calls to backend
   int channelCount = m_channelDetails.size();
@@ -47,7 +45,7 @@ std::string Channels::GetChannelIcon(int channelID)
   std::string iconFilename = GetChannelIconFileName(channelID);
 
   // do we already have the icon file?
-  if (XBMC->FileExists(XBMC->TranslateSpecialProtocol(iconFilename.c_str()), false))
+  if (kodi::vfs::FileExists(iconFilename, false))
   {
     return iconFilename;
   }
@@ -62,7 +60,7 @@ std::string Channels::GetChannelIcon(int channelID)
 
 std::string Channels::GetChannelIconFileName(int channelID)
 {
-  return StringUtils::Format("special://userdata/addon_data/pvr.nextpvr/nextpvr-ch%d.png",channelID);
+  return StringUtils::Format("special://userdata/addon_data/pvr.nextpvr/nextpvr-ch%d.png", channelID);
 }
 
 void  Channels::DeleteChannelIcon(int channelID)
@@ -70,33 +68,31 @@ void  Channels::DeleteChannelIcon(int channelID)
   #if defined(TARGET_WINDOWS)
     #undef DeleteFile
   #endif
-  XBMC->DeleteFile(GetChannelIconFileName(channelID).c_str());
+  kodi::vfs::DeleteFile(GetChannelIconFileName(channelID));
 }
 
-void  Channels::DeleteChannelIcons()
+void Channels::DeleteChannelIcons()
 {
-  VFSDirEntry* icons;
+  std::vector<kodi::vfs::CDirEntry> icons;
   unsigned int count;
-  if (XBMC->GetDirectory("special://userdata/addon_data/pvr.nextpvr/","nextpvr-ch*.png", &icons, &count))
+  if (kodi::vfs::GetDirectory("special://userdata/addon_data/pvr.nextpvr/", "nextpvr-ch*.png", icons))
   {
-    XBMC->Log(LOG_INFO, "Deleting %d channel icons", count);
-    for (unsigned int i = 0; i < count; ++i)
+    kodi::Log(ADDON_LOG_INFO, "Deleting %d channel icons", icons.size());
+    for (auto const& it : icons)
     {
-      VFSDirEntry& f = icons[i];
-      const std::string deleteme = f.path;
-      XBMC->Log(LOG_DEBUG,"DeleteFile %s rc:%d",XBMC->TranslateSpecialProtocol(f.path),remove(XBMC->TranslateSpecialProtocol(f.path)));
+      const std::string deleteme = it.Path();
+      kodi::Log(ADDON_LOG_DEBUG, "DeleteFile %s rc:%d", kodi::vfs::TranslateSpecialProtocol(deleteme).c_str(), kodi::vfs::DeleteFile(deleteme));
     }
   }
 }
 
-PVR_ERROR Channels::GetChannels(ADDON_HANDLE handle, bool bRadio)
+PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& results)
 {
-  PVR_CHANNEL tag;
   std::string stream;
   std::map<int, std::pair<bool, bool>>::iterator  itr = m_channelDetails.begin();
   while (itr != m_channelDetails.end())
   {
-    if (itr->second.second == (bRadio == true))
+    if (itr->second.second == (radio == true))
       itr = m_channelDetails.erase(itr);
     else
       ++itr;
@@ -106,56 +102,57 @@ PVR_ERROR Channels::GetChannels(ADDON_HANDLE handle, bool bRadio)
   if (m_request.DoRequest("/service?method=channel.list&extras=true", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != nullptr)
+    if (doc.Parse(response.c_str()))
     {
       TiXmlElement* channelsNode = doc.RootElement()->FirstChildElement("channels");
       TiXmlElement* pChannelNode;
       for( pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode=pChannelNode->NextSiblingElement())
       {
-        tag = {0};
-        tag.iUniqueId = g_pvrclient->XmlGetUInt(pChannelNode, "id");
+        kodi::addon::PVRChannel tag;
+        tag.SetUniqueId(g_pvrclient->XmlGetUInt(pChannelNode, "id"));
         std::string buffer;
-        XMLUtils::GetString(pChannelNode,"type",buffer);
+        XMLUtils::GetString(pChannelNode, "type", buffer);
         if ( buffer =="0xa")
         {
-          tag.bIsRadio = true;
-          strcpy(tag.strInputFormat, "application/octet-stream");
+          tag.SetIsRadio(true);
+          tag.SetMimeType("application/octet-stream");
         }
         else
         {
-          tag.bIsRadio = false;
-          if (IsChannelAPlugin(tag.iUniqueId))
-            strcpy(tag.strInputFormat, "video/MP2T");
+          tag.SetIsRadio(false);
+          tag.SetMimeType("application/octet-stream");
+          if (IsChannelAPlugin(tag.GetUniqueId()))
+            tag.SetMimeType("video/MP2T");
         }
-        if (bRadio != tag.bIsRadio)
+        if (radio != tag.GetIsRadio())
           continue;
 
-        tag.iChannelNumber = g_pvrclient->XmlGetUInt(pChannelNode, "number");
-        tag.iSubChannelNumber = g_pvrclient->XmlGetUInt(pChannelNode, "minor");
+        tag.SetChannelNumber( g_pvrclient->XmlGetUInt(pChannelNode, "number"));
+        tag.SetSubChannelNumber(g_pvrclient->XmlGetUInt(pChannelNode, "minor"));
 
         buffer.clear();
-        XMLUtils::GetString(pChannelNode,"name",buffer);
-        buffer.copy(tag.strChannelName,sizeof(tag.strChannelName)-1);
+        XMLUtils::GetString(pChannelNode, "name", buffer);
+        tag.SetChannelName(buffer);
 
         // check if we need to download a channel icon
         bool isIcon;
-        if (XMLUtils::GetBoolean(pChannelNode,"icon",isIcon))
+        if (XMLUtils::GetBoolean(pChannelNode, "icon", isIcon))
         {
           // only set when true;
-          std::string iconFile = GetChannelIcon(tag.iUniqueId);
+          std::string iconFile = GetChannelIcon(tag.GetUniqueId());
           if (iconFile.length() > 0)
-            iconFile.copy(tag.strIconPath,sizeof(tag.strIconPath)-1);
+            tag.SetIconPath(iconFile);
         }
 
         // V5 has the EPG source type info.
         std::string epg;
         if (XMLUtils::GetString(pChannelNode, "epg", epg))
-          m_channelDetails[tag.iUniqueId] = std::make_pair(epg == "None", tag.bIsRadio);
+          m_channelDetails[tag.GetUniqueId()] = std::make_pair(epg == "None", tag.GetIsRadio());
         else
-          m_channelDetails[tag.iUniqueId] = std::make_pair(false, tag.bIsRadio);
+          m_channelDetails[tag.GetUniqueId()] = std::make_pair(false, tag.GetIsRadio());
 
         // transfer channel to XBMC
-        PVR->TransferChannelEntry(handle, &tag);
+        results.Add(tag);
       }
     }
   }
@@ -165,7 +162,7 @@ PVR_ERROR Channels::GetChannels(ADDON_HANDLE handle, bool bRadio)
 /************************************************************/
 /** Channel group handling **/
 
-int Channels::GetChannelGroupsAmount(void)
+PVR_ERROR Channels::GetChannelGroupsAmount(int& amount)
 {
   int groups = 0;
   std::string response;
@@ -183,7 +180,8 @@ int Channels::GetChannelGroupsAmount(void)
     }
   }
 
-  return groups;
+  amount = groups;
+  return PVR_ERROR_NO_ERROR;
 }
 
 PVR_RECORDING_CHANNEL_TYPE Channels::GetChannelType(unsigned int uid)
@@ -195,11 +193,10 @@ PVR_RECORDING_CHANNEL_TYPE Channels::GetChannelType(unsigned int uid)
   return PVR_RECORDING_CHANNEL_TYPE_TV;
 }
 
-PVR_ERROR Channels::GetChannelGroups(ADDON_HANDLE handle, bool bRadio)
+PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsResultSet& results)
 {
-  PVR_CHANNEL_GROUP tag;
   // nextpvr doesn't have a separate concept of radio channel groups
-  if (bRadio)
+  if (radio)
     return PVR_ERROR_NO_ERROR;
 
   // for tv, use the groups returned by nextpvr
@@ -207,30 +204,30 @@ PVR_ERROR Channels::GetChannelGroups(ADDON_HANDLE handle, bool bRadio)
   if (m_request.DoRequest("/service?method=channel.groups", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != nullptr)
+    if (doc.Parse(response.c_str()))
     {
       TiXmlElement* groupsNode = doc.RootElement()->FirstChildElement("groups");
       TiXmlElement* pGroupNode;
       for( pGroupNode = groupsNode->FirstChildElement("group"); pGroupNode; pGroupNode=pGroupNode->NextSiblingElement())
       {
-        tag = {0};
-        tag.bIsRadio  = false;
-        tag.iPosition = 0; // groups default order, unused
+        kodi::addon::PVRChannelGroup tag;
+        tag.SetIsRadio(false);
+        tag.SetPosition(0); // groups default order, unused
         std::string group;
-        if ( XMLUtils::GetString(pGroupNode,"name",group) )
+        if ( XMLUtils::GetString(pGroupNode, "name", group) )
         {
           // tell XBMC about channel, ignoring "All Channels" since xbmc has an built in group with effectively the same function
-          strcpy(tag.strGroupName,group.c_str());
-          if (strcmp(tag.strGroupName, "All Channels") != 0 && tag.strGroupName[0]!=0)
+          tag.SetGroupName(group);
+          if (group != "All Channels")
           {
-            PVR->TransferChannelGroup(handle, &tag);
+            results.Add(tag);
           }
         }
       }
     }
     else
     {
-      XBMC->Log(LOG_DEBUG, "GetChannelGroupsAmount");
+      kodi::Log(ADDON_LOG_DEBUG, "GetChannelGroupsAmount");
     }
 
   }
@@ -238,15 +235,13 @@ PVR_ERROR Channels::GetChannelGroups(ADDON_HANDLE handle, bool bRadio)
 }
 
 
-PVR_ERROR Channels::GetChannelGroupMembers(ADDON_HANDLE handle, const PVR_CHANNEL_GROUP &group)
+PVR_ERROR Channels::GetChannelGroupMembers(const kodi::addon::PVRChannelGroup& group, kodi::addon::PVRChannelGroupMembersResultSet& results)
 {
-  std::string encodedGroupName = UriEncode(group.strGroupName);
+  std::string encodedGroupName = UriEncode(group.GetGroupName());
   std::string request = "/service?method=channel.list&group_id=" + encodedGroupName;
   std::string response;
   if (m_request.DoRequest(request.c_str(), response) == HTTP_OK)
   {
-    PVR_CHANNEL_GROUP_MEMBER tag;
-
     TiXmlDocument doc;
     if (doc.Parse(response.c_str()) != nullptr)
     {
@@ -254,13 +249,12 @@ PVR_ERROR Channels::GetChannelGroupMembers(ADDON_HANDLE handle, const PVR_CHANNE
       TiXmlElement* pChannelNode;
       for( pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode=pChannelNode->NextSiblingElement())
       {
-        tag = {0};
-        strcpy(tag.strGroupName, group.strGroupName);
-        tag.iChannelNumber = g_pvrclient->XmlGetUInt(pChannelNode, "id");
-        tag.iChannelNumber = g_pvrclient->XmlGetUInt(pChannelNode, "number");
-        tag.iSubChannelNumber = g_pvrclient->XmlGetUInt(pChannelNode, "minor");
-        ;
-        PVR->TransferChannelGroupMember(handle, &tag);
+        kodi::addon::PVRChannelGroupMember tag;
+        tag.SetGroupName(group.GetGroupName());
+        tag.SetChannelUniqueId(g_pvrclient->XmlGetUInt(pChannelNode, "id"));
+        tag.SetChannelNumber(g_pvrclient->XmlGetUInt(pChannelNode, "number"));
+        tag.SetSubChannelNumber(g_pvrclient->XmlGetUInt(pChannelNode, "minor"));
+        results.Add(tag);
       }
     }
   }
@@ -285,8 +279,8 @@ void Channels::LoadLiveStreams()
   if (m_request.FileCopy(URL.c_str(), "special://userdata/addon_data/pvr.nextpvr/LiveStreams.xml") == HTTP_OK)
   {
     TiXmlDocument doc;
-    char* liveStreams = XBMC->TranslateSpecialProtocol("special://userdata/addon_data/pvr.nextpvr/LiveStreams.xml");
-    XBMC->Log(LOG_DEBUG, "Loading LiveStreams.xml %s", liveStreams);
+    std::string liveStreams = kodi::vfs::TranslateSpecialProtocol("special://userdata/addon_data/pvr.nextpvr/LiveStreams.xml");
+    kodi::Log(ADDON_LOG_DEBUG, "Loading LiveStreams.xml %s", liveStreams.c_str());
     if (doc.LoadFile(liveStreams))
     {
       TiXmlElement* streamsNode = doc.FirstChildElement("streams");
@@ -303,18 +297,17 @@ void Channels::LoadLiveStreams()
               if (streamNode->FirstChild())
               {
                 int channelID = std::stoi(key_value);
-                XBMC->Log(LOG_DEBUG, "%d %s", channelID, streamNode->FirstChild()->Value());
+                kodi::Log(ADDON_LOG_DEBUG, "%d %s", channelID, streamNode->FirstChild()->Value());
                 m_liveStreams[channelID] = streamNode->FirstChild()->Value();
               }
             }
             catch (...)
             {
-              XBMC->Log(LOG_DEBUG, "%s:%d", __FUNCTION__, __LINE__);
+              kodi::Log(ADDON_LOG_DEBUG, "%s:%d", __FUNCTION__, __LINE__);
             }
           }
         }
       }
-      XBMC->FreeString(liveStreams);
     }
   }
 }

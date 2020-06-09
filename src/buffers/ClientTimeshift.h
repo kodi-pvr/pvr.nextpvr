@@ -14,7 +14,7 @@
 #include <list>
 
 using namespace NextPVR;
-using namespace ADDON;
+
 namespace timeshift {
 
   class ClientTimeShift : public RollingFile
@@ -33,7 +33,7 @@ namespace timeshift {
     {
       m_lastClose = 0;
       m_channel_id = 0;
-      XBMC->Log(LOG_INFO, "ClientTimeShift Buffer created!");
+      kodi::Log(ADDON_LOG_INFO, "ClientTimeShift Buffer created!");
     }
 
     virtual void PauseStream(bool bPause) override
@@ -41,7 +41,7 @@ namespace timeshift {
       if ((m_isPaused = bPause))
       {
         // pause save restart position
-        m_streamPosition = XBMC->GetFilePosition(m_inputHandle);
+        m_streamPosition = m_inputHandle.GetPosition();
       }
       else
       {
@@ -58,14 +58,14 @@ namespace timeshift {
 
     virtual int64_t Position() const override
     {
-      return XBMC->GetFilePosition(m_inputHandle);
+      return m_inputHandle.GetPosition();
     }
     virtual int Read(byte *buffer, size_t length) override
     {
-      int64_t dataLen = XBMC->ReadFile(m_inputHandle, buffer, length);
+      int64_t dataLen = m_inputHandle.Read(buffer, length);
       if (m_complete && dataLen == 0)
       {
-        XBMC->Log(LOG_DEBUG, "%s:%d: %lld %lld %lld %lld", __FUNCTION__, __LINE__, dataLen, length, XBMC->GetFileLength(m_inputHandle) ,XBMC->GetFilePosition(m_inputHandle));
+        kodi::Log(ADDON_LOG_DEBUG, "%s:%d: %lld %lld %lld %lld", __FUNCTION__, __LINE__, dataLen, length, m_inputHandle.GetLength() , m_inputHandle.GetPosition());
       }
       return dataLen;
     }

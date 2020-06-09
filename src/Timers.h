@@ -10,9 +10,11 @@
 #pragma once
 
 #include "BackendRequest.h"
+#include <kodi/addon-instance/PVR.h>
 #include "tinyxml.h"
+#include <algorithm>
 
-using namespace ADDON;
+
 
 namespace NextPVR
 {
@@ -55,23 +57,25 @@ namespace NextPVR
     } nextpvr_recordinglimit_t;
 
   public:
+    //Timers(kodi::addon::CInstancePVRClient& instance) : m_instance(instance) {};
     /**
        * Singleton getter for the instance
-       */
+    */
     static Timers& GetInstance()
     {
       static Timers timers;
       return timers;
     }
 
+
     /* Timer handling */
-    int GetNumTimers(void);
-    PVR_ERROR GetTimerTypes(PVR_TIMER_TYPE types[], int* size);
-    PVR_ERROR GetTimers(ADDON_HANDLE& handle);
-    PVR_ERROR AddTimer(const PVR_TIMER& timer);
-    PVR_ERROR DeleteTimer(const PVR_TIMER& timer, bool bForceDelete = false);
-    PVR_ERROR UpdateTimer(const PVR_TIMER& timer);
-    bool UpdatePvrTimer(TiXmlElement* pRecordingNode, PVR_TIMER* tag);
+    PVR_ERROR GetTimersAmount(int& amount);
+    PVR_ERROR GetTimerTypes(std::vector<kodi::addon::PVRTimerType>& types);
+    PVR_ERROR GetTimers(kodi::addon::PVRTimersResultSet& results);
+    PVR_ERROR AddTimer(const kodi::addon::PVRTimer& timer);
+    PVR_ERROR DeleteTimer(const kodi::addon::PVRTimer& timer, bool forceDelete);
+    PVR_ERROR UpdateTimer(const kodi::addon::PVRTimer& timer);
+    bool UpdatePvrTimer(TiXmlElement* pRecordingNode, kodi::addon::PVRTimer& tag);
     std::map<std::string, int> m_epgOidLookup;
 
   private:
@@ -82,6 +86,7 @@ namespace NextPVR
 
     Settings& m_settings = Settings::GetInstance();
     Request& m_request = Request::GetInstance();
+    //kodi::addon::CInstancePVRClient& m_instance;
 
     int m_defaultLimit = NEXTPVR_LIMIT_ASMANY;
     int m_defaultShowType = NEXTPVR_SHOWTYPE_ANY;

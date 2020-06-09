@@ -7,69 +7,78 @@
  */
 
 #include "MenuHook.h"
+#include "pvrclient-nextpvr.h"
+#include <kodi/addon-instance/PVR.h>
+#include <kodi/General.h>
 
 using namespace NextPVR;
 
-PVR_ERROR MenuHook::CallMenuHook(const PVR_MENUHOOK& menuhook, const PVR_MENUHOOK_DATA& item)
+PVR_ERROR MenuHook::CallSettingsMenuHook(const kodi::addon::PVRMenuhook& menuhook)
 {
-  if (item.cat == PVR_MENUHOOK_CHANNEL && menuhook.iHookId == PVR_MENUHOOK_CHANNEL_DELETE_SINGLE_CHANNEL_ICON)
-  {
-    m_channels.DeleteChannelIcon(item.data.channel.iUniqueId);
-    PVR->TriggerChannelUpdate();
-  }
-  else if (item.cat == PVR_MENUHOOK_RECORDING && menuhook.iHookId == PVR_MENUHOOK_RECORDING_FORGET_RECORDING)
-  {
-    m_recordings.ForgetRecording(item.data.recording);
-  }
-  else if (item.cat == PVR_MENUHOOK_SETTING && menuhook.iHookId == PVR_MENUHOOK_SETTING_DELETE_ALL_CHANNNEL_ICONS)
+  if (menuhook.GetHookId() == PVR_MENUHOOK_SETTING_DELETE_ALL_CHANNNEL_ICONS)
   {
     m_channels.DeleteChannelIcons();
-    PVR->TriggerChannelUpdate();
+    g_pvrclient->TriggerChannelUpdate();
   }
-  else if (item.cat == PVR_MENUHOOK_SETTING && menuhook.iHookId == PVR_MENUHOOK_SETTING_UPDATE_CHANNNELS)
+  else if (menuhook.GetHookId() == PVR_MENUHOOK_SETTING_UPDATE_CHANNNELS)
   {
-    PVR->TriggerChannelUpdate();
+    g_pvrclient->TriggerChannelUpdate();
   }
-  else if (item.cat == PVR_MENUHOOK_SETTING && menuhook.iHookId == PVR_MENUHOOK_SETTING_UPDATE_CHANNNEL_GROUPS)
+  else if (menuhook.GetHookId() == PVR_MENUHOOK_SETTING_UPDATE_CHANNNEL_GROUPS)
   {
-    PVR->TriggerChannelGroupsUpdate();
+    g_pvrclient->TriggerChannelGroupsUpdate();
   }
+  return PVR_ERROR_NO_ERROR;
+}
+
+PVR_ERROR MenuHook::CallRecordingsMenuHook(const kodi::addon::PVRMenuhook& menuhook, const kodi::addon::PVRRecording& item)
+{
+  if (menuhook.GetHookId() == PVR_MENUHOOK_RECORDING_FORGET_RECORDING)
+  {
+    m_recordings.ForgetRecording(item);
+  }
+  return PVR_ERROR_NO_ERROR;
+}
+
+PVR_ERROR MenuHook::CallChannelMenuHook(const kodi::addon::PVRMenuhook& menuhook, const kodi::addon::PVRChannel& item)
+{
+  if (menuhook.GetHookId() == PVR_MENUHOOK_CHANNEL_DELETE_SINGLE_CHANNEL_ICON)
+  {
+    m_channels.DeleteChannelIcon(item.GetUniqueId());
+  }
+
   return PVR_ERROR_NO_ERROR;
 }
 
 void MenuHook::ConfigureMenuHook()
 {
-  PVR_MENUHOOK menuHook;
-  menuHook = {0};
-  menuHook.category = PVR_MENUHOOK_CHANNEL;
-  menuHook.iHookId = PVR_MENUHOOK_CHANNEL_DELETE_SINGLE_CHANNEL_ICON;
-  menuHook.iLocalizedStringId = 30183;
-  PVR->AddMenuHook(&menuHook);
+  kodi::addon::PVRMenuhook menuHook;
+  menuHook.SetCategory(PVR_MENUHOOK_CHANNEL);
+  menuHook.SetHookId(PVR_MENUHOOK_CHANNEL_DELETE_SINGLE_CHANNEL_ICON);
+  menuHook.SetLocalizedStringId(30183);
+  g_pvrclient->AddMenuHook(menuHook);
 
-  menuHook = {0};
-  menuHook.category = PVR_MENUHOOK_SETTING;
-  menuHook.iHookId = PVR_MENUHOOK_SETTING_DELETE_ALL_CHANNNEL_ICONS;
-  menuHook.iLocalizedStringId = 30170;
-  PVR->AddMenuHook(&menuHook);
 
-  menuHook = {0};
-  menuHook.category = PVR_MENUHOOK_SETTING;
-  menuHook.iHookId = PVR_MENUHOOK_SETTING_UPDATE_CHANNNELS;
-  menuHook.iLocalizedStringId = 30185;
-  PVR->AddMenuHook(&menuHook);
+  menuHook.SetCategory(PVR_MENUHOOK_SETTING);
+  menuHook.SetHookId(PVR_MENUHOOK_SETTING_DELETE_ALL_CHANNNEL_ICONS);
+  menuHook.SetLocalizedStringId(30170);
+  g_pvrclient->AddMenuHook(menuHook);
 
-  menuHook = {0};
-  menuHook.category = PVR_MENUHOOK_SETTING;
-  menuHook.iHookId = PVR_MENUHOOK_SETTING_UPDATE_CHANNNEL_GROUPS;
-  menuHook.iLocalizedStringId = 30186;
-  PVR->AddMenuHook(&menuHook);
+  menuHook.SetCategory(PVR_MENUHOOK_SETTING);
+  menuHook.SetHookId(PVR_MENUHOOK_SETTING_UPDATE_CHANNNELS);
+  menuHook.SetLocalizedStringId(30185);
+  g_pvrclient->AddMenuHook(menuHook);
+
+  menuHook.SetCategory(PVR_MENUHOOK_SETTING);
+  menuHook.SetHookId(PVR_MENUHOOK_SETTING_UPDATE_CHANNNEL_GROUPS);
+  menuHook.SetLocalizedStringId(30186);
+  g_pvrclient->AddMenuHook(menuHook);
 
   if (m_settings.m_backendVersion >= 50000)
   {
-    menuHook = {0};
-    menuHook.category = PVR_MENUHOOK_RECORDING;
-    menuHook.iHookId = PVR_MENUHOOK_RECORDING_FORGET_RECORDING;
-    menuHook.iLocalizedStringId = 30184;
-    PVR->AddMenuHook(&menuHook);
+    menuHook.SetCategory(PVR_MENUHOOK_RECORDING);
+    menuHook.SetHookId(PVR_MENUHOOK_RECORDING_FORGET_RECORDING);
+    menuHook.SetLocalizedStringId(30184);
+    g_pvrclient->AddMenuHook(menuHook);
   }
 }

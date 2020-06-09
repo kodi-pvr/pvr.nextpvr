@@ -8,17 +8,18 @@
  */
 
 #include "Buffer.h"
+#include <kodi/General.h>
 
 #include <sstream>
 
 using namespace timeshift;
-using namespace ADDON;
+
 
 const int Buffer::DEFAULT_READ_TIMEOUT = 10;
 
 bool Buffer::Open(const std::string inputUrl)
 {
-  return Buffer::Open(inputUrl, XFILE::READ_NO_CACHE);
+  return Buffer::Open(inputUrl, ADDON_READ_NO_CACHE);
 }
 
 bool Buffer::Open(const std::string inputUrl, int optFlag)
@@ -27,7 +28,7 @@ bool Buffer::Open(const std::string inputUrl, int optFlag)
   if (!inputUrl.empty())
   {
     // Append the read timeout parameter
-    XBMC->Log(LOG_DEBUG, "Buffer::Open() called! [ %s ]", inputUrl.c_str());
+    kodi::Log(ADDON_LOG_DEBUG, "Buffer::Open() called! [ %s ]", inputUrl.c_str());
     std::stringstream ss;
     if (inputUrl.rfind("http", 0) == 0)
     {
@@ -37,12 +38,11 @@ bool Buffer::Open(const std::string inputUrl, int optFlag)
     {
       ss << inputUrl;
     }
-    m_inputHandle = XBMC->OpenFile(ss.str().c_str(), optFlag );
+    m_inputHandle.OpenFile(ss.str(), optFlag);
   }
   // Remember the start time and open the input
   m_startTime = time(nullptr);
-
-  return m_inputHandle != nullptr;
+  return m_inputHandle.IsOpen();
 }
 
 Buffer::~Buffer()
@@ -56,13 +56,12 @@ void Buffer::Close()
   CloseHandle(m_inputHandle);
 }
 
-void Buffer::CloseHandle(void *&handle)
+void Buffer::CloseHandle(kodi::vfs::CFile& handle)
 {
-  if (handle)
+  if (handle.IsOpen())
   {
-    XBMC->CloseFile(handle);
-    XBMC->Log(LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
-    handle = nullptr;
+    handle.Close();
+    kodi::Log(ADDON_LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
   }
 }
 
@@ -84,11 +83,11 @@ void Buffer::LeaseWorker(void)
       else if (retval == HTTP_BADREQUEST)
       {
         complete = true;
-        XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30053));
+        kodi::QueueNotification(QUEUE_ERROR, kodi::GetLocalizedString(30190), kodi::GetLocalizedString(30053));
       }
       else
       {
-        XBMC->Log(LOG_ERROR, "channel.transcode.lease failed %lld", m_nextLease );
+        kodi::Log(ADDON_LOG_ERROR, "channel.transcode.lease failed %lld", m_nextLease );
         m_nextLease = now + 1;
       }
     }

@@ -12,7 +12,7 @@
 #include "kodi/util/XMLUtils.h"
 
 using namespace timeshift;
-using namespace ADDON;
+
 
 bool TranscodedBuffer::Open(const std::string inputUrl)
 {
@@ -23,7 +23,7 @@ bool TranscodedBuffer::Open(const std::string inputUrl)
       SLEEP(1000);
       Close();
     }
-    XBMC->Log(LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
+    kodi::Log(ADDON_LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
     std::string response;
     std::string formattedRequest = "/services/service?method=channel.transcode.initiate&force=true&channel_id=" + std::to_string(m_channel_id) + "&profile=" + m_settings.m_resolution + "p";
     if (m_request.DoRequest(formattedRequest.c_str(), response) != HTTP_OK)
@@ -64,7 +64,7 @@ void TranscodedBuffer::Close()
     m_isLeaseRunning = false;
     if (m_leaseThread.joinable()){
       m_leaseThread.detach();
-      XBMC->Log(LOG_DEBUG, "%s:%d: %d", __FUNCTION__, __LINE__,m_leaseThread.joinable());
+      kodi::Log(ADDON_LOG_DEBUG, "%s:%d: %d", __FUNCTION__, __LINE__, m_leaseThread.joinable());
     }
     std::string response;
     m_request.DoRequest("/services/service?method=channel.transcode.stop", response);
@@ -84,11 +84,11 @@ int TranscodedBuffer::TranscodeStatus()
       if (rspNode != nullptr)
       {
         bool final;
-        XMLUtils::GetInt(rspNode,"percentage",percentage);
-        XMLUtils::GetBoolean(rspNode,"final",final);
+        XMLUtils::GetInt(rspNode, "percentage", percentage);
+        XMLUtils::GetBoolean(rspNode, "final", final);
         if (final)
         {
-          XBMC->Log(LOG_DEBUG, "%s:%d: %s", __FUNCTION__, __LINE__,response.c_str());
+          kodi::Log(ADDON_LOG_DEBUG, "%s:%d: %s", __FUNCTION__, __LINE__, response.c_str());
           if (percentage != 100)
             percentage = -1;
         }
@@ -101,7 +101,7 @@ int TranscodedBuffer::TranscodeStatus()
 
 int TranscodedBuffer::Lease()
 {
-  XBMC->Log(LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
+  kodi::Log(ADDON_LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
   m_nextStreamInfo = time(nullptr) + 5;
   return true;
 }
@@ -109,7 +109,7 @@ int TranscodedBuffer::Lease()
 bool TranscodedBuffer::GetStreamInfo()
 {
   /* should only be called at exit*/
-  XBMC->Log(LOG_DEBUG, "%s:%d: %d", __FUNCTION__, __LINE__,m_nextStreamInfo);
+  kodi::Log(ADDON_LOG_DEBUG, "%s:%d: %d", __FUNCTION__, __LINE__, m_nextStreamInfo);
   Close();
   return true;
 }

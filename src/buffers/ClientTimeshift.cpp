@@ -9,8 +9,9 @@
 
 #include "ClientTimeshift.h"
 #include  "../BackendRequest.h"
-#include "tinyxml.h"
+#include <kodi/General.h>
 #include "kodi/util/XMLUtils.h"
+#include "tinyxml.h"
 
 using namespace timeshift;
 
@@ -40,7 +41,7 @@ bool ClientTimeShift::Open(const std::string inputUrl)
   }
   else
   {
-    XBMC->Log(LOG_ERROR, "Missing channel for ClientTImeShift");
+    kodi::Log(ADDON_LOG_ERROR, "Missing channel for ClientTImeShift");
     return false;
   }
 
@@ -59,14 +60,14 @@ bool ClientTimeShift::Open(const std::string inputUrl)
 
   if (m_complete || m_stream_duration == 0)
   {
-    XBMC->Log(LOG_ERROR,"Could not buffer stream");
+    kodi::Log(ADDON_LOG_ERROR, "Could not buffer stream");
     StreamStop();
     return false;
   }
 
   if (Buffer::Open(inputUrl, 0 ) == false)
   {
-    XBMC->Log(LOG_ERROR,"Could not open streaming file");
+    kodi::Log(ADDON_LOG_ERROR, "Could not open streaming file");
     StreamStop();
     return false;
   }
@@ -91,7 +92,7 @@ void ClientTimeShift::Close()
     m_leaseThread.join();
 
   StreamStop();
-  XBMC->Log(LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
+  kodi::Log(ADDON_LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
   m_lastClose = time(nullptr);
 }
 
@@ -101,7 +102,7 @@ void ClientTimeShift::Resume()
   if (m_stream_duration > m_settings.m_timeshiftBufferSeconds)
   {
     int64_t startSlipBuffer = m_stream_length - (m_settings.m_timeshiftBufferSeconds * m_stream_length / m_stream_duration);
-    XBMC->Log(LOG_DEBUG, "%s:%d: %lld %lld %lld", __FUNCTION__, __LINE__, startSlipBuffer, m_streamPosition, m_stream_length.load());
+    kodi::Log(ADDON_LOG_DEBUG, "%s:%d: %lld %lld %lld", __FUNCTION__, __LINE__, startSlipBuffer, m_streamPosition, m_stream_length.load());
     if (m_streamPosition < startSlipBuffer)
     {
       Seek(m_streamPosition, 0);
@@ -109,7 +110,7 @@ void ClientTimeShift::Resume()
   }
   else
   {
-    XBMC->Log(LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
+    kodi::Log(ADDON_LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
   }
 }
 
@@ -118,7 +119,7 @@ void ClientTimeShift::StreamStop()
   std::string response;
   if (m_request.DoRequest("/services/service?method=channel.stream.stop", response) != HTTP_OK)
   {
-    XBMC->Log(LOG_ERROR, "%s:%d:", __FUNCTION__, __LINE__);
+    kodi::Log(ADDON_LOG_ERROR, "%s:%d:", __FUNCTION__, __LINE__);
   }
 }
 
@@ -132,21 +133,21 @@ int64_t ClientTimeShift::Seek(int64_t position, int whence)
   if (m_stream_duration > m_settings.m_timeshiftBufferSeconds)
   {
     int64_t startSlipBuffer = m_stream_length - (m_settings.m_timeshiftBufferSeconds * m_stream_length/m_stream_duration);
-    XBMC->Log(LOG_DEBUG, "%s:%d: %lld %lld %lld", __FUNCTION__, __LINE__, startSlipBuffer, position, m_stream_length.load());
+    kodi::Log(ADDON_LOG_DEBUG, "%s:%d: %lld %lld %lld", __FUNCTION__, __LINE__, startSlipBuffer, position, m_stream_length.load());
     if (position < startSlipBuffer)
       position = startSlipBuffer;
   }
 
-  XBMC->Log(LOG_DEBUG, "%s:%d: %lld %d %lld %d", __FUNCTION__, __LINE__, position, whence, m_stream_duration.load(), m_isPaused);
+  kodi::Log(ADDON_LOG_DEBUG, "%s:%d: %lld %d %lld %d", __FUNCTION__, __LINE__, position, whence, m_stream_duration.load(), m_isPaused);
   if ( m_isPaused == true)
   {
     // skip while paused new restart position
     m_streamPosition = position;
   }
   const std::string seekingInput = m_sourceURL + std::to_string(position ) + "-";
-  if ( Buffer::Open(seekingInput.c_str(), 0) == false)
+  if ( Buffer::Open(seekingInput, 0) == false)
   {
-    XBMC->Log(LOG_ERROR, "Could not open file on seek");
+    kodi::Log(ADDON_LOG_ERROR, "Could not open file on seek");
     return  -1;
   }
   return position;
@@ -166,7 +167,7 @@ bool ClientTimeShift::GetStreamInfo()
 
   if (m_complete)
   {
-    XBMC->Log(LOG_ERROR, "NextPVR not updating completed rolling file");
+    kodi::Log(ADDON_LOG_ERROR, "NextPVR not updating completed rolling file");
     return ( m_stream_length != 0 );
   }
   if (m_request.DoRequest("/services/service?method=channel.stream.info", response) == HTTP_OK)
@@ -177,16 +178,16 @@ bool ClientTimeShift::GetStreamInfo()
       TiXmlElement* filesNode = doc.FirstChildElement("map");
       if (filesNode != nullptr)
       {
-        stream_duration = strtoll(filesNode->FirstChildElement("stream_duration")->GetText(),nullptr,0);
+        stream_duration = strtoll(filesNode->FirstChildElement("stream_duration")->GetText(), nullptr, 0);
         if (stream_duration != 0)
         {
-          m_stream_length = strtoll(filesNode->FirstChildElement("stream_length")->GetText(),nullptr,0);
+          m_stream_length = strtoll(filesNode->FirstChildElement("stream_length")->GetText(), nullptr, 0);
           m_stream_duration = stream_duration/1000;
           if (m_stream_duration > m_settings.m_timeshiftBufferSeconds)
           {
               m_rollingStartSeconds = m_streamStart + m_stream_duration - m_settings.m_timeshiftBufferSeconds;
           }
-          XMLUtils::GetBoolean(filesNode,"complete",m_complete);
+          XMLUtils::GetBoolean(filesNode, "complete", m_complete);
           if (m_complete == false)
           {
             if (m_nextRoll < time(nullptr))
@@ -196,10 +197,10 @@ bool ClientTimeShift::GetStreamInfo()
           }
           else
           {
-            XBMC->QueueNotification(QUEUE_INFO, "Tuner required.  Navigation disabled");
+            kodi::QueueNotification(QUEUE_ERROR, kodi::GetLocalizedString(30190), kodi::GetLocalizedString(30053));
           }
         }
-        XBMC->Log(LOG_DEBUG,"CT channel.stream.info %lld %lld %d %lld",m_stream_length.load(), stream_duration,m_complete, m_rollingStartSeconds.load());
+        kodi::Log(ADDON_LOG_DEBUG, "CT channel.stream.info %lld %lld %d %lld", m_stream_length.load(), stream_duration, m_complete, m_rollingStartSeconds.load());
         infoReturn = OK;
       }
     }
