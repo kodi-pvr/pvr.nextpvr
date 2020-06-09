@@ -1,3 +1,8 @@
+v5.0.3
+- Recording types 1 and 2 should start/end anytime
+- Set start and end time on timeslot recordings
+- Indicate disabled timers
+
 v5.0.2
 - Open most streams with the proper READ_NO_CACHE value
 - Move MenuHook to one time call, avoid issue OnWake
