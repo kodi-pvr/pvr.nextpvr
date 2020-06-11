@@ -28,7 +28,6 @@
 #include "buffers/RollingFile.h"
 #include "buffers/TimeshiftBuffer.h"
 #include "buffers/TranscodedBuffer.h"
-#include "p8-platform/threads/mutex.h"
 #include "p8-platform/threads/threads.h"
 #include "tinyxml.h"
 #include <map>
@@ -155,7 +154,6 @@ private:
 
   bool m_bConnected;
   std::string m_BackendName;
-  P8PLATFORM::CMutex m_mutex;
 
   bool m_supportsLiveTimeshift;
 

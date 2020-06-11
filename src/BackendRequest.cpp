@@ -12,13 +12,11 @@
 #include <kodi/gui/dialogs/Select.h>
 #include <p8-platform/util/StringUtils.h>
 
-
-
 namespace NextPVR
 {
   int Request::DoRequest(const char* resource, std::string& response)
   {
-    P8PLATFORM::CLockObject lock(m_mutexRequest);
+    std::unique_lock<std::mutex> lock(m_mutexRequest);
     m_start = time(nullptr);
     // build request string, adding SID if requred
     std::string URL;
@@ -53,7 +51,7 @@ namespace NextPVR
   }
   int Request::FileCopy(const char* resource, std::string fileName)
   {
-    P8PLATFORM::CLockObject lock(m_mutexRequest);
+    std::unique_lock<std::mutex> lock(m_mutexRequest);
     ssize_t written = 0;
     m_start = time(nullptr);
 
@@ -102,8 +100,7 @@ namespace NextPVR
   }
   bool Request::OneTimeSetup()
   {
-// create user folder for channel icons and try and locate backend
-    #undef CreateDirectory
+    // create user folder for channel icons and try and locate backend
     const std::string URL = "http://127.0.0.1:8866/service?method=recording.lastupdated|connection-timeout=2";
     kodi::vfs::CFile backend;
     if (backend.OpenFile(URL, ADDON_READ_NO_CACHE))

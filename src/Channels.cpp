@@ -65,9 +65,6 @@ std::string Channels::GetChannelIconFileName(int channelID)
 
 void  Channels::DeleteChannelIcon(int channelID)
 {
-  #if defined(TARGET_WINDOWS)
-    #undef DeleteFile
-  #endif
   kodi::vfs::DeleteFile(GetChannelIconFileName(channelID));
 }
 

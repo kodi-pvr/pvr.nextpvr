@@ -9,10 +9,13 @@
 #pragma once
 
 #include "Settings.h"
+#if defined(TARGET_WINDOWS)
+  #define WIN32_LEAN_AND_MEAN
+  #include "windows.h"
+#endif
 #include <kodi/Filesystem.h>
-#include "p8-platform/threads/mutex.h"
-
 #include <ctime>
+#include <mutex>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -50,7 +53,7 @@ namespace NextPVR
     void operator=(Request const&) = delete;
 
     Settings& m_settings = Settings::GetInstance();
-    P8PLATFORM::CMutex m_mutexRequest;
+    mutable std::mutex m_mutexRequest;
     time_t m_start = 0;
     char m_sid[64]{0};
   };
