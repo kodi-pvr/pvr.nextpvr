@@ -351,7 +351,7 @@ int Socket::receive ( char* data, const unsigned int buffersize, const unsigned 
       else
       {
         kodi::Log(ADDON_LOG_ERROR, "Socket::read EAGAIN");
-        usleep(50000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
         continue;
       }
       return status;

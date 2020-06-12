@@ -20,7 +20,7 @@ bool TranscodedBuffer::Open(const std::string inputUrl)
   {
     if (m_active)
     {
-      SLEEP(1000);
+      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
       Close();
     }
     kodi::Log(ADDON_LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
@@ -34,7 +34,7 @@ bool TranscodedBuffer::Open(const std::string inputUrl)
     do
     {
       status = TranscodeStatus();
-      SLEEP(1000);
+      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     } while (status >= 0 && status < 100);
 
     if (status == 100)

@@ -391,11 +391,7 @@ uint32_t TimeshiftBuffer::WatchForBlock(byte *buffer, uint64_t *block)
       else if (responseByteCount < 0 && errno == EAGAIN)
   #endif
       {
-#if defined(TARGET_WINDOWS)
-        Sleep(50);
-#else
-        usleep(50000);
-#endif
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
         kodi::Log(ADDON_LOG_DEBUG, "got: %d", errno);
         retries--;
         continue;

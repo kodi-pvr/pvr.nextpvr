@@ -96,7 +96,7 @@ void Buffer::LeaseWorker(void)
       GetStreamInfo();
       if (complete) m_complete = true;
     }
-    SLEEP(1000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   }
 }
 

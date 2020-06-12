@@ -283,7 +283,7 @@ void* cPVRClientNextPVR::Process(void)
   while (!IsStopped())
   {
     IsUp();
-    Sleep(2500);
+    std::this_thread::sleep_for(std::chrono::milliseconds(2500));
   }
   return nullptr;
 }
@@ -293,7 +293,7 @@ PVR_ERROR cPVRClientNextPVR::OnSystemSleep()
   m_lastRecordingUpdateTime = MAXINT64;
   Disconnect();
   g_pvrclient->ConnectionStateChange("sleeping", PVR_CONNECTION_STATE_DISCONNECTED, nullptr);
-  Sleep(1000);
+  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   return PVR_ERROR_NO_ERROR;
 }
 
@@ -308,7 +308,7 @@ PVR_ERROR cPVRClientNextPVR::OnSystemWake()
       g_pvrclient->ConnectionStateChange("connected", PVR_CONNECTION_STATE_CONNECTED, nullptr);
       break;
     }
-    Sleep(500);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
   }
   kodi::Log(ADDON_LOG_INFO, "On NextPVR Wake %d %d", m_bConnected, count);
   return PVR_ERROR_NO_ERROR;
@@ -331,7 +331,7 @@ void cPVRClientNextPVR::SendWakeOnLan()
       }
       kodi::network::WakeOnLan(m_settings.m_hostMACAddress);
       kodi::Log(ADDON_LOG_DEBUG, "WOL sent %d", count);
-      Sleep(1000);
+      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
   }
 }

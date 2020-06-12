@@ -47,7 +47,7 @@ bool ClientTimeShift::Open(const std::string inputUrl)
 
   time_t timeout = time(nullptr) + 20;
   do {
-    SLEEP(1000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     if ( ClientTimeShift::GetStreamInfo())
     {
       if  ( m_stream_duration  > m_settings.m_prebuffer )

@@ -60,7 +60,7 @@ bool RollingFile::Open(const std::string inputUrl)
   do
   {
     // epgmode=true requires a 10 second pause changing channels
-    SLEEP(1000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     waitTime--;
     if ( RollingFile::GetStreamInfo())
     {
@@ -85,7 +85,7 @@ bool RollingFile::Open(const std::string inputUrl)
 
   while (m_stream_length < waitTime)
   {
-    SLEEP(500);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     RollingFile::GetStreamInfo();
   };
   return  RollingFile::RollingFileOpen();
@@ -290,7 +290,7 @@ void RollingFile::Close()
   if (m_slipHandle.IsOpen())
   {
     RecordingBuffer::Close();
-    SLEEP(500);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     m_slipHandle.Close();
     kodi::Log(ADDON_LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
   }
@@ -350,7 +350,7 @@ int RollingFile::Read(byte *buffer, size_t length)
           return 0;
         }
         kodi::Log(ADDON_LOG_DEBUG, "should exit %s:%d: %lld %lld %lld", __FUNCTION__, __LINE__, Length(),  m_inputHandle.GetLength() , m_inputHandle.GetPosition());
-        SLEEP(200);
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
       }
     }
     kodi::Log(ADDON_LOG_DEBUG, "%s:%d: %d %d %lld %lld", __FUNCTION__, __LINE__, length, dataRead, m_inputHandle.GetLength() , m_inputHandle.GetPosition());

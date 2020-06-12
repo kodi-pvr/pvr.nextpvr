@@ -24,12 +24,6 @@
 
 using namespace NextPVR;
 
-#if defined(TARGET_WINDOWS)
-#define SLEEP(ms) Sleep(ms)
-#else
-#define SLEEP(ms) usleep(ms*1000)
-#endif
-
 namespace timeshift {
 
   /**
