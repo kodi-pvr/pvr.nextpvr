@@ -280,9 +280,9 @@ ADDON_STATUS Settings::SetValue(const std::string& settingName, const kodi::CSet
   else if (settingName == "host_mac")
     return SetStringSetting<ADDON_STATUS>(settingName, settingValue, m_hostMACAddress, ADDON_STATUS_OK, ADDON_STATUS_OK);
   else if (settingName == "livestreamingmethod" && m_backendVersion < 50000)
-    return SetSetting<eStreamingMethod, ADDON_STATUS>(settingName, settingValue, m_liveStreamingMethod, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
+    return SetEnumSetting<eStreamingMethod, ADDON_STATUS>(settingName, settingValue, m_liveStreamingMethod, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
   else if (settingName == "livestreamingmethod5" && m_backendVersion >= 50000 && settingValue.GetEnum<const eStreamingMethod>() != eStreamingMethod::Default)
-    return SetSetting<eStreamingMethod, ADDON_STATUS>(settingName, settingValue, m_liveStreamingMethod, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
+    return SetEnumSetting<eStreamingMethod, ADDON_STATUS>(settingName, settingValue, m_liveStreamingMethod, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
   else if (settingName == "prebuffer")
     return SetSetting<int, ADDON_STATUS>(settingName, settingValue, m_prebuffer, ADDON_STATUS_OK, ADDON_STATUS_OK);
   else if (settingName == "prebuffer5")

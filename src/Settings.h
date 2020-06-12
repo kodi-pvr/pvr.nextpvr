@@ -128,8 +128,6 @@ namespace NextPVR
         newValue = static_cast<T>(settingValue.GetUInt());
       else if (std::is_same<T, int>::value)
         newValue = static_cast<T>(settingValue.GetInt());
-      else
-        newValue = static_cast<T>(settingValue.GetEnum<T>());
 
       if (newValue != currentValue)
       {
@@ -137,6 +135,20 @@ namespace NextPVR
         if (std::is_same<T, float>::value)
           formatString = "%s - Changed Setting '%s' from %f to %f";
         kodi::Log(ADDON_LOG_INFO, formatString.c_str(), __FUNCTION__, settingName.c_str(), currentValue, newValue);
+        currentValue = newValue;
+        return returnValueIfChanged;
+      }
+
+      return defaultReturnValue;
+    };
+
+    template<typename T, typename V>
+    V SetEnumSetting(const std::string& settingName, const kodi::CSettingValue& settingValue, T& currentValue, V returnValueIfChanged, V defaultReturnValue)
+    {
+      T newValue = settingValue.GetEnum<T>();
+      if (newValue != currentValue)
+      {
+        kodi::Log(ADDON_LOG_INFO, "%s - Changed Setting '%s' from %d to %d", __FUNCTION__, settingName.c_str(), currentValue, newValue);
         currentValue = newValue;
         return returnValueIfChanged;
       }
