@@ -1,3 +1,8 @@
+v6.0.0
+- Change to C++ interface
+- Update PVR API 7.0.0
+- Standardized sleep calls
+
 v5.0.3
 - Recording types 1 and 2 should start/end anytime
 - Set start and end time on timeslot recordings
