@@ -7,23 +7,24 @@
  */
 
 #include "Timers.h"
-
-#include "kodi/util/XMLUtils.h"
-
 #include "pvrclient-nextpvr.h"
-
+#include "kodi/util/XMLUtils.h"
+#include <kodi/General.h>
 #include <p8-platform/util/StringUtils.h>
+#include <string>
 
 using namespace NextPVR;
 
 /************************************************************/
 /** Timer handling */
 
-int Timers::GetNumTimers(void)
+PVR_ERROR Timers::GetTimersAmount(int& amount)
 {
-  // Return -1 in case of error.
   if (m_iTimerCount != -1)
-    return m_iTimerCount;
+  {
+    amount = m_iTimerCount;
+    return PVR_ERROR_NO_ERROR;
+  }
 
   std::string response;
   int timerCount = -1;
@@ -44,14 +45,12 @@ int Timers::GetNumTimers(void)
       }
     }
   }
-
-
   // get list of pending recordings
   response = "";
   if (m_request.DoRequest("/service?method=recording.list&filter=pending", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != nullptr)
+    if (doc.Parse(response.c_str()))
     {
       TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
       if (recordingsNode != nullptr)
@@ -66,12 +65,14 @@ int Timers::GetNumTimers(void)
   }
   if (timerCount > -1)
   {
+    // to do why?
     m_iTimerCount = timerCount + 1;
   }
-  return m_iTimerCount;
+  amount = m_iTimerCount;
+  return PVR_ERROR_NO_ERROR;
 }
 
-PVR_ERROR Timers::GetTimers(ADDON_HANDLE& handle)
+PVR_ERROR Timers::GetTimers(kodi::addon::PVRTimersResultSet& results)
 {
   std::string response;
   PVR_ERROR returnValue = PVR_ERROR_NO_ERROR;
@@ -80,21 +81,19 @@ PVR_ERROR Timers::GetTimers(ADDON_HANDLE& handle)
   if (m_request.DoRequest("/service?method=recording.recurring.list", response) == HTTP_OK)
   {
     TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != nullptr)
+    if (doc.Parse(response.c_str()))
     {
-      PVR_TIMER tag;
       TiXmlElement* recurringsNode = doc.RootElement()->FirstChildElement("recurrings");
       TiXmlElement* pRecurringNode;
       for (pRecurringNode = recurringsNode->FirstChildElement("recurring"); pRecurringNode; pRecurringNode = pRecurringNode->NextSiblingElement())
       {
-        tag = {0};
+        kodi::addon::PVRTimer tag;
         TiXmlElement* pMatchRulesNode = pRecurringNode->FirstChildElement("matchrules");
         TiXmlElement* pRulesNode = pMatchRulesNode->FirstChildElement("Rules");
 
-        tag.iClientIndex = g_pvrclient->XmlGetUInt(pRecurringNode, "id");
-        tag.iClientChannelUid = g_pvrclient->XmlGetInt(pRulesNode, "ChannelOID");
-
-        tag.iTimerType = pRulesNode->FirstChildElement("EPGTitle") ? TIMER_REPEATING_EPG : TIMER_REPEATING_MANUAL;
+        tag.SetClientIndex(g_pvrclient->XmlGetUInt(pRecurringNode, "id"));
+        tag.SetClientChannelUid(g_pvrclient->XmlGetInt(pRulesNode, "ChannelOID"));
+        tag.SetTimerType(pRulesNode->FirstChildElement("EPGTitle") ? TIMER_REPEATING_EPG : TIMER_REPEATING_MANUAL);
 
         std::string buffer;
 
@@ -104,17 +103,17 @@ PVR_ERROR Timers::GetTimers(ADDON_HANDLE& handle)
 
         if (recordingType == 1 || recordingType == 2)
         {
-          tag.startTime = 0;
-          tag.endTime = 0;
-          tag.bStartAnyTime = true;
-          tag.bEndAnyTime = true;
+          tag.SetStartTime(0);
+          tag.SetEndTime(0);
+          tag.SetStartAnyTime(true);
+          tag.SetEndAnyTime(true);
         }
         else
         {
           if (XMLUtils::GetString(pRulesNode, "StartTimeTicks", buffer))
-            tag.startTime = stoll(buffer);
+            tag.SetStartTime(stoll(buffer));
           if (XMLUtils::GetString(pRulesNode, "EndTimeTicks", buffer))
-            tag.endTime = stoll(buffer);
+            tag.SetEndTime(stoll(buffer));
         }
 
         // keyword recordings
@@ -123,54 +122,54 @@ PVR_ERROR Timers::GetTimers(ADDON_HANDLE& handle)
         {
           if (advancedRulesText.find("KEYWORD: ") != std::string::npos)
           {
-            tag.iTimerType = TIMER_REPEATING_KEYWORD;
-            tag.startTime = 0;
-            tag.endTime = 0;
-            tag.bStartAnyTime = true;
-            tag.bEndAnyTime = true;
-            strncpy(tag.strEpgSearchString, &advancedRulesText.c_str()[9], sizeof(tag.strEpgSearchString) - 1);
+            tag.SetTimerType(TIMER_REPEATING_KEYWORD);
+            tag.SetStartTime(0);
+            tag.SetEndTime(0);
+            tag.SetStartAnyTime(true);
+            tag.SetEndAnyTime(true);
+            tag.SetEPGSearchString(advancedRulesText.substr(9));
           }
           else
           {
-            tag.iTimerType = TIMER_REPEATING_ADVANCED;
-            tag.startTime = 0;
-            tag.endTime = 0;
-            tag.bStartAnyTime = true;
-            tag.bEndAnyTime = true;
-            tag.bFullTextEpgSearch = true;
-            strncpy(tag.strEpgSearchString, advancedRulesText.c_str(), sizeof(tag.strEpgSearchString) - 1);
+            tag.SetTimerType(TIMER_REPEATING_ADVANCED);
+            tag.SetStartTime(0);
+            tag.SetEndTime(0);
+            tag.SetStartAnyTime(true);
+            tag.SetEndAnyTime(true);
+            tag.SetFullTextEpgSearch(true);
+            tag.SetEPGSearchString(advancedRulesText);
           }
-
         }
 
         // days
-        tag.iWeekdays = PVR_WEEKDAY_ALLDAYS;
+        tag.SetWeekdays(PVR_WEEKDAY_ALLDAYS);
         std::string daysText;
         if (XMLUtils::GetString(pRulesNode, "Days", daysText))
         {
-          tag.iWeekdays = PVR_WEEKDAY_NONE;
+          unsigned int weekdays = PVR_WEEKDAY_NONE;
           if (daysText.find("SUN") != std::string::npos)
-            tag.iWeekdays |= PVR_WEEKDAY_SUNDAY;
+            weekdays |= PVR_WEEKDAY_SUNDAY;
           if (daysText.find("MON") != std::string::npos)
-            tag.iWeekdays |= PVR_WEEKDAY_MONDAY;
+            weekdays |= PVR_WEEKDAY_MONDAY;
           if (daysText.find("TUE") != std::string::npos)
-            tag.iWeekdays |= PVR_WEEKDAY_TUESDAY;
+            weekdays |= PVR_WEEKDAY_TUESDAY;
           if (daysText.find("WED") != std::string::npos)
-            tag.iWeekdays |= PVR_WEEKDAY_WEDNESDAY;
+            weekdays |= PVR_WEEKDAY_WEDNESDAY;
           if (daysText.find("THU") != std::string::npos)
-            tag.iWeekdays |= PVR_WEEKDAY_THURSDAY;
+            weekdays |= PVR_WEEKDAY_THURSDAY;
           if (daysText.find("FRI") != std::string::npos)
-            tag.iWeekdays |= PVR_WEEKDAY_FRIDAY;
+            weekdays |= PVR_WEEKDAY_FRIDAY;
           if (daysText.find("SAT") != std::string::npos)
-            tag.iWeekdays |= PVR_WEEKDAY_SATURDAY;
+            weekdays |= PVR_WEEKDAY_SATURDAY;
+          tag.SetWeekdays(weekdays);
         }
 
         // pre/post padding
-        tag.iMarginStart = g_pvrclient->XmlGetUInt(pRulesNode, "PrePadding");
-        tag.iMarginEnd = g_pvrclient->XmlGetUInt(pRulesNode, "PostPadding");
+        tag.SetMarginStart(g_pvrclient->XmlGetUInt(pRulesNode, "PrePadding"));
+        tag.SetMarginEnd(g_pvrclient->XmlGetUInt(pRulesNode, "PostPadding"));
 
         // number of recordings to keep
-        tag.iMaxRecordings = g_pvrclient->XmlGetInt(pRulesNode, "Keep");
+        tag.SetMaxRecordings(g_pvrclient->XmlGetInt(pRulesNode, "Keep"));
 
         // prevent duplicates
         bool duplicate;
@@ -178,7 +177,7 @@ PVR_ERROR Timers::GetTimers(ADDON_HANDLE& handle)
         {
           if (duplicate == true)
           {
-            tag.iPreventDuplicateEpisodes = 1;
+            tag.SetPreventDuplicateEpisodes(1);
           }
         }
 
@@ -191,7 +190,7 @@ PVR_ERROR Timers::GetTimers(ADDON_HANDLE& handle)
             std::string bracketed = "[" + m_settings.m_recordingDirectories[i] + "]";
             if (bracketed == recordingDirectoryID)
             {
-              tag.iRecordingGroup = i;
+              tag.SetRecordingGroup(i);
               break;
             }
           }
@@ -199,21 +198,17 @@ PVR_ERROR Timers::GetTimers(ADDON_HANDLE& handle)
 
         buffer.clear();
         XMLUtils::GetString(pRecurringNode, "name", buffer);
-        buffer.copy(tag.strTitle, sizeof(tag.strTitle) - 1);
-
+        tag.SetTitle(buffer);
         bool state = true;
         XMLUtils::GetBoolean(pRulesNode, "enabled", state);
-
         if (state == false)
-            tag.state = PVR_TIMER_STATE_DISABLED;
+            tag.SetState(PVR_TIMER_STATE_DISABLED);
         else
-            tag.state = PVR_TIMER_STATE_SCHEDULED;
-
-        strcpy(tag.strSummary, "summary");
-
+            tag.SetState(PVR_TIMER_STATE_SCHEDULED);
+        tag.SetSummary("summary");
         // pass timer to xbmc
         timerCount++;
-        PVR->TransferTimerEntry(handle, &tag);
+        results.Add(tag);
       }
     }
     // next add the one-off recordings.
@@ -223,33 +218,30 @@ PVR_ERROR Timers::GetTimers(ADDON_HANDLE& handle)
       TiXmlDocument doc;
       if (doc.Parse(response.c_str()) != nullptr)
       {
-        PVR_TIMER tag;
-
         TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
         for (TiXmlElement* pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
         {
-          tag = {0};
-          UpdatePvrTimer(pRecordingNode, &tag);
+          kodi::addon::PVRTimer tag;
+          UpdatePvrTimer(pRecordingNode, tag);
           // pass timer to xbmc
           timerCount++;
-          PVR->TransferTimerEntry(handle, &tag);
+          results.Add(tag);
         }
       }
       response = "";
       if (m_request.DoRequest("/service?method=recording.list&filter=conflict", response) == HTTP_OK)
       {
         TiXmlDocument doc;
-        if (doc.Parse(response.c_str()) != nullptr)
+        if (doc.Parse(response.c_str()))
         {
-          PVR_TIMER tag;
           TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
           for (TiXmlElement* pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
           {
-            tag = {0};
-            UpdatePvrTimer(pRecordingNode, &tag);
+            kodi::addon::PVRTimer tag;
+            UpdatePvrTimer(pRecordingNode, tag);
             // pass timer to xbmc
             timerCount++;
-            PVR->TransferTimerEntry(handle, &tag);
+            results.Add(tag);
           }
           m_iTimerCount = timerCount;
         }
@@ -263,60 +255,58 @@ PVR_ERROR Timers::GetTimers(ADDON_HANDLE& handle)
   return returnValue;
 }
 
-bool Timers::UpdatePvrTimer(TiXmlElement* pRecordingNode, PVR_TIMER* tag)
+bool Timers::UpdatePvrTimer(TiXmlElement* pRecordingNode, kodi::addon::PVRTimer& tag)
 {
-  tag->iTimerType = pRecordingNode->FirstChildElement("epg_event_oid") ? TIMER_ONCE_EPG : TIMER_ONCE_MANUAL;
+  tag.SetTimerType(pRecordingNode->FirstChildElement("epg_event_oid") ? TIMER_ONCE_EPG : TIMER_ONCE_MANUAL);
+  tag.SetClientIndex(g_pvrclient->XmlGetUInt(pRecordingNode, "id"));
+  tag.SetClientChannelUid(g_pvrclient->XmlGetUInt(pRecordingNode, "channel_id"));
+  tag.SetParentClientIndex(g_pvrclient->XmlGetUInt(pRecordingNode, "recurring_parent", PVR_TIMER_NO_PARENT));
 
-  tag->iClientIndex = g_pvrclient->XmlGetUInt(pRecordingNode, "id");
-  tag->iClientChannelUid = g_pvrclient->XmlGetUInt(pRecordingNode, "channel_id");
-  tag->iParentClientIndex = g_pvrclient->XmlGetUInt(pRecordingNode, "recurring_parent", PVR_TIMER_NO_PARENT);
-
-  if (tag->iParentClientIndex != PVR_TIMER_NO_PARENT)
+  if (tag.GetParentClientIndex() != PVR_TIMER_NO_PARENT)
   {
-    if (tag->iTimerType == TIMER_ONCE_EPG)
-      tag->iTimerType = TIMER_ONCE_EPG_CHILD;
+    if (tag.GetTimerType() == TIMER_ONCE_EPG)
+      tag.SetTimerType(TIMER_ONCE_EPG_CHILD);
     else
-      tag->iTimerType = TIMER_ONCE_MANUAL_CHILD;
+      tag.SetTimerType(TIMER_ONCE_MANUAL_CHILD);
   }
-  tag->iEpgUid = g_pvrclient->XmlGetUInt(pRecordingNode, "epg_event_oid", PVR_TIMER_NO_EPG_UID);
-  if (tag->iEpgUid != PVR_TIMER_NO_EPG_UID)
+  tag.SetEPGUid(g_pvrclient->XmlGetUInt(pRecordingNode, "epg_event_oid", PVR_TIMER_NO_EPG_UID));
+  if (tag.GetEPGUid() != PVR_TIMER_NO_EPG_UID)
   {
-    XBMC->Log(LOG_DEBUG, "Setting timer epg id %d %d", tag->iClientIndex, tag->iEpgUid);
+    kodi::Log(ADDON_LOG_DEBUG, "Setting timer epg id %d %d", tag.GetClientIndex(), tag.GetEPGUid());
   }
 
-  tag->iMarginStart = g_pvrclient->XmlGetUInt(pRecordingNode, "pre_padding");
-  tag->iMarginEnd = g_pvrclient->XmlGetUInt(pRecordingNode, "post_padding");
+  tag.SetMarginStart(g_pvrclient->XmlGetUInt(pRecordingNode, "pre_padding"));
+  tag.SetMarginEnd(g_pvrclient->XmlGetUInt(pRecordingNode, "post_padding"));
 
   std::string buffer;
 
   // name
   XMLUtils::GetString(pRecordingNode, "name", buffer);
-  buffer.copy(tag->strTitle, sizeof(tag->strTitle) - 1);
-
+  tag.SetTitle(buffer);
   buffer.clear();
   XMLUtils::GetString(pRecordingNode, "desc", buffer);
-  buffer.copy(tag->strSummary, sizeof(tag->strSummary) - 1);
+  tag.SetSummary(buffer);
   // start/end time
   buffer.clear();
   XMLUtils::GetString(pRecordingNode, "start_time_ticks", buffer);
   buffer.resize(10);
-  tag->startTime = std::stoll(buffer);
+  tag.SetStartTime(std::stoll(buffer));
   buffer.clear();
   XMLUtils::GetString(pRecordingNode, "duration_seconds", buffer);
-  tag->endTime = tag->startTime + std::stoll(buffer);
+  tag.SetEndTime(tag.GetStartTime() + std::stoll(buffer));
 
-  tag->state = PVR_TIMER_STATE_SCHEDULED;
+  tag.SetState(PVR_TIMER_STATE_SCHEDULED);
 
   std::string status;
   if (XMLUtils::GetString(pRecordingNode, "status", status))
   {
-    if (status == "Recording" || (status == "Pending" && tag->startTime < time(nullptr) + m_settings.m_serverTimeOffset))
+    if (status == "Recording" || (status == "Pending" && tag.GetStartTime() < time(nullptr) + m_settings.m_serverTimeOffset))
     {
-      tag->state = PVR_TIMER_STATE_RECORDING;
+      tag.SetState(PVR_TIMER_STATE_RECORDING);
     }
     else if (status == "Conflict")
     {
-      tag->state = PVR_TIMER_STATE_CONFLICT_NOK;
+      tag.SetState(PVR_TIMER_STATE_CONFLICT_NOK);
     }
   }
 
@@ -325,56 +315,32 @@ bool Timers::UpdatePvrTimer(TiXmlElement* pRecordingNode, PVR_TIMER* tag)
 
 namespace
 {
-  struct TimerType : PVR_TIMER_TYPE
+  struct TimerType : kodi::addon::PVRTimerType
   {
     TimerType(unsigned int id,
               unsigned int attributes,
-              const std::string& description,
-              const std::vector<std::pair<int, std::string>>& maxRecordingsValues,
-              int maxRecordingsDefault,
-              const std::vector<std::pair<int, std::string>>& dupEpisodesValues,
-              int dupEpisodesDefault,
-              const std::vector<std::pair<int, std::string>>& recordingGroupsValues,
-              int recordingGroupDefault)
+              const std::string& description = std::string(),
+              const std::vector<kodi::addon::PVRTypeIntValue>& maxRecordingsValues = std::vector<kodi::addon::PVRTypeIntValue>(),
+              const int maxRecordingsDefault = 0,
+              const std::vector<kodi::addon::PVRTypeIntValue>& dupEpisodesValues = std::vector<kodi::addon::PVRTypeIntValue>(),
+              int dupEpisodesDefault = 0,
+              const std::vector<kodi::addon::PVRTypeIntValue>& recordingGroupsValues =  std::vector<kodi::addon::PVRTypeIntValue>(),
+              int recordingGroupDefault = 0,
+              int option = 0)
+              //const std::vector<kodi::addon::PVRTypeIntValue>& preventDuplicatesValues = std::vector<kodi::addon::PVRTypeIntValue>())
     {
-      memset(this, 0, sizeof(PVR_TIMER_TYPE));
-
-      iId = id;
-      iAttributes = attributes;
-      iMaxRecordingsSize = static_cast<unsigned int>(maxRecordingsValues.size());
-      iMaxRecordingsDefault = maxRecordingsDefault;
-      iPreventDuplicateEpisodesSize = static_cast<unsigned int>(dupEpisodesValues.size());
-      iPreventDuplicateEpisodesDefault = dupEpisodesDefault;
-      iRecordingGroupSize = static_cast<unsigned int>(recordingGroupsValues.size());
-      iRecordingGroupDefault = recordingGroupDefault;
-      strncpy(strDescription, description.c_str(), sizeof(strDescription) - 1);
-
-      int i = 0;
-      for (auto it = maxRecordingsValues.begin(); it != maxRecordingsValues.end(); ++it, ++i)
-      {
-        maxRecordings[i].iValue = it->first;
-        strncpy(maxRecordings[i].strDescription, it->second.c_str(), sizeof(maxRecordings[i].strDescription) - 1);
-      }
-
-      i = 0;
-      for (auto it = dupEpisodesValues.begin(); it != dupEpisodesValues.end(); ++it, ++i)
-      {
-        preventDuplicateEpisodes[i].iValue = it->first;
-        strncpy(preventDuplicateEpisodes[i].strDescription, it->second.c_str(), sizeof(preventDuplicateEpisodes[i].strDescription) - 1);
-      }
-
-      i = 0;
-      for (auto it = recordingGroupsValues.begin(); it != recordingGroupsValues.end(); ++it, ++i)
-      {
-        recordingGroup[i].iValue = it->first;
-        strncpy(recordingGroup[i].strDescription, it->second.c_str(), sizeof(recordingGroup[i].strDescription) - 1);
-      }
+      SetId(id);
+      SetAttributes(attributes);
+      SetMaxRecordings(maxRecordingsValues, maxRecordingsDefault);
+      SetPreventDuplicateEpisodes(dupEpisodesValues, dupEpisodesDefault);
+      SetRecordingGroups(recordingGroupsValues, recordingGroupDefault);
+      SetDescription(description);
     }
   };
 
 } // unnamed namespace
 
-PVR_ERROR Timers::GetTimerTypes(PVR_TIMER_TYPE types[], int* size)
+PVR_ERROR Timers::GetTimerTypes(std::vector<kodi::addon::PVRTimerType>& types)
 {
   static const int MSG_ONETIME_MANUAL = 30140;
   static const int MSG_ONETIME_GUIDE = 30141;
@@ -398,34 +364,34 @@ PVR_ERROR Timers::GetTimerTypes(PVR_TIMER_TYPE types[], int* size)
   static const int MSG_SHOWTYPE_ANY = 30161;
 
   /* PVR_Timer.iMaxRecordings values and presentation. */
-  static std::vector<std::pair<int, std::string>> recordingLimitValues;
+  static std::vector<kodi::addon::PVRTypeIntValue> recordingLimitValues;
   if (recordingLimitValues.size() == 0)
   {
-    recordingLimitValues.emplace_back(std::make_pair(NEXTPVR_LIMIT_ASMANY, XBMC->GetLocalizedString(MSG_KEEPALL)));
-    recordingLimitValues.emplace_back(std::make_pair(NEXTPVR_LIMIT_1, XBMC->GetLocalizedString(MSG_KEEP1)));
-    recordingLimitValues.emplace_back(std::make_pair(NEXTPVR_LIMIT_2, XBMC->GetLocalizedString(MSG_KEEP2)));
-    recordingLimitValues.emplace_back(std::make_pair(NEXTPVR_LIMIT_3, XBMC->GetLocalizedString(MSG_KEEP3)));
-    recordingLimitValues.emplace_back(std::make_pair(NEXTPVR_LIMIT_4, XBMC->GetLocalizedString(MSG_KEEP4)));
-    recordingLimitValues.emplace_back(std::make_pair(NEXTPVR_LIMIT_5, XBMC->GetLocalizedString(MSG_KEEP5)));
-    recordingLimitValues.emplace_back(std::make_pair(NEXTPVR_LIMIT_6, XBMC->GetLocalizedString(MSG_KEEP6)));
-    recordingLimitValues.emplace_back(std::make_pair(NEXTPVR_LIMIT_7, XBMC->GetLocalizedString(MSG_KEEP7)));
-    recordingLimitValues.emplace_back(std::make_pair(NEXTPVR_LIMIT_10, XBMC->GetLocalizedString(MSG_KEEP10)));
+    recordingLimitValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_LIMIT_ASMANY, kodi::GetLocalizedString(MSG_KEEPALL)));
+    recordingLimitValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_LIMIT_1, kodi::GetLocalizedString(MSG_KEEP1)));
+    recordingLimitValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_LIMIT_2, kodi::GetLocalizedString(MSG_KEEP2)));
+    recordingLimitValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_LIMIT_3, kodi::GetLocalizedString(MSG_KEEP3)));
+    recordingLimitValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_LIMIT_4, kodi::GetLocalizedString(MSG_KEEP4)));
+    recordingLimitValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_LIMIT_5, kodi::GetLocalizedString(MSG_KEEP5)));
+    recordingLimitValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_LIMIT_6, kodi::GetLocalizedString(MSG_KEEP6)));
+    recordingLimitValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_LIMIT_7, kodi::GetLocalizedString(MSG_KEEP7)));
+    recordingLimitValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_LIMIT_10, kodi::GetLocalizedString(MSG_KEEP10)));
   }
 
   /* PVR_Timer.iPreventDuplicateEpisodes values and presentation.*/
-  static std::vector<std::pair<int, std::string>> showTypeValues;
+  static std::vector<kodi::addon::PVRTypeIntValue> showTypeValues;
   if (showTypeValues.size() == 0)
   {
-    showTypeValues.emplace_back(std::make_pair(NEXTPVR_SHOWTYPE_FIRSTRUNONLY, XBMC->GetLocalizedString(MSG_SHOWTYPE_FIRSTRUNONLY)));
-    showTypeValues.emplace_back(std::make_pair(NEXTPVR_SHOWTYPE_ANY, XBMC->GetLocalizedString(MSG_SHOWTYPE_ANY)));
+    showTypeValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_SHOWTYPE_FIRSTRUNONLY, kodi::GetLocalizedString(MSG_SHOWTYPE_FIRSTRUNONLY)));
+    showTypeValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_SHOWTYPE_ANY, kodi::GetLocalizedString(MSG_SHOWTYPE_ANY)));
   }
 
   /* PVR_Timer.iRecordingGroup values and presentation */
   int i = 0;
-  static std::vector<std::pair<int, std::string>> recordingGroupValues;
+  static std::vector<kodi::addon::PVRTypeIntValue> recordingGroupValues;
   for (auto it = m_settings.m_recordingDirectories.begin(); it != m_settings.m_recordingDirectories.end(); ++it, i++)
   {
-    recordingGroupValues.emplace_back(std::make_pair(i, m_settings.m_recordingDirectories[i]));
+    recordingGroupValues.emplace_back(kodi::addon::PVRTypeIntValue(i, m_settings.m_recordingDirectories[i]));
   }
 
   static const unsigned int TIMER_MANUAL_ATTRIBS
@@ -481,115 +447,108 @@ PVR_ERROR Timers::GetTimerTypes(PVR_TIMER_TYPE types[], int* size)
       PVR_TIMER_TYPE_SUPPORTS_RECORDING_GROUP |
       PVR_TIMER_TYPE_SUPPORTS_START_END_MARGIN;
 
-
-
   /* Timer types definition.*/
-  static std::vector<std::unique_ptr<TimerType>> timerTypes;
-  if (timerTypes.size() == 0)
-  {
-    timerTypes.emplace_back(
-        /* One-shot manual (time and channel based) */
-        std::unique_ptr<TimerType>(new TimerType(
-            /* Type id. */
-            TIMER_ONCE_MANUAL,
-            /* Attributes. */
-            TIMER_MANUAL_ATTRIBS,
-            /* Description. */
-            XBMC->GetLocalizedString(MSG_ONETIME_MANUAL), // "One time (manual)",
-            /* Values definitions for attributes. */
-            recordingLimitValues, m_defaultLimit, showTypeValues, m_defaultShowType, recordingGroupValues, 0)));
+    TimerType* t = t = new TimerType(
+      /* Type id. */
+      TIMER_ONCE_EPG,
+      /* Attributes. */
+      TIMER_EPG_ATTRIBS,
+      /* Description. */
+      kodi::GetLocalizedString(MSG_ONETIME_GUIDE), // "One time (guide)",
+      /* Values definitions for attributes. */
+      recordingLimitValues, m_defaultLimit, showTypeValues, m_defaultShowType, recordingGroupValues, 0);
+    types.emplace_back(*t);
+    delete t;
 
-    timerTypes.emplace_back(
-        /* One-shot epg based */
-        std::unique_ptr<TimerType>(new TimerType(
-            /* Type id. */
-            TIMER_ONCE_EPG,
-            /* Attributes. */
-            TIMER_EPG_ATTRIBS,
-            /* Description. */
-            XBMC->GetLocalizedString(MSG_ONETIME_GUIDE), // "One time (guide)",
-            /* Values definitions for attributes. */
-            recordingLimitValues, m_defaultLimit, showTypeValues, m_defaultShowType, recordingGroupValues, 0)));
+    t =new TimerType(
+    /* One-shot manual (time and channel based) */
+        /* Type id. */
+        TIMER_ONCE_MANUAL,
+        /* Attributes. */
+        TIMER_MANUAL_ATTRIBS,
+        /* Description. */
+        kodi::GetLocalizedString(MSG_ONETIME_MANUAL), // "One time (manual)",
+        /* Values definitions for attributes. */
+        recordingLimitValues, m_defaultLimit, showTypeValues, m_defaultShowType, recordingGroupValues, 0);
+    types.emplace_back(*t);
+    delete t;
 
-    timerTypes.emplace_back(
-        /* Repeating manual (time and channel based) Parent */
-        std::unique_ptr<TimerType>(new TimerType(
-            /* Type id. */
-            TIMER_REPEATING_MANUAL,
-            /* Attributes. */
-            TIMER_MANUAL_ATTRIBS | TIMER_REPEATING_MANUAL_ATTRIBS,
-            /* Description. */
-            XBMC->GetLocalizedString(MSG_REPEATING_MANUAL), // "Repeating (manual)"
-            /* Values definitions for attributes. */
-            recordingLimitValues, m_defaultLimit, showTypeValues, m_defaultShowType, recordingGroupValues, 0)));
+    /* Repeating manual (time and channel based) Parent */
+    t = new TimerType(
+        /* Type id. */
+        TIMER_REPEATING_MANUAL,
+        /* Attributes. */
+        TIMER_MANUAL_ATTRIBS | TIMER_REPEATING_MANUAL_ATTRIBS,
+        /* Description. */
+        kodi::GetLocalizedString(MSG_REPEATING_MANUAL), // "Repeating (manual)"
+        /* Values definitions for attributes. */
+        recordingLimitValues, m_defaultLimit, showTypeValues, m_defaultShowType, recordingGroupValues, 0);
+    types.emplace_back(*t);
+    delete t;
 
-    timerTypes.emplace_back(
-        /* Repeating epg based Parent*/
-        std::unique_ptr<TimerType>(new TimerType(
-            /* Type id. */
-            TIMER_REPEATING_EPG,
-            /* Attributes. */
-            TIMER_EPG_ATTRIBS | TIMER_REPEATING_EPG_ATTRIBS,
-            /* Description. */
-            XBMC->GetLocalizedString(MSG_REPEATING_GUIDE), // "Repeating (guide)"
-            /* Values definitions for attributes. */
-            recordingLimitValues, m_defaultLimit, showTypeValues, m_defaultShowType, recordingGroupValues, 0)));
+    /* Repeating epg based Parent*/
+    t = new TimerType(
+        /* Type id. */
+        TIMER_REPEATING_EPG,
+        /* Attributes. */
+        TIMER_EPG_ATTRIBS | TIMER_REPEATING_EPG_ATTRIBS,
+        /* Description. */
+        kodi::GetLocalizedString(MSG_REPEATING_GUIDE), // "Repeating (guide)"
+        /* Values definitions for attributes. */
+        recordingLimitValues, m_defaultLimit, showTypeValues, m_defaultShowType, recordingGroupValues, 0);
+    types.emplace_back(*t);
+    delete t;
 
-    timerTypes.emplace_back(
-        /* Read-only one-shot for timers generated by timerec */
-        std::unique_ptr<TimerType>(new TimerType(
-            /* Type id. */
-            TIMER_ONCE_MANUAL_CHILD,
-            /* Attributes. */
-            TIMER_MANUAL_ATTRIBS | TIMER_CHILD_ATTRIBUTES,
-            /* Description. */
-            XBMC->GetLocalizedString(MSG_REPEATING_CHILD), // "Created by Repeating Timer"
-            /* Values definitions for attributes. */
-            recordingLimitValues, m_defaultLimit, showTypeValues, m_defaultShowType, recordingGroupValues, 0)));
+    /* Read-only one-shot for timers generated by timerec */
+    t = new TimerType(
+        /* Type id. */
+        TIMER_ONCE_MANUAL_CHILD,
+        /* Attributes. */
+        TIMER_MANUAL_ATTRIBS | TIMER_CHILD_ATTRIBUTES,
+        /* Description. */
+        kodi::GetLocalizedString(MSG_REPEATING_CHILD), // "Created by Repeating Timer"
+        /* Values definitions for attributes. */
+        recordingLimitValues, m_defaultLimit, showTypeValues, m_defaultShowType, recordingGroupValues, 0);
+    types.emplace_back(*t);
+    delete t;
 
-    timerTypes.emplace_back(
-        /* Read-only one-shot for timers generated by autorec */
-        std::unique_ptr<TimerType>(new TimerType(
-            /* Type id. */
-            TIMER_ONCE_EPG_CHILD,
-            /* Attributes. */
-            TIMER_EPG_ATTRIBS | TIMER_CHILD_ATTRIBUTES,
-            /* Description. */
-            XBMC->GetLocalizedString(MSG_REPEATING_CHILD), // "Created by Repeating Timer"
-            /* Values definitions for attributes. */
-            recordingLimitValues, m_defaultLimit, showTypeValues, m_defaultShowType, recordingGroupValues, 0)));
+    /* Read-only one-shot for timers generated by autorec */
+    t = new TimerType(
+        /* Type id. */
+        TIMER_ONCE_EPG_CHILD,
+        /* Attributes. */
+        TIMER_EPG_ATTRIBS | TIMER_CHILD_ATTRIBUTES,
+        /* Description. */
+        kodi::GetLocalizedString(MSG_REPEATING_CHILD), // "Created by Repeating Timer"
+        /* Values definitions for attributes. */
+        recordingLimitValues, m_defaultLimit, showTypeValues, m_defaultShowType, recordingGroupValues, 0);
+    types.emplace_back(*t);
+    delete t;
 
-    timerTypes.emplace_back(
-        /* Repeating epg based Parent*/
-        std::unique_ptr<TimerType>(new TimerType(
-            /* Type id. */
-            TIMER_REPEATING_KEYWORD,
-            /* Attributes. */
-            TIMER_KEYWORD_ATTRIBS | TIMER_REPEATING_KEYWORD_ATTRIBS,
-            /* Description. */
-            XBMC->GetLocalizedString(MSG_REPEATING_KEYWORD), // "Repeating (keyword)"
-            /* Values definitions for attributes. */
-            recordingLimitValues, m_defaultLimit, showTypeValues, m_defaultShowType, recordingGroupValues, 0)));
+    /* Repeating epg based Parent*/
+    t = new TimerType(
+        /* Type id. */
+        TIMER_REPEATING_KEYWORD,
+        /* Attributes. */
+        TIMER_KEYWORD_ATTRIBS | TIMER_REPEATING_KEYWORD_ATTRIBS,
+        /* Description. */
+        kodi::GetLocalizedString(MSG_REPEATING_KEYWORD), // "Repeating (keyword)"
+        /* Values definitions for attributes. */
+        recordingLimitValues, m_defaultLimit, showTypeValues, m_defaultShowType, recordingGroupValues, 0);
+    types.emplace_back(*t);
+    delete t;
 
-    timerTypes.emplace_back(
-        /* Repeating epg based Parent*/
-        std::unique_ptr<TimerType>(new TimerType(
-            /* Type id. */
-            TIMER_REPEATING_ADVANCED,
-            /* Attributes. */
-            TIMER_ADVANCED_ATTRIBS | TIMER_REPEATING_KEYWORD_ATTRIBS,
-            /* Description. */
-            XBMC->GetLocalizedString(MSG_REPEATING_ADVANCED), // "Repeating (advanced)"
-            /* Values definitions for attributes. */
-            recordingLimitValues, m_defaultLimit, showTypeValues, m_defaultShowType, recordingGroupValues, 0)));
-  }
-
-  /* Copy data to target array. */
-  i = 0;
-  for (auto it = timerTypes.begin(); it != timerTypes.end(); ++it, ++i)
-    types[i] = **it;
-
-  *size = static_cast<int>(timerTypes.size());
+    t = new TimerType(
+        /* Type id. */
+        TIMER_REPEATING_ADVANCED,
+        /* Attributes. */
+        TIMER_ADVANCED_ATTRIBS | TIMER_REPEATING_KEYWORD_ATTRIBS,
+        /* Description. */
+        kodi::GetLocalizedString(MSG_REPEATING_ADVANCED), // "Repeating (advanced)"
+        /* Values definitions for attributes. */
+        recordingLimitValues, m_defaultLimit, showTypeValues, m_defaultShowType, recordingGroupValues, 0);
+    types.emplace_back(*t);
+    delete t;
 
   return PVR_ERROR_NO_ERROR;
 }
@@ -625,65 +584,63 @@ std::string Timers::GetDayString(int dayMask)
 
   return days;
 }
-
-PVR_ERROR Timers::AddTimer(const PVR_TIMER& timerinfo)
+PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
 {
 
   char preventDuplicates[16];
-  if (timerinfo.iPreventDuplicateEpisodes)
+  if (timer.GetPreventDuplicateEpisodes() > 0)
     strcpy(preventDuplicates, "true");
   else
     strcpy(preventDuplicates, "false");
 
-  const std::string encodedName = UriEncode(timerinfo.strTitle);
-  const std::string encodedKeyword = UriEncode(timerinfo.strEpgSearchString);
-  const std::string days = GetDayString(timerinfo.iWeekdays);
-  const std::string directory = UriEncode(m_settings.m_recordingDirectories[timerinfo.iRecordingGroup]);
-  const std::string oidKey = std::to_string(timerinfo.iEpgUid) + ":" + std::to_string(timerinfo.iClientChannelUid);
+  const std::string encodedName = UriEncode(timer.GetTitle());
+  const std::string encodedKeyword = UriEncode(timer.GetEPGSearchString());
+  const std::string days = GetDayString(timer.GetWeekdays());
+  const std::string directory = UriEncode(m_settings.m_recordingDirectories[timer.GetRecordingGroup()]);
+  const std::string oidKey = std::to_string(timer.GetEPGUid()) + ":" + std::to_string(timer.GetClientChannelUid());
   const int epgOid = m_epgOidLookup[oidKey];
-  XBMC->Log(LOG_DEBUG, "TIMER_%d %s", epgOid, oidKey.c_str());
+  kodi::Log(ADDON_LOG_DEBUG, "TIMER_%d %s", epgOid, oidKey.c_str());
   std::string request;
-  switch (timerinfo.iTimerType)
+  switch (timer.GetTimerType())
   {
   case TIMER_ONCE_MANUAL:
-    XBMC->Log(LOG_DEBUG, "TIMER_ONCE_MANUAL");
+    kodi::Log(ADDON_LOG_DEBUG, "TIMER_ONCE_MANUAL");
     // build one-off recording request
     request = StringUtils::Format("/service?method=recording.save&name=%s&channel=%d&time_t=%d&duration=%d&pre_padding=%d&post_padding=%d&directory_id=%s",
       encodedName.c_str(),
-      timerinfo.iClientChannelUid,
-      (int)timerinfo.startTime,
-      (int)(timerinfo.endTime - timerinfo.startTime),
-      (int)timerinfo.iMarginStart,
-      (int)timerinfo.iMarginEnd,
+      timer.GetClientChannelUid(),
+      (int)timer.GetStartTime(),
+      (int)(timer.GetEndTime() - timer.GetStartTime()),
+      timer.GetMarginStart(),
+      timer.GetMarginEnd(),
       directory.c_str()
       );
     break;
-
   case TIMER_ONCE_EPG:
-    XBMC->Log(LOG_DEBUG, "TIMER_ONCE_EPG");
+    kodi::Log(ADDON_LOG_DEBUG, "TIMER_ONCE_EPG");
     // build one-off recording request
     request = StringUtils::Format("/service?method=recording.save&recording_id=%d&event_id=%d&pre_padding=%d&post_padding=%d&directory_id=%s",
-      timerinfo.iClientIndex,
+      timer.GetClientIndex(),
       epgOid,
-      (int)timerinfo.iMarginStart,
-      (int)timerinfo.iMarginEnd,
+      timer.GetMarginStart(),
+      timer.GetMarginEnd(),
       directory.c_str());
     break;
 
   case TIMER_REPEATING_EPG:
-    if (timerinfo.iClientChannelUid == PVR_TIMER_ANY_CHANNEL)
+    if (timer.GetClientChannelUid() == PVR_TIMER_ANY_CHANNEL)
     {
       // Fake a manual recording
-      XBMC->Log(LOG_DEBUG, "TIMER_REPEATING_EPG ANY CHANNEL");
+      kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_EPG ANY CHANNEL");
       std::string title = encodedName + "%";
-      request = StringUtils::Format("/service?method=recording.recurring.save&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s,&keyword=%s",
+      request = StringUtils::Format("/service?method=recording.recurring.save&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s&keyword=%s",
         encodedName.c_str(),
-        timerinfo.iClientChannelUid,
-        (int)timerinfo.startTime,
-        (int)timerinfo.endTime,
-        (int)timerinfo.iMaxRecordings,
-        (int)timerinfo.iMarginStart,
-        (int)timerinfo.iMarginEnd,
+        timer.GetClientChannelUid(),
+        (int)timer.GetStartTime(),
+        (int)timer.GetEndTime(),
+        timer.GetMaxRecordings(),
+        timer.GetMarginStart(),
+        timer.GetMarginEnd(),
         days.c_str(),
         directory.c_str(),
         title.c_str()
@@ -691,14 +648,14 @@ PVR_ERROR Timers::AddTimer(const PVR_TIMER& timerinfo)
     }
     else
     {
-      XBMC->Log(LOG_DEBUG, "TIMER_REPEATING_EPG");
+      kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_EPG");
       // build recurring recording request
       request = StringUtils::Format("/service?method=recording.recurring.save&recurring_id=%d&event_id=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s&only_new=%s",
-        timerinfo.iClientIndex,
+        timer.GetClientIndex(),
         epgOid,
-        (int)timerinfo.iMaxRecordings,
-        (int)timerinfo.iMarginStart,
-        (int)timerinfo.iMarginEnd,
+        timer.GetMaxRecordings(),
+        timer.GetMarginStart(),
+        timer.GetMarginEnd(),
         days.c_str(),
         directory.c_str(),
         preventDuplicates
@@ -707,34 +664,34 @@ PVR_ERROR Timers::AddTimer(const PVR_TIMER& timerinfo)
     break;
 
   case TIMER_REPEATING_MANUAL:
-    XBMC->Log(LOG_DEBUG, "TIMER_REPEATING_MANUAL");
+    kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_MANUAL");
     // build manual recurring request
     request = StringUtils::Format("/service?method=recording.recurring.save&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s",
-      timerinfo.iClientIndex,
+      timer.GetClientIndex(),
       encodedName.c_str(),
-      timerinfo.iClientChannelUid,
-      (int)timerinfo.startTime,
-      (int)timerinfo.endTime,
-      (int)timerinfo.iMaxRecordings,
-      (int)timerinfo.iMarginStart,
-      (int)timerinfo.iMarginEnd,
+      timer.GetClientChannelUid(),
+      (int)timer.GetStartTime(),
+      (int)timer.GetEndTime(),
+      timer.GetMaxRecordings(),
+      timer.GetMarginStart(),
+      timer.GetMarginEnd(),
       days.c_str(),
       directory.c_str()
       );
     break;
 
   case TIMER_REPEATING_KEYWORD:
-    XBMC->Log(LOG_DEBUG, "TIMER_REPEATING_KEYWORD");
+    kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_KEYWORD");
     // build manual recurring request
     request = StringUtils::Format("/service?method=recording.recurring.save&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&directory_id=%s&keyword=%s&only_new=%s",
-      timerinfo.iClientIndex,
+      timer.GetClientIndex(),
       encodedName.c_str(),
-      timerinfo.iClientChannelUid,
-      (int)timerinfo.startTime,
-      (int)timerinfo.endTime,
-      (int)timerinfo.iMaxRecordings,
-      (int)timerinfo.iMarginStart,
-      (int)timerinfo.iMarginEnd,
+      timer.GetClientChannelUid(),
+      (int)timer.GetStartTime(),
+      (int)timer.GetEndTime(),
+      timer.GetMaxRecordings(),
+      timer.GetMarginStart(),
+      timer.GetMarginEnd(),
       directory.c_str(),
       encodedKeyword.c_str(),
       preventDuplicates
@@ -742,17 +699,17 @@ PVR_ERROR Timers::AddTimer(const PVR_TIMER& timerinfo)
     break;
 
   case TIMER_REPEATING_ADVANCED:
-    XBMC->Log(LOG_DEBUG, "TIMER_REPEATING_ADVANCED");
+    kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_ADVANCED");
     // build manual advanced recurring request
     request = StringUtils::Format("/service?method=recording.recurring.save&recurring_type=advanced&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&directory_id=%s&advanced=%s&only_new=%s",
-      timerinfo.iClientIndex,
+      timer.GetClientIndex(),
       encodedName.c_str(),
-      timerinfo.iClientChannelUid,
-      (int)timerinfo.startTime,
-      (int)timerinfo.endTime,
-      (int)timerinfo.iMaxRecordings,
-      (int)timerinfo.iMarginStart,
-      (int)timerinfo.iMarginEnd,
+      timer.GetClientChannelUid(),
+      (int)timer.GetStartTime(),
+      (int)timer.GetEndTime(),
+      timer.GetMaxRecordings(),
+      timer.GetMarginStart(),
+      timer.GetMarginEnd(),
       directory.c_str(),
       encodedKeyword.c_str(),
       preventDuplicates
@@ -766,9 +723,10 @@ PVR_ERROR Timers::AddTimer(const PVR_TIMER& timerinfo)
   {
     if (strstr(response.c_str(), "<rsp stat=\"ok\">"))
     {
-      if (timerinfo.startTime <= time(nullptr) && timerinfo.endTime > time(nullptr))
-        PVR->TriggerRecordingUpdate();
-      PVR->TriggerTimerUpdate();
+      if (timer.GetStartTime() <= time(nullptr) && timer.GetEndTime() > time(nullptr))
+        g_pvrclient->TriggerRecordingUpdate();
+
+      g_pvrclient->TriggerTimerUpdate();
       return PVR_ERROR_NO_ERROR;
     }
   }
@@ -776,14 +734,14 @@ PVR_ERROR Timers::AddTimer(const PVR_TIMER& timerinfo)
   return PVR_ERROR_FAILED;
 }
 
-PVR_ERROR Timers::DeleteTimer(const PVR_TIMER& timer, bool bForceDelete)
+PVR_ERROR Timers::DeleteTimer(const kodi::addon::PVRTimer& timer, bool forceDelete)
 {
-  std::string request = StringUtils::Format("/service?method=recording.delete&recording_id=%d", timer.iClientIndex);
+  std::string request = "/service?method=recording.delete&recording_id=" + std::to_string(timer.GetClientIndex());
 
   // handle recurring recordings
-  if (timer.iTimerType >= TIMER_REPEATING_MIN && timer.iTimerType <= TIMER_REPEATING_MAX)
+  if (timer.GetTimerType() >= TIMER_REPEATING_MIN && timer.GetTimerType() <= TIMER_REPEATING_MAX)
   {
-    request = StringUtils::Format("/service?method=recording.recurring.delete&recurring_id=%d", timer.iClientIndex);
+    request = "/service?method=recording.recurring.delete&recurring_id=" + std::to_string(timer.GetClientIndex());
   }
 
   std::string response;
@@ -791,9 +749,9 @@ PVR_ERROR Timers::DeleteTimer(const PVR_TIMER& timer, bool bForceDelete)
   {
     if (strstr(response.c_str(), "<rsp stat=\"ok\">"))
     {
-      PVR->TriggerTimerUpdate();
-      if (timer.startTime <= time(nullptr) && timer.endTime > time(nullptr))
-        PVR->TriggerRecordingUpdate();
+      g_pvrclient->TriggerTimerUpdate();
+      if (timer.GetStartTime() <= time(nullptr) && timer.GetEndTime() > time(nullptr))
+        g_pvrclient->TriggerRecordingUpdate();
       return PVR_ERROR_NO_ERROR;
     }
   }
@@ -801,7 +759,7 @@ PVR_ERROR Timers::DeleteTimer(const PVR_TIMER& timer, bool bForceDelete)
   return PVR_ERROR_FAILED;
 }
 
-PVR_ERROR Timers::UpdateTimer(const PVR_TIMER& timerinfo)
+PVR_ERROR Timers::UpdateTimer(const kodi::addon::PVRTimer& timer)
 {
-  return AddTimer(timerinfo);
+  return AddTimer(timer);
 }

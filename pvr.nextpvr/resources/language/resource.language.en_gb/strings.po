@@ -53,7 +53,7 @@ msgstr ""
 #empty strings from id 30042 to 30049
 
 msgctxt "#30050"
-msgid "NextPVR server is too old."
+msgid "NextPVR version not supported"
 msgstr ""
 
 msgctxt "#30051"
@@ -268,4 +268,12 @@ msgstr ""
 
 msgctxt "#30688"
 msgid "Also use skin settings to control radio main menu display"
+msgstr ""
+
+msgctxt "#30189"
+msgid "Discovered host"
+msgstr ""
+
+msgctxt "#30190"
+msgid "Timeshifting disabled"
 msgstr ""

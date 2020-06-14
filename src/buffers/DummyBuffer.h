@@ -11,7 +11,7 @@
 
 #include "Buffer.h"
 
-using namespace ADDON;
+
 namespace timeshift {
 
   /**
@@ -21,12 +21,12 @@ namespace timeshift {
   class DummyBuffer : public Buffer
   {
   public:
-    DummyBuffer() : Buffer() { XBMC->Log(LOG_INFO, "DummyBuffer created!"); }
+    DummyBuffer() : Buffer() { kodi::Log(ADDON_LOG_INFO, "DummyBuffer created!"); }
     virtual ~DummyBuffer() {}
 
     virtual int Read(byte *buffer, size_t length) override
     {
-      return XBMC->ReadFile(m_inputHandle, buffer, length);
+      return m_inputHandle.Read(buffer, length);
     }
 
     virtual int64_t Seek(int64_t position, int whence) override
@@ -36,14 +36,14 @@ namespace timeshift {
 
     virtual int64_t Position() const override
     {
-      return XBMC->GetFilePosition(m_inputHandle);
+      return m_inputHandle.GetPosition();
     }
 
     virtual int64_t Length() const override
     {
-      return XBMC->GetFileLength(m_inputHandle);
+      return m_inputHandle.GetLength();
     }
 
-    PVR_ERROR GetStreamTimes(PVR_STREAM_TIMES *) override;
+    PVR_ERROR GetStreamTimes(kodi::addon::PVRStreamTimes& stimes) override;
   };
 }

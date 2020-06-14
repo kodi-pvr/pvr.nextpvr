@@ -9,13 +9,10 @@
 
 #pragma once
 
-#include "client.h"
+#include "addon.h"
 #include <string>
 #include <kodi/AddonBase.h>
 #include <p8-platform/util/StringUtils.h>
-
-
-using namespace ADDON;
 
 namespace NextPVR
 {
@@ -68,7 +65,7 @@ namespace NextPVR
     };
 
     void ReadFromAddon();
-    ADDON_STATUS SetValue(const std::string& settingName, const void* settingValue);
+    ADDON_STATUS SetValue(const std::string& settingName, const kodi::CSettingValue& settingValue);
 
     //Connection
     std::string m_hostname = DEFAULT_HOST;
@@ -120,15 +117,38 @@ namespace NextPVR
     void operator=(Settings const&) = delete;
 
     template<typename T, typename V>
-    V SetSetting(const std::string& settingName, const void* settingValue, T& currentValue, V returnValueIfChanged, V defaultReturnValue)
+    V SetSetting(const std::string& settingName, const kodi::CSettingValue& settingValue, T& currentValue, V returnValueIfChanged, V defaultReturnValue)
     {
-      T newValue = *static_cast<const T*>(settingValue);
+      T newValue;
+      if (std::is_same<T, float>::value)
+        newValue = static_cast<T>(settingValue.GetFloat());
+      else if (std::is_same<T, bool>::value)
+        newValue = static_cast<T>(settingValue.GetBoolean());
+      else if (std::is_same<T, unsigned int>::value)
+        newValue = static_cast<T>(settingValue.GetUInt());
+      else if (std::is_same<T, int>::value)
+        newValue = static_cast<T>(settingValue.GetInt());
+
       if (newValue != currentValue)
       {
         std::string formatString = "%s - Changed Setting '%s' from %d to %d";
         if (std::is_same<T, float>::value)
           formatString = "%s - Changed Setting '%s' from %f to %f";
-        XBMC->Log(LOG_INFO, formatString.c_str(), __FUNCTION__, settingName.c_str(), currentValue, newValue);
+        kodi::Log(ADDON_LOG_INFO, formatString.c_str(), __FUNCTION__, settingName.c_str(), currentValue, newValue);
+        currentValue = newValue;
+        return returnValueIfChanged;
+      }
+
+      return defaultReturnValue;
+    };
+
+    template<typename T, typename V>
+    V SetEnumSetting(const std::string& settingName, const kodi::CSettingValue& settingValue, T& currentValue, V returnValueIfChanged, V defaultReturnValue)
+    {
+      T newValue = settingValue.GetEnum<T>();
+      if (newValue != currentValue)
+      {
+        kodi::Log(ADDON_LOG_INFO, "%s - Changed Setting '%s' from %d to %d", __FUNCTION__, settingName.c_str(), currentValue, newValue);
         currentValue = newValue;
         return returnValueIfChanged;
       }
@@ -137,9 +157,9 @@ namespace NextPVR
     };
 
     template<typename V>
-    V SetStringSetting(const std::string& settingName, const void* settingValue, std::string& currentValue, V returnValueIfChanged, V defaultReturnValue)
+    V SetStringSetting(const std::string& settingName, const kodi::CSettingValue& settingValue, std::string& currentValue, V returnValueIfChanged, V defaultReturnValue)
     {
-      const std::string strSettingValue = static_cast<const char*>(settingValue);
+      const std::string strSettingValue = settingValue.GetString();
 
       if (strSettingValue != currentValue)
       {

@@ -20,7 +20,7 @@ namespace timeshift {
   public:
     TranscodedBuffer() : DummyBuffer()
     {
-      XBMC->Log(LOG_INFO, "TranscodedBuffer created");
+      kodi::Log(ADDON_LOG_INFO, "TranscodedBuffer created");
     }
 
     ~TranscodedBuffer() {}

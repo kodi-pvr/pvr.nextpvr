@@ -10,9 +10,8 @@
 #pragma once
 
 #include "BackendRequest.h"
+#include <kodi/addon-instance/PVR.h>
 #include "tinyxml.h"
-
-using namespace ADDON;
 
 namespace NextPVR
 {
@@ -31,13 +30,13 @@ namespace NextPVR
     }
 
     /* Channel handling */
-    int GetNumChannels(void);
-    PVR_ERROR GetChannels(ADDON_HANDLE handle, bool bRadio);
+    int GetNumChannels();
 
+    PVR_ERROR GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& results);
     /* Channel group handling */
-    int GetChannelGroupsAmount(void);
-    PVR_ERROR GetChannelGroups(ADDON_HANDLE handle, bool bRadio);
-    PVR_ERROR GetChannelGroupMembers(ADDON_HANDLE handle, const PVR_CHANNEL_GROUP &group);
+    PVR_ERROR GetChannelGroupsAmount(int& amount);
+    PVR_ERROR GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsResultSet& results);
+    PVR_ERROR GetChannelGroupMembers(const kodi::addon::PVRChannelGroup& group, kodi::addon::PVRChannelGroupMembersResultSet& results);
     bool IsChannelAPlugin(int uid);
     void LoadLiveStreams();
     std::map<int, std::string> m_liveStreams;

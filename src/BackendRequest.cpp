@@ -7,18 +7,16 @@
  */
 
 #include "BackendRequest.h"
-
 #include "Socket.h"
-#include <libKODI_guilib.h>
+#include <kodi/General.h>
+#include <kodi/gui/dialogs/Select.h>
 #include <p8-platform/util/StringUtils.h>
-
-using namespace ADDON;
 
 namespace NextPVR
 {
   int Request::DoRequest(const char* resource, std::string& response)
   {
-    P8PLATFORM::CLockObject lock(m_mutexRequest);
+    std::unique_lock<std::mutex> lock(m_mutexRequest);
     m_start = time(nullptr);
     // build request string, adding SID if requred
     std::string URL;
@@ -30,29 +28,30 @@ namespace NextPVR
 
     // ask XBMC to read the URL for us
     int resultCode = HTTP_NOTFOUND;
-    void* fileHandle = XBMC->OpenFile(URL.c_str(), XFILE::READ_NO_CACHE);
-    if (fileHandle)
+    kodi::vfs::CFile stream;
+    if (stream.OpenFile(URL, ADDON_READ_NO_CACHE))
     {
-      char buffer[1024];
-      while (XBMC->ReadFileString(fileHandle, buffer, 1024))
+      char buffer[1025] = {0};
+      int count;
+      while ((count=stream.Read(buffer, 1024)))
       {
-        response.append(buffer);
+        response.append(buffer, count);
       }
-      XBMC->CloseFile(fileHandle);
+      stream.Close();
       resultCode = HTTP_OK;
       if ((response.empty() || strstr(response.c_str(), "<rsp stat=\"ok\">") == nullptr) && strstr(resource, "method=channel.stream.info") == nullptr)
       {
-        XBMC->Log(LOG_ERROR, "DoRequest failed, response=%s", response.c_str());
+        kodi::Log(ADDON_LOG_ERROR, "DoRequest failed, response=%s", response.c_str());
         resultCode = HTTP_BADREQUEST;
       }
     }
-    XBMC->Log(LOG_DEBUG, "DoRequest return %s %d %d %d", resource, resultCode, response.length(), time(nullptr) - m_start);
+    kodi::Log(ADDON_LOG_DEBUG, "DoRequest return %s %d %d %d", resource, resultCode, response.length(), time(nullptr) - m_start);
 
     return resultCode;
   }
   int Request::FileCopy(const char* resource, std::string fileName)
   {
-    P8PLATFORM::CLockObject lock(m_mutexRequest);
+    std::unique_lock<std::mutex> lock(m_mutexRequest);
     ssize_t written = 0;
     m_start = time(nullptr);
 
@@ -62,21 +61,21 @@ namespace NextPVR
 
     // ask XBMC to read the URL for us
     int resultCode = HTTP_NOTFOUND;
-    void* inputFile = XBMC->OpenFile(URL.c_str(), XFILE::READ_NO_CACHE);
+    kodi::vfs::CFile inputStream;
     ssize_t datalen;
-    if (inputFile)
+    if (inputStream.OpenFile(URL, ADDON_READ_NO_CACHE))
     {
-      void* outputFile = XBMC->OpenFileForWrite(fileName.c_str(), XFILE::READ_NO_CACHE);
-      if (outputFile)
+      kodi::vfs::CFile outputFile;
+      if (outputFile.OpenFileForWrite(fileName, ADDON_READ_NO_CACHE))
       {
         char buffer[1024];
-        while ((datalen = XBMC->ReadFile(inputFile, buffer, sizeof(buffer))))
+        while ((datalen = inputStream.Read( buffer, sizeof(buffer))))
         {
-          XBMC->WriteFile(outputFile, buffer, datalen);
+          outputFile.Write( buffer, datalen);
           written += datalen;
         }
-        XBMC->CloseFile(inputFile);
-        XBMC->CloseFile(outputFile);
+        inputStream.Close();
+        outputFile.Close();
         resultCode = HTTP_OK;
       }
     }
@@ -84,33 +83,30 @@ namespace NextPVR
     {
       resultCode = HTTP_BADREQUEST;
     }
-    XBMC->Log(LOG_DEBUG, "FileCopy (%s - %s) %zu %d %d", resource, fileName.c_str(), resultCode, written, time(nullptr) - m_start);
+    kodi::Log(ADDON_LOG_DEBUG, "FileCopy (%s - %s) %zu %d %d", resource, fileName.c_str(), resultCode, written, time(nullptr) - m_start);
 
     return resultCode;
   }
   bool Request::PingBackend()
   {
     const std::string URL = StringUtils::Format("http://%s:%d%s|connection-timeout=2", m_settings.m_hostname.c_str(), m_settings.m_port, "/service?method=recording.lastupdated");
-    void* fileHandle = XBMC->OpenFile(URL.c_str(), XFILE::READ_NO_CACHE);
-    if (fileHandle)
+    kodi::vfs::CFile backend;
+    if (backend.OpenFile(URL, ADDON_READ_NO_CACHE))
     {
-      XBMC->CloseFile(fileHandle);
+      backend.Close();
       return true;
     }
     return false;
   }
-  bool Request::OneTimeSetup(void* hdl)
+  bool Request::OneTimeSetup()
   {
-// create user folder for channel icons and try and locate backend
-#if defined(TARGET_WINDOWS)
-#undef CreateDirectory
-#endif
-    const std::string backend = "http://127.0.0.1:8866/service?method=recording.lastupdated|connection-timeout=2";
-    void* fileHandle = XBMC->OpenFile(backend.c_str(), XFILE::READ_NO_CACHE);
-    if (fileHandle)
+    // create user folder for channel icons and try and locate backend
+    const std::string URL = "http://127.0.0.1:8866/service?method=recording.lastupdated|connection-timeout=2";
+    kodi::vfs::CFile backend;
+    if (backend.OpenFile(URL, ADDON_READ_NO_CACHE))
     {
-      XBMC->CloseFile(fileHandle);
-      XBMC->CreateDirectory("special://userdata/addon_data/pvr.nextpvr/");
+      backend.Close();
+      kodi::vfs::CreateDirectory("special://userdata/addon_data/pvr.nextpvr/");
       return true;
     }
     else
@@ -124,34 +120,25 @@ namespace NextPVR
         if (foundAddress.size() > 1)
         {
           // found multiple hosts let user choose
-          CHelper_libKODI_guilib* GUI = new CHelper_libKODI_guilib;
-          GUI->RegisterMe(hdl);
-          const char* entries[5];
-          int entry;
-          for (entry = 0; entry < 5 && entry < foundAddress.size(); entry++)
+          std::vector<std::string> entries;
+          for (int entry = 0; entry < foundAddress.size(); entry++)
           {
-            entries[entry] = foundAddress[entry][0].c_str();
+            entries.emplace_back(foundAddress[entry][0]);
           }
-          offset = GUI->Dialog_Select(XBMC->GetLocalizedString(30187), entries, entry, 0);
-          delete GUI;
+          offset = kodi::gui::dialogs::Select::Show(kodi::GetLocalizedString(30187), entries);
           if (offset < 0)
           {
-            XBMC->Log(LOG_INFO, "User canceled setup expect a failed install");
+            kodi::Log(ADDON_LOG_INFO, "User canceled setup expect a failed install");
             return false;
           }
         }
-        XBMC->CreateDirectory("special://userdata/addon_data/pvr.nextpvr/");
+        kodi::vfs::CreateDirectory("special://userdata/addon_data/pvr.nextpvr/");
         m_settings.UpdateServerPort(foundAddress[offset][0], std::stoi(foundAddress[offset][1]));
-        XBMC->QueueNotification(QUEUE_INFO, XBMC->GetLocalizedString(30182), m_settings.m_hostname.c_str(), m_settings.m_port);
-        char* settings = XBMC->TranslateSpecialProtocol("special://profile/addon_data/pvr.nextpvr/settings.xml");
-        // create settings.xml with host and port
-        void* settingsFile = XBMC->OpenFileForWrite(settings, XFILE::READ_NO_CACHE);
-        const char tmp[] = "<settings version=\"2\">\n</settings>\n";
-        XBMC->WriteFile(settingsFile, tmp, strlen(tmp));
-        XBMC->CloseFile(settingsFile);
-        m_settings.SaveSettings("host", m_settings.m_hostname);
-        m_settings.SaveSettings("port", std::to_string(m_settings.m_port));
-        XBMC->FreeString(settings);
+        kodi::QueueNotification(QUEUE_INFO, kodi::GetLocalizedString(30189),
+                StringUtils::Format(kodi::GetLocalizedString(30182).c_str(), m_settings.m_hostname.c_str(), m_settings.m_port));
+        /* note that these run before the file is created */
+        kodi::SetSettingString("host", m_settings.m_hostname);
+        kodi::SetSettingInt("port", m_settings.m_port);
         return true;
       }
     }
@@ -166,20 +153,20 @@ namespace NextPVR
       bool optResult;
       int broadcast = 1;
       if (optResult = socket->SetSocketOption(SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char*>(&broadcast), sizeof(broadcast)))
-        XBMC->Log(LOG_ERROR, "SO_REUSEADDR %d", optResult);
+        kodi::Log(ADDON_LOG_ERROR, "SO_REUSEADDR %d", optResult);
       broadcast = 1;
       if (optResult = socket->SetSocketOption(SOL_SOCKET, SO_BROADCAST, reinterpret_cast<char*>(&broadcast), sizeof(broadcast)))
-        XBMC->Log(LOG_ERROR, "SO_BROADCAST %d", optResult);
+        kodi::Log(ADDON_LOG_ERROR, "SO_BROADCAST %d", optResult);
 #if defined(TARGET_WINDOWS)
       DWORD timeout = 5 * 1000;
       if (optResult = socket->SetSocketOption(SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>(&timeout), sizeof(timeout)))
-        XBMC->Log(LOG_ERROR, "WINDOWS SO_RCVTIMEO %d", optResult);
+        kodi::Log(ADDON_LOG_ERROR, "WINDOWS SO_RCVTIMEO %d", optResult);
 #else
       struct timeval tv;
       tv.tv_sec = 5;
       tv.tv_usec = 0;
       if (optResult = socket->SetSocketOption(SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>(&tv), sizeof(tv)))
-        XBMC->Log(LOG_ERROR, "SO_RCVTIMEO %d", optResult);
+        kodi::Log(ADDON_LOG_ERROR, "SO_RCVTIMEO %d", optResult);
 #endif
 
       const char msg[] = "Kodi pvr.nextpvr broadcast";
@@ -194,7 +181,7 @@ namespace NextPVR
             std::vector<std::string> parseResponse = StringUtils::Split(response, ":");
             if (parseResponse.size() >= 3)
             {
-              XBMC->Log(LOG_INFO, "Broadcast received %s %s", parseResponse[0].c_str(), parseResponse[1].c_str());
+              kodi::Log(ADDON_LOG_INFO, "Broadcast received %s %s", parseResponse[0].c_str(), parseResponse[1].c_str());
               foundAddress.push_back(parseResponse);
             }
           }

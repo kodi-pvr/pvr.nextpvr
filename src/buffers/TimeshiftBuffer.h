@@ -78,8 +78,8 @@ namespace timeshift {
       return false;
     }
 
-    virtual PVR_ERROR GetStreamTimes(PVR_STREAM_TIMES *) override;
-    virtual PVR_ERROR GetStreamReadChunkSize(int *chunksize) override;
+    virtual PVR_ERROR GetStreamTimes(kodi::addon::PVRStreamTimes& stimes) override;
+    virtual PVR_ERROR GetStreamReadChunkSize(int& chunksize) override;
 
   private:
 

@@ -9,10 +9,13 @@
 #pragma once
 
 #include "Settings.h"
-#include "client.h"
-#include "p8-platform/threads/mutex.h"
-
+#if defined(TARGET_WINDOWS)
+  #define WIN32_LEAN_AND_MEAN
+  #include "windows.h"
+#endif
+#include <kodi/Filesystem.h>
 #include <ctime>
+#include <mutex>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -20,7 +23,7 @@
 #define HTTP_NOTFOUND 404
 #define HTTP_BADREQUEST 400
 
-using namespace ADDON;
+
 
 namespace NextPVR
 {
@@ -39,7 +42,7 @@ namespace NextPVR
     int FileCopy(const char* resource, std::string fileName);
     void setSID(char* newsid) { strcpy(m_sid, newsid); };
     bool PingBackend();
-    bool OneTimeSetup(void* hdl);
+    bool OneTimeSetup();
     const char* getSID() { return m_sid; };
     std::vector<std::vector<std::string>> Discovery();
 
@@ -50,7 +53,7 @@ namespace NextPVR
     void operator=(Request const&) = delete;
 
     Settings& m_settings = Settings::GetInstance();
-    P8PLATFORM::CMutex m_mutexRequest;
+    mutable std::mutex m_mutexRequest;
     time_t m_start = 0;
     char m_sid[64]{0};
   };

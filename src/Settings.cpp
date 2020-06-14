@@ -10,13 +10,11 @@
 #include "Settings.h"
 #include "BackendRequest.h"
 #include "uri.h"
-
+#include <kodi/General.h>
 #include <kodi/util/XMLUtils.h>
 #include <p8-platform/util/StringUtils.h>
 #include <tinyxml.h>
 
-using namespace std;
-using namespace ADDON;
 using namespace NextPVR;
 
 /***************************************************************************
@@ -24,81 +22,51 @@ using namespace NextPVR;
  **************************************************************************/
 void Settings::ReadFromAddon()
 {
-  char buffer[1024];
+  std::string buffer;
 
   /* Connection settings */
   /***********************/
-  if (XBMC->GetSetting("host", buffer))
+  m_hostname = kodi::GetSettingString("host", DEFAULT_HOST);
+  uri::decode(m_hostname);
+
+  m_port = kodi::GetSettingInt("port", DEFAULT_PORT);
+
+  m_PIN = kodi::GetSettingString("pin", DEFAULT_PIN);
+
+  m_enableWOL = kodi::GetSettingBoolean("wolenable", false);
+  m_hostMACAddress = kodi::GetSettingString("host_mac");
+  if (m_enableWOL)
   {
-    m_hostname = buffer;
-    uri::decode(m_hostname);
-  }
-  else
-  {
-    m_hostname = DEFAULT_HOST;
+    if (m_hostMACAddress.empty())
+      m_enableWOL = false;
+    else if (m_hostname == "127.0.0.1" || m_hostname == "localhost" || m_hostname == "::1")
+      m_enableWOL = false;
   }
 
-  /* Read setting "port" from settings.xml */
-  if (!XBMC->GetSetting("port", &m_port))
-  {
-    /* If setting is unknown fallback to defaults */
-    XBMC->Log(LOG_ERROR, "Couldn't get 'port' setting, falling back to '8866' as default");
-    m_port = DEFAULT_PORT;
-  }
-  /* Read setting "pin" from settings.xml */
+  m_timeoutWOL = kodi::GetSettingInt("woltimeout", 20);
 
-  if (!XBMC->GetSetting("pin", buffer))
-    m_PIN = DEFAULT_PIN;
-  else
-    m_PIN = buffer;
+  m_downloadGuideArtwork = kodi::GetSettingBoolean("guideartwork" ,DEFAULT_GUIDE_ARTWORK);
 
-  if (XBMC->GetSetting("host_mac", buffer))
-    m_hostMACAddress = buffer;
+  m_remoteAccess = kodi::GetSettingBoolean("remoteaccess", false);
 
-  if (m_hostMACAddress.empty())
-    m_enableWOL = false;
-  else if (!XBMC->GetSetting("wolenable", &m_enableWOL))
-    m_enableWOL = false;
-  else if (m_hostname == "127.0.0.1" || m_hostname == "localhost" || m_hostname == "::1")
-    m_enableWOL = false;
+  m_flattenRecording = kodi::GetSettingBoolean("flattenrecording", false);
 
-  if (!XBMC->GetSetting("woltimeout", &m_timeoutWOL))
-    m_timeoutWOL = 20;
+  m_kodiLook = kodi::GetSettingBoolean("kodilook", false);
 
-  if (!XBMC->GetSetting("guideartwork", &m_downloadGuideArtwork))
-    m_downloadGuideArtwork = DEFAULT_GUIDE_ARTWORK;
+  m_prebuffer = kodi::GetSettingInt("prebuffer", 8);
 
-  if (!XBMC->GetSetting("remoteaccess", &m_remoteAccess))
-    m_remoteAccess = false;
+  m_prebuffer5 = kodi::GetSettingInt("prebuffer5", 0);
 
-  if (!XBMC->GetSetting("flattenrecording", &m_flattenRecording))
-    m_flattenRecording = false;
+  m_liveChunkSize = kodi::GetSettingInt("chunklivetv", 64);
 
-  if (!XBMC->GetSetting("kodilook", &m_kodiLook))
-    m_kodiLook = false;
+  m_chunkRecording = kodi::GetSettingInt("chunkrecording", 32);
 
-  if (!XBMC->GetSetting("prebuffer", &m_prebuffer))
-    m_prebuffer = 8;
+  m_resolution = kodi::GetSettingString("resolution",  "720");
 
-  if (!XBMC->GetSetting("prebuffer5", &m_prebuffer5))
-    m_prebuffer5 = 0;
-
-  if (!XBMC->GetSetting("chunklivetv", &m_liveChunkSize))
-    m_liveChunkSize = 64;
-
-  if (!XBMC->GetSetting("chunkrecording", &m_chunkRecording))
-    m_chunkRecording = 32;
-
-  if (XBMC->GetSetting("resolution", &buffer))
-    m_resolution = buffer;
-  else
-    m_resolution = "720";
-
-  if (!XBMC->GetSetting("showradio", &m_showRadio))
-    m_showRadio = true;
+  m_showRadio = kodi::GetSettingBoolean("showradio", true);
 
   /* Log the current settings for debugging purposes */
-  XBMC->Log(LOG_DEBUG, "settings: host='%s', port=%i, mac=%4.4s...", m_hostname.c_str(), m_port, m_hostMACAddress.c_str());
+  kodi::Log(ADDON_LOG_DEBUG, "settings: host='%s', port=%i, mac=%4.4s...", m_hostname.c_str(), m_port, m_hostMACAddress.c_str());
 
 }
 
@@ -116,14 +84,13 @@ ADDON_STATUS Settings::ReadBackendSettings()
       if (XMLUtils::GetInt(settingsDoc.RootElement(), "NextPVRVersion", m_backendVersion))
       {
         // NextPVR server
-        XBMC->Log(LOG_INFO, "NextPVR version: %d", m_backendVersion);
+        kodi::Log(ADDON_LOG_INFO, "NextPVR version: %d", m_backendVersion);
 
         // is the server new enough
         if (m_backendVersion < 40204)
         {
-          XBMC->Log(LOG_ERROR, "Your NextPVR version '%d' is too old. Please upgrade to '%s' or higher!", m_backendVersion, NEXTPVRC_MIN_VERSION_STRING);
-          XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30050));
-          XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30051), NEXTPVRC_MIN_VERSION_STRING);
+          kodi::Log(ADDON_LOG_ERROR, "NextPVR version '%d' is too old. Please upgrade to '%s' or higher!", m_backendVersion, NEXTPVRC_MIN_VERSION_STRING);
+          kodi::QueueNotification(QUEUE_ERROR, kodi::GetLocalizedString(30050), StringUtils::Format(kodi::GetLocalizedString(30051).c_str(), NEXTPVRC_MIN_VERSION_STRING));
           return ADDON_STATUS_PERMANENT_FAILURE;
         }
       }
@@ -148,24 +115,24 @@ ADDON_STATUS Settings::ReadBackendSettings()
       if (XMLUtils::GetInt(settingsDoc.RootElement(), "TimeEpoch", serverTimestamp))
       {
         m_serverTimeOffset = time(nullptr) - serverTimestamp;
-        XBMC->Log(LOG_INFO, "Server time offset in seconds: %d", m_serverTimeOffset);
+        kodi::Log(ADDON_LOG_INFO, "Server time offset in seconds: %d", m_serverTimeOffset);
       }
 
       if (XMLUtils::GetInt(settingsDoc.RootElement(), "SlipSeconds", m_timeshiftBufferSeconds))
-        XBMC->Log(LOG_INFO, "time shift buffer in seconds == %d\n", m_timeshiftBufferSeconds);
+        kodi::Log(ADDON_LOG_INFO, "time shift buffer in seconds == %d\n", m_timeshiftBufferSeconds);
 
       std::string serverMac;
       if (XMLUtils::GetString(settingsDoc.RootElement(), "ServerMAC", serverMac))
       {
-        std::string macAddress = serverMac.substr(0,2) ;
+        std::string macAddress = serverMac.substr(0, 2) ;
         for (int i = 2; i < 12; i+=2)
         {
-          macAddress+= ":" + serverMac.substr(i,2);
+          macAddress+= ":" + serverMac.substr(i, 2);
         }
-        XBMC->Log(LOG_DEBUG, "Server MAC address %4.4s...", macAddress.c_str());
+        kodi::Log(ADDON_LOG_DEBUG, "Server MAC address %4.4s...", macAddress.c_str());
         if (m_hostMACAddress != macAddress)
         {
-          SaveSettings("host_mac", macAddress);
+          kodi::SetSettingString("host_mac", macAddress);
         }
       }
     }
@@ -176,9 +143,10 @@ ADDON_STATUS Settings::ReadBackendSettings()
 void Settings::SetVersionSpecificSettings()
 {
   m_liveStreamingMethod = DEFAULT_LIVE_STREAM;
-
-  if (XBMC->GetSetting("livestreamingmethod", &m_liveStreamingMethod))
+  eStreamingMethod streamingMethod;
+  if (kodi::CheckSettingEnum<eStreamingMethod>("livestreamingmethod", streamingMethod))
   {
+    m_liveStreamingMethod = streamingMethod;
     // has v4 setting
     if (m_backendVersion < 50000)
     {
@@ -186,19 +154,21 @@ void Settings::SetVersionSpecificSettings()
       if (m_liveStreamingMethod == eStreamingMethod::Transcoded)
       {
         m_liveStreamingMethod = eStreamingMethod::RealTime;
-        XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30051), "5");
+        kodi::QueueNotification(QUEUE_ERROR, kodi::GetLocalizedString(30050), StringUtils::Format(kodi::GetLocalizedString(30051).c_str(), "5"));
       }
     }
     else if (m_backendVersion < 50002)
     {
       m_liveStreamingMethod = eStreamingMethod::RealTime;
-      XBMC->QueueNotification(QUEUE_ERROR, XBMC->GetLocalizedString(30051), "5.0.2+");
+      kodi::QueueNotification(QUEUE_ERROR, kodi::GetLocalizedString(30050), StringUtils::Format(kodi::GetLocalizedString(30051).c_str(), "5.0.3"));
     }
     else
     {
       // check for new v5 setting with no settings.xml
       eStreamingMethod oldMethod = m_liveStreamingMethod;
-      XBMC->GetSetting("livestreamingmethod5", &m_liveStreamingMethod);
+
+      if (kodi::CheckSettingEnum<eStreamingMethod>("livestreamingmethod5", streamingMethod))
+        m_liveStreamingMethod = streamingMethod;
 
       if (m_liveStreamingMethod == eStreamingMethod::Default)
         m_liveStreamingMethod = oldMethod;
@@ -212,18 +182,15 @@ void Settings::SetVersionSpecificSettings()
   if (m_backendVersion >= 50000)
   {
     m_sendSidWithMetadata = false;
-    bool remote;
     if (m_PIN != "0000" && m_remoteAccess)
     {
       m_downloadGuideArtwork = false;
       m_sendSidWithMetadata = true;
     }
 
-    if (!XBMC->GetSetting("guideartworkportrait", &m_guideArtPortrait))
-      m_guideArtPortrait = false;
+    m_guideArtPortrait = kodi::GetSettingBoolean("guideartworkportrait", false);
 
-    if (!XBMC->GetSetting("recordingsize", &m_showRecordingSize))
-      m_showRecordingSize = false;
+    m_showRecordingSize = kodi::GetSettingBoolean("recordingsize", false);
   }
   else
   {
@@ -237,7 +204,7 @@ bool Settings::SaveSettings(std::string name, std::string value)
   bool found = false;
   TiXmlDocument doc;
 
-  char* settings = XBMC->TranslateSpecialProtocol("special://profile/addon_data/pvr.nextpvr/settings.xml");
+  std::string settings = kodi::vfs::TranslateSpecialProtocol("special://profile/addon_data/pvr.nextpvr/settings.xml");
   if (doc.LoadFile(settings))
   {
     //Get Root Node
@@ -275,17 +242,21 @@ bool Settings::SaveSettings(std::string name, std::string value)
   }
   else
   {
-    XBMC->Log(LOG_ERROR, "Error loading settings.xml %s", settings);
+    kodi::Log(ADDON_LOG_ERROR, "Error loading settings.xml %s", settings.c_str());
   }
-  XBMC->FreeString(settings);
   return true;
 }
 
 
 
-ADDON_STATUS Settings::SetValue(const std::string& settingName, const void* settingValue)
+ADDON_STATUS Settings::SetValue(const std::string& settingName, const kodi::CSettingValue& settingValue)
 {
   //Connection
+  if (g_pvrclient==nullptr)
+  {
+    // Don't want to cause a restart after the first time discovery
+    return ADDON_STATUS_OK;
+  }
   if (settingName == "host")
     return SetStringSetting<ADDON_STATUS>(settingName, settingValue, m_hostname, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
   else if (settingName == "port")
@@ -308,10 +279,10 @@ ADDON_STATUS Settings::SetValue(const std::string& settingName, const void* sett
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_kodiLook, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
   else if (settingName == "host_mac")
     return SetStringSetting<ADDON_STATUS>(settingName, settingValue, m_hostMACAddress, ADDON_STATUS_OK, ADDON_STATUS_OK);
-  else if (settingName == "livestreamingmethod" && g_pvrclient && m_backendVersion < 50000)
-    return SetSetting<eStreamingMethod, ADDON_STATUS>(settingName, settingValue, m_liveStreamingMethod, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
-  else if (settingName == "livestreamingmethod5" && g_pvrclient && m_backendVersion >= 50000 && *static_cast<const eStreamingMethod*>(settingValue) != Default)
-    return SetSetting<eStreamingMethod, ADDON_STATUS>(settingName, settingValue, m_liveStreamingMethod, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
+  else if (settingName == "livestreamingmethod" && m_backendVersion < 50000)
+    return SetEnumSetting<eStreamingMethod, ADDON_STATUS>(settingName, settingValue, m_liveStreamingMethod, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
+  else if (settingName == "livestreamingmethod5" && m_backendVersion >= 50000 && settingValue.GetEnum<const eStreamingMethod>() != eStreamingMethod::Default)
+    return SetEnumSetting<eStreamingMethod, ADDON_STATUS>(settingName, settingValue, m_liveStreamingMethod, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
   else if (settingName == "prebuffer")
     return SetSetting<int, ADDON_STATUS>(settingName, settingValue, m_prebuffer, ADDON_STATUS_OK, ADDON_STATUS_OK);
   else if (settingName == "prebuffer5")

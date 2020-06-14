@@ -267,8 +267,6 @@ class Socket
 
     bool set_non_blocking ( const bool );
 
-    bool ReadResponse (int &code, std::vector<std::string> &lines);
-
     bool is_valid() const;
 
     bool SetSocketOption(int level, int option, char* setting, int value);

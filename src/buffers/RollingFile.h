@@ -14,7 +14,7 @@
 #include <mutex>
 #include <list>
 
-using namespace ADDON;
+
 namespace timeshift {
 
   /**
@@ -29,7 +29,7 @@ namespace timeshift {
     bool m_isRadio = false;
 
   protected:
-    void *m_slipHandle = nullptr;
+    kodi::vfs::CFile m_slipHandle;
     time_t m_streamStart;
 
     std::atomic<time_t> m_rollingStartSeconds;
@@ -57,7 +57,7 @@ namespace timeshift {
     RollingFile() : RecordingBuffer()
     {
       m_lastClose = 0;
-      XBMC->Log(LOG_INFO, "EPG Based Buffer created!");
+      kodi::Log(ADDON_LOG_INFO, "EPG Based Buffer created!");
     }
 
     virtual ~RollingFile() {}
@@ -78,16 +78,16 @@ namespace timeshift {
 
     virtual int64_t Position() const override
     {
-      return m_activeLength + XBMC->GetFilePosition(m_inputHandle);
+      return m_activeLength + m_inputHandle.GetPosition();
     }
 
     virtual int Read(byte *buffer, size_t length) override;
 
     int64_t Seek(int64_t position, int whence) override;
 
-    virtual PVR_ERROR GetStreamReadChunkSize(int *chunksize) override
+    virtual PVR_ERROR GetStreamReadChunkSize(int& chunksize) override
     {
-      *chunksize = m_settings.m_liveChunkSize;
+      chunksize = m_settings.m_liveChunkSize;
       return PVR_ERROR_NO_ERROR;
     }
 
@@ -95,6 +95,6 @@ namespace timeshift {
 
     virtual bool GetStreamInfo();
 
-    virtual PVR_ERROR GetStreamTimes(PVR_STREAM_TIMES *) override;
+    virtual PVR_ERROR GetStreamTimes(kodi::addon::PVRStreamTimes& times) override;
   };
 }

@@ -15,24 +15,20 @@
  */
 
 #include "TimeshiftBuffer.h"
+#include <kodi/General.h>
 
 using namespace timeshift;
-using namespace ADDON;
+
 
 const int TimeshiftBuffer::INPUT_READ_LENGTH = 32768;
 const int TimeshiftBuffer::BUFFER_BLOCKS = 48;
 const int TimeshiftBuffer::WINDOW_SIZE = std::max(6, (BUFFER_BLOCKS/2));
 
-// Fix a stupid #define on Windows which causes XBMC->DeleteFile() to break
-#ifdef _WIN32
-#undef DeleteFile
-#endif // _WIN32
-
 TimeshiftBuffer::TimeshiftBuffer()
-  : Buffer(), m_circularBuffer(INPUT_READ_LENGTH * BUFFER_BLOCKS), 
+  : Buffer(), m_circularBuffer(INPUT_READ_LENGTH * BUFFER_BLOCKS),
     m_seek(&m_sd, &m_circularBuffer), m_streamingclient(nullptr), m_CanPause(true)
 {
-  XBMC->Log(LOG_DEBUG, "TimeshiftBuffer created!");
+  kodi::Log(ADDON_LOG_DEBUG, "TimeshiftBuffer created!");
   m_sd.lastKnownLength.store(0);
   m_sd.ptsBegin.store(0);
   m_sd.ptsEnd.store(0);
@@ -59,20 +55,20 @@ TimeshiftBuffer::~TimeshiftBuffer()
 
 bool TimeshiftBuffer::Open(const std::string inputUrl)
 {
-  XBMC->Log(LOG_DEBUG, "TimeshiftBuffer::Open()");
+  kodi::Log(ADDON_LOG_DEBUG, "TimeshiftBuffer::Open()");
   Buffer::Open(""); // To set the time stream starts
   m_sd.sessionStartTime.store(m_startTime);
   m_sd.tsbStartTime.store(m_sd.sessionStartTime.load());
   m_streamingclient = new NextPVR::Socket(NextPVR::af_inet, NextPVR::pf_inet, NextPVR::sock_stream, NextPVR::tcp);
   if (!m_streamingclient->create())
   {
-    XBMC->Log(LOG_ERROR, "%s:%d: Could not connect create streaming socket", __FUNCTION__, __LINE__);
+    kodi::Log(ADDON_LOG_ERROR, "%s:%d: Could not connect create streaming socket", __FUNCTION__, __LINE__);
     return false;
   }
 
   if (!m_streamingclient->connect(m_settings.m_hostname, m_settings.m_port))
   {
-    XBMC->Log(LOG_ERROR, "%s:%d: Could not connect to NextPVR backend (%s:%d) for streaming", __FUNCTION__, __LINE__, m_settings.m_hostname.c_str(), m_settings.m_port);
+    kodi::Log(ADDON_LOG_ERROR, "%s:%d: Could not connect to NextPVR backend (%s:%d) for streaming", __FUNCTION__, __LINE__, m_settings.m_hostname.c_str(), m_settings.m_port);
     return false;
   }
 
@@ -102,7 +98,7 @@ bool TimeshiftBuffer::Open(const std::string inputUrl)
       int remainder = read - (i+4);
       if (remainder > 0)
       {
-        XBMC->Log(LOG_DEBUG, "remainder: %s", &buf[i+4]);
+        kodi::Log(ADDON_LOG_DEBUG, "remainder: %s", &buf[i+4]);
         WriteData((byte *)&buf[i+4], remainder, 0);
       }
 
@@ -111,46 +107,46 @@ bool TimeshiftBuffer::Open(const std::string inputUrl)
       {
         memset(header, 0, sizeof(header));
         memcpy(header, buf, i);
-        XBMC->Log(LOG_DEBUG, "%s", header);
+        kodi::Log(ADDON_LOG_DEBUG, "%s", header);
 
         if (strstr(header, "HTTP/1.1 404") != NULL)
         {
-          XBMC->Log(LOG_DEBUG, "Unable to start channel. 404");
-          XBMC->QueueNotification(QUEUE_INFO, "Tuner not available");
+          kodi::Log(ADDON_LOG_DEBUG, "Unable to start channel. 404");
+          kodi::QueueNotification(QUEUE_ERROR, kodi::GetLocalizedString(30053), "");
           return false;
         }
 
       }
 
-      m_streamingclient->set_non_blocking(0); 
- 
+      m_streamingclient->set_non_blocking(0);
+
       break;
     }
   }
 
-  XBMC->Log(LOG_DEBUG, "TSB: Opened streaming connection!");
+  kodi::Log(ADDON_LOG_DEBUG, "TSB: Opened streaming connection!");
   // Start the input thread
   m_inputThread = std::thread([this]()
   {
     ConsumeInput();
   });
-  
+
   m_tsbThread = std::thread([this]()
   {
     TSBTimerProc();
   });
-  
-  XBMC->Log(LOG_DEBUG, "Open grabbing lock");
+
+  kodi::Log(ADDON_LOG_DEBUG, "Open grabbing lock");
   std::unique_lock<std::mutex> lock(m_mutex);
-  XBMC->Log(LOG_DEBUG, "Open Continuing");
+  kodi::Log(ADDON_LOG_DEBUG, "Open Continuing");
   int minLength = BUFFER_BLOCKS * INPUT_READ_LENGTH;
-  XBMC->Log(LOG_DEBUG, "Open waiting for %d bytes to buffer", minLength);
+  kodi::Log(ADDON_LOG_DEBUG, "Open waiting for %d bytes to buffer", minLength);
   m_reader.wait_for(lock, std::chrono::seconds(1),
                     [this, minLength]()
   {
     return m_circularBuffer.BytesAvailable() >= minLength;
   });
-  XBMC->Log(LOG_DEBUG, "Open Continuing %d / %d", m_circularBuffer.BytesAvailable(), minLength);
+  kodi::Log(ADDON_LOG_DEBUG, "Open Continuing %d / %d", m_circularBuffer.BytesAvailable(), minLength);
   // Make sure data is flowing, before declaring success.
   if (m_circularBuffer.BytesAvailable() != 0)
     return true;
@@ -160,10 +156,10 @@ bool TimeshiftBuffer::Open(const std::string inputUrl)
 
 void TimeshiftBuffer::Close()
 {
-  XBMC->Log(LOG_DEBUG, "TimeshiftBuffer::Close()");
+  kodi::Log(ADDON_LOG_DEBUG, "TimeshiftBuffer::Close()");
   // Wait for the input thread to terminate
   Buffer::Close();
-  
+
   m_writer.notify_one();  // In case it's sleeping.
 
   if (m_inputThread.joinable())
@@ -172,7 +168,7 @@ void TimeshiftBuffer::Close()
   if (m_tsbThread.joinable())
     m_tsbThread.join();
 
-  
+
   if (m_streamingclient)
   {
     m_streamingclient->close();
@@ -205,7 +201,7 @@ void TimeshiftBuffer::Close()
 
 void TimeshiftBuffer::Reset()
 {
-  XBMC->Log(LOG_DEBUG, "TimeshiftBuffer::Reset()");
+  kodi::Log(ADDON_LOG_DEBUG, "TimeshiftBuffer::Reset()");
 
   // Close any open handles
   std::unique_lock<std::mutex> lock(m_mutex);
@@ -220,17 +216,17 @@ int TimeshiftBuffer::Read(byte *buffer, size_t length)
 {
   int bytesRead = 0;
   std::unique_lock<std::mutex> lock(m_mutex);
-  XBMC->Log(LOG_DEBUG, "TimeshiftBuffer::Read() %d @ %lli", length, m_sd.streamPosition.load());
+  kodi::Log(ADDON_LOG_DEBUG, "TimeshiftBuffer::Read() %d @ %lli", length, m_sd.streamPosition.load());
 
   // Wait until we have enough data
-  
+
   if (! m_reader.wait_for(lock, std::chrono::seconds(m_readTimeout),
     [this, length]()
   {
     return m_circularBuffer.BytesAvailable() >= (int )length;
   }))
   {
-    XBMC->Log(LOG_DEBUG, "Timeout waiting for bytes!! [buffer underflow]");
+    kodi::Log(ADDON_LOG_DEBUG, "Timeout waiting for bytes!! [buffer underflow]");
   }
   bytesRead = m_circularBuffer.ReadBytes(buffer, length);
   m_sd.streamPosition.fetch_add(length);
@@ -241,7 +237,7 @@ int TimeshiftBuffer::Read(byte *buffer, size_t length)
   }
 
   if (bytesRead != length)
-    XBMC->Log(LOG_DEBUG, "Read returns %d for %d request.", bytesRead, length);
+    kodi::Log(ADDON_LOG_DEBUG, "Read returns %d for %d request.", bytesRead, length);
   return bytesRead;
 }
 
@@ -253,26 +249,26 @@ int TimeshiftBuffer::Read(byte *buffer, size_t length)
 int64_t TimeshiftBuffer::Seek(int64_t position, int whence)
 {
   bool sleep = false;
-  XBMC->Log(LOG_DEBUG, "TimeshiftBuffer::Seek()");
+  kodi::Log(ADDON_LOG_DEBUG, "TimeshiftBuffer::Seek()");
   int64_t highLimit = m_sd.lastKnownLength.load() - m_sd.iBytesPerSecond;
-  int64_t lowLimit = m_sd.tsbStart.load() + (m_sd.iBytesPerSecond << 2);  // Add Roughly 4 seconds to account for estimating the start. 
-  
+  int64_t lowLimit = m_sd.tsbStart.load() + (m_sd.iBytesPerSecond << 2);  // Add Roughly 4 seconds to account for estimating the start.
+
   if (position > highLimit)
   {
-    XBMC->Log(LOG_ERROR, "Seek requested to %lld, limiting to %lld\n", position, highLimit);
+    kodi::Log(ADDON_LOG_ERROR, "Seek requested to %lld, limiting to %lld\n", position, highLimit);
     position = highLimit;
   }
   else if (position < lowLimit)
   {
-    XBMC->Log(LOG_ERROR, "Seek requested to %lld, limiting to %lld\n", position, lowLimit);
+    kodi::Log(ADDON_LOG_ERROR, "Seek requested to %lld, limiting to %lld\n", position, lowLimit);
     position = lowLimit;
   }
-  
+
   {
     std::unique_lock<std::mutex> lock(m_mutex);
     // m_streamPositon is the offset in the stream that will be read next,
     // so if that matches the seek position, don't seek.
-    XBMC->Log(LOG_DEBUG, "Seek:  %d  %d  %llu %llu", SEEK_SET, whence, m_sd.streamPosition.load(), position);
+    kodi::Log(ADDON_LOG_DEBUG, "Seek:  %d  %d  %llu %llu", SEEK_SET, whence, m_sd.streamPosition.load(), position);
     if ((whence == SEEK_SET) && (position == m_sd.streamPosition.load()))
       return position;
     m_seek.InitSeek(position, whence);
@@ -286,28 +282,28 @@ int64_t TimeshiftBuffer::Seek(int64_t position, int whence)
   if (sleep)
   {
     std::unique_lock<std::mutex> sLock(m_sLock);
-    XBMC->Log(LOG_DEBUG, "Seek Waiting");
+    kodi::Log(ADDON_LOG_DEBUG, "Seek Waiting");
     m_seeker.wait(sLock);
   }
-  XBMC->Log(LOG_DEBUG, "Seek() returning %lli", position);
+  kodi::Log(ADDON_LOG_DEBUG, "Seek() returning %lli", position);
   return position;
 }
 
-PVR_ERROR TimeshiftBuffer::GetStreamTimes(PVR_STREAM_TIMES *stimes)
+PVR_ERROR TimeshiftBuffer::GetStreamTimes(kodi::addon::PVRStreamTimes& stimes)
 {
-  stimes->startTime = m_sd.sessionStartTime.load();
-  stimes->ptsStart = 0;
-  stimes->ptsBegin = m_sd.ptsBegin.load();
-  stimes->ptsEnd = m_sd.ptsEnd.load();
-//  XBMC->Log(LOG_ERROR, "GetStreamTimes: %d, %lli, %lli, %lli", 
+  stimes.SetStartTime(m_sd.sessionStartTime.load());
+  stimes.SetPTSStart(0);
+  stimes.SetPTSBegin(m_sd.ptsBegin.load());
+  stimes.SetPTSEnd(m_sd.ptsEnd.load());
+//  kodi::Log(ADDON_LOG_ERROR, "GetStreamTimes: %d, %lli, %lli, %lli",
 //            stimes->startTime, stimes->ptsStart, stimes->ptsBegin, stimes->ptsEnd);
   return PVR_ERROR_NO_ERROR;
 }
 
-PVR_ERROR TimeshiftBuffer::GetStreamReadChunkSize(int* chunksize)
+PVR_ERROR TimeshiftBuffer::GetStreamReadChunkSize(int& chunksize)
 {
   // Make this a tunable parameter?
-  *chunksize = TimeshiftBuffer::INPUT_READ_LENGTH;
+  chunksize = TimeshiftBuffer::INPUT_READ_LENGTH;
   return PVR_ERROR_NO_ERROR;
 }
 
@@ -319,7 +315,7 @@ void TimeshiftBuffer::RequestBlocks()
 
 void TimeshiftBuffer::internalRequestBlocks()
 {
-  //  XBMC->Log(LOG_DEBUG, "TimeshiftBuffer::RequestBlocks()");
+  //  kodi::Log(ADDON_LOG_DEBUG, "TimeshiftBuffer::RequestBlocks()");
 
   m_seek.ProcessRequests(); // Handle outstanding seek request, if there is one.
 
@@ -330,10 +326,10 @@ void TimeshiftBuffer::internalRequestBlocks()
     char request[48];
     memset(request, 0, sizeof(request));
     snprintf(request, sizeof(request), "Range: bytes=%llu-%llu-%d", blockOffset, (blockOffset+INPUT_READ_LENGTH), m_sd.requestNumber);
-    XBMC->Log(LOG_DEBUG, "sending request: %s\n", request);
+    kodi::Log(ADDON_LOG_DEBUG, "sending request: %s\n", request);
     if (m_streamingclient->send(request, sizeof(request)) != sizeof(request))
     {
-      XBMC->Log(LOG_DEBUG, "NOT ALL BYTES SENT!");
+      kodi::Log(ADDON_LOG_DEBUG, "NOT ALL BYTES SENT!");
     }
 
     m_sd.requestBlock += INPUT_READ_LENGTH;
@@ -344,7 +340,7 @@ void TimeshiftBuffer::internalRequestBlocks()
 
 uint32_t TimeshiftBuffer::WatchForBlock(byte *buffer, uint64_t *block)
 {
-//  XBMC->Log(LOG_DEBUG, "TimeshiftBuffer::WatchForBlock()");
+//  kodi::Log(ADDON_LOG_DEBUG, "TimeshiftBuffer::WatchForBlock()");
 
   int64_t watchFor = -1;  // Any (next) block
   uint32_t returnBytes = 0;
@@ -355,7 +351,7 @@ uint32_t TimeshiftBuffer::WatchForBlock(byte *buffer, uint64_t *block)
     if (m_seek.BlockRequested())
     { // Can't watch for blocks that haven't been requested!
       watchFor = m_seek.SeekStreamOffset();
-      XBMC->Log(LOG_DEBUG, "%s:%d: watching for bloc %llu", __FUNCTION__, __LINE__, watchFor);
+      kodi::Log(ADDON_LOG_DEBUG, "%s:%d: watching for bloc %llu", __FUNCTION__, __LINE__, watchFor);
     }
     else
     {
@@ -363,14 +359,14 @@ uint32_t TimeshiftBuffer::WatchForBlock(byte *buffer, uint64_t *block)
     }
   }
   //if (watchFor == -1)
-  //  XBMC->Log(LOG_DEBUG, "waiting for next block");
+  //  kodi::Log(ADDON_LOG_DEBUG, "waiting for next block");
   //else
-  //  XBMC->Log(LOG_DEBUG, "about to wait for block with offset: %llu\n", watchFor);
+  //  kodi::Log(ADDON_LOG_DEBUG, "about to wait for block with offset: %llu\n", watchFor);
   while (retries)
   {
     if (!m_streamingclient->is_valid())
     {
-      XBMC->Log(LOG_DEBUG, "about to call receive(), socket is invalid\n");
+      kodi::Log(ADDON_LOG_DEBUG, "about to call receive(), socket is invalid\n");
       return returnBytes;
     }
 
@@ -380,10 +376,10 @@ uint32_t TimeshiftBuffer::WatchForBlock(byte *buffer, uint64_t *block)
       char response[128];
       memset(response, 0, sizeof(response));
       int responseByteCount = m_streamingclient->receive(response, sizeof(response), sizeof(response));
-      XBMC->Log(LOG_DEBUG, "%s:%d: responseByteCount: %d\n", __FUNCTION__, __LINE__, responseByteCount);
+      kodi::Log(ADDON_LOG_DEBUG, "%s:%d: responseByteCount: %d\n", __FUNCTION__, __LINE__, responseByteCount);
       if (responseByteCount > 0)
       {
-        XBMC->Log(LOG_DEBUG, "%s:%d: got: %s\n", __FUNCTION__, __LINE__, response);
+        kodi::Log(ADDON_LOG_DEBUG, "%s:%d: got: %s\n", __FUNCTION__, __LINE__, response);
       }
       else if (responseByteCount < 0)
       {
@@ -395,12 +391,8 @@ uint32_t TimeshiftBuffer::WatchForBlock(byte *buffer, uint64_t *block)
       else if (responseByteCount < 0 && errno == EAGAIN)
   #endif
       {
-#if defined(TARGET_WINDOWS)
-        Sleep(50);
-#else
-        usleep(50000);
-#endif
-        XBMC->Log(LOG_DEBUG, "got: %d", errno);
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        kodi::Log(ADDON_LOG_DEBUG, "got: %d", errno);
         retries--;
         continue;
       }
@@ -411,16 +403,16 @@ uint32_t TimeshiftBuffer::WatchForBlock(byte *buffer, uint64_t *block)
       long long fileSize;
       int dummy;
       sscanf(response, "%llu:%d %llu %d", &payloadOffset, &payloadSize, &fileSize, &dummy);
-      XBMC->Log(LOG_DEBUG, "PKT_IN: %llu:%d %llu %d", payloadOffset, payloadSize, fileSize, dummy);
+      kodi::Log(ADDON_LOG_DEBUG, "PKT_IN: %llu:%d %llu %d", payloadOffset, payloadSize, fileSize, dummy);
       if (m_sd.lastKnownLength.load() != fileSize)
       {
         m_sd.lastKnownLength.store(fileSize);
       }
-      
+
       // read response payload
       int bytesRead = 0;
 
-      do 
+      do
       {
         bytesRead = m_streamingclient->receive((char *)buffer, INPUT_READ_LENGTH, payloadSize);
 #if defined(TARGET_WINDOWS)
@@ -437,7 +429,7 @@ uint32_t TimeshiftBuffer::WatchForBlock(byte *buffer, uint64_t *block)
         returnBytes = payloadSize;
         if (m_sd.currentWindowSize > 0)
           m_sd.currentWindowSize--;
-        XBMC->Log(LOG_DEBUG, "Returning block %llu for buffering", payloadOffset);
+        kodi::Log(ADDON_LOG_DEBUG, "Returning block %llu for buffering", payloadOffset);
         break; // We want to buffer this payload.
       }
     }
@@ -455,7 +447,7 @@ bool TimeshiftBuffer::WriteData(const byte *buf, unsigned int size, uint64_t blo
     m_sd.lastBlockBuffered = blockNum;
     return true;
   }
-  XBMC->Log(LOG_ERROR, "%s:%d: Error writing block to circularBuffer!", __FUNCTION__, __LINE__);
+  kodi::Log(ADDON_LOG_ERROR, "%s:%d: Error writing block to circularBuffer!", __FUNCTION__, __LINE__);
   return false;
  }
 
@@ -478,15 +470,15 @@ bool TimeshiftBuffer::WriteData(const byte *buf, unsigned int size, uint64_t blo
      bool isPaused = m_sd.isPaused;
      time_t pauseStart = m_sd.pauseStart;
      time_t lastPauseAdjust = m_sd.lastPauseAdjust;
-     
+
      if (tsbStartTime == 0)
      {
        tsbStartTime = sessionStartTime;
      }
-     
+
      // Now perform the calculations
      time_t elapsed = now - tsbStartTime;
-     //XBMC->Log(LOG_ERROR, "TSBTimerProc: time_diff: %d, tsbStartTime: %d", elapsed, tsbStartTime);
+     //kodi::Log(ADDON_LOG_ERROR, "TSBTimerProc: time_diff: %d, tsbStartTime: %d", elapsed, tsbStartTime);
      if (elapsed > m_settings.m_timeshiftBufferSeconds)
      {
        // Roll the tsb forward
@@ -494,10 +486,10 @@ bool TimeshiftBuffer::WriteData(const byte *buf, unsigned int size, uint64_t blo
        elapsed = m_settings.m_timeshiftBufferSeconds;
        tsbStart += (tsbRoll * iBytesPerSecond);
        tsbStartTime += tsbRoll;
-       // XBMC->Log(LOG_ERROR, "startTime: %d, start: %lli, isPaused: %d, tsbRoll: %d", tsbStartTime, tsbStart, isPaused, tsbRoll);
+       // kodi::Log(ADDON_LOG_ERROR, "startTime: %d, start: %lli, isPaused: %d, tsbRoll: %d", tsbStartTime, tsbStart, isPaused, tsbRoll);
      }
      if (m_sd.isPaused)
-     { 
+     {
        if ((now > pauseStart) && (now > lastPauseAdjust))
        { // If we're paused, we stop requesting/receiving buffers, so lastKnownLength doesn't get updated. Fudge it here.
          lastKnownLength += ((now - lastPauseAdjust) * iBytesPerSecond);
@@ -507,7 +499,7 @@ bool TimeshiftBuffer::WriteData(const byte *buf, unsigned int size, uint64_t blo
 
      int totalTime = now - sessionStartTime;                // total seconds we've been tuned to this channel.
      iBytesPerSecond = totalTime ? (int )(lastKnownLength / totalTime) : 0;  // lastKnownLength (total bytes buffered) / number_of_seconds buffered.
-                       
+
      // Write everything back
      m_sd.tsbStartTime.store(tsbStartTime);
      m_sd.tsbStart.store(tsbStart);
@@ -516,41 +508,41 @@ bool TimeshiftBuffer::WriteData(const byte *buf, unsigned int size, uint64_t blo
      m_sd.ptsBegin.store((tsbStartTime - sessionStartTime) * DVD_TIME_BASE);
      m_sd.ptsEnd.store((now - sessionStartTime) * DVD_TIME_BASE);
      m_sd.lastPauseAdjust = lastPauseAdjust;
-     
-     
-//     XBMC->Log(LOG_ERROR, "tsb_start: %lli, end: %llu, B/sec: %d", 
+
+
+//     kodi::Log(ADDON_LOG_ERROR, "tsb_start: %lli, end: %llu, B/sec: %d",
 //               tsbStart, lastKnownLength, iBytesPerSecond);
 
    }
  }
- 
+
 void TimeshiftBuffer::ConsumeInput()
 {
-  XBMC->Log(LOG_DEBUG, "TimeshiftBuffer::ConsumeInput()");
+  kodi::Log(ADDON_LOG_DEBUG, "TimeshiftBuffer::ConsumeInput()");
   byte *buffer = new byte[INPUT_READ_LENGTH];
-  
+
   while (m_active)
   {
     memset(buffer, 0, INPUT_READ_LENGTH);
-    
+
     RequestBlocks();
-     
+
     uint32_t read;
     uint64_t blockNo;
     while ((read = WatchForBlock(buffer, &blockNo)))
     {
-//      XBMC->Log(LOG_DEBUG, "Processing %d byte block", read);
+//      kodi::Log(ADDON_LOG_DEBUG, "Processing %d byte block", read);
       if (WriteData(buffer, read, blockNo))
       {
         std::unique_lock<std::mutex> lock(m_mutex);
-        //XBMC->Log(LOG_DEBUG, "Data Buffered");
-        //XBMC->Log(LOG_DEBUG, "Notifying reader");
+        //kodi::Log(ADDON_LOG_DEBUG, "Data Buffered");
+        //kodi::Log(ADDON_LOG_DEBUG, "Notifying reader");
         // Signal that we have data again
         if (m_seek.Active())
         {
           if (m_seek.PostprocessSeek(blockNo))
           {
-            XBMC->Log(LOG_DEBUG, "Notify Seek");
+            kodi::Log(ADDON_LOG_DEBUG, "Notify Seek");
             m_seeker.notify_one();
           }
         }
@@ -558,7 +550,7 @@ void TimeshiftBuffer::ConsumeInput()
       }
       else
       {
-        XBMC->Log(LOG_DEBUG, "Error Buffering Data!!");
+        kodi::Log(ADDON_LOG_DEBUG, "Error Buffering Data!!");
       }
       std::this_thread::yield();
       std::unique_lock<std::mutex> lock(m_mutex);
@@ -573,6 +565,6 @@ void TimeshiftBuffer::ConsumeInput()
         break;
     }
   }
-  XBMC->Log(LOG_DEBUG, "CONSUMER THREAD IS EXITING!!!");
+  kodi::Log(ADDON_LOG_DEBUG, "CONSUMER THREAD IS EXITING!!!");
   delete[] buffer;
 }

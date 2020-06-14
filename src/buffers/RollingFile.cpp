@@ -47,10 +47,9 @@ bool RollingFile::Open(const std::string inputUrl)
   {
     m_isEpgBased = false;
   }
-  m_slipHandle = XBMC->OpenFile(ss.str().c_str(), XFILE::READ_NO_CACHE );
-  if (m_slipHandle == nullptr)
+  if (!m_slipHandle.OpenFile(ss.str(), ADDON_READ_NO_CACHE))
   {
-    XBMC->Log(LOG_ERROR,"Could not open slipHandle file");
+    kodi::Log(ADDON_LOG_ERROR, "Could not open slipHandle file");
     return false;
   }
   int waitTime = 0;
@@ -61,7 +60,7 @@ bool RollingFile::Open(const std::string inputUrl)
   do
   {
     // epgmode=true requires a 10 second pause changing channels
-    SLEEP(1000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     waitTime--;
     if ( RollingFile::GetStreamInfo())
     {
@@ -71,11 +70,11 @@ bool RollingFile::Open(const std::string inputUrl)
 
   if ( !RollingFile::GetStreamInfo())
   {
-    XBMC->Log(LOG_ERROR,"Could not read rolling file");
+    kodi::Log(ADDON_LOG_ERROR, "Could not read rolling file");
     return false;
   }
   m_rollingStartSeconds = m_streamStart = time(nullptr);
-  XBMC->Log(LOG_DEBUG, "RollingFile::Open in Rolling File Mode: %d", m_isEpgBased);
+  kodi::Log(ADDON_LOG_DEBUG, "RollingFile::Open in Rolling File Mode: %d", m_isEpgBased);
   m_activeFilename = slipFiles.back().filename;
   m_activeLength = -1;
   m_isLeaseRunning = true;
@@ -86,7 +85,7 @@ bool RollingFile::Open(const std::string inputUrl)
 
   while (m_stream_length < waitTime)
   {
-    SLEEP(500);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     RollingFile::GetStreamInfo();
   };
   return  RollingFile::RollingFileOpen();
@@ -94,12 +93,11 @@ bool RollingFile::Open(const std::string inputUrl)
 
 bool RollingFile::RollingFileOpen()
 {
-  struct PVR_RECORDING recording;
-  recording.recordingTime = time(nullptr);
-  recording.iDuration = 5 * 60 * 60;
-  memset(recording.strDirectory,0,sizeof(recording.strDirectory));
+  kodi::addon::PVRRecording recording;
+  recording.SetRecordingTime(time(nullptr));
+  recording.SetDuration(5 * 60 * 60);
   #if !defined(TESTURL)
-  strcpy(recording.strDirectory, m_activeFilename.c_str());
+  recording.SetDirectory(m_activeFilename);
   #endif
 
   #if defined(TESTURL)
@@ -112,7 +110,7 @@ bool RollingFile::RollingFileOpen()
     URL += "&bufsize=32768&wait=true";
   }
   #endif
-  return RecordingBuffer::Open(URL.c_str(),recording);
+  return RecordingBuffer::Open(URL.c_str(), recording);
 }
 
 bool RollingFile::GetStreamInfo()
@@ -131,7 +129,7 @@ bool RollingFile::GetStreamInfo()
 
   if (m_nextRoll == LLONG_MAX)
   {
-    XBMC->Log(LOG_ERROR, "NextPVR not updating completed rolling file");
+    kodi::Log(ADDON_LOG_ERROR, "NextPVR not updating completed rolling file");
     return ( m_stream_length != 0 );
   }
   if (m_request.DoRequest("/services/service?method=channel.stream.info", response) == HTTP_OK)
@@ -142,10 +140,10 @@ bool RollingFile::GetStreamInfo()
       TiXmlElement* filesNode = doc.FirstChildElement("Files");
       if (filesNode != nullptr)
       {
-        stream_length = strtoll(filesNode->FirstChildElement("Length")->GetText(),nullptr,0);
-        duration = strtoll(filesNode->FirstChildElement("Duration")->GetText(),nullptr,0);
-        XMLUtils::GetBoolean(filesNode,"Complete",m_complete);
-        XBMC->Log(LOG_DEBUG,"channel.stream.info %lld %lld %d %d",stream_length, duration,m_complete, m_bytesPerSecond.load());
+        stream_length = strtoll(filesNode->FirstChildElement("Length")->GetText(), nullptr, 0);
+        duration = strtoll(filesNode->FirstChildElement("Duration")->GetText(), nullptr, 0);
+        XMLUtils::GetBoolean(filesNode, "Complete", m_complete);
+        kodi::Log(ADDON_LOG_DEBUG, "channel.stream.info %lld %lld %d %d", stream_length, duration, m_complete, m_bytesPerSecond.load());
         if (m_complete == true)
         {
           if ( slipFiles.empty() )
@@ -168,7 +166,7 @@ bool RollingFile::GetStreamInfo()
         TiXmlElement* pFileNode;
         for( pFileNode = filesNode->FirstChildElement("File"); pFileNode; pFileNode=pFileNode->NextSiblingElement("File"))
         {
-          int64_t offset = strtoll(pFileNode->Attribute("offset"),nullptr,0);
+          int64_t offset = strtoll(pFileNode->Attribute("offset"), nullptr, 0);
 
           if (!slipFiles.empty())
           {
@@ -221,7 +219,7 @@ bool RollingFile::GetStreamInfo()
                 int startTime = std::stoi(base_sub_match.str());
                 base_sub_match = base_match[2];
                 int endTime = std::stoi(base_sub_match.str());
-                XBMC->Log(LOG_DEBUG,"channel.stream.info %d %d",startTime,endTime);
+                kodi::Log(ADDON_LOG_DEBUG, "channel.stream.info %d %d", startTime, endTime);
                 if (startTime < endTime)
                 {
                   m_nextRoll = (time(nullptr) / 60) * 60 + (endTime - startTime) * 60 - 3 + m_settings.m_serverTimeOffset;
@@ -235,7 +233,7 @@ bool RollingFile::GetStreamInfo()
             if (m_nextRoll == 0)
             {
               m_isEpgBased = false;
-              XBMC->Log(LOG_DEBUG,"Reset to Time-based %s",newFile.filename.c_str());
+              kodi::Log(ADDON_LOG_DEBUG, "Reset to Time-based %s", newFile.filename.c_str());
             }
           }
           if (!m_isEpgBased)
@@ -259,7 +257,7 @@ bool RollingFile::GetStreamInfo()
           }
           for (auto File : slipFiles )
           {
-            XBMC->Log(LOG_DEBUG,"<Files> %s %lld %lld",File.filename.c_str(),File.offset, File.length);
+            kodi::Log(ADDON_LOG_DEBUG, "<Files> %s %lld %lld", File.filename.c_str(), File.offset, File.length);
           }
           break;
         }
@@ -269,34 +267,32 @@ bool RollingFile::GetStreamInfo()
 
   if (infoReturn != OK)
   {
-    XBMC->Log(LOG_ERROR, "NextPVR not updating rolling file %d", infoReturn );
+    kodi::Log(ADDON_LOG_ERROR, "NextPVR not updating rolling file %d", infoReturn );
     m_nextStreamInfo = time(nullptr) + 1;
     return false;
   }
   m_nextStreamInfo = time(nullptr) + 10;
   return true;
 }
-PVR_ERROR RollingFile::GetStreamTimes(PVR_STREAM_TIMES *stimes)
+PVR_ERROR RollingFile::GetStreamTimes(kodi::addon::PVRStreamTimes& stimes)
 {
   if (m_isLive == false)
     return RecordingBuffer::GetStreamTimes(stimes);
-
-  stimes->startTime = m_streamStart;
-  stimes->ptsStart = 0;
-  stimes->ptsBegin = (m_rollingStartSeconds - m_streamStart)  * DVD_TIME_BASE;
-  stimes->ptsEnd = (time(nullptr) - m_streamStart) * DVD_TIME_BASE;
+  stimes.SetStartTime(m_streamStart);
+  stimes.SetPTSStart(0);
+  stimes.SetPTSBegin((m_rollingStartSeconds - m_streamStart) * DVD_TIME_BASE);
+  stimes.SetPTSEnd((time(nullptr) - m_streamStart) * DVD_TIME_BASE);
   return PVR_ERROR_NO_ERROR;
 }
 
 void RollingFile::Close()
 {
-  if (m_slipHandle != nullptr)
+  if (m_slipHandle.IsOpen())
   {
     RecordingBuffer::Close();
-    SLEEP(500);
-    XBMC->CloseFile(m_slipHandle);
-    XBMC->Log(LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
-    m_slipHandle = nullptr;
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    m_slipHandle.Close();
+    kodi::Log(ADDON_LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
   }
   m_isLeaseRunning = false;
   if (m_leaseThread.joinable())
@@ -308,11 +304,11 @@ int RollingFile::Read(byte *buffer, size_t length)
 {
   std::unique_lock<std::mutex> lock(m_mutex);
   bool foundFile = false;
-  int dataRead = (int) XBMC->ReadFile(m_inputHandle,buffer, length);
+  int dataRead = (int) m_inputHandle.Read(buffer, length);
   if (dataRead == 0)
   {
     RollingFile::GetStreamInfo();
-    if (XBMC->GetFilePosition(m_inputHandle) == m_activeLength)
+    if (m_inputHandle.GetPosition() == m_activeLength)
     {
       RecordingBuffer::Close();
       for (std::list<slipFile>::reverse_iterator File=slipFiles.rbegin(); File!=slipFiles.rend(); ++File)
@@ -323,7 +319,7 @@ int RollingFile::Read(byte *buffer, size_t length)
           if (File==slipFiles.rbegin())
           {
             // still waiting for new filename
-            XBMC->Log(LOG_ERROR, "%s:%d: waiting %s  %s", __FUNCTION__, __LINE__,File->filename.c_str(),m_activeFilename.c_str());
+            kodi::Log(ADDON_LOG_ERROR, "%s:%d: waiting %s  %s", __FUNCTION__, __LINE__, File->filename.c_str(), m_activeFilename.c_str());
           }
           else
           {
@@ -341,27 +337,27 @@ int RollingFile::Read(byte *buffer, size_t length)
         m_activeLength = slipFiles.front().length;
       }
       RollingFile::RollingFileOpen();
-      dataRead = (int) XBMC->ReadFile(m_inputHandle, buffer, length);
+      dataRead = (int) m_inputHandle.Read(buffer, length);
     }
     else
     {
-      while( XBMC->GetFilePosition(m_inputHandle) == XBMC->GetFileLength(m_inputHandle))
+      while( m_inputHandle.GetPosition() == m_inputHandle.GetLength())
       {
         RollingFile::GetStreamInfo();
         if (m_nextRoll == LLONG_MAX)
         {
-          XBMC->Log(LOG_DEBUG, "should exit %s:%d: %lld %lld %lld", __FUNCTION__, __LINE__,Length(),  XBMC->GetFileLength(m_inputHandle) ,XBMC->GetFilePosition(m_inputHandle));
+          kodi::Log(ADDON_LOG_DEBUG, "should exit %s:%d: %lld %lld %lld", __FUNCTION__, __LINE__, Length(),  m_inputHandle.GetLength() , m_inputHandle.GetPosition());
           return 0;
         }
-        XBMC->Log(LOG_DEBUG, "should exit %s:%d: %lld %lld %lld", __FUNCTION__, __LINE__,Length(),  XBMC->GetFileLength(m_inputHandle) ,XBMC->GetFilePosition(m_inputHandle));
-        SLEEP(200);
+        kodi::Log(ADDON_LOG_DEBUG, "should exit %s:%d: %lld %lld %lld", __FUNCTION__, __LINE__, Length(),  m_inputHandle.GetLength() , m_inputHandle.GetPosition());
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
       }
     }
-    XBMC->Log(LOG_DEBUG, "%s:%d: %d %d %lld %lld", __FUNCTION__, __LINE__,length, dataRead, XBMC->GetFileLength(m_inputHandle) ,XBMC->GetFilePosition(m_inputHandle));
+    kodi::Log(ADDON_LOG_DEBUG, "%s:%d: %d %d %lld %lld", __FUNCTION__, __LINE__, length, dataRead, m_inputHandle.GetLength() , m_inputHandle.GetPosition());
   }
   else if (dataRead < length)
   {
-    //XBMC->Log(LOG_DEBUG, "short read %s:%d: %lld %d", __FUNCTION__, __LINE__,length, dataRead);
+    //kodi::Log(ADDON_LOG_DEBUG, "short read %s:%d: %lld %d", __FUNCTION__, __LINE__, length, dataRead);
   }
   return dataRead;
 }
@@ -390,7 +386,7 @@ int64_t RollingFile::Seek(int64_t position, int whence)
     {
       if (position < File.offset)
       {
-        XBMC->Log(LOG_INFO,"Found slip file %s %lld",prevFile.filename.c_str(),prevFile.offset);
+        kodi::Log(ADDON_LOG_INFO, "Found slip file %s %lld", prevFile.filename.c_str(), prevFile.offset);
         adjust = prevFile.offset;
         if ( m_activeFilename != prevFile.filename)
         {
@@ -412,7 +408,7 @@ int64_t RollingFile::Seek(int64_t position, int whence)
   {
     adjust = position;
   }
-  int64_t seekval = RecordingBuffer::Seek(position - adjust,whence);
-  XBMC->Log(LOG_DEBUG, "%s:%d: %lld %d %lld", __FUNCTION__, __LINE__, position, adjust, seekval);
+  int64_t seekval = RecordingBuffer::Seek(position - adjust, whence);
+  kodi::Log(ADDON_LOG_DEBUG, "%s:%d: %lld %d %lld", __FUNCTION__, __LINE__, position, adjust, seekval);
   return seekval;
 }
