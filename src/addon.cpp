@@ -54,9 +54,8 @@ ADDON_STATUS CNextPVRAddon::CreateInstance(int instanceType,
   {
     addonInstance = g_pvrclient;
     m_usedInstances.emplace(std::make_pair(instanceID, g_pvrclient));
+    g_pvrclient->m_menuhook.ConfigureMenuHook();
   }
-
-  g_pvrclient->m_menuhook.ConfigureMenuHook();
 
   return m_CurStatus;
 }

@@ -181,7 +181,7 @@ ADDON_STATUS cPVRClientNextPVR::Connect()
   }
   else
   {
-    g_pvrclient->ConnectionStateChange("Could not connect to server", PVR_CONNECTION_STATE_SERVER_UNREACHABLE, nullptr);
+    g_pvrclient->ConnectionStateChange("Could not connect to server", PVR_CONNECTION_STATE_SERVER_UNREACHABLE, "");
     status = ADDON_STATUS_PERMANENT_FAILURE;
   }
 
@@ -292,20 +292,20 @@ PVR_ERROR cPVRClientNextPVR::OnSystemSleep()
 {
   m_lastRecordingUpdateTime = MAXINT64;
   Disconnect();
-  g_pvrclient->ConnectionStateChange("sleeping", PVR_CONNECTION_STATE_DISCONNECTED, nullptr);
+  g_pvrclient->ConnectionStateChange("sleeping", PVR_CONNECTION_STATE_DISCONNECTED, "");
   std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   return PVR_ERROR_NO_ERROR;
 }
 
 PVR_ERROR cPVRClientNextPVR::OnSystemWake()
 {
-  g_pvrclient->ConnectionStateChange("waking", PVR_CONNECTION_STATE_CONNECTING, nullptr);
+  g_pvrclient->ConnectionStateChange("waking", PVR_CONNECTION_STATE_CONNECTING, "");
   int count = 0;
   for (; count < 5; count++)
   {
     if (Connect())
     {
-      g_pvrclient->ConnectionStateChange("connected", PVR_CONNECTION_STATE_CONNECTED, nullptr);
+      g_pvrclient->ConnectionStateChange("connected", PVR_CONNECTION_STATE_CONNECTED, "");
       break;
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(500));

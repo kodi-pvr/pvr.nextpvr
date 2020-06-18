@@ -1,3 +1,7 @@
+v6.0.1
+- ConnectionStateChange needs a string message
+- assign menuhooks on success only
+
 v6.0.0
 - Change to C++ interface
 - Update PVR API 7.0.0
