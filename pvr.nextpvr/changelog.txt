@@ -1,4 +1,8 @@
 v6.0.1
+- Fix default port
+- In-progress recordings change
+
+v6.0.1
 - ConnectionStateChange needs a string message
 - assign menuhooks on success only
 
