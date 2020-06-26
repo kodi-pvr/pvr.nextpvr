@@ -157,14 +157,18 @@ bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::P
     return false;
   }
 
-  if (status == "Recording" || status == "Pending")
+  // v4 users won't see recently concluded recordings on the EPG
+  int endEpgTime = g_pvrclient->XmlGetInt(pRecordingNode, "epg_end_time_ticks");
+  if (endEpgTime > time(nullptr) - 24 * 3600)
   {
+    tag.SetEPGEventId(endEpgTime);
+  }
+  else if (status == "Recording" || status == "Pending")
+  {
+    // check for EPG based recording
     tag.SetEPGEventId(g_pvrclient->XmlGetInt(pRecordingNode, "epg_event_oid", PVR_TIMER_NO_EPG_UID));
     if (tag.GetEPGEventId() != PVR_TIMER_NO_EPG_UID)
     {
-      // EPG Event ID is likely not valid on most older recordings so current or pending only
-      // Linked tags need to be on end time because recordingTime can change because of pre-padding
-
       tag.SetEPGEventId(tag.GetRecordingTime() + tag.GetDuration());
     }
   }
@@ -205,6 +209,7 @@ bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::P
   {
     tag.SetChannelUid(PVR_CHANNEL_INVALID_UID);
   }
+
   buffer.clear();
   if (XMLUtils::GetString(pRecordingNode, "channel", buffer))
   {
