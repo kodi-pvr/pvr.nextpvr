@@ -169,6 +169,17 @@
             </dependency>
           </dependencies>
         </setting>
+        <setting help="30603" id="ffmpegdirect" label="30003" type="boolean"  parent="livestreamingmethod5">
+          <level>1</level>
+          <default>false</default>
+          <control type="toggle"/>
+          <dependencies>
+            <dependency type="visible">
+              <condition operator="is" setting="livestreamingmethod5">3</condition>
+              <condition operator="is" setting="legacy">false</condition>
+            </dependency>
+          </dependencies>
+        </setting>
       </group>
       <group id="10">
         <setting help="" id="chunklivetv" label="30167" type="integer">

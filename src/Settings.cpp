@@ -119,7 +119,7 @@ ADDON_STATUS Settings::ReadBackendSettings()
       }
 
       if (XMLUtils::GetInt(settingsDoc.RootElement(), "SlipSeconds", m_timeshiftBufferSeconds))
-        kodi::Log(ADDON_LOG_INFO, "time shift buffer in seconds == %d\n", m_timeshiftBufferSeconds);
+        kodi::Log(ADDON_LOG_INFO, "time shift buffer in seconds: %d", m_timeshiftBufferSeconds);
 
       std::string serverMac;
       if (XMLUtils::GetString(settingsDoc.RootElement(), "ServerMAC", serverMac))
@@ -198,6 +198,8 @@ void Settings::SetVersionSpecificSettings()
     m_guideArtPortrait = kodi::GetSettingBoolean("guideartworkportrait", false);
 
     m_showRecordingSize = kodi::GetSettingBoolean("recordingsize", false);
+
+    m_transcodedTimeshift = kodi::GetSettingBoolean("ffmpegdirect", false);
   }
   else
   {
@@ -300,5 +302,7 @@ ADDON_STATUS Settings::SetValue(const std::string& settingName, const kodi::CSet
     return SetSetting<int, ADDON_STATUS>(settingName, settingValue, m_chunkRecording, ADDON_STATUS_OK, ADDON_STATUS_OK);
   else if (settingName == "resolution")
     return SetStringSetting<ADDON_STATUS>(settingName, settingValue, m_resolution, ADDON_STATUS_OK, ADDON_STATUS_OK);
+  else if (settingName == "ffmpegdirect")
+    return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_transcodedTimeshift, ADDON_STATUS_OK, ADDON_STATUS_OK);
   return ADDON_STATUS_OK;
 }

@@ -10,6 +10,7 @@
 #include "TranscodedBuffer.h"
 #include "tinyxml.h"
 #include "kodi/util/XMLUtils.h"
+#include <limits>
 
 using namespace timeshift;
 
@@ -41,8 +42,8 @@ bool TranscodedBuffer::Open(const std::string inputUrl)
     {
       m_active = true;
       m_nextLease = 0;
-      m_nextStreamInfo = INT64_MAX;
-      m_nextRoll = INT64_MAX;
+      m_nextStreamInfo = std::numeric_limits<time_t>::max();
+      m_nextRoll = std::numeric_limits<time_t>::max();
       m_isLeaseRunning = true;
       m_complete = false;
       m_leaseThread = std::thread([this]()
@@ -101,7 +102,6 @@ int TranscodedBuffer::TranscodeStatus()
 
 int TranscodedBuffer::Lease()
 {
-  kodi::Log(ADDON_LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
   m_nextStreamInfo = time(nullptr) + 5;
   return true;
 }
