@@ -84,7 +84,7 @@ bool ClientTimeShift::Open(const std::string inputUrl)
     return false;
   }
 
-  if (Buffer::Open(inputUrl, 0 ) == false)
+  if (!Buffer::Open(inputUrl))
   {
     XBMC->Log(LOG_ERROR,"Could not open streaming file");
     StreamStop();
@@ -151,7 +151,7 @@ int64_t ClientTimeShift::Seek(int64_t position, int whence)
 
   if (m_stream_duration > g_timeShiftBufferSeconds)
   {
-    int64_t startSlipBuffer = m_stream_length - (g_timeShiftBufferSeconds * m_stream_length/m_stream_duration);
+    int64_t startSlipBuffer = m_stream_length - (g_timeShiftBufferSeconds * m_stream_length / m_stream_duration);
     XBMC->Log(LOG_DEBUG, "%s:%d: %lld %lld %lld", __FUNCTION__, __LINE__, startSlipBuffer, position, m_stream_length.load());
     if (position < startSlipBuffer)
       position = startSlipBuffer;
@@ -164,7 +164,7 @@ int64_t ClientTimeShift::Seek(int64_t position, int whence)
     m_streamPosition = position;
   }
   const std::string seekingInput = m_sourceURL + std::to_string(position ) + "-";
-  if ( Buffer::Open(seekingInput.c_str(), 0) == false)
+  if (!Buffer::Open(seekingInput.c_str()))
   {
     XBMC->Log(LOG_ERROR, "Could not open file on seek");
     return  -1;

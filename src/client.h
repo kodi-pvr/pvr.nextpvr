@@ -77,8 +77,6 @@ extern int g_ServerTimeOffset;
 
 typedef unsigned char byte;
 
-#define READ_NO_CACHE 0
-
 /*!
  * @brief PVR macros for string exchange
  */

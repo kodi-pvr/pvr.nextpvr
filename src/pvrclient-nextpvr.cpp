@@ -1412,17 +1412,32 @@ PVR_ERROR cPVRClientNextPVR::GetTimers(ADDON_HANDLE handle)
         tag.iTimerType = pRulesNode->FirstChildElement("EPGTitle") ? TIMER_REPEATING_EPG : TIMER_REPEATING_MANUAL;
 
         // start/end time
-        if (pRulesNode->FirstChildElement("StartTimeTicks") != NULL)
+        int recordingType = 0;
+
+        if (!XMLUtils::GetInt(pRecurringNode, "type", recordingType))
         {
-          tag.startTime = atol(pRulesNode->FirstChildElement("StartTimeTicks")->FirstChild()->Value());
-          if (tag.startTime < time(nullptr))
+          std::string period;
+          if (XMLUtils::GetString(pRecurringNode, "period", period))
           {
-            tag.startTime = 0;
+            if (StringUtils::StartsWith(period, "All "))
+            {
+              // there is also a new flag so this can be 1 or 2
+              recordingType = 1;
+            }
           }
-          else
-          {
-            tag.endTime = atol(pRulesNode->FirstChildElement("EndTimeTicks")->FirstChild()->Value());
-          }
+        }
+
+        if (recordingType == 1 || recordingType == 2)
+        {
+          tag.startTime = 0;
+          tag.endTime = 0;
+          tag.bStartAnyTime = true;
+          tag.bEndAnyTime = true;
+        }
+        else if (pRulesNode->FirstChildElement("StartTimeTicks") != NULL)
+        {
+          tag.startTime = atoll(pRulesNode->FirstChildElement("StartTimeTicks")->FirstChild()->Value());
+          tag.endTime = atoll(pRulesNode->FirstChildElement("EndTimeTicks")->FirstChild()->Value());
         }
 
         // keyword recordings
