@@ -269,12 +269,7 @@ bool Timers::UpdatePvrTimer(TiXmlElement* pRecordingNode, kodi::addon::PVRTimer&
     else
       tag.SetTimerType(TIMER_ONCE_MANUAL_CHILD);
   }
-  tag.SetEPGUid(g_pvrclient->XmlGetUInt(pRecordingNode, "epg_event_oid", PVR_TIMER_NO_EPG_UID));
-  if (tag.GetEPGUid() != PVR_TIMER_NO_EPG_UID)
-  {
-    kodi::Log(ADDON_LOG_DEBUG, "Setting timer epg id %d %d", tag.GetClientIndex(), tag.GetEPGUid());
-  }
-
+  
   tag.SetMarginStart(g_pvrclient->XmlGetUInt(pRecordingNode, "pre_padding"));
   tag.SetMarginEnd(g_pvrclient->XmlGetUInt(pRecordingNode, "post_padding"));
 
@@ -294,6 +289,21 @@ bool Timers::UpdatePvrTimer(TiXmlElement* pRecordingNode, kodi::addon::PVRTimer&
   buffer.clear();
   XMLUtils::GetString(pRecordingNode, "duration_seconds", buffer);
   tag.SetEndTime(tag.GetStartTime() + std::stoll(buffer));
+
+  if (tag.GetTimerType() == TIMER_ONCE_EPG || tag.GetTimerType() == TIMER_ONCE_EPG_CHILD)
+  {
+    tag.SetEPGUid(g_pvrclient->XmlGetUInt(pRecordingNode, "epg_end_time_ticks", PVR_TIMER_NO_EPG_UID));
+
+    // version 4 and some versions of v5 won't support the epg end time
+    if (tag.GetEPGUid() == PVR_TIMER_NO_EPG_UID)
+      tag.SetEPGUid(tag.GetEndTime());
+
+    if (tag.GetEPGUid() != PVR_TIMER_NO_EPG_UID)
+    {
+      kodi::Log(ADDON_LOG_DEBUG, "Setting timer epg id %d %d", tag.GetClientIndex(), tag.GetEPGUid());
+    }
+
+  }
 
   tag.SetState(PVR_TIMER_STATE_SCHEDULED);
 

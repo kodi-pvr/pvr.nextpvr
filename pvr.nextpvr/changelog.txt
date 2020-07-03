@@ -1,3 +1,9 @@
+v6.0.2
+- Fix default port
+- In-progress recordings change
+- Adjust timer and recording tag uid
+- Update setting with backend version
+
 v6.0.1
 - ConnectionStateChange needs a string message
 - assign menuhooks on success only

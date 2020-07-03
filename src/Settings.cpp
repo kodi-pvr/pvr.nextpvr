@@ -143,6 +143,13 @@ ADDON_STATUS Settings::ReadBackendSettings()
 void Settings::SetVersionSpecificSettings()
 {
   m_liveStreamingMethod = DEFAULT_LIVE_STREAM;
+
+  if ((m_backendVersion < 50000) != kodi::GetSettingBoolean("legacy", false))
+  {
+    kodi::SetSettingEnum<eStreamingMethod>("livestreamingmethod5", eStreamingMethod::Default);
+    kodi::SetSettingBoolean("legacy", m_backendVersion < 50000);
+  }
+
   eStreamingMethod streamingMethod;
   if (kodi::CheckSettingEnum<eStreamingMethod>("livestreamingmethod", streamingMethod))
   {

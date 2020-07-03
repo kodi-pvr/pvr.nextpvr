@@ -25,12 +25,17 @@ int RecordingBuffer::Duration(void)
   if (m_recordingTime)
   {
     std::unique_lock<std::mutex> lock(m_mutex);
-    time_t endTime =  time(nullptr);
-    int diff = (int) (endTime - m_recordingTime -10);
+    int diff = static_cast<int>(time(nullptr) - m_recordingTime) - 15;
     if (diff > 0)
+    {
       m_isLive = true;
+      diff += 15;
+    }
     else
+    {
       m_isLive = false;
+      diff = 0;
+    }
     return diff;
   }
   else
@@ -79,11 +84,15 @@ int RecordingBuffer::Read(byte *buffer, size_t length)
   if (dataRead == 0 && m_isLive)
   {
     kodi::Log(ADDON_LOG_DEBUG, "%s:%d: %lld %lld", __FUNCTION__, __LINE__, m_inputHandle.GetLength() , m_inputHandle.GetPosition());
-    int64_t position = m_inputHandle.GetPosition();
-    Buffer::Close();
-    Buffer::Open(m_recordingURL, ADDON_READ_NO_CACHE);
-    Seek(position, 0);
-    dataRead = (int) m_inputHandle.Read(buffer, length);
+    const int64_t position = m_inputHandle.GetPosition();
+    const time_t startTime = time(nullptr);
+    do {
+      Buffer::Close();
+      std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+      Buffer::Open(m_recordingURL);
+      Seek(position, 0);
+      dataRead = static_cast<int>(m_inputHandle.Read(buffer, length));
+    } while (dataRead == 0 && time(nullptr) - startTime < 5);
     kodi::Log(ADDON_LOG_DEBUG, "%s:%d: %lld %lld", __FUNCTION__, __LINE__, m_inputHandle.GetLength() , m_inputHandle.GetPosition());
   }
   return dataRead;
