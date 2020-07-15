@@ -334,7 +334,7 @@ PVR_ERROR cPVRClientNextPVR::OnSystemWake()
   int count = 0;
   for (; count < 5; count++)
   {
-    if (Connect())
+    if (Connect() == ADDON_STATUS_OK)
     {
       g_pvrclient->ConnectionStateChange("connected", PVR_CONNECTION_STATE_CONNECTED, "");
       break;
