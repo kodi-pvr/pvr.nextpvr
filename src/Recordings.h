@@ -18,7 +18,7 @@
 namespace NextPVR
 {
 
-  class Recordings
+  class ATTRIBUTE_HIDDEN Recordings
   {
 
   public:

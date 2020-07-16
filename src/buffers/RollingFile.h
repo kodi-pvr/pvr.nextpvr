@@ -21,7 +21,7 @@ namespace timeshift {
    * Dummy buffer that just passes all calls through to the input file
    * handle without actually buffering anything
    */
-  class RollingFile : public RecordingBuffer
+  class ATTRIBUTE_HIDDEN RollingFile : public RecordingBuffer
   {
   private:
     std::string m_activeFilename;

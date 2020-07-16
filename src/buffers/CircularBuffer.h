@@ -17,7 +17,7 @@
 
 namespace timeshift {
 
-  class CircularBuffer {
+  class ATTRIBUTE_HIDDEN CircularBuffer {
   public:
     CircularBuffer(int size) : m_iBytes(0), m_iReadPos(0), m_iWritePos(0), m_iSize(size) { m_cBuffer = new byte[m_iSize]; }
     ~CircularBuffer() { delete[] m_cBuffer; }

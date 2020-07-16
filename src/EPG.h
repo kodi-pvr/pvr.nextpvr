@@ -19,7 +19,7 @@
 
 namespace NextPVR
 {
-  class EPG
+  class ATTRIBUTE_HIDDEN EPG
   {
   public:
     /**

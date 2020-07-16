@@ -18,7 +18,7 @@ namespace timeshift {
    * Dummy buffer that just passes all calls through to the input file
    * handle without actually buffering anything
    */
-  class RecordingBuffer : public Buffer
+  class ATTRIBUTE_HIDDEN RecordingBuffer : public Buffer
   {
   private:
     int m_Duration;

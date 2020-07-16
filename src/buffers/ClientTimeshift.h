@@ -17,7 +17,7 @@ using namespace NextPVR;
 
 namespace timeshift {
 
-  class ClientTimeShift : public RollingFile
+  class ATTRIBUTE_HIDDEN ClientTimeShift : public RollingFile
   {
   private:
     bool m_isPaused = false;
