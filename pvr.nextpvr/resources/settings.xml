@@ -101,7 +101,7 @@
           </constraints>
           <dependencies>
             <dependency type="visible">
-              <condition operator="is" setting="livestreamingmethod">2</condition>
+              <condition operator="is" setting="livestreamingmethod">1</condition>
               <condition operator="is" setting="legacy">true</condition>
             </dependency>
           </dependencies>
@@ -164,7 +164,7 @@
           </control>
           <dependencies>
             <dependency type="visible">
-              <condition operator="is" setting="livestreamingmethod5">2</condition>
+              <condition operator="is" setting="livestreamingmethod5">0</condition>
               <condition operator="is" setting="legacy">false</condition>
             </dependency>
           </dependencies>

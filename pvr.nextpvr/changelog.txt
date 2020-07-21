@@ -1,6 +1,7 @@
 v6.0.3
 - Optionally use timeshifted transcoded streaming via inputstream.ffmpegdirect
 - Fix for incorect OnSystemWake loop exit after c++ conversion change
+- The prebuffer slider was not matched with the correct selection
 
 v6.0.2
 - Fix default port
