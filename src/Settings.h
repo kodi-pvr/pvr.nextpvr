@@ -92,6 +92,7 @@ namespace NextPVR
     //Recordings
     bool m_showRecordingSize = false;
     bool m_flattenRecording = false;
+    bool m_separateSeasons = true;
     bool m_kodiLook = false;
     int m_chunkRecording = 32;
 

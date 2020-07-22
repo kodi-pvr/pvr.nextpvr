@@ -53,6 +53,8 @@ void Settings::ReadFromAddon()
 
   m_flattenRecording = kodi::GetSettingBoolean("flattenrecording", false);
 
+  m_separateSeasons = kodi::GetSettingBoolean("separateseasons", false);
+
   m_kodiLook = kodi::GetSettingBoolean("kodilook", false);
 
   m_prebuffer = kodi::GetSettingInt("prebuffer", 8);
@@ -286,6 +288,8 @@ ADDON_STATUS Settings::SetValue(const std::string& settingName, const kodi::CSet
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_showRecordingSize, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
   else if (settingName == "flattenrecording")
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_flattenRecording, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
+  else if (settingName == "separateseasons")
+    return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_separateSeasons, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
   else if (settingName == "kodilook")
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_kodiLook, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
   else if (settingName == "host_mac")
