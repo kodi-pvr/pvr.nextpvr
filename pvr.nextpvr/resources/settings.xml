@@ -101,7 +101,7 @@
           </constraints>
           <dependencies>
             <dependency type="visible">
-              <condition operator="is" setting="livestreamingmethod">2</condition>
+              <condition operator="is" setting="livestreamingmethod">1</condition>
               <condition operator="is" setting="legacy">true</condition>
             </dependency>
           </dependencies>
@@ -164,7 +164,18 @@
           </control>
           <dependencies>
             <dependency type="visible">
-              <condition operator="is" setting="livestreamingmethod5">2</condition>
+              <condition operator="is" setting="livestreamingmethod5">0</condition>
+              <condition operator="is" setting="legacy">false</condition>
+            </dependency>
+          </dependencies>
+        </setting>
+        <setting help="30603" id="ffmpegdirect" label="30003" type="boolean"  parent="livestreamingmethod5">
+          <level>1</level>
+          <default>false</default>
+          <control type="toggle"/>
+          <dependencies>
+            <dependency type="visible">
+              <condition operator="is" setting="livestreamingmethod5">3</condition>
               <condition operator="is" setting="legacy">false</condition>
             </dependency>
           </dependencies>

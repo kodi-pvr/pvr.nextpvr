@@ -98,6 +98,15 @@ cPVRClientNextPVR::cPVRClientNextPVR(const CNextPVRAddon& base, KODI_HANDLE inst
 
 cPVRClientNextPVR::~cPVRClientNextPVR()
 {
+  if (m_nowPlaying != NotPlaying)
+  {
+    // this is likley only needed for transcoding but include all cases
+    if (m_nowPlaying == Recording)
+      CloseRecordedStream();
+    else
+      CloseLiveStream();
+  }
+
   StopThread();
 
   kodi::Log(ADDON_LOG_DEBUG, "->~cPVRClientNextPVR()");
@@ -200,6 +209,28 @@ void cPVRClientNextPVR::ConfigurePostConnectionOptions()
   {
     delete m_timeshiftBuffer;
     m_supportsLiveTimeshift = true;
+
+    if (m_settings.m_liveStreamingMethod == eStreamingMethod::Transcoded && m_settings.m_transcodedTimeshift)
+    {
+      std::string version;
+      bool enabled;
+      const std::string addonName = "inputstream.ffmpegdirect";
+
+      if (kodi::IsAddonAvailable(addonName, version, enabled))
+      {
+        if (!enabled)
+        {
+          kodi::Log(ADDON_LOG_INFO, "%s installed but not enabled at startup", addonName.c_str());
+          kodi::QueueFormattedNotification(QueueMsg::QUEUE_ERROR, kodi::GetLocalizedString(30191).c_str(), addonName.c_str());
+        }
+      }
+      else // Not installed
+      {
+        kodi::Log(ADDON_LOG_INFO, "%s not installed", addonName.c_str());
+        kodi::QueueFormattedNotification(QueueMsg::QUEUE_ERROR, kodi::GetLocalizedString(30192).c_str(), addonName.c_str());
+      }
+    }
+
     if (m_settings.m_liveStreamingMethod == eStreamingMethod::Transcoded)
     {
       m_supportsLiveTimeshift = false;
@@ -303,7 +334,7 @@ PVR_ERROR cPVRClientNextPVR::OnSystemWake()
   int count = 0;
   for (; count < 5; count++)
   {
-    if (Connect())
+    if (Connect() == ADDON_STATUS_OK)
     {
       g_pvrclient->ConnectionStateChange("connected", PVR_CONNECTION_STATE_CONNECTED, "");
       break;
@@ -430,6 +461,12 @@ PVR_ERROR cPVRClientNextPVR::GetChannelStreamProperties(const kodi::addon::PVRCh
     {
       kodi::Log(ADDON_LOG_ERROR, "Transcoding Error");
       return PVR_ERROR_FAILED;
+    }
+    if (m_settings.m_transcodedTimeshift)
+    {
+      properties.emplace_back(PVR_STREAM_PROPERTY_INPUTSTREAM, "inputstream.ffmpegdirect");
+      properties.emplace_back("inputstream.ffmpegdirect.stream_mode", "timeshift");
+      properties.emplace_back("inputstream.ffmpegdirect.manifest_type", "hls");
     }
     properties.emplace_back(PVR_STREAM_PROPERTY_STREAMURL, line);
     properties.emplace_back(PVR_STREAM_PROPERTY_ISREALTIMESTREAM, "true");

@@ -32,6 +32,10 @@ msgctxt "#30003"
 msgid "Enable timeshift with live TV"
 msgstr ""
 
+msgctxt "#30603"
+msgid "Open settings dialog for inputstream.ffmpegdirect for modification of timeshift settings"
+msgstr ""
+
 msgctxt "#30004"
 msgid "Download TV guide artwork"
 msgstr ""
@@ -276,4 +280,12 @@ msgstr ""
 
 msgctxt "#30190"
 msgid "Timeshifting disabled"
+msgstr ""
+
+msgctxt "#30191"
+msgid "%s is not enabled"
+msgstr ""
+
+msgctxt "#30192"
+msgid "%s is not installed"
 msgstr ""

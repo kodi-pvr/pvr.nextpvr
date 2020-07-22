@@ -108,6 +108,7 @@ namespace NextPVR
     int m_prebuffer = 8;
     int m_prebuffer5 = 0;
     std::string m_resolution = "720";
+    bool m_transcodedTimeshift = false;
 
   private:
 

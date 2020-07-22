@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon
   id="pvr.nextpvr"
-  version="6.0.2"
+  version="6.0.3"
   name="NextPVR PVR Client"
   provider-name="Graeme Blackley">
-  <requires>@ADDON_DEPENDS@</requires>
+  <requires>@ADDON_DEPENDS@
+    <import addon="inputstream.ffmpegdirect" minversion="1.15.0" optional="true"/>
+  </requires>
   <extension
     point="kodi.pvrclient"
     library_@PLATFORM@="@LIBRARY_FILENAME@"/>
