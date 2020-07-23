@@ -56,6 +56,8 @@ namespace NextPVR
       return settings;
     }
     ADDON_STATUS ReadBackendSettings();
+    bool GetConnection();
+    void SetConnection(bool status);
     void SetVersionSpecificSettings();
     bool SaveSettings(std::string name, std::string value);
     void UpdateServerPort(std::string host, int port)
@@ -76,6 +78,7 @@ namespace NextPVR
     std::string m_PIN = "";
     bool m_enableWOL = false;
     int m_timeoutWOL = 0;
+    bool m_connectionConfirmed = false;
 
     //General
     int m_backendVersion = 0;

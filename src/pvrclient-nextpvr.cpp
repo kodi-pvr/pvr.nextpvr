@@ -129,7 +129,7 @@ ADDON_STATUS cPVRClientNextPVR::Connect()
   ADDON_STATUS status = ADDON_STATUS_UNKNOWN;
   // initiate session
   std::string response;
-
+  SetConnectionState("Connecting", PVR_CONNECTION_STATE_CONNECTING);
   SendWakeOnLan();
   if (m_request.DoRequest("/service?method=session.initiate&ver=1.0&device=xbmc", response) == HTTP_OK)
   {
@@ -170,12 +170,14 @@ ADDON_STATUS cPVRClientNextPVR::Connect()
             // set additional options based on the backend
             ConfigurePostConnectionOptions();
             m_bConnected = true;
+            m_settings.SetConnection(true);
+            SetConnectionState("Connected", PVR_CONNECTION_STATE_CONNECTED);
             kodi::Log(ADDON_LOG_DEBUG, "session.login successful");
             status = ADDON_STATUS_OK;
           }
           else
           {
-            g_pvrclient->ConnectionStateChange("Version failure", PVR_CONNECTION_STATE_VERSION_MISMATCH, kodi::GetLocalizedString(30050));
+            SetConnectionState("Version failure", PVR_CONNECTION_STATE_VERSION_MISMATCH, kodi::GetLocalizedString(30050));
             m_bConnected = false;
             status = ADDON_STATUS_PERMANENT_FAILURE;
           }
@@ -183,17 +185,24 @@ ADDON_STATUS cPVRClientNextPVR::Connect()
         else
         {
           kodi::Log(ADDON_LOG_DEBUG, "session.login failed");
-          g_pvrclient->ConnectionStateChange("Access denied", PVR_CONNECTION_STATE_ACCESS_DENIED, kodi::GetLocalizedString(30052));
+          SetConnectionState("Access denied", PVR_CONNECTION_STATE_ACCESS_DENIED, kodi::GetLocalizedString(30052));
           m_bConnected = false;
-          status = ADDON_STATUS_LOST_CONNECTION;
+          status = ADDON_STATUS_PERMANENT_FAILURE;
         }
       }
     }
   }
   else
   {
-    g_pvrclient->ConnectionStateChange("Could not connect to server", PVR_CONNECTION_STATE_SERVER_UNREACHABLE, "");
-    status = ADDON_STATUS_PERMANENT_FAILURE;
+    SetConnectionState("Could not connect to server", PVR_CONNECTION_STATE_SERVER_UNREACHABLE);
+    if (m_settings.m_connectionConfirmed)
+    {
+      status = ADDON_STATUS_UNKNOWN;
+    }
+    else
+    {
+      status = ADDON_STATUS_PERMANENT_FAILURE;
+    }
   }
 
   return status;
@@ -308,6 +317,14 @@ bool cPVRClientNextPVR::IsUp()
       m_livePlayer = nullptr;
     }
   }
+  else if (m_connectionState == PVR_CONNECTION_STATE_SERVER_UNREACHABLE)
+  {
+    if (time(nullptr) > m_nextServerCheck)
+    {
+      m_nextServerCheck = time(nullptr) + 60;
+      Connect();
+    }
+  }
   return m_bConnected;
 }
 
@@ -325,20 +342,19 @@ PVR_ERROR cPVRClientNextPVR::OnSystemSleep()
 {
   m_lastRecordingUpdateTime = MAXINT64;
   Disconnect();
-  g_pvrclient->ConnectionStateChange("sleeping", PVR_CONNECTION_STATE_DISCONNECTED, "");
+  SetConnectionState("Sleeping", PVR_CONNECTION_STATE_DISCONNECTED);
   std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   return PVR_ERROR_NO_ERROR;
 }
 
 PVR_ERROR cPVRClientNextPVR::OnSystemWake()
 {
-  g_pvrclient->ConnectionStateChange("waking", PVR_CONNECTION_STATE_CONNECTING, "");
+  SetConnectionState("Waking", PVR_CONNECTION_STATE_CONNECTING);
   int count = 0;
   for (; count < 5; count++)
   {
     if (Connect() == ADDON_STATUS_OK)
     {
-      g_pvrclient->ConnectionStateChange("connected", PVR_CONNECTION_STATE_CONNECTED, "");
       break;
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -351,7 +367,7 @@ void cPVRClientNextPVR::SendWakeOnLan()
 {
   if (m_settings.m_enableWOL == true)
   {
-    if (m_settings.m_hostname == "127.0.0.1" || m_settings.m_hostname == "localhost" || m_settings.m_hostname == "::1")
+    if (kodi::network::IsLocalHost(m_settings.m_hostname) || !kodi::network::IsHostOnLAN(m_settings.m_hostname, true))
     {
       return;
     }
@@ -369,43 +385,36 @@ void cPVRClientNextPVR::SendWakeOnLan()
   }
 }
 
+void cPVRClientNextPVR::SetConnectionState(std::string message, PVR_CONNECTION_STATE state, std::string displayMessage)
+{
+ g_pvrclient->ConnectionStateChange(message, state, displayMessage);
+ m_connectionState = state;
+}
+
 /************************************************************/
 /** General handling */
 
 // Used among others for the server name string in the "Recordings" view
 PVR_ERROR cPVRClientNextPVR::GetBackendName(std::string& name)
 {
-  if (!m_bConnected)
-  {
-    PVR_ERROR_SERVER_ERROR;
-  }
-
-  kodi::Log(ADDON_LOG_DEBUG, "->GetBackendName()");
-
-  if (m_BackendName.length() == 0)
-  {
-    m_BackendName = "NextPVR (";
-    m_BackendName += m_settings.m_hostname;
-    m_BackendName += ")";
-    name = m_BackendName;
-  }
-
+  name = "NextPVR";
   return PVR_ERROR_NO_ERROR;
 }
 
 PVR_ERROR cPVRClientNextPVR::GetBackendVersion(std::string& version)
 {
-  if (!m_bConnected)
-    return PVR_ERROR_SERVER_ERROR;
-
-  kodi::Log(ADDON_LOG_DEBUG, "->GetBackendVersion()");
-  version = std::to_string(m_settings.m_backendVersion);
+  if (m_bConnected)
+    version = std::to_string(m_settings.m_backendVersion);
+  else
+    version = kodi::GetLocalizedString(13205);
   return PVR_ERROR_NO_ERROR;
 }
 
 PVR_ERROR cPVRClientNextPVR::GetConnectionString(std::string& connection)
 {
-  connection = "Connected";
+  connection = m_settings.m_hostname;
+  if (!m_bConnected)
+    connection += ": " + kodi::GetLocalizedString(15208);
   return PVR_ERROR_NO_ERROR;
 }
 
@@ -413,10 +422,6 @@ PVR_ERROR cPVRClientNextPVR::GetDriveSpace(uint64_t& total, uint64_t& used)
 {
   total = 0;
   used = 0;
-
-  if (!m_bConnected)
-    return PVR_ERROR_SERVER_ERROR;
-
   return PVR_ERROR_NO_ERROR;
 }
 

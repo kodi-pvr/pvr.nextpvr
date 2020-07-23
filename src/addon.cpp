@@ -14,7 +14,6 @@
  */
 
 /* Client member variables */
-ADDON_STATUS m_CurStatus = ADDON_STATUS_UNKNOWN;
 cPVRClientNextPVR *g_pvrclient = nullptr;
 
 NextPVR::Settings& settings = NextPVR::Settings::GetInstance();
@@ -48,16 +47,17 @@ ADDON_STATUS CNextPVRAddon::CreateInstance(int instanceType,
 
   /* Create connection to NextPVR KODI TV client */
   g_pvrclient = new cPVRClientNextPVR(*this, instance, version);
-  m_CurStatus = g_pvrclient->Connect();
+  m_curStatus = g_pvrclient->Connect();
 
-  if (m_CurStatus == ADDON_STATUS_OK)
+  if (m_curStatus != ADDON_STATUS_PERMANENT_FAILURE)
   {
+    m_curStatus = ADDON_STATUS_OK;
     addonInstance = g_pvrclient;
     m_usedInstances.emplace(std::make_pair(instanceID, g_pvrclient));
     g_pvrclient->m_menuhook.ConfigureMenuHook();
   }
 
-  return m_CurStatus;
+  return m_curStatus;
 }
 
 //-- Destroy ------------------------------------------------------------------

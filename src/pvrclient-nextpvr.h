@@ -113,6 +113,7 @@ public:
   Recordings& m_recordings = Recordings::GetInstance();
   Timers& m_timers = Timers::GetInstance();
   int64_t m_lastRecordingUpdateTime;
+  time_t m_nextServerCheck = 0;
   char m_sid[64];
 
   PVR_ERROR GetCapabilities(kodi::addon::PVRCapabilities& capabilities) override;
@@ -153,7 +154,6 @@ private:
   void Close();
 
   bool m_bConnected;
-  std::string m_BackendName;
 
   bool m_supportsLiveTimeshift;
 
@@ -169,6 +169,8 @@ private:
   NextPVR::Request& m_request = NextPVR::Request::GetInstance();
 
   eNowPlaying m_nowPlaying = NotPlaying;
+  void SetConnectionState(std::string message, PVR_CONNECTION_STATE state, std::string displayMessage="");
+  PVR_CONNECTION_STATE m_connectionState = PVR_CONNECTION_STATE_UNKNOWN;
 
   void SendWakeOnLan();
 

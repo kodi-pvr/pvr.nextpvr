@@ -19,6 +19,8 @@
 using namespace NextPVR;
 using namespace NextPVR::utilities;
 
+const std::string connectionFlag = "special://userdata/addon_data/pvr.nextpvr/connection.flag";
+
 /***************************************************************************
  * PVR settings
  **************************************************************************/
@@ -68,6 +70,8 @@ void Settings::ReadFromAddon()
   m_resolution = kodi::GetSettingString("resolution",  "720");
 
   m_showRadio = kodi::GetSettingBoolean("showradio", true);
+
+  m_connectionConfirmed = kodi::vfs::FileExists(connectionFlag);
 
   /* Log the current settings for debugging purposes */
   kodi::Log(ADDON_LOG_DEBUG, "settings: host='%s', port=%i, mac=%4.4s...", m_hostname.c_str(), m_port, m_hostMACAddress.c_str());
@@ -142,6 +146,21 @@ ADDON_STATUS Settings::ReadBackendSettings()
     }
   }
   return ADDON_STATUS_OK;
+}
+
+void Settings::SetConnection(bool status)
+{
+  if (status == true)
+  {
+      kodi::vfs::CFile outputFile;
+      outputFile.OpenFileForWrite(connectionFlag);
+      m_connectionConfirmed = true;
+  }
+  else
+  {
+    kodi::vfs::DeleteFile(connectionFlag);
+    m_connectionConfirmed = false;
+  }
 }
 
 void Settings::SetVersionSpecificSettings()
@@ -273,7 +292,13 @@ ADDON_STATUS Settings::SetValue(const std::string& settingName, const kodi::CSet
     return ADDON_STATUS_OK;
   }
   if (settingName == "host")
-    return SetStringSetting<ADDON_STATUS>(settingName, settingValue, m_hostname, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
+  {
+    if (SetStringSetting<ADDON_STATUS>(settingName, settingValue, m_hostname, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK) == ADDON_STATUS_NEED_RESTART)
+    {
+      SetConnection(false);
+      return ADDON_STATUS_NEED_RESTART;
+    }
+  }
   else if (settingName == "port")
     return SetSetting<int, ADDON_STATUS>(settingName, settingValue, m_port, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
   else if (settingName == "pin")
