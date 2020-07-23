@@ -8,12 +8,12 @@
 
 
 #include "TranscodedBuffer.h"
+#include "../utilities/XMLUtils.h"
 #include "tinyxml.h"
-#include "kodi/util/XMLUtils.h"
 #include <limits>
 
+using namespace NextPVR::utilities;
 using namespace timeshift;
-
 
 bool TranscodedBuffer::Open(const std::string inputUrl)
 {

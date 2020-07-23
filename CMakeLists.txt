@@ -4,12 +4,10 @@ project(pvr.nextpvr)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
 
 find_package(Kodi REQUIRED)
-find_package(kodiplatform REQUIRED)
 find_package(p8-platform REQUIRED)
 find_package(TinyXML REQUIRED)
 
 include_directories(${p8-platform_INCLUDE_DIRS}
-                    ${kodiplatform_INCLUDE_DIRS}
                     ${TINYXML_INCLUDE_DIR}
                     ${KODI_INCLUDE_DIR}/..) # Hack way with "/..", need bigger Kodi cmake rework to match right include ways
 
@@ -57,10 +55,10 @@ set(NEXTPVR_HEADERS src/addon.h
                     src/buffers/RecordingBuffer.h
                     src/buffers/CircularBuffer.h
                     src/buffers/RollingFile.h
-                    src/buffers/Seeker.h)
+                    src/buffers/Seeker.h
+                    src/utilities/XMLUtils.h)
 
 SET(DEPLIBS ${p8-platform_LIBRARIES}
-            ${kodiplatform_LIBRARIES}
             ${TINYXML_LIBRARIES})
 if(WIN32)
   list(APPEND DEPLIBS ws2_32)

@@ -7,13 +7,15 @@
  */
 
 #include "Timers.h"
+#include "utilities/XMLUtils.h"
+
 #include "pvrclient-nextpvr.h"
-#include "kodi/util/XMLUtils.h"
 #include <kodi/General.h>
 #include <p8-platform/util/StringUtils.h>
 #include <string>
 
 using namespace NextPVR;
+using namespace NextPVR::utilities;
 
 /************************************************************/
 /** Timer handling */

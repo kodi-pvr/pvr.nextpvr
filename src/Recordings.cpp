@@ -7,8 +7,8 @@
  */
 
 #include "Recordings.h"
+#include "utilities/XMLUtils.h"
 
-#include "kodi/util/XMLUtils.h"
 #include <kodi/General.h>
 #include "pvrclient-nextpvr.h"
 
@@ -17,6 +17,7 @@
 #include <p8-platform/util/StringUtils.h>
 
 using namespace NextPVR;
+using namespace NextPVR::utilities;
 
 /************************************************************/
 /** Record handling **/

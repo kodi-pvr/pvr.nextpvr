@@ -9,7 +9,7 @@
 #include "pvrclient-nextpvr.h"
 
 #include "BackendRequest.h"
-#include "kodi/util/XMLUtils.h"
+#include "utilities/XMLUtils.h"
 #include "kodi/General.h"
 #include <kodi/Network.h>
 #include "md5.h"
@@ -20,6 +20,8 @@
 #include <stdlib.h>
 
 #include <p8-platform/util/StringUtils.h>
+
+using namespace NextPVR::utilities;
 
 #if defined(TARGET_WINDOWS)
 #define atoll(S) _atoi64(S)

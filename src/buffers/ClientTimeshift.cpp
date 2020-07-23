@@ -9,11 +9,12 @@
 
 #include "ClientTimeshift.h"
 #include  "../BackendRequest.h"
+#include "../utilities/XMLUtils.h"
 #include <kodi/General.h>
-#include "kodi/util/XMLUtils.h"
 #include "tinyxml.h"
 
 using namespace timeshift;
+using namespace NextPVR::utilities;
 
 bool ClientTimeShift::Open(const std::string inputUrl)
 {
