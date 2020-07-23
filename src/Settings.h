@@ -88,6 +88,7 @@ namespace NextPVR
     bool m_downloadGuideArtwork = false;
     bool m_sendSidWithMetadata = false;
     bool m_guideArtPortrait = false;
+    bool m_genreString = false;
 
     //Recordings
     bool m_showRecordingSize = false;

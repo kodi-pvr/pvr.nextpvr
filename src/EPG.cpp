@@ -122,6 +122,12 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
             }
             broadcast.SetGenreDescription(allGenres);
           }
+          else if (m_settings.m_genreString && broadcast.GetGenreSubType() != EPG_GENRE_USE_STRING)
+          {
+            broadcast.SetGenreDescription(allGenres);
+            broadcast.SetGenreSubType(EPG_GENRE_USE_STRING);
+          }
+
         }
         broadcast.SetSeriesNumber(g_pvrclient->XmlGetInt(pListingNode, "season", EPG_TAG_INVALID_SERIES_EPISODE));
         broadcast.SetEpisodeNumber(g_pvrclient->XmlGetInt(pListingNode, "episode", EPG_TAG_INVALID_SERIES_EPISODE));

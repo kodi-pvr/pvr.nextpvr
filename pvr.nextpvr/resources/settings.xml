@@ -279,6 +279,16 @@
             </dependency>
           </dependencies>
         </setting>
+        <setting help="30694" id="genrestring" label="30194" type="boolean">
+          <level>1</level>
+          <default>false</default>
+          <control type="toggle"/>
+          <dependencies>
+            <dependency type="visible">
+              <condition operator="is" setting="legacy">false</condition>
+            </dependency>
+          </dependencies>
+        </setting>
       </group>
     </category>
     <category help="" id="deadsettings" label="">

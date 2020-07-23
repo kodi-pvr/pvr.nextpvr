@@ -297,3 +297,11 @@ msgstr ""
 msgctxt "#30693"
 msgid "Create separate folders for multiple seasons of recordings"
 msgstr ""
+
+msgctxt "#30194"
+msgid "Use backend genre text"
+msgstr ""
+
+msgctxt "#30694"
+msgid "Kodi default is DVB genre text.  Default required for Kodi genre search and language translation"
+msgstr ""

@@ -201,6 +201,8 @@ void Settings::SetVersionSpecificSettings()
 
     m_guideArtPortrait = kodi::GetSettingBoolean("guideartworkportrait", false);
 
+    m_genreString = kodi::GetSettingBoolean("genrestring", false);
+
     m_showRecordingSize = kodi::GetSettingBoolean("recordingsize", false);
 
     m_transcodedTimeshift = kodi::GetSettingBoolean("ffmpegdirect", false);
@@ -292,6 +294,8 @@ ADDON_STATUS Settings::SetValue(const std::string& settingName, const kodi::CSet
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_separateSeasons, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
   else if (settingName == "kodilook")
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_kodiLook, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
+  else if (settingName == "genrestring")
+    return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_genreString, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
   else if (settingName == "host_mac")
     return SetStringSetting<ADDON_STATUS>(settingName, settingValue, m_hostMACAddress, ADDON_STATUS_OK, ADDON_STATUS_OK);
   else if (settingName == "livestreamingmethod" && m_backendVersion < 50000)
