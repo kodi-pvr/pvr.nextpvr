@@ -22,12 +22,6 @@
 #include <p8-platform/util/StringUtils.h>
 
 using namespace NextPVR::utilities;
-
-#if defined(TARGET_WINDOWS)
-#define atoll(S) _atoi64(S)
-#else
-#define MAXINT64 ULONG_MAX
-#endif
 #include <algorithm>
 
 const char SAFE[256] = {
@@ -89,7 +83,7 @@ cPVRClientNextPVR::cPVRClientNextPVR(const CNextPVRAddon& base, KODI_HANDLE inst
 {
   m_bConnected = false;
   m_supportsLiveTimeshift = false;
-  m_lastRecordingUpdateTime = MAXINT64; // time of last recording check - force forever
+  m_lastRecordingUpdateTime = std::numeric_limits<int64_t>::max(); // time of last recording check - force forever
   m_timeshiftBuffer = new timeshift::DummyBuffer();
   m_recordingBuffer = new timeshift::RecordingBuffer();
   m_realTimeBuffer = new timeshift::DummyBuffer();
@@ -273,7 +267,7 @@ void cPVRClientNextPVR::ConfigurePostConnectionOptions()
 bool cPVRClientNextPVR::IsUp()
 {
   // check time since last time Recordings were updated, update if it has been awhile
-  if (m_bConnected == true && m_nowPlaying == NotPlaying && m_lastRecordingUpdateTime != MAXINT64 && time(0) > (m_lastRecordingUpdateTime + 60))
+  if (m_bConnected == true && m_nowPlaying == NotPlaying && m_lastRecordingUpdateTime != std::numeric_limits<int64_t>::max() && time(0) > (m_lastRecordingUpdateTime + 60))
   {
     TiXmlDocument doc;
     const std::string request = "/service?method=recording.lastupdated";
@@ -288,7 +282,7 @@ bool cPVRClientNextPVR::IsUp()
           int64_t update_time = atoll(last_update->GetText());
           if (update_time > m_lastRecordingUpdateTime)
           {
-            m_lastRecordingUpdateTime = MAXINT64;
+            m_lastRecordingUpdateTime = std::numeric_limits<int64_t>::max();
             g_pvrclient->TriggerRecordingUpdate();
             g_pvrclient->TriggerTimerUpdate();
           }
@@ -299,7 +293,7 @@ bool cPVRClientNextPVR::IsUp()
         }
         else
         {
-          m_lastRecordingUpdateTime = MAXINT64;
+          m_lastRecordingUpdateTime = std::numeric_limits<int64_t>::max();
         }
       }
     }
@@ -340,7 +334,7 @@ void* cPVRClientNextPVR::Process(void)
 
 PVR_ERROR cPVRClientNextPVR::OnSystemSleep()
 {
-  m_lastRecordingUpdateTime = MAXINT64;
+  m_lastRecordingUpdateTime = std::numeric_limits<int64_t>::max();
   Disconnect();
   SetConnectionState("Sleeping", PVR_CONNECTION_STATE_DISCONNECTED);
   std::this_thread::sleep_for(std::chrono::milliseconds(1000));

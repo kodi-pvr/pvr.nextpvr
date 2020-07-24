@@ -128,7 +128,7 @@ bool RollingFile::GetStreamInfo()
   infoReturn = HTTP_ERROR;
   std::string response;
 
-  if (m_nextRoll == LLONG_MAX)
+  if (m_nextRoll == std::numeric_limits<time_t>::max())
   {
     kodi::Log(ADDON_LOG_ERROR, "NextPVR not updating completed rolling file");
     return ( m_stream_length != 0 );
@@ -153,7 +153,7 @@ bool RollingFile::GetStreamInfo()
           }
           m_stream_length = stream_length-500000;
           slipFiles.back().length = stream_length - slipFiles.back().offset;
-          m_nextStreamInfo = m_nextRoll = LLONG_MAX;
+          m_nextStreamInfo = m_nextRoll = std::numeric_limits<time_t>::max();
           return true;
         }
 
@@ -345,7 +345,7 @@ int RollingFile::Read(byte *buffer, size_t length)
       while( m_inputHandle.GetPosition() == m_inputHandle.GetLength())
       {
         RollingFile::GetStreamInfo();
-        if (m_nextRoll == LLONG_MAX)
+        if (m_nextRoll == std::numeric_limits<time_t>::max())
         {
           kodi::Log(ADDON_LOG_DEBUG, "should exit %s:%d: %lld %lld %lld", __FUNCTION__, __LINE__, Length(),  m_inputHandle.GetLength() , m_inputHandle.GetPosition());
           return 0;
