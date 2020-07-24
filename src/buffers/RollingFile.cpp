@@ -10,13 +10,14 @@
 #include "RollingFile.h"
 #include  "../BackendRequest.h"
 #include  "../pvrclient-nextpvr.h"
+#include "../utilities/XMLUtils.h"
 #include <regex>
 #include <mutex>
 #include "tinyxml.h"
-#include "util/XMLUtils.h"
 
 //#define TESTURL "d:/downloads/abc.ts"
 
+using namespace NextPVR::utilities;
 using namespace timeshift;
 
 /* Rolling File mode functions */

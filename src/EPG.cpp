@@ -8,12 +8,13 @@
 
 #include "EPG.h"
 
-#include "kodi/util/XMLUtils.h"
 #include "pvrclient-nextpvr.h"
+#include "utilities/XMLUtils.h"
 
 #include <p8-platform/util/StringUtils.h>
 
 using namespace NextPVR;
+using namespace NextPVR::utilities;
 
 /************************************************************/
 /** EPG handling */

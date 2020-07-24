@@ -7,12 +7,13 @@
  */
 
 #include "Channels.h"
-#include "kodi/util/XMLUtils.h"
+#include "utilities/XMLUtils.h"
 #include "pvrclient-nextpvr.h"
 
 #include <p8-platform/util/StringUtils.h>
 
 using namespace NextPVR;
+using namespace NextPVR::utilities;
 
 /** Channel handling */
 
