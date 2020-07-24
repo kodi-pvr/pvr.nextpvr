@@ -185,7 +185,7 @@ bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::P
   }
 
   // v4 users won't see recently concluded recordings on the EPG
-  int endEpgTime = g_pvrclient->XmlGetInt(pRecordingNode, "epg_end_time_ticks");
+  int endEpgTime = XMLUtils::GetIntValue(pRecordingNode, "epg_end_time_ticks");
   if (endEpgTime > time(nullptr) - 24 * 3600)
   {
     tag.SetEPGEventId(endEpgTime);
@@ -193,7 +193,7 @@ bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::P
   else if (status == "Recording" || status == "Pending")
   {
     // check for EPG based recording
-    tag.SetEPGEventId(g_pvrclient->XmlGetInt(pRecordingNode, "epg_event_oid", PVR_TIMER_NO_EPG_UID));
+    tag.SetEPGEventId(XMLUtils::GetIntValue(pRecordingNode, "epg_event_oid", PVR_TIMER_NO_EPG_UID));
     if (tag.GetEPGEventId() != PVR_TIMER_NO_EPG_UID)
     {
       tag.SetEPGEventId(tag.GetRecordingTime() + tag.GetDuration());
@@ -232,7 +232,7 @@ bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::P
   }
 
   int lookup = 0;
-  tag.SetLastPlayedPosition(g_pvrclient->XmlGetInt(pRecordingNode, "playback_position", lookup));
+  tag.SetLastPlayedPosition(XMLUtils::GetIntValue(pRecordingNode, "playback_position", lookup));
   if (XMLUtils::GetInt(pRecordingNode, "channel_id", lookup))
   {
     if (lookup == 0)
@@ -308,7 +308,7 @@ bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::P
       tag.SetThumbnailPath(artworkPath);
     }
   }
-  if (GetAdditiveString(pRecordingNode->FirstChildElement("genres"), "genre", EPG_STRING_TOKEN_SEPARATOR, buffer, true))
+  if (XMLUtils::GetAdditiveString(pRecordingNode->FirstChildElement("genres"), "genre", EPG_STRING_TOKEN_SEPARATOR, buffer, true))
   {
     tag.SetGenreType(EPG_GENRE_USE_STRING);
     tag.SetGenreSubType(0);
@@ -333,34 +333,6 @@ bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::P
   }
 
   return true;
-}
-
-bool Recordings::GetAdditiveString(const TiXmlNode* pRootNode, const char* strTag, const std::string& strSeparator, std::string& strStringValue, bool clear)
-{
-  bool bResult = false;
-  if (pRootNode != nullptr)
-  {
-    std::string strTemp;
-    const TiXmlElement* node = pRootNode->FirstChildElement(strTag);
-    if (node && node->FirstChild() && clear)
-      strStringValue.clear();
-    while (node)
-    {
-      if (node->FirstChild())
-      {
-        bResult = true;
-        strTemp = node->FirstChild()->Value();
-        const char* clear = node->Attribute("clear");
-        if (strStringValue.empty() || (clear && StringUtils::CompareNoCase(clear, "true") == 0))
-          strStringValue = strTemp;
-        else
-          strStringValue += strSeparator + strTemp;
-      }
-      node = node->NextSiblingElement(strTag);
-    }
-  }
-
-  return bResult;
 }
 
 bool Recordings::ParseNextPVRSubtitle(TiXmlElement *pRecordingNode, kodi::addon::PVRRecording& tag)

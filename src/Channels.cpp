@@ -107,7 +107,7 @@ PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& r
       for( pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode=pChannelNode->NextSiblingElement())
       {
         kodi::addon::PVRChannel tag;
-        tag.SetUniqueId(g_pvrclient->XmlGetUInt(pChannelNode, "id"));
+        tag.SetUniqueId(XMLUtils::GetUIntValue(pChannelNode, "id"));
         std::string buffer;
         XMLUtils::GetString(pChannelNode, "type", buffer);
         if ( buffer =="0xa")
@@ -125,8 +125,8 @@ PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& r
         if (radio != tag.GetIsRadio())
           continue;
 
-        tag.SetChannelNumber( g_pvrclient->XmlGetUInt(pChannelNode, "number"));
-        tag.SetSubChannelNumber(g_pvrclient->XmlGetUInt(pChannelNode, "minor"));
+        tag.SetChannelNumber(XMLUtils::GetUIntValue(pChannelNode, "number"));
+        tag.SetSubChannelNumber(XMLUtils::GetUIntValue(pChannelNode, "minor"));
 
         buffer.clear();
         XMLUtils::GetString(pChannelNode, "name", buffer);
@@ -249,9 +249,9 @@ PVR_ERROR Channels::GetChannelGroupMembers(const kodi::addon::PVRChannelGroup& g
       {
         kodi::addon::PVRChannelGroupMember tag;
         tag.SetGroupName(group.GetGroupName());
-        tag.SetChannelUniqueId(g_pvrclient->XmlGetUInt(pChannelNode, "id"));
-        tag.SetChannelNumber(g_pvrclient->XmlGetUInt(pChannelNode, "number"));
-        tag.SetSubChannelNumber(g_pvrclient->XmlGetUInt(pChannelNode, "minor"));
+        tag.SetChannelUniqueId(XMLUtils::GetUIntValue(pChannelNode, "id"));
+        tag.SetChannelNumber(XMLUtils::GetUIntValue(pChannelNode, "number"));
+        tag.SetSubChannelNumber(XMLUtils::GetUIntValue(pChannelNode, "minor"));
         results.Add(tag);
       }
     }

@@ -73,9 +73,6 @@ public:
   PVR_ERROR GetDriveSpace(uint64_t& total, uint64_t& used) override;
   PVR_ERROR GetSignalStatus(int channelUid, kodi::addon::PVRSignalStatus& signalStatus) override;
 
-  int XmlGetInt(TiXmlElement* node, const char* name, const int setDefault = 0);
-  unsigned int XmlGetUInt(TiXmlElement* node, const char* name, const unsigned setDefault = 0);
-
   bool IsChannelAPlugin(int uid);
 
   /* Live stream handling */

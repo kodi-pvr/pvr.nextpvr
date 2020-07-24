@@ -93,15 +93,15 @@ PVR_ERROR Timers::GetTimers(kodi::addon::PVRTimersResultSet& results)
         TiXmlElement* pMatchRulesNode = pRecurringNode->FirstChildElement("matchrules");
         TiXmlElement* pRulesNode = pMatchRulesNode->FirstChildElement("Rules");
 
-        tag.SetClientIndex(g_pvrclient->XmlGetUInt(pRecurringNode, "id"));
-        tag.SetClientChannelUid(g_pvrclient->XmlGetInt(pRulesNode, "ChannelOID"));
+        tag.SetClientIndex(XMLUtils::GetUIntValue(pRecurringNode, "id"));
+        tag.SetClientChannelUid(XMLUtils::GetIntValue(pRulesNode, "ChannelOID"));
         tag.SetTimerType(pRulesNode->FirstChildElement("EPGTitle") ? TIMER_REPEATING_EPG : TIMER_REPEATING_MANUAL);
 
         std::string buffer;
 
         // start/end time
 
-        const int recordingType = g_pvrclient->XmlGetUInt(pRecurringNode, "type");
+        const int recordingType = XMLUtils::GetUIntValue(pRecurringNode, "type");
 
         if (recordingType == 1 || recordingType == 2)
         {
@@ -167,11 +167,11 @@ PVR_ERROR Timers::GetTimers(kodi::addon::PVRTimersResultSet& results)
         }
 
         // pre/post padding
-        tag.SetMarginStart(g_pvrclient->XmlGetUInt(pRulesNode, "PrePadding"));
-        tag.SetMarginEnd(g_pvrclient->XmlGetUInt(pRulesNode, "PostPadding"));
+        tag.SetMarginStart(XMLUtils::GetUIntValue(pRulesNode, "PrePadding"));
+        tag.SetMarginEnd(XMLUtils::GetUIntValue(pRulesNode, "PostPadding"));
 
         // number of recordings to keep
-        tag.SetMaxRecordings(g_pvrclient->XmlGetInt(pRulesNode, "Keep"));
+        tag.SetMaxRecordings(XMLUtils::GetIntValue(pRulesNode, "Keep"));
 
         // prevent duplicates
         bool duplicate;
@@ -260,9 +260,9 @@ PVR_ERROR Timers::GetTimers(kodi::addon::PVRTimersResultSet& results)
 bool Timers::UpdatePvrTimer(TiXmlElement* pRecordingNode, kodi::addon::PVRTimer& tag)
 {
   tag.SetTimerType(pRecordingNode->FirstChildElement("epg_event_oid") ? TIMER_ONCE_EPG : TIMER_ONCE_MANUAL);
-  tag.SetClientIndex(g_pvrclient->XmlGetUInt(pRecordingNode, "id"));
-  tag.SetClientChannelUid(g_pvrclient->XmlGetUInt(pRecordingNode, "channel_id"));
-  tag.SetParentClientIndex(g_pvrclient->XmlGetUInt(pRecordingNode, "recurring_parent", PVR_TIMER_NO_PARENT));
+  tag.SetClientIndex(XMLUtils::GetUIntValue(pRecordingNode, "id"));
+  tag.SetClientChannelUid(XMLUtils::GetUIntValue(pRecordingNode, "channel_id"));
+  tag.SetParentClientIndex(XMLUtils::GetUIntValue(pRecordingNode, "recurring_parent", PVR_TIMER_NO_PARENT));
 
   if (tag.GetParentClientIndex() != PVR_TIMER_NO_PARENT)
   {
@@ -271,9 +271,9 @@ bool Timers::UpdatePvrTimer(TiXmlElement* pRecordingNode, kodi::addon::PVRTimer&
     else
       tag.SetTimerType(TIMER_ONCE_MANUAL_CHILD);
   }
-  
-  tag.SetMarginStart(g_pvrclient->XmlGetUInt(pRecordingNode, "pre_padding"));
-  tag.SetMarginEnd(g_pvrclient->XmlGetUInt(pRecordingNode, "post_padding"));
+
+  tag.SetMarginStart(XMLUtils::GetUIntValue(pRecordingNode, "pre_padding"));
+  tag.SetMarginEnd(XMLUtils::GetUIntValue(pRecordingNode, "post_padding"));
 
   std::string buffer;
 
@@ -294,7 +294,7 @@ bool Timers::UpdatePvrTimer(TiXmlElement* pRecordingNode, kodi::addon::PVRTimer&
 
   if (tag.GetTimerType() == TIMER_ONCE_EPG || tag.GetTimerType() == TIMER_ONCE_EPG_CHILD)
   {
-    tag.SetEPGUid(g_pvrclient->XmlGetUInt(pRecordingNode, "epg_end_time_ticks", PVR_TIMER_NO_EPG_UID));
+    tag.SetEPGUid(XMLUtils::GetUIntValue(pRecordingNode, "epg_end_time_ticks", PVR_TIMER_NO_EPG_UID));
 
     // version 4 and some versions of v5 won't support the epg end time
     if (tag.GetEPGUid() == PVR_TIMER_NO_EPG_UID)

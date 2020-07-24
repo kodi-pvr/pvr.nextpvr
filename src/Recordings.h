@@ -43,8 +43,6 @@ namespace NextPVR
     bool ParseNextPVRSubtitle(TiXmlElement* pRecordingNode, kodi::addon::PVRRecording& tag);
     bool ForgetRecording(const kodi::addon::PVRRecording& recording);
     std::map<std::string, std::string> m_hostFilenames;
-    bool GetAdditiveString(const TiXmlNode* pRootNode, const char* strTag, const std::string& strSeparator, std::string& strStringValue, bool clear);
-
 
   private:
     Recordings() = default;

@@ -276,10 +276,9 @@ bool cPVRClientNextPVR::IsUp()
     {
       if (doc.Parse(response.c_str()) != nullptr)
       {
-        TiXmlElement* last_update = doc.RootElement()->FirstChildElement("last_update");
-        if (last_update != nullptr)
+        int64_t update_time;
+        if (XMLUtils::GetLong(doc.RootElement(), "last_update", update_time))
         {
-          int64_t update_time = atoll(last_update->GetText());
           if (update_time > m_lastRecordingUpdateTime)
           {
             m_lastRecordingUpdateTime = std::numeric_limits<int64_t>::max();
@@ -417,21 +416,6 @@ PVR_ERROR cPVRClientNextPVR::GetDriveSpace(uint64_t& total, uint64_t& used)
   total = 0;
   used = 0;
   return PVR_ERROR_NO_ERROR;
-}
-
-
-int cPVRClientNextPVR::XmlGetInt(TiXmlElement* node, const char* name, const int setDefault)
-{
-  int retval = setDefault;
-  XMLUtils::GetInt(node, name, retval);
-  return retval;
-}
-
-unsigned int cPVRClientNextPVR::XmlGetUInt(TiXmlElement* node, const char* name, const unsigned int setDefault)
-{
-  unsigned int retval = setDefault;
-  XMLUtils::GetUInt(node, name, retval);
-  return retval;
 }
 
 PVR_ERROR cPVRClientNextPVR::GetChannelStreamProperties(const kodi::addon::PVRChannel& channel, std::vector<kodi::addon::PVRStreamProperty>& properties)
