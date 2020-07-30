@@ -267,13 +267,15 @@ void cPVRClientNextPVR::ConfigurePostConnectionOptions()
 bool cPVRClientNextPVR::IsUp()
 {
   // check time since last time Recordings were updated, update if it has been awhile
-  if (m_bConnected == true && m_nowPlaying == NotPlaying && m_lastRecordingUpdateTime != std::numeric_limits<int64_t>::max() && time(0) > (m_lastRecordingUpdateTime + 60))
+  if (m_bConnected == true && m_nowPlaying == NotPlaying && m_lastRecordingUpdateTime != std::numeric_limits<int64_t>::max() && time(nullptr) > (m_lastRecordingUpdateTime + 60))
   {
     TiXmlDocument doc;
     const std::string request = "/service?method=recording.lastupdated";
     std::string response;
     if (m_request.DoRequest(request.c_str(), response) == HTTP_OK)
     {
+      if (m_connectionState != PVR_CONNECTION_STATE_CONNECTED)
+        SetConnectionState("Reconnected", PVR_CONNECTION_STATE_CONNECTED);
       if (doc.Parse(response.c_str()) != nullptr)
       {
         int64_t update_time;
@@ -287,7 +289,7 @@ bool cPVRClientNextPVR::IsUp()
           }
           else
           {
-            m_lastRecordingUpdateTime = time(0);
+            m_lastRecordingUpdateTime = time(nullptr);
           }
         }
         else
@@ -298,7 +300,8 @@ bool cPVRClientNextPVR::IsUp()
     }
     else
     {
-      m_lastRecordingUpdateTime = time(0);
+      SetConnectionState("Lost connection", PVR_CONNECTION_STATE_DISCONNECTED);
+      m_lastRecordingUpdateTime = time(nullptr) + 60;
     }
   }
   else if (m_nowPlaying == Transcoding)
