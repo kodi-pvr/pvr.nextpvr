@@ -93,7 +93,7 @@ namespace timeshift {
 
     bool RollingFileOpen();
 
-    virtual bool GetStreamInfo();
+    virtual bool GetStreamInfo() override;
 
     virtual PVR_ERROR GetStreamTimes(kodi::addon::PVRStreamTimes& times) override;
   };

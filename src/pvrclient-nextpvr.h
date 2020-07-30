@@ -102,7 +102,7 @@ public:
   void ForceRecordingUpdate() { m_lastRecordingUpdateTime = 0; }
 
   /* background connection monitoring */
-  void* Process(void);
+  void* Process(void) override;
 
   Channels& m_channels = Channels::GetInstance();
   EPG& m_epg = EPG::GetInstance();
@@ -117,7 +117,7 @@ public:
 
   PVR_ERROR GetChannelsAmount(int& amount) override;
   PVR_ERROR GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& results) override;
-  PVR_ERROR GetChannelGroupsAmount(int& amount);
+  PVR_ERROR GetChannelGroupsAmount(int& amount) override;
   PVR_ERROR GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsResultSet& results) override;
   PVR_ERROR GetChannelGroupMembers(const kodi::addon::PVRChannelGroup& group, kodi::addon::PVRChannelGroupMembersResultSet& results) override;
   PVR_ERROR GetChannelStreamProperties(const kodi::addon::PVRChannel& channel, std::vector<kodi::addon::PVRStreamProperty>& properties) override;

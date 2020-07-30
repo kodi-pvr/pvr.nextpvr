@@ -1,3 +1,8 @@
+v6.1.0
+- Connection state improvements for established connections
+- Allow creation of season folders
+- Optional use of EPG-based text or DVB genres
+
 v6.0.5
 - Add libp8-platform-dev as dependency
 

@@ -152,10 +152,10 @@ namespace NextPVR
     {
       bool optResult;
       int broadcast = 1;
-      if (optResult = socket->SetSocketOption(SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char*>(&broadcast), sizeof(broadcast)))
+      if ((optResult = socket->SetSocketOption(SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char*>(&broadcast), sizeof(broadcast))))
         kodi::Log(ADDON_LOG_ERROR, "SO_REUSEADDR %d", optResult);
       broadcast = 1;
-      if (optResult = socket->SetSocketOption(SOL_SOCKET, SO_BROADCAST, reinterpret_cast<char*>(&broadcast), sizeof(broadcast)))
+      if ((optResult = socket->SetSocketOption(SOL_SOCKET, SO_BROADCAST, reinterpret_cast<char*>(&broadcast), sizeof(broadcast))))
         kodi::Log(ADDON_LOG_ERROR, "SO_BROADCAST %d", optResult);
 #if defined(TARGET_WINDOWS)
       DWORD timeout = 5 * 1000;
@@ -165,7 +165,7 @@ namespace NextPVR
       struct timeval tv;
       tv.tv_sec = 5;
       tv.tv_usec = 0;
-      if (optResult = socket->SetSocketOption(SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>(&tv), sizeof(tv)))
+      if ((optResult = socket->SetSocketOption(SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>(&tv), sizeof(tv))))
         kodi::Log(ADDON_LOG_ERROR, "SO_RCVTIMEO %d", optResult);
 #endif
 
@@ -176,7 +176,7 @@ namespace NextPVR
         do
         {
           char response[512]{0};
-          if (sockResult = socket->BroadcastReceiveFrom(response, 512) > 0)
+          if ((sockResult = socket->BroadcastReceiveFrom(response, 512) > 0))
           {
             std::vector<std::string> parseResponse = StringUtils::Split(response, ":");
             if (parseResponse.size() >= 3)

@@ -54,7 +54,7 @@ namespace timeshift {
     virtual bool Open(const std::string inputUrl) override;
     virtual void Close() override;
 
-    virtual bool GetStreamInfo();
+    virtual bool GetStreamInfo() override;
 
     virtual int64_t Position() const override
     {
