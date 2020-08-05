@@ -254,13 +254,33 @@
           <default>false</default>
           <control type="toggle"/>
         </setting>
-        <setting help="30680" id="flattenrecording" label="30180" type="boolean">
+        <setting help="30680" id="flattenrecording" label="30180" type="boolean"  parent="kodilook">
+          <level>2</level>
+          <default>false</default>
+          <control type="toggle"/>
+          <dependencies>
+            <dependency type="visible">
+              <condition operator="is" setting="kodilook">true</condition>
+            </dependency>
+          </dependencies>
+        </setting>
+        <setting help="30693" id="separateseasons" label="30193" type="boolean">
           <level>2</level>
           <default>false</default>
           <control type="toggle"/>
         </setting>
         <setting help="30678" id="recordingsize" label="30178" type="boolean">
           <level>3</level>
+          <default>false</default>
+          <control type="toggle"/>
+          <dependencies>
+            <dependency type="visible">
+              <condition operator="is" setting="legacy">false</condition>
+            </dependency>
+          </dependencies>
+        </setting>
+        <setting help="30694" id="genrestring" label="30194" type="boolean">
+          <level>1</level>
           <default>false</default>
           <control type="toggle"/>
           <dependencies>

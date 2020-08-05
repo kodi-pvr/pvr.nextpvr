@@ -56,6 +56,8 @@ namespace NextPVR
       return settings;
     }
     ADDON_STATUS ReadBackendSettings();
+    bool GetConnection();
+    void SetConnection(bool status);
     void SetVersionSpecificSettings();
     bool SaveSettings(std::string name, std::string value);
     void UpdateServerPort(std::string host, int port)
@@ -76,6 +78,7 @@ namespace NextPVR
     std::string m_PIN = "";
     bool m_enableWOL = false;
     int m_timeoutWOL = 0;
+    bool m_connectionConfirmed = false;
 
     //General
     int m_backendVersion = 0;
@@ -88,10 +91,12 @@ namespace NextPVR
     bool m_downloadGuideArtwork = false;
     bool m_sendSidWithMetadata = false;
     bool m_guideArtPortrait = false;
+    bool m_genreString = false;
 
     //Recordings
     bool m_showRecordingSize = false;
     bool m_flattenRecording = false;
+    bool m_separateSeasons = true;
     bool m_kodiLook = false;
     int m_chunkRecording = 32;
 

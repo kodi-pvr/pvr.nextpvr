@@ -39,12 +39,10 @@ namespace NextPVR
     PVR_ERROR GetRecordingLastPlayedPosition(const kodi::addon::PVRRecording& recording, int& position);
     PVR_ERROR GetRecordingEdl(const kodi::addon::PVRRecording& recording, std::vector<kodi::addon::PVREDLEntry>& edl);
     PVR_ERROR GetRecordingStreamProperties(const PVR_RECORDING*, PVR_NAMED_VALUE*, unsigned int*);
-    bool UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::PVRRecording& tag, const std::string& title, bool flatten);
-    void ParseNextPVRSubtitle(const std::string episodeName, kodi::addon::PVRRecording& tag);
+    bool UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::PVRRecording& tag, const std::string& title, bool flatten, bool multipleSeasons);
+    bool ParseNextPVRSubtitle(TiXmlElement* pRecordingNode, kodi::addon::PVRRecording& tag);
     bool ForgetRecording(const kodi::addon::PVRRecording& recording);
     std::map<std::string, std::string> m_hostFilenames;
-    bool GetAdditiveString(const TiXmlNode* pRootNode, const char* strTag, const std::string& strSeparator, std::string& strStringValue, bool clear);
-
 
   private:
     Recordings() = default;

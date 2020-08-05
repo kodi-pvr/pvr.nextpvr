@@ -59,7 +59,7 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
           }
         }
 
-        broadcast.SetYear(g_pvrclient->XmlGetInt(pListingNode, "year"));
+        broadcast.SetYear(XMLUtils::GetIntValue(pListingNode, "year"));
 
         std::string startTime;
         std::string endTime;
@@ -70,7 +70,7 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
 
         const std::string oidLookup(endTime + ":" + std::to_string(channelUid));
 
-        const int epgOid = g_pvrclient->XmlGetInt(pListingNode, "id");
+        const int epgOid = XMLUtils::GetIntValue(pListingNode, "id");
         m_timers.m_epgOidLookup[oidLookup] = epgOid;
 
         broadcast.SetTitle(title);
@@ -107,12 +107,12 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
         else
         {
           // genre type
-          broadcast.SetGenreType(g_pvrclient->XmlGetInt(pListingNode, "genre_type"));
-          broadcast.SetGenreSubType(g_pvrclient->XmlGetInt(pListingNode, "genre_sub_type"));
+          broadcast.SetGenreType(XMLUtils::GetIntValue(pListingNode, "genre_type"));
+          broadcast.SetGenreSubType(XMLUtils::GetIntValue(pListingNode, "genre_sub_type"));
 
         }
         std::string allGenres;
-        if (m_recordings.GetAdditiveString(pListingNode->FirstChildElement("genres"), "genre", EPG_STRING_TOKEN_SEPARATOR, allGenres, true))
+        if (XMLUtils::GetAdditiveString(pListingNode->FirstChildElement("genres"), "genre", EPG_STRING_TOKEN_SEPARATOR, allGenres, true))
         {
           if (allGenres.find(EPG_STRING_TOKEN_SEPARATOR) != std::string::npos)
           {
@@ -122,9 +122,15 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
             }
             broadcast.SetGenreDescription(allGenres);
           }
+          else if (m_settings.m_genreString && broadcast.GetGenreSubType() != EPG_GENRE_USE_STRING)
+          {
+            broadcast.SetGenreDescription(allGenres);
+            broadcast.SetGenreSubType(EPG_GENRE_USE_STRING);
+          }
+
         }
-        broadcast.SetSeriesNumber(g_pvrclient->XmlGetInt(pListingNode, "season", EPG_TAG_INVALID_SERIES_EPISODE));
-        broadcast.SetEpisodeNumber(g_pvrclient->XmlGetInt(pListingNode, "episode", EPG_TAG_INVALID_SERIES_EPISODE));
+        broadcast.SetSeriesNumber(XMLUtils::GetIntValue(pListingNode, "season", EPG_TAG_INVALID_SERIES_EPISODE));
+        broadcast.SetEpisodeNumber(XMLUtils::GetIntValue(pListingNode, "episode", EPG_TAG_INVALID_SERIES_EPISODE));
         broadcast.SetEpisodePartNumber(EPG_TAG_INVALID_SERIES_EPISODE);
 
         std::string original;

@@ -70,13 +70,39 @@ PVR_ERROR Recordings::GetRecordings(bool deleted, kodi::addon::PVRRecordingsResu
       TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
       TiXmlElement* pRecordingNode;
       std::map<std::string, int> names;
-      if (m_settings.m_flattenRecording)
+      std::map<std::string, int> seasons;
+      if ((m_settings.m_flattenRecording && m_settings.m_kodiLook) || m_settings.m_separateSeasons)
       {
+        kodi::addon::PVRRecording mytag;
+        int season;
         for (pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
         {
+          std::string status;
+          XMLUtils::GetString(pRecordingNode, "status", status);
+          if (status != "Ready" && status != "Recording")
+            continue;
           std::string title;
           XMLUtils::GetString(pRecordingNode, "name", title);
-          names[title]++;
+          if ((m_settings.m_flattenRecording && m_settings.m_kodiLook))
+            names[title]++;
+
+          if (ParseNextPVRSubtitle(pRecordingNode, mytag))
+            season = mytag.GetSeriesNumber();
+          else
+            season = PVR_RECORDING_INVALID_SERIES_EPISODE;
+
+          if (seasons[title])
+          {
+            if (seasons[title] != std::numeric_limits<int>::max())
+            {
+              if (season != seasons[title])
+                seasons[title] = std::numeric_limits<int>::max();
+            }
+          }
+          else
+          {
+            seasons[title] = season;
+          }
         }
       }
       for (pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
@@ -84,7 +110,7 @@ PVR_ERROR Recordings::GetRecordings(bool deleted, kodi::addon::PVRRecordingsResu
         kodi::addon::PVRRecording tag;
         std::string title;
         XMLUtils::GetString(pRecordingNode, "name", title);
-        if (UpdatePvrRecording(pRecordingNode, tag, title, names[title] == 1))
+        if (UpdatePvrRecording(pRecordingNode, tag, title, names[title] == 1, seasons[title] == std::numeric_limits<int>::max()))
         {
           recordingCount++;
           results.Add(tag);
@@ -102,7 +128,7 @@ PVR_ERROR Recordings::GetRecordings(bool deleted, kodi::addon::PVRRecordingsResu
   return returnValue;
 }
 
-bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::PVRRecording& tag, const std::string& title, bool flatten)
+bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::PVRRecording& tag, const std::string& title, bool flatten, bool multipleSeasons)
 {
   std::string buffer;
   tag.SetTitle(title);
@@ -159,7 +185,7 @@ bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::P
   }
 
   // v4 users won't see recently concluded recordings on the EPG
-  int endEpgTime = g_pvrclient->XmlGetInt(pRecordingNode, "epg_end_time_ticks");
+  int endEpgTime = XMLUtils::GetIntValue(pRecordingNode, "epg_end_time_ticks");
   if (endEpgTime > time(nullptr) - 24 * 3600)
   {
     tag.SetEPGEventId(endEpgTime);
@@ -167,7 +193,7 @@ bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::P
   else if (status == "Recording" || status == "Pending")
   {
     // check for EPG based recording
-    tag.SetEPGEventId(g_pvrclient->XmlGetInt(pRecordingNode, "epg_event_oid", PVR_TIMER_NO_EPG_UID));
+    tag.SetEPGEventId(XMLUtils::GetIntValue(pRecordingNode, "epg_event_oid", PVR_TIMER_NO_EPG_UID));
     if (tag.GetEPGEventId() != PVR_TIMER_NO_EPG_UID)
     {
       tag.SetEPGEventId(tag.GetRecordingTime() + tag.GetDuration());
@@ -183,17 +209,30 @@ bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::P
 
   if (XMLUtils::GetString(pRecordingNode, "subtitle", buffer))
   {
-    if (m_settings.m_kodiLook || flatten)
-    {
-      ParseNextPVRSubtitle(buffer, tag);
-    }
-    else
+    if (!m_settings.m_kodiLook)
     {
       tag.SetTitle(buffer);
     }
+    if (ParseNextPVRSubtitle(pRecordingNode, tag))
+    {
+      if (m_settings.m_separateSeasons && multipleSeasons && tag.GetSeriesNumber() != PVR_RECORDING_INVALID_SERIES_EPISODE)
+      {
+        if (!m_settings.m_kodiLook)
+        {
+          tag.SetDirectory(StringUtils::Format("/%s/%s %d", title.c_str(), kodi::GetLocalizedString(20373).c_str(), tag.GetSeriesNumber()));
+          tag.SetSeriesNumber(PVR_RECORDING_INVALID_SERIES_EPISODE);
+          tag.SetEpisodeNumber(PVR_RECORDING_INVALID_SERIES_EPISODE);
+        }
+        else
+        {
+          tag.SetDirectory(StringUtils::Format("/%s/%s %d", tag.GetTitle().c_str(), kodi::GetLocalizedString(20373).c_str(), tag.GetSeriesNumber()));
+        }
+      }
+    }
   }
+
   int lookup = 0;
-  tag.SetLastPlayedPosition(g_pvrclient->XmlGetInt(pRecordingNode, "playback_position", lookup));
+  tag.SetLastPlayedPosition(XMLUtils::GetIntValue(pRecordingNode, "playback_position", lookup));
   if (XMLUtils::GetInt(pRecordingNode, "channel_id", lookup))
   {
     if (lookup == 0)
@@ -238,7 +277,7 @@ bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::P
       }
       else
       {
-        // don't play recording as file
+        // don't play recording as file;
         recordingFile.clear();
       }
     }
@@ -269,7 +308,7 @@ bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::P
       tag.SetThumbnailPath(artworkPath);
     }
   }
-  if (GetAdditiveString(pRecordingNode->FirstChildElement("genres"), "genre", EPG_STRING_TOKEN_SEPARATOR, buffer, true))
+  if (XMLUtils::GetAdditiveString(pRecordingNode->FirstChildElement("genres"), "genre", EPG_STRING_TOKEN_SEPARATOR, buffer, true))
   {
     tag.SetGenreType(EPG_GENRE_USE_STRING);
     tag.SetGenreSubType(0);
@@ -296,58 +335,66 @@ bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::P
   return true;
 }
 
-bool Recordings::GetAdditiveString(const TiXmlNode* pRootNode, const char* strTag, const std::string& strSeparator, std::string& strStringValue, bool clear)
+bool Recordings::ParseNextPVRSubtitle(TiXmlElement *pRecordingNode, kodi::addon::PVRRecording& tag)
 {
-  bool bResult = false;
-  if (pRootNode != nullptr)
+  std::string buffer;
+  bool hasSeasonEpisode = false;
+  if (XMLUtils::GetString(pRecordingNode, "subtitle", buffer))
   {
-    std::string strTemp;
-    const TiXmlElement* node = pRootNode->FirstChildElement(strTag);
-    if (node && node->FirstChild() && clear)
-      strStringValue.clear();
-    while (node)
+    std::regex base_regex("S(\\d\\d)E(\\d+) - ?(.+)?");
+    std::smatch base_match;
+    // note NextPVR does not support S0 for specials
+    if (std::regex_match(buffer, base_match, base_regex))
     {
-      if (node->FirstChild())
+      if (base_match.size() == 3 || base_match.size() == 4)
       {
-        bResult = true;
-        strTemp = node->FirstChild()->Value();
-        const char* clear = node->Attribute("clear");
-        if (strStringValue.empty() || (clear && StringUtils::CompareNoCase(clear, "true") == 0))
-          strStringValue = strTemp;
-        else
-          strStringValue += strSeparator + strTemp;
+
+        std::ssub_match base_sub_match = base_match[1];
+        tag.SetSeriesNumber(std::stoi(base_sub_match.str()));
+        base_sub_match = base_match[2];
+        tag.SetEpisodeNumber(std::stoi(base_sub_match.str()));
+        if (m_settings.m_kodiLook)
+        {
+          if (base_match.size() == 4)
+          {
+            base_sub_match = base_match[3];
+            tag.SetEpisodeName(base_sub_match.str());
+          }
+        }
+        hasSeasonEpisode = true;
       }
-      node = node->NextSiblingElement(strTag);
+    }
+    else if (m_settings.m_kodiLook)
+    {
+      tag.SetEpisodeName(buffer);
     }
   }
 
-  return bResult;
-}
-
-void Recordings::ParseNextPVRSubtitle(const std::string episodeName, kodi::addon::PVRRecording& tag)
-{
-  std::regex base_regex("S(\\d\\d)E(\\d+) - ?(.+)?");
-  std::smatch base_match;
-  // note NextPVR does not support S0 for specials
-  if (std::regex_match(episodeName, base_match, base_regex))
+  if (!hasSeasonEpisode)
   {
-    if (base_match.size() == 3 || base_match.size() == 4)
+    std::string recordingFile;
+    if (XMLUtils::GetString(pRecordingNode, "file", recordingFile))
     {
-      std::ssub_match base_sub_match = base_match[1];
-      tag.SetSeriesNumber(std::stoi(base_sub_match.str()));
-      base_sub_match = base_match[2];
-      tag.SetEpisodeNumber(std::stoi(base_sub_match.str()));
-      if (base_match.size() == 4)
+      std::regex base_regex("S(\\d\\d)E(\\d+)");
+      std::smatch base_match;
+      if (std::regex_search(recordingFile, base_match, base_regex))
       {
-        base_sub_match = base_match[3];
-        tag.SetEpisodeName(base_sub_match.str());
+        if (base_match.size() == 3)
+        {
+          std::ssub_match base_sub_match = base_match[1];
+          tag.SetSeriesNumber(std::stoi(base_sub_match.str()));
+          base_sub_match = base_match[2];
+          tag.SetEpisodeNumber(std::stoi(base_sub_match.str()));
+          if (!m_settings.m_kodiLook)
+          {
+            tag.SetTitle(StringUtils::Format("S%2.2dE%2.2d - %s", tag.GetSeriesNumber(), tag.GetEpisodeNumber(), buffer.c_str()));
+          }
+          hasSeasonEpisode = true;
+        }
       }
     }
   }
-  else
-  {
-    tag.SetEpisodeName(episodeName);
-  }
+  return hasSeasonEpisode;
 }
 
 PVR_ERROR Recordings::DeleteRecording(const kodi::addon::PVRRecording& recording)

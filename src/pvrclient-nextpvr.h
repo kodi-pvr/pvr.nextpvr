@@ -73,9 +73,6 @@ public:
   PVR_ERROR GetDriveSpace(uint64_t& total, uint64_t& used) override;
   PVR_ERROR GetSignalStatus(int channelUid, kodi::addon::PVRSignalStatus& signalStatus) override;
 
-  int XmlGetInt(TiXmlElement* node, const char* name, const int setDefault = 0);
-  unsigned int XmlGetUInt(TiXmlElement* node, const char* name, const unsigned setDefault = 0);
-
   bool IsChannelAPlugin(int uid);
 
   /* Live stream handling */
@@ -105,7 +102,7 @@ public:
   void ForceRecordingUpdate() { m_lastRecordingUpdateTime = 0; }
 
   /* background connection monitoring */
-  void* Process(void);
+  void* Process(void) override;
 
   Channels& m_channels = Channels::GetInstance();
   EPG& m_epg = EPG::GetInstance();
@@ -113,13 +110,14 @@ public:
   Recordings& m_recordings = Recordings::GetInstance();
   Timers& m_timers = Timers::GetInstance();
   int64_t m_lastRecordingUpdateTime;
+  time_t m_nextServerCheck = 0;
   char m_sid[64];
 
   PVR_ERROR GetCapabilities(kodi::addon::PVRCapabilities& capabilities) override;
 
   PVR_ERROR GetChannelsAmount(int& amount) override;
   PVR_ERROR GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& results) override;
-  PVR_ERROR GetChannelGroupsAmount(int& amount);
+  PVR_ERROR GetChannelGroupsAmount(int& amount) override;
   PVR_ERROR GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsResultSet& results) override;
   PVR_ERROR GetChannelGroupMembers(const kodi::addon::PVRChannelGroup& group, kodi::addon::PVRChannelGroupMembersResultSet& results) override;
   PVR_ERROR GetChannelStreamProperties(const kodi::addon::PVRChannel& channel, std::vector<kodi::addon::PVRStreamProperty>& properties) override;
@@ -153,7 +151,6 @@ private:
   void Close();
 
   bool m_bConnected;
-  std::string m_BackendName;
 
   bool m_supportsLiveTimeshift;
 
@@ -169,6 +166,8 @@ private:
   NextPVR::Request& m_request = NextPVR::Request::GetInstance();
 
   eNowPlaying m_nowPlaying = NotPlaying;
+  void SetConnectionState(std::string message, PVR_CONNECTION_STATE state, std::string displayMessage="");
+  PVR_CONNECTION_STATE m_connectionState = PVR_CONNECTION_STATE_UNKNOWN;
 
   void SendWakeOnLan();
 

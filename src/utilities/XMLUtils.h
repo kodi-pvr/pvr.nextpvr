@@ -107,6 +107,36 @@ inline bool GetString(const TiXmlNode* pRootNode, const std::string& strTag, std
   value.clear();
   return false;
 }
+
+inline bool GetAdditiveString(const TiXmlNode* pRootNode, const char* strTag, const std::string& strSeparator, std::string& strStringValue, bool clear)
+{
+  bool bResult = false;
+  if (pRootNode != nullptr)
+  {
+    std::string strTemp;
+    const TiXmlElement* node = pRootNode->FirstChildElement(strTag);
+    if (node && node->FirstChild() && clear)
+      strStringValue.clear();
+    while (node)
+    {
+      if (node->FirstChild())
+      {
+        bResult = true;
+        strTemp = node->FirstChild()->Value();
+        const char* clear = node->Attribute("clear");
+        if (strStringValue.empty() || (clear && StringUtils::CompareNoCase(clear, "true") == 0))
+          strStringValue = strTemp;
+        else
+          strStringValue += strSeparator + strTemp;
+      }
+      node = node->NextSiblingElement(strTag);
+    }
+  }
+
+  return bResult;
+}
+
+
 //------------------------------------------------------------------------------
 
 //==============================================================================
@@ -161,6 +191,23 @@ inline bool GetInt(const TiXmlNode* pRootNode, const std::string& strTag, int32_
   value = atoi(pNode->FirstChild()->Value());
   return true;
 }
+
+inline int GetIntValue(const TiXmlNode* pRootNode, const std::string& strTag, const int setDefault =  0)
+{
+  const TiXmlNode* pNode = pRootNode->FirstChild(strTag);
+  if (!pNode || !pNode->FirstChild())
+    return setDefault;
+  return atoi(pNode->FirstChild()->Value());
+}
+
+inline int GetUIntValue(const TiXmlNode* pRootNode, const std::string& strTag, const unsigned int setDefault =  0)
+{
+  const TiXmlNode* pNode = pRootNode->FirstChild(strTag);
+  if (!pNode || !pNode->FirstChild())
+    return setDefault;
+  return atol(pNode->FirstChild()->Value());
+}
+
 //------------------------------------------------------------------------------
 
 //==============================================================================

@@ -22,12 +22,6 @@
 #include <p8-platform/util/StringUtils.h>
 
 using namespace NextPVR::utilities;
-
-#if defined(TARGET_WINDOWS)
-#define atoll(S) _atoi64(S)
-#else
-#define MAXINT64 ULONG_MAX
-#endif
 #include <algorithm>
 
 const char SAFE[256] = {
@@ -89,7 +83,7 @@ cPVRClientNextPVR::cPVRClientNextPVR(const CNextPVRAddon& base, KODI_HANDLE inst
 {
   m_bConnected = false;
   m_supportsLiveTimeshift = false;
-  m_lastRecordingUpdateTime = MAXINT64; // time of last recording check - force forever
+  m_lastRecordingUpdateTime = std::numeric_limits<int64_t>::max(); // time of last recording check - force forever
   m_timeshiftBuffer = new timeshift::DummyBuffer();
   m_recordingBuffer = new timeshift::RecordingBuffer();
   m_realTimeBuffer = new timeshift::DummyBuffer();
@@ -129,7 +123,7 @@ ADDON_STATUS cPVRClientNextPVR::Connect()
   ADDON_STATUS status = ADDON_STATUS_UNKNOWN;
   // initiate session
   std::string response;
-
+  SetConnectionState("Connecting", PVR_CONNECTION_STATE_CONNECTING);
   SendWakeOnLan();
   if (m_request.DoRequest("/service?method=session.initiate&ver=1.0&device=xbmc", response) == HTTP_OK)
   {
@@ -170,12 +164,14 @@ ADDON_STATUS cPVRClientNextPVR::Connect()
             // set additional options based on the backend
             ConfigurePostConnectionOptions();
             m_bConnected = true;
+            m_settings.SetConnection(true);
+            SetConnectionState("Connected", PVR_CONNECTION_STATE_CONNECTED);
             kodi::Log(ADDON_LOG_DEBUG, "session.login successful");
             status = ADDON_STATUS_OK;
           }
           else
           {
-            g_pvrclient->ConnectionStateChange("Version failure", PVR_CONNECTION_STATE_VERSION_MISMATCH, kodi::GetLocalizedString(30050));
+            SetConnectionState("Version failure", PVR_CONNECTION_STATE_VERSION_MISMATCH, kodi::GetLocalizedString(30050));
             m_bConnected = false;
             status = ADDON_STATUS_PERMANENT_FAILURE;
           }
@@ -183,17 +179,24 @@ ADDON_STATUS cPVRClientNextPVR::Connect()
         else
         {
           kodi::Log(ADDON_LOG_DEBUG, "session.login failed");
-          g_pvrclient->ConnectionStateChange("Access denied", PVR_CONNECTION_STATE_ACCESS_DENIED, kodi::GetLocalizedString(30052));
+          SetConnectionState("Access denied", PVR_CONNECTION_STATE_ACCESS_DENIED, kodi::GetLocalizedString(30052));
           m_bConnected = false;
-          status = ADDON_STATUS_LOST_CONNECTION;
+          status = ADDON_STATUS_PERMANENT_FAILURE;
         }
       }
     }
   }
   else
   {
-    g_pvrclient->ConnectionStateChange("Could not connect to server", PVR_CONNECTION_STATE_SERVER_UNREACHABLE, "");
-    status = ADDON_STATUS_PERMANENT_FAILURE;
+    SetConnectionState("Could not connect to server", PVR_CONNECTION_STATE_SERVER_UNREACHABLE);
+    if (m_settings.m_connectionConfirmed)
+    {
+      status = ADDON_STATUS_UNKNOWN;
+    }
+    else
+    {
+      status = ADDON_STATUS_PERMANENT_FAILURE;
+    }
   }
 
   return status;
@@ -264,39 +267,41 @@ void cPVRClientNextPVR::ConfigurePostConnectionOptions()
 bool cPVRClientNextPVR::IsUp()
 {
   // check time since last time Recordings were updated, update if it has been awhile
-  if (m_bConnected == true && m_nowPlaying == NotPlaying && m_lastRecordingUpdateTime != MAXINT64 && time(0) > (m_lastRecordingUpdateTime + 60))
+  if (m_bConnected == true && m_nowPlaying == NotPlaying && m_lastRecordingUpdateTime != std::numeric_limits<int64_t>::max() && time(nullptr) > (m_lastRecordingUpdateTime + 60))
   {
     TiXmlDocument doc;
     const std::string request = "/service?method=recording.lastupdated";
     std::string response;
     if (m_request.DoRequest(request.c_str(), response) == HTTP_OK)
     {
+      if (m_connectionState != PVR_CONNECTION_STATE_CONNECTED)
+        SetConnectionState("Reconnected", PVR_CONNECTION_STATE_CONNECTED);
       if (doc.Parse(response.c_str()) != nullptr)
       {
-        TiXmlElement* last_update = doc.RootElement()->FirstChildElement("last_update");
-        if (last_update != nullptr)
+        int64_t update_time;
+        if (XMLUtils::GetLong(doc.RootElement(), "last_update", update_time))
         {
-          int64_t update_time = atoll(last_update->GetText());
           if (update_time > m_lastRecordingUpdateTime)
           {
-            m_lastRecordingUpdateTime = MAXINT64;
+            m_lastRecordingUpdateTime = std::numeric_limits<int64_t>::max();
             g_pvrclient->TriggerRecordingUpdate();
             g_pvrclient->TriggerTimerUpdate();
           }
           else
           {
-            m_lastRecordingUpdateTime = time(0);
+            m_lastRecordingUpdateTime = time(nullptr);
           }
         }
         else
         {
-          m_lastRecordingUpdateTime = MAXINT64;
+          m_lastRecordingUpdateTime = std::numeric_limits<int64_t>::max();
         }
       }
     }
     else
     {
-      m_lastRecordingUpdateTime = time(0);
+      SetConnectionState("Lost connection", PVR_CONNECTION_STATE_DISCONNECTED);
+      m_lastRecordingUpdateTime = time(nullptr) + 60;
     }
   }
   else if (m_nowPlaying == Transcoding)
@@ -306,6 +311,14 @@ bool cPVRClientNextPVR::IsUp()
       //m_livePlayer->Close();
       m_nowPlaying = NotPlaying;
       m_livePlayer = nullptr;
+    }
+  }
+  else if (m_connectionState == PVR_CONNECTION_STATE_SERVER_UNREACHABLE)
+  {
+    if (time(nullptr) > m_nextServerCheck)
+    {
+      m_nextServerCheck = time(nullptr) + 60;
+      Connect();
     }
   }
   return m_bConnected;
@@ -323,22 +336,21 @@ void* cPVRClientNextPVR::Process(void)
 
 PVR_ERROR cPVRClientNextPVR::OnSystemSleep()
 {
-  m_lastRecordingUpdateTime = MAXINT64;
+  m_lastRecordingUpdateTime = std::numeric_limits<int64_t>::max();
   Disconnect();
-  g_pvrclient->ConnectionStateChange("sleeping", PVR_CONNECTION_STATE_DISCONNECTED, "");
+  SetConnectionState("Sleeping", PVR_CONNECTION_STATE_DISCONNECTED);
   std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   return PVR_ERROR_NO_ERROR;
 }
 
 PVR_ERROR cPVRClientNextPVR::OnSystemWake()
 {
-  g_pvrclient->ConnectionStateChange("waking", PVR_CONNECTION_STATE_CONNECTING, "");
+  SetConnectionState("Waking", PVR_CONNECTION_STATE_CONNECTING);
   int count = 0;
   for (; count < 5; count++)
   {
     if (Connect() == ADDON_STATUS_OK)
     {
-      g_pvrclient->ConnectionStateChange("connected", PVR_CONNECTION_STATE_CONNECTED, "");
       break;
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -351,7 +363,7 @@ void cPVRClientNextPVR::SendWakeOnLan()
 {
   if (m_settings.m_enableWOL == true)
   {
-    if (m_settings.m_hostname == "127.0.0.1" || m_settings.m_hostname == "localhost" || m_settings.m_hostname == "::1")
+    if (kodi::network::IsLocalHost(m_settings.m_hostname) || !kodi::network::IsHostOnLAN(m_settings.m_hostname, true))
     {
       return;
     }
@@ -369,43 +381,36 @@ void cPVRClientNextPVR::SendWakeOnLan()
   }
 }
 
+void cPVRClientNextPVR::SetConnectionState(std::string message, PVR_CONNECTION_STATE state, std::string displayMessage)
+{
+ g_pvrclient->ConnectionStateChange(message, state, displayMessage);
+ m_connectionState = state;
+}
+
 /************************************************************/
 /** General handling */
 
 // Used among others for the server name string in the "Recordings" view
 PVR_ERROR cPVRClientNextPVR::GetBackendName(std::string& name)
 {
-  if (!m_bConnected)
-  {
-    PVR_ERROR_SERVER_ERROR;
-  }
-
-  kodi::Log(ADDON_LOG_DEBUG, "->GetBackendName()");
-
-  if (m_BackendName.length() == 0)
-  {
-    m_BackendName = "NextPVR (";
-    m_BackendName += m_settings.m_hostname;
-    m_BackendName += ")";
-    name = m_BackendName;
-  }
-
+  name = "NextPVR";
   return PVR_ERROR_NO_ERROR;
 }
 
 PVR_ERROR cPVRClientNextPVR::GetBackendVersion(std::string& version)
 {
-  if (!m_bConnected)
-    return PVR_ERROR_SERVER_ERROR;
-
-  kodi::Log(ADDON_LOG_DEBUG, "->GetBackendVersion()");
-  version = std::to_string(m_settings.m_backendVersion);
+  if (m_bConnected)
+    version = std::to_string(m_settings.m_backendVersion);
+  else
+    version = kodi::GetLocalizedString(13205);
   return PVR_ERROR_NO_ERROR;
 }
 
 PVR_ERROR cPVRClientNextPVR::GetConnectionString(std::string& connection)
 {
-  connection = "Connected";
+  connection = m_settings.m_hostname;
+  if (!m_bConnected)
+    connection += ": " + kodi::GetLocalizedString(15208);
   return PVR_ERROR_NO_ERROR;
 }
 
@@ -413,26 +418,7 @@ PVR_ERROR cPVRClientNextPVR::GetDriveSpace(uint64_t& total, uint64_t& used)
 {
   total = 0;
   used = 0;
-
-  if (!m_bConnected)
-    return PVR_ERROR_SERVER_ERROR;
-
   return PVR_ERROR_NO_ERROR;
-}
-
-
-int cPVRClientNextPVR::XmlGetInt(TiXmlElement* node, const char* name, const int setDefault)
-{
-  int retval = setDefault;
-  XMLUtils::GetInt(node, name, retval);
-  return retval;
-}
-
-unsigned int cPVRClientNextPVR::XmlGetUInt(TiXmlElement* node, const char* name, const unsigned int setDefault)
-{
-  unsigned int retval = setDefault;
-  XMLUtils::GetUInt(node, name, retval);
-  return retval;
 }
 
 PVR_ERROR cPVRClientNextPVR::GetChannelStreamProperties(const kodi::addon::PVRChannel& channel, std::vector<kodi::addon::PVRStreamProperty>& properties)

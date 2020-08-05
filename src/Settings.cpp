@@ -19,6 +19,8 @@
 using namespace NextPVR;
 using namespace NextPVR::utilities;
 
+const std::string connectionFlag = "special://userdata/addon_data/pvr.nextpvr/connection.flag";
+
 /***************************************************************************
  * PVR settings
  **************************************************************************/
@@ -53,6 +55,8 @@ void Settings::ReadFromAddon()
 
   m_flattenRecording = kodi::GetSettingBoolean("flattenrecording", false);
 
+  m_separateSeasons = kodi::GetSettingBoolean("separateseasons", false);
+
   m_kodiLook = kodi::GetSettingBoolean("kodilook", false);
 
   m_prebuffer = kodi::GetSettingInt("prebuffer", 8);
@@ -66,6 +70,8 @@ void Settings::ReadFromAddon()
   m_resolution = kodi::GetSettingString("resolution",  "720");
 
   m_showRadio = kodi::GetSettingBoolean("showradio", true);
+
+  m_connectionConfirmed = kodi::vfs::FileExists(connectionFlag);
 
   /* Log the current settings for debugging purposes */
   kodi::Log(ADDON_LOG_DEBUG, "settings: host='%s', port=%i, mac=%4.4s...", m_hostname.c_str(), m_port, m_hostMACAddress.c_str());
@@ -142,6 +148,21 @@ ADDON_STATUS Settings::ReadBackendSettings()
   return ADDON_STATUS_OK;
 }
 
+void Settings::SetConnection(bool status)
+{
+  if (status == true)
+  {
+      kodi::vfs::CFile outputFile;
+      outputFile.OpenFileForWrite(connectionFlag);
+      m_connectionConfirmed = true;
+  }
+  else
+  {
+    kodi::vfs::DeleteFile(connectionFlag);
+    m_connectionConfirmed = false;
+  }
+}
+
 void Settings::SetVersionSpecificSettings()
 {
   m_liveStreamingMethod = DEFAULT_LIVE_STREAM;
@@ -198,6 +219,8 @@ void Settings::SetVersionSpecificSettings()
     }
 
     m_guideArtPortrait = kodi::GetSettingBoolean("guideartworkportrait", false);
+
+    m_genreString = kodi::GetSettingBoolean("genrestring", false);
 
     m_showRecordingSize = kodi::GetSettingBoolean("recordingsize", false);
 
@@ -269,7 +292,13 @@ ADDON_STATUS Settings::SetValue(const std::string& settingName, const kodi::CSet
     return ADDON_STATUS_OK;
   }
   if (settingName == "host")
-    return SetStringSetting<ADDON_STATUS>(settingName, settingValue, m_hostname, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
+  {
+    if (SetStringSetting<ADDON_STATUS>(settingName, settingValue, m_hostname, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK) == ADDON_STATUS_NEED_RESTART)
+    {
+      SetConnection(false);
+      return ADDON_STATUS_NEED_RESTART;
+    }
+  }
   else if (settingName == "port")
     return SetSetting<int, ADDON_STATUS>(settingName, settingValue, m_port, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
   else if (settingName == "pin")
@@ -286,8 +315,12 @@ ADDON_STATUS Settings::SetValue(const std::string& settingName, const kodi::CSet
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_showRecordingSize, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
   else if (settingName == "flattenrecording")
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_flattenRecording, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
+  else if (settingName == "separateseasons")
+    return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_separateSeasons, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
   else if (settingName == "kodilook")
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_kodiLook, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
+  else if (settingName == "genrestring")
+    return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_genreString, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
   else if (settingName == "host_mac")
     return SetStringSetting<ADDON_STATUS>(settingName, settingValue, m_hostMACAddress, ADDON_STATUS_OK, ADDON_STATUS_OK);
   else if (settingName == "livestreamingmethod" && m_backendVersion < 50000)
