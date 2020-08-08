@@ -29,7 +29,6 @@
 #include "buffers/TimeshiftBuffer.h"
 #include "buffers/TranscodedBuffer.h"
 #include "p8-platform/threads/threads.h"
-#include "tinyxml.h"
 #include <map>
 
 #define SAFE_DELETE(p) \

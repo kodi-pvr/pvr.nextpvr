@@ -18,6 +18,7 @@
 #include <mutex>
 #include <stdio.h>
 #include <stdlib.h>
+#include "tinyxml2.h"
 
 #define HTTP_OK 200
 #define HTTP_NOTFOUND 404
@@ -39,8 +40,10 @@ namespace NextPVR
       return request;
     }
     int DoRequest(const char* resource, std::string& response);
+    tinyxml2::XMLError DoMethodRequest(const char* resource, tinyxml2::XMLDocument& doc);
     int FileCopy(const char* resource, std::string fileName);
     void setSID(char* newsid) { strcpy(m_sid, newsid); };
+    void clearSid() { std::fill( std::begin(m_sid), std::end(m_sid), 0); };
     bool PingBackend();
     bool OneTimeSetup();
     const char* getSID() { return m_sid; };

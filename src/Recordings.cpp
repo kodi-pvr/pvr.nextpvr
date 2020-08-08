@@ -36,13 +36,13 @@ PVR_ERROR Recordings::GetRecordingsAmount(bool deleted, int& amount)
   std::string response;
   if (m_request.DoRequest("/service?method=recording.list&filter=ready", response) == HTTP_OK)
   {
-    TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != nullptr)
+    tinyxml2::XMLDocument doc;
+    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
     {
-      TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
+      tinyxml2::XMLNode* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
       if (recordingsNode != nullptr)
       {
-        TiXmlElement* pRecordingNode;
+        tinyxml2::XMLNode* pRecordingNode;
         m_iRecordingCount = 0;
         for (pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
         {
@@ -64,11 +64,11 @@ PVR_ERROR Recordings::GetRecordings(bool deleted, kodi::addon::PVRRecordingsResu
   std::string response;
   if (m_request.DoRequest("/service?method=recording.list&filter=all", response) == HTTP_OK)
   {
-    TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != nullptr)
+    tinyxml2::XMLDocument doc;
+    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
     {
-      TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
-      TiXmlElement* pRecordingNode;
+      tinyxml2::XMLNode* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
+      tinyxml2::XMLNode* pRecordingNode;
       std::map<std::string, int> names;
       std::map<std::string, int> seasons;
       if ((m_settings.m_flattenRecording && m_settings.m_kodiLook) || m_settings.m_separateSeasons)
@@ -128,7 +128,7 @@ PVR_ERROR Recordings::GetRecordings(bool deleted, kodi::addon::PVRRecordingsResu
   return returnValue;
 }
 
-bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::PVRRecording& tag, const std::string& title, bool flatten, bool multipleSeasons)
+bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kodi::addon::PVRRecording& tag, const std::string& title, bool flatten, bool multipleSeasons)
 {
   std::string buffer;
   tag.SetTitle(title);
@@ -266,10 +266,10 @@ bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::P
       {
         recordingFile = "smb:" + recordingFile;
       }
-      if (kodi::vfs::FileExists(recordingFile, ADDON_READ_NO_CACHE))
+      if (kodi::vfs::FileExists(recordingFile))
       {
         kodi::vfs::CFile fileSize;
-        if (fileSize.OpenFile(recordingFile, ADDON_READ_NO_CACHE))
+        if (fileSize.OpenFile(recordingFile))
         {
           tag.SetSizeInBytes(fileSize.GetLength());
           fileSize.Close();
@@ -335,7 +335,7 @@ bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::P
   return true;
 }
 
-bool Recordings::ParseNextPVRSubtitle(TiXmlElement *pRecordingNode, kodi::addon::PVRRecording& tag)
+bool Recordings::ParseNextPVRSubtitle(const tinyxml2::XMLNode *pRecordingNode, kodi::addon::PVRRecording& tag)
 {
   std::string buffer;
   bool hasSeasonEpisode = false;
@@ -461,12 +461,12 @@ PVR_ERROR Recordings::GetRecordingEdl(const kodi::addon::PVRRecording& recording
   {
     if (strstr(response.c_str(), "<rsp stat=\"ok\">") != nullptr)
     {
-      TiXmlDocument doc;
-      if (doc.Parse(response.c_str()) != nullptr)
+      tinyxml2::XMLDocument doc;
+      if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
       {
         int index = 0;
-        TiXmlElement* commercialsNode = doc.RootElement()->FirstChildElement("commercials");
-        TiXmlElement* pCommercialNode;
+        tinyxml2::XMLNode* commercialsNode = doc.RootElement()->FirstChildElement("commercials");
+        tinyxml2::XMLNode* pCommercialNode;
         for (pCommercialNode = commercialsNode->FirstChildElement("commercial"); pCommercialNode; pCommercialNode = pCommercialNode->NextSiblingElement())
         {
           kodi::addon::PVREDLEntry entry;

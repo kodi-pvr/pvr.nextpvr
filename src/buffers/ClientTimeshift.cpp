@@ -11,7 +11,6 @@
 #include  "../BackendRequest.h"
 #include "../utilities/XMLUtils.h"
 #include <kodi/General.h>
-#include "tinyxml.h"
 
 using namespace timeshift;
 using namespace NextPVR::utilities;
@@ -173,10 +172,10 @@ bool ClientTimeShift::GetStreamInfo()
   }
   if (m_request.DoRequest("/services/service?method=channel.stream.info", response) == HTTP_OK)
   {
-    TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != nullptr)
+    tinyxml2::XMLDocument doc;
+    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
     {
-      TiXmlElement* filesNode = doc.FirstChildElement("map");
+      tinyxml2::XMLNode* filesNode = doc.FirstChildElement("map");
       if (filesNode != nullptr)
       {
         stream_duration = strtoll(filesNode->FirstChildElement("stream_duration")->GetText(), nullptr, 0);

@@ -46,9 +46,50 @@ namespace NextPVR
       }
     }
     kodi::Log(ADDON_LOG_DEBUG, "DoRequest return %s %d %d %d", resource, resultCode, response.length(), time(nullptr) - m_start);
-
     return resultCode;
   }
+
+  tinyxml2::XMLError Request::DoMethodRequest(const char* resource, tinyxml2::XMLDocument& doc)
+  {
+
+    tinyxml2::XMLError retError = tinyxml2::XML_ERROR_FILE_NOT_FOUND;
+    std::unique_lock<std::mutex> lock(m_mutexRequest);
+    m_start = time(nullptr);
+    // build request string, adding SID if requred
+    std::string URL;
+
+    if (m_sid[0])
+      URL = StringUtils::Format("http://%s:%d%s&sid=%s", m_settings.m_hostname.c_str(), m_settings.m_port, resource, m_sid);
+    else
+      URL = StringUtils::Format("http://%s:%d%s", m_settings.m_hostname.c_str(), m_settings.m_port, resource);
+
+    // ask XBMC to read the URL for us
+    kodi::vfs::CFile stream;
+    std::string response;
+    if (stream.OpenFile(URL, ADDON_READ_NO_CACHE))
+    {
+      char buffer[1025]{ 0 };
+      int count;
+      while ((count = stream.Read(buffer, 1024)))
+      {
+        response.append(buffer, count);
+      }
+      stream.Close();
+      retError = doc.Parse(response.c_str());
+      if (retError == tinyxml2::XML_SUCCESS)
+      {
+        const char* attrib = doc.RootElement()->Attribute("stat");
+        if ( attrib == nullptr || strcmp(attrib, "ok"))
+        {
+          kodi::Log(ADDON_LOG_DEBUG, "DoMethodRequest bad return %s", attrib);
+          retError = tinyxml2::XML_NO_ATTRIBUTE;
+        }
+      }
+    }
+    kodi::Log(ADDON_LOG_DEBUG, "DoMethodRequest return %s %d %d %d", resource, retError, response.length(), time(nullptr) - m_start);
+    return retError;
+  }
+
   int Request::FileCopy(const char* resource, std::string fileName)
   {
     std::unique_lock<std::mutex> lock(m_mutexRequest);
@@ -66,7 +107,7 @@ namespace NextPVR
     if (inputStream.OpenFile(URL, ADDON_READ_NO_CACHE))
     {
       kodi::vfs::CFile outputFile;
-      if (outputFile.OpenFileForWrite(fileName, ADDON_READ_NO_CACHE))
+      if (outputFile.OpenFileForWrite(fileName))
       {
         char buffer[1024];
         while ((datalen = inputStream.Read( buffer, sizeof(buffer))))

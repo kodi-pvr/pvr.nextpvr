@@ -11,7 +11,6 @@
 
 #include "BackendRequest.h"
 #include <kodi/addon-instance/PVR.h>
-#include "tinyxml.h"
 #include <algorithm>
 
 
@@ -75,7 +74,7 @@ namespace NextPVR
     PVR_ERROR AddTimer(const kodi::addon::PVRTimer& timer);
     PVR_ERROR DeleteTimer(const kodi::addon::PVRTimer& timer, bool forceDelete);
     PVR_ERROR UpdateTimer(const kodi::addon::PVRTimer& timer);
-    bool UpdatePvrTimer(TiXmlElement* pRecordingNode, kodi::addon::PVRTimer& tag);
+    bool UpdatePvrTimer(tinyxml2::XMLNode* pRecordingNode, kodi::addon::PVRTimer& tag);
     std::map<std::string, int> m_epgOidLookup;
 
   private:

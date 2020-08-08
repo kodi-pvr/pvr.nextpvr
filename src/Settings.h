@@ -59,7 +59,6 @@ namespace NextPVR
     bool GetConnection();
     void SetConnection(bool status);
     void SetVersionSpecificSettings();
-    bool SaveSettings(std::string name, std::string value);
     void UpdateServerPort(std::string host, int port)
     {
       m_hostname = host;

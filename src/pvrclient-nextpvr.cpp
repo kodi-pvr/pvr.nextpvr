@@ -127,8 +127,8 @@ ADDON_STATUS cPVRClientNextPVR::Connect()
   SendWakeOnLan();
   if (m_request.DoRequest("/service?method=session.initiate&ver=1.0&device=xbmc", response) == HTTP_OK)
   {
-    TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != nullptr)
+    tinyxml2::XMLDocument doc;
+    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
     {
       std::string salt;
       std::string sid;
@@ -269,14 +269,14 @@ bool cPVRClientNextPVR::IsUp()
   // check time since last time Recordings were updated, update if it has been awhile
   if (m_bConnected == true && m_nowPlaying == NotPlaying && m_lastRecordingUpdateTime != std::numeric_limits<int64_t>::max() && time(nullptr) > (m_lastRecordingUpdateTime + 60))
   {
-    TiXmlDocument doc;
+    tinyxml2::XMLDocument doc;
     const std::string request = "/service?method=recording.lastupdated";
     std::string response;
     if (m_request.DoRequest(request.c_str(), response) == HTTP_OK)
     {
       if (m_connectionState != PVR_CONNECTION_STATE_CONNECTED)
         SetConnectionState("Reconnected", PVR_CONNECTION_STATE_CONNECTED);
-      if (doc.Parse(response.c_str()) != nullptr)
+      if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
       {
         int64_t update_time;
         if (XMLUtils::GetLong(doc.RootElement(), "last_update", update_time))
