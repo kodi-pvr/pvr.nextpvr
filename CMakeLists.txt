@@ -12,7 +12,6 @@ include_directories(${p8-platform_INCLUDE_DIRS}
                     ${KODI_INCLUDE_DIR}/..) # Hack way with "/..", need bigger Kodi cmake rework to match right include ways
 
 set(NEXTPVR_SOURCES src/addon.cpp
-                    src/md5.cpp
                     src/pvrclient-nextpvr.cpp
                     src/Socket.cpp
                     src/uri.cpp
@@ -35,7 +34,6 @@ set(NEXTPVR_SOURCES src/addon.cpp
 
 set(NEXTPVR_HEADERS src/addon.h
                     src/FileUtils.h
-                    src/md5.h
                     src/os-dependent.h
                     src/pvrclient-nextpvr.h
                     src/Socket.h

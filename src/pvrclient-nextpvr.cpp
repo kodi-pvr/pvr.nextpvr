@@ -12,7 +12,6 @@
 #include "utilities/XMLUtils.h"
 #include "kodi/General.h"
 #include <kodi/Network.h>
-#include "md5.h"
 
 #include <ctime>
 #include <memory>
@@ -141,7 +140,7 @@ ADDON_STATUS cPVRClientNextPVR::Connect()
         // a bit of debug
         kodi::Log(ADDON_LOG_DEBUG, "session.initiate returns: sid=%s salt=%s", m_sid, salt.c_str());
 
-        std::string pinMD5 = PVRXBMC::XBMC_MD5::GetMD5(m_settings.m_PIN);
+        std::string pinMD5 = kodi::GetMD5(m_settings.m_PIN);
         StringUtils::ToLower(pinMD5);
 
         // calculate combined MD5
@@ -152,7 +151,7 @@ ADDON_STATUS cPVRClientNextPVR::Connect()
         combinedMD5.append(salt);
 
         // get digest
-        std::string md5 = PVRXBMC::XBMC_MD5::GetMD5(combinedMD5);
+        std::string md5 = kodi::GetMD5(combinedMD5);
 
         // login session
         std::string loginResponse;
