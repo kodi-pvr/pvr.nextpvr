@@ -103,7 +103,7 @@ bool RollingFile::RollingFileOpen()
   #if defined(TESTURL)
   const std::string URL = TESTURL;
   #else
-  std::string URL = StringUtils::Format("http://%s:%d/stream?f=%s&mode=http&sid=%s", m_settings.m_hostname.c_str(), m_settings.m_port, UriEncode(m_activeFilename).c_str(), m_request.getSID());
+  std::string URL = StringUtils::Format("%s/stream?f=%s&mode=http&sid=%s", m_settings.m_urlBase, UriEncode(m_activeFilename).c_str(), m_request.getSID());
   if (m_isRadio && m_activeLength == -1)
   {
     // reduce buffer for radio when playing in-progess slip file

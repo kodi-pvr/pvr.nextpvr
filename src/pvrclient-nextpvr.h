@@ -110,7 +110,6 @@ public:
   Timers& m_timers = Timers::GetInstance();
   int64_t m_lastRecordingUpdateTime;
   time_t m_nextServerCheck = 0;
-  char m_sid[64];
 
   PVR_ERROR GetCapabilities(kodi::addon::PVRCapabilities& capabilities) override;
 
@@ -150,6 +149,7 @@ private:
   void Close();
 
   bool m_bConnected;
+  char m_sid[64]{ 0 };
 
   bool m_supportsLiveTimeshift;
 

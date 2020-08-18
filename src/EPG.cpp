@@ -86,13 +86,13 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
         {
           // artwork URL
           if (m_settings.m_backendVersion < 50000)
-            artworkPath = StringUtils::Format("http://%s:%d/service?method=channel.show.artwork&sid=%s&event_id=%d", m_settings.m_hostname.c_str(), m_settings.m_port, g_pvrclient->m_sid, epgOid);
+            artworkPath = StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&event_id=%d", m_settings.m_urlBase, m_request.getSID(), epgOid);
           else
           {
             if (m_settings.m_sendSidWithMetadata)
-              artworkPath = StringUtils::Format("http://%s:%d/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_hostname.c_str(), m_settings.m_port, g_pvrclient->m_sid, UriEncode(title).c_str());
+              artworkPath = StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_urlBase, m_request.getSID(), UriEncode(title).c_str());
             else
-              artworkPath = StringUtils::Format("http://%s:%d/service?method=channel.show.artwork&name=%s", m_settings.m_hostname.c_str(), m_settings.m_port, UriEncode(title).c_str());
+              artworkPath = StringUtils::Format("%s/service?method=channel.show.artwork&name=%s", m_settings.m_urlBase, UriEncode(title).c_str());
             if (m_settings.m_guideArtPortrait)
               artworkPath += "&prefer=poster";
           }

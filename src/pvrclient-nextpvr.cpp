@@ -437,7 +437,7 @@ PVR_ERROR cPVRClientNextPVR::GetChannelStreamProperties(const kodi::addon::PVRCh
       m_nowPlaying = NotPlaying;
       m_livePlayer = nullptr;
     }
-    const std::string line = StringUtils::Format("http://%s:%d/services/service?method=channel.transcode.m3u8&sid=%s", m_settings.m_hostname.c_str(), m_settings.m_port, m_sid);
+    const std::string line = StringUtils::Format("%s/services/service?method=channel.transcode.m3u8&sid=%s", m_settings.m_urlBase, m_sid);
     m_livePlayer = m_timeshiftBuffer;
     m_livePlayer->Channel(channel.GetUniqueId());
     if (m_livePlayer->Open(line))
@@ -489,18 +489,18 @@ bool cPVRClientNextPVR::OpenLiveStream(const kodi::addon::PVRChannel& channel)
   }
   else if (m_settings.m_liveStreamingMethod == RollingFile)
   {
-    line = StringUtils::Format("http://%s:%d/live?channeloid=%d&client=XBMC-%s&epgmode=true", m_settings.m_hostname.c_str(), m_settings.m_port, channel.GetUniqueId(), m_sid);
+    line = StringUtils::Format("%s/live?channeloid=%d&client=XBMC-%s&epgmode=true", m_settings.m_urlBase, channel.GetUniqueId(), m_sid);
     m_livePlayer = m_timeshiftBuffer;
   }
   else if (m_settings.m_liveStreamingMethod == ClientTimeshift)
   {
-    line = StringUtils::Format("http://%s:%d/live?channeloid=%d&client=%s&sid=%s", m_settings.m_hostname.c_str(), m_settings.m_port, channel.GetUniqueId(), m_sid, m_sid);
+    line = StringUtils::Format("%s/live?channeloid=%d&client=%s&sid=%s", m_settings.m_urlBase, channel.GetUniqueId(), m_sid, m_sid);
     m_livePlayer = m_timeshiftBuffer;
     m_livePlayer->Channel(channel.GetUniqueId());
   }
   else
   {
-    line = StringUtils::Format("http://%s:%d/live?channeloid=%d&client=XBMC-%s", m_settings.m_hostname.c_str(), m_settings.m_port, channel.GetUniqueId(), m_sid);
+    line = StringUtils::Format("%s/live?channeloid=%d&client=XBMC-%s", m_settings.m_urlBase, channel.GetUniqueId(), m_sid);
     m_livePlayer = m_realTimeBuffer;
   }
   kodi::Log(ADDON_LOG_INFO, "Calling Open(%s) on tsb!", line.c_str());
@@ -592,7 +592,7 @@ bool cPVRClientNextPVR::OpenRecordedStream(const kodi::addon::PVRRecording& reco
   kodi::addon::PVRRecording copyRecording = recording;
   m_nowPlaying = Recording;
   copyRecording.SetDirectory(m_recordings.m_hostFilenames[recording.GetRecordingId()]);
-  const std::string line = StringUtils::Format("http://%s:%d/live?recording=%s&client=XBMC-%s", m_settings.m_hostname.c_str(), m_settings.m_port, recording.GetRecordingId().c_str(), m_sid);
+  const std::string line = StringUtils::Format("%s/live?recording=%s&client=XBMC-%s", m_settings.m_urlBase, recording.GetRecordingId().c_str(), m_sid);
   return m_recordingBuffer->Open(line, copyRecording);
 }
 

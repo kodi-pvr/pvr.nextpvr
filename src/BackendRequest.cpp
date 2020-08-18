@@ -22,9 +22,9 @@ namespace NextPVR
     std::string URL;
 
     if (strstr(resource, "method=session") == nullptr)
-      URL = StringUtils::Format("http://%s:%d%s&sid=%s", m_settings.m_hostname.c_str(), m_settings.m_port, resource, m_sid);
+      URL = StringUtils::Format("%s%s&sid=%s", m_settings.m_urlBase, resource, m_sid);
     else
-      URL = StringUtils::Format("http://%s:%d%s", m_settings.m_hostname.c_str(), m_settings.m_port, resource);
+      URL = StringUtils::Format("%s%s", m_settings.m_urlBase, resource);
 
     // ask XBMC to read the URL for us
     int resultCode = HTTP_NOTFOUND;
@@ -59,9 +59,9 @@ namespace NextPVR
     std::string URL;
 
     if (m_sid[0])
-      URL = StringUtils::Format("http://%s:%d%s&sid=%s", m_settings.m_hostname.c_str(), m_settings.m_port, resource, m_sid);
+      URL = StringUtils::Format("%s%s&sid=%s", m_settings.m_urlBase, resource, m_sid);
     else
-      URL = StringUtils::Format("http://%s:%d%s", m_settings.m_hostname.c_str(), m_settings.m_port, resource);
+      URL = StringUtils::Format("%s%s", m_settings.m_urlBase, resource);
 
     // ask XBMC to read the URL for us
     kodi::vfs::CFile stream;
@@ -98,7 +98,7 @@ namespace NextPVR
 
 
     char separator = (strchr(resource, '?') == nullptr) ? '?' : '&';
-    const std::string URL = StringUtils::Format("http://%s:%d%s%csid=%s", m_settings.m_hostname.c_str(), m_settings.m_port, resource, separator, m_sid);
+    const std::string URL = StringUtils::Format("%s%s%csid=%s", m_settings.m_urlBase, resource, separator, m_sid);
 
     // ask XBMC to read the URL for us
     int resultCode = HTTP_NOTFOUND;
@@ -130,7 +130,7 @@ namespace NextPVR
   }
   bool Request::PingBackend()
   {
-    const std::string URL = StringUtils::Format("http://%s:%d%s|connection-timeout=2", m_settings.m_hostname.c_str(), m_settings.m_port, "/service?method=recording.lastupdated");
+    const std::string URL = StringUtils::Format("%s%s|connection-timeout=2", m_settings.m_urlBase, "/service?method=recording.lastupdated");
     kodi::vfs::CFile backend;
     if (backend.OpenFile(URL, ADDON_READ_NO_CACHE))
     {

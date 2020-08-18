@@ -292,17 +292,17 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
     std::string artworkPath;
     if (m_settings.m_backendVersion < 50000)
     {
-      artworkPath = StringUtils::Format("http://%s:%d/service?method=recording.artwork&sid=%s&recording_id=%s", m_settings.m_hostname.c_str(), m_settings.m_port, g_pvrclient->m_sid, tag.GetRecordingId().c_str());
+      artworkPath = StringUtils::Format("%s/service?method=recording.artwork&sid=%s&recording_id=%s", m_settings.m_urlBase, m_request.getSID(), tag.GetRecordingId().c_str());
       tag.SetThumbnailPath(artworkPath);
-      artworkPath = StringUtils::Format("http://%s:%d/service?method=recording.fanart&sid=%s&recording_id=%s", m_settings.m_hostname.c_str(), m_settings.m_port, g_pvrclient->m_sid, tag.GetRecordingId().c_str());
+      artworkPath = StringUtils::Format("%s/service?method=recording.fanart&sid=%s&recording_id=%s", m_settings.m_urlBase, m_request.getSID(), tag.GetRecordingId().c_str());
       tag.SetFanartPath(artworkPath);
     }
     else
     {
       if (m_settings.m_sendSidWithMetadata)
-        artworkPath = StringUtils::Format("http://%s:%d/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_hostname.c_str(), m_settings.m_port, g_pvrclient->m_sid, UriEncode(title).c_str());
+        artworkPath = StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_urlBase, m_request.getSID(), UriEncode(title).c_str());
       else
-        artworkPath = StringUtils::Format("http://%s:%d/service?method=channel.show.artwork&name=%s", m_settings.m_hostname.c_str(), m_settings.m_port, UriEncode(title).c_str());
+        artworkPath = StringUtils::Format("%s/service?method=channel.show.artwork&name=%s", m_settings.m_urlBase, UriEncode(title).c_str());
       tag.SetFanartPath(artworkPath);
       artworkPath += "&prefer=poster";
       tag.SetThumbnailPath(artworkPath);

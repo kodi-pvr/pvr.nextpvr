@@ -29,12 +29,17 @@ void Settings::ReadFromAddon()
 
   /* Connection settings */
   /***********************/
+
+  std::string protocol = kodi::GetSettingString("hostprotocol", DEFAULT_PROTOCOL);
+
   m_hostname = kodi::GetSettingString("host", DEFAULT_HOST);
   uri::decode(m_hostname);
 
   m_port = kodi::GetSettingInt("port", DEFAULT_PORT);
 
   m_PIN = kodi::GetSettingString("pin", DEFAULT_PIN);
+
+  sprintf(m_urlBase, "%s://%.255s:%d", protocol.c_str(), m_hostname.c_str(), m_port);
 
   m_enableWOL = kodi::GetSettingBoolean("wolenable", false);
   m_hostMACAddress = kodi::GetSettingString("host_mac");
