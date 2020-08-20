@@ -9,6 +9,7 @@
 #include "BackendRequest.h"
 #include "Socket.h"
 #include <kodi/General.h>
+#include <kodi/Network.h>
 #include <kodi/gui/dialogs/Select.h>
 #include <p8-platform/util/StringUtils.h>
 
@@ -142,6 +143,37 @@ namespace NextPVR
   bool Request::OneTimeSetup()
   {
     // create user folder for channel icons and try and locate backend
+    std::vector<std::vector<std::string>> foundAddress = Discovery();
+    if (!foundAddress.empty())
+    {
+      // found host using discovery protocol.
+      std::vector<std::string> entries;
+      int offset = 0;
+      for (unsigned int entry = 0; entry < foundAddress.size(); entry++)
+      {
+        if (kodi::network::IsLocalHost(foundAddress[entry][0]))
+          entries.emplace_back("127.0.0.1");
+        else
+          entries.emplace_back(foundAddress[entry][0]);
+      }
+      // found multiple hosts using discovery protocol.
+      if (foundAddress.size() > 1)
+      {
+        offset = kodi::gui::dialogs::Select::Show(kodi::GetLocalizedString(30187), entries);
+      }
+      if (offset >= 0)
+      {
+        kodi::vfs::CreateDirectory("special://userdata/addon_data/pvr.nextpvr/");
+        m_settings.UpdateServerPort(entries[offset], atoi(foundAddress[offset][1].c_str()));
+        kodi::QueueNotification(QUEUE_INFO, kodi::GetLocalizedString(30189),
+          StringUtils::Format(kodi::GetLocalizedString(30182).c_str(), m_settings.m_hostname.c_str(), m_settings.m_port));
+        /* note that these run before the file is created */
+        kodi::SetSettingString("host", m_settings.m_hostname);
+        kodi::SetSettingInt("port", m_settings.m_port);
+        return true;
+      }
+    }
+    // try 127.0.0.1
     const std::string URL = "http://127.0.0.1:8866/service?method=recording.lastupdated|connection-timeout=2";
     kodi::vfs::CFile backend;
     if (backend.OpenFile(URL, ADDON_READ_NO_CACHE))
@@ -150,39 +182,7 @@ namespace NextPVR
       kodi::vfs::CreateDirectory("special://userdata/addon_data/pvr.nextpvr/");
       return true;
     }
-    else
-    {
-      // couldn't find NextPVR on localhost so try and find on subnet
-      std::vector<std::vector<std::string>> foundAddress = Discovery();
-      int offset = 0;
-      if (!foundAddress.empty())
-      {
-        // found host using discovery protocol.
-        if (foundAddress.size() > 1)
-        {
-          // found multiple hosts let user choose
-          std::vector<std::string> entries;
-          for (int entry = 0; entry < foundAddress.size(); entry++)
-          {
-            entries.emplace_back(foundAddress[entry][0]);
-          }
-          offset = kodi::gui::dialogs::Select::Show(kodi::GetLocalizedString(30187), entries);
-          if (offset < 0)
-          {
-            kodi::Log(ADDON_LOG_INFO, "User canceled setup expect a failed install");
-            return false;
-          }
-        }
-        kodi::vfs::CreateDirectory("special://userdata/addon_data/pvr.nextpvr/");
-        m_settings.UpdateServerPort(foundAddress[offset][0], std::stoi(foundAddress[offset][1]));
-        kodi::QueueNotification(QUEUE_INFO, kodi::GetLocalizedString(30189),
-                StringUtils::Format(kodi::GetLocalizedString(30182).c_str(), m_settings.m_hostname.c_str(), m_settings.m_port));
-        /* note that these run before the file is created */
-        kodi::SetSettingString("host", m_settings.m_hostname);
-        kodi::SetSettingInt("port", m_settings.m_port);
-        return true;
-      }
-    }
+    kodi::Log(ADDON_LOG_INFO, "No running server found expect a failed install");
     return false;
   }
   std::vector<std::vector<std::string>> Request::Discovery()
