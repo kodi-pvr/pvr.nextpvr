@@ -43,11 +43,12 @@ namespace NextPVR
     tinyxml2::XMLError DoMethodRequest(const char* resource, tinyxml2::XMLDocument& doc);
     int FileCopy(const char* resource, std::string fileName);
     void setSID(char* newsid) { strcpy(m_sid, newsid); };
-    void clearSid() { std::fill( std::begin(m_sid), std::end(m_sid), 0); };
+    void clearSid() { std::fill(std::begin(m_sid), std::end(m_sid), 0); m_sidUpdate = 0; };
     bool PingBackend();
     bool OneTimeSetup();
     const char* getSID() { return m_sid; };
     std::vector<std::vector<std::string>> Discovery();
+    bool isSidActive() { return time(nullptr) < m_sidUpdate + 900; };
 
   private:
     Request() = default;
@@ -59,5 +60,6 @@ namespace NextPVR
     mutable std::mutex m_mutexRequest;
     time_t m_start = 0;
     char m_sid[64]{0};
+    time_t m_sidUpdate = 0;
   };
 } // namespace NextPVR

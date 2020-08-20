@@ -57,7 +57,7 @@ public:
 
 
   /* Server handling */
-  ADDON_STATUS Connect();
+  ADDON_STATUS Connect(bool sendWOL = true);
   void Disconnect();
   bool IsUp();
   PVR_ERROR OnSystemSleep() override;
@@ -165,8 +165,9 @@ private:
   NextPVR::Request& m_request = NextPVR::Request::GetInstance();
 
   eNowPlaying m_nowPlaying = NotPlaying;
-  void SetConnectionState(std::string message, PVR_CONNECTION_STATE state, std::string displayMessage="");
+  void SetConnectionState(std::string message, PVR_CONNECTION_STATE state, std::string displayMessage = "");
   PVR_CONNECTION_STATE m_connectionState = PVR_CONNECTION_STATE_UNKNOWN;
+  PVR_CONNECTION_STATE m_coreState = PVR_CONNECTION_STATE_UNKNOWN;
 
   void SendWakeOnLan();
 

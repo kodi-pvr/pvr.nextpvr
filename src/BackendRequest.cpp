@@ -45,6 +45,11 @@ namespace NextPVR
         kodi::Log(ADDON_LOG_ERROR, "DoRequest failed, response=%s", response.c_str());
         resultCode = HTTP_BADREQUEST;
       }
+      else
+      {
+        m_sidUpdate = time(nullptr);
+      }
+
     }
     kodi::Log(ADDON_LOG_DEBUG, "DoRequest return %s %d %d %d", resource, resultCode, response.length(), time(nullptr) - m_start);
     return resultCode;
@@ -52,7 +57,7 @@ namespace NextPVR
 
   tinyxml2::XMLError Request::DoMethodRequest(const char* resource, tinyxml2::XMLDocument& doc)
   {
-
+    // return is same on timeout or http return ie 404, 500.
     tinyxml2::XMLError retError = tinyxml2::XML_ERROR_FILE_NOT_FOUND;
     std::unique_lock<std::mutex> lock(m_mutexRequest);
     m_start = time(nullptr);
@@ -84,6 +89,10 @@ namespace NextPVR
         {
           kodi::Log(ADDON_LOG_DEBUG, "DoMethodRequest bad return %s", attrib);
           retError = tinyxml2::XML_NO_ATTRIBUTE;
+        }
+        else
+        {
+          m_sidUpdate = time(nullptr);
         }
       }
     }
