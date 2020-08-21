@@ -249,6 +249,7 @@ PVR_ERROR Timers::GetTimers(kodi::addon::PVRTimersResultSet& results)
         }
       }
     }
+    m_lastTimerUpdateTime = time(nullptr);
   }
   else
   {

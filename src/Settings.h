@@ -74,7 +74,7 @@ namespace NextPVR
     char m_urlBase[512]{ 0 };
     int m_port = 8866;
     bool m_remoteAccess = false;
-    int m_serverTimeOffset = 0;
+    time_t m_serverTimeOffset = 0;
     std::string m_hostMACAddress = "";
     std::string m_PIN = "";
     bool m_enableWOL = false;

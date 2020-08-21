@@ -8,22 +8,25 @@
 
 #include "BackendRequest.h"
 #include "Socket.h"
+#include "utilities/XMLUtils.h"
 #include <kodi/General.h>
 #include <kodi/Network.h>
 #include <kodi/gui/dialogs/Select.h>
 #include <p8-platform/util/StringUtils.h>
 
+using namespace NextPVR::utilities;
+
 namespace NextPVR
 {
   int Request::DoRequest(const char* resource, std::string& response)
   {
+    auto start = std::chrono::steady_clock::now();
     std::unique_lock<std::mutex> lock(m_mutexRequest);
-    m_start = time(nullptr);
     // build request string, adding SID if requred
     std::string URL;
 
     if (strstr(resource, "method=session") == nullptr)
-      URL = StringUtils::Format("%s%s&sid=%s", m_settings.m_urlBase, resource, m_sid);
+      URL = StringUtils::Format("%s%s&sid=%s", m_settings.m_urlBase, resource, getSID());
     else
       URL = StringUtils::Format("%s%s", m_settings.m_urlBase, resource);
 
@@ -49,14 +52,14 @@ namespace NextPVR
       {
         m_sidUpdate = time(nullptr);
       }
-
     }
-    kodi::Log(ADDON_LOG_DEBUG, "DoRequest return %s %d %d %d", resource, resultCode, response.length(), time(nullptr) - m_start);
+    kodi::Log(ADDON_LOG_DEBUG, "DoRequest return %s %d %d %d", resource, resultCode, response.length(), std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start));
     return resultCode;
   }
 
-  tinyxml2::XMLError Request::DoMethodRequest(const char* resource, tinyxml2::XMLDocument& doc)
+  tinyxml2::XMLError Request::DoMethodRequest(const char* resource, tinyxml2::XMLDocument& doc, bool compressed)
   {
+    auto start = std::chrono::steady_clock::now();
     // return is same on timeout or http return ie 404, 500.
     tinyxml2::XMLError retError = tinyxml2::XML_ERROR_FILE_NOT_FOUND;
     std::unique_lock<std::mutex> lock(m_mutexRequest);
@@ -64,10 +67,13 @@ namespace NextPVR
     // build request string, adding SID if requred
     std::string URL;
 
-    if (m_sid[0])
-      URL = StringUtils::Format("%s%s&sid=%s", m_settings.m_urlBase, resource, m_sid);
+    if (isSidActive())
+      URL = StringUtils::Format("%s%s&sid=%s", m_settings.m_urlBase, resource, getSID());
     else
       URL = StringUtils::Format("%s%s", m_settings.m_urlBase, resource);
+
+    if (!compressed)
+      URL += "|Accept-Encoding=identity";
 
     // ask XBMC to read the URL for us
     kodi::vfs::CFile stream;
@@ -96,8 +102,24 @@ namespace NextPVR
         }
       }
     }
-    kodi::Log(ADDON_LOG_DEBUG, "DoMethodRequest return %s %d %d %d", resource, retError, response.length(), time(nullptr) - m_start);
+    kodi::Log(ADDON_LOG_DEBUG, "DoMethodRequest return %s %d %d %d", resource, retError, response.length(), std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start));
     return retError;
+  }
+
+  tinyxml2::XMLError Request::GetLastUpdate(const char* resource, time_t& last_update)
+  {
+    tinyxml2::XMLDocument doc;
+    tinyxml2::XMLError xmlReturn = DoMethodRequest(resource, doc, false);
+    if ( xmlReturn == tinyxml2::XML_SUCCESS)
+    {
+      int64_t value{ 0 };
+      if (!XMLUtils::GetLong(doc.RootElement(), "last_update", value))
+      {
+        xmlReturn = tinyxml2::XML_NO_TEXT_NODE;
+      }
+      last_update = value + m_settings.m_serverTimeOffset;
+    }
+    return xmlReturn;
   }
 
   int Request::FileCopy(const char* resource, std::string fileName)
@@ -108,7 +130,7 @@ namespace NextPVR
 
 
     char separator = (strchr(resource, '?') == nullptr) ? '?' : '&';
-    const std::string URL = StringUtils::Format("%s%s%csid=%s", m_settings.m_urlBase, resource, separator, m_sid);
+    const std::string URL = StringUtils::Format("%s%s%csid=%s", m_settings.m_urlBase, resource, separator, getSID());
 
     // ask XBMC to read the URL for us
     int resultCode = HTTP_NOTFOUND;

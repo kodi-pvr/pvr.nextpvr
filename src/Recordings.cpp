@@ -60,6 +60,7 @@ PVR_ERROR Recordings::GetRecordings(bool deleted, kodi::addon::PVRRecordingsResu
   // include already-completed recordings
   PVR_ERROR returnValue = PVR_ERROR_NO_ERROR;
   m_hostFilenames.clear();
+  m_lastPlayed.clear();
   int recordingCount = 0;
   std::string response;
   if (m_request.DoRequest("/service?method=recording.list&filter=all", response) == HTTP_OK)
@@ -124,7 +125,20 @@ PVR_ERROR Recordings::GetRecordings(bool deleted, kodi::addon::PVRRecordingsResu
   {
     returnValue = PVR_ERROR_SERVER_ERROR;
   }
-  g_pvrclient->m_lastRecordingUpdateTime = time(0);
+  g_pvrclient->m_lastRecordingUpdateTime = time(nullptr);
+  return returnValue;
+}
+PVR_ERROR Recordings::GetRecordingsLastPlayedPosition()
+{
+  // include already-completed recordings
+  PVR_ERROR returnValue = PVR_ERROR_NO_ERROR;
+  tinyxml2::XMLDocument doc;
+  if (m_request.DoMethodRequest("/service?method=recording.list&filter=ready", doc) == tinyxml2::XML_SUCCESS)
+  {
+    m_lastPlayed.clear();
+    for (const tinyxml2::XMLNode*  pRecordingNode = doc.RootElement()->FirstChildElement("recordings")->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
+      m_lastPlayed[XMLUtils::GetIntValue(pRecordingNode, "id")] =  XMLUtils::GetIntValue(pRecordingNode, "playback_position");
+  }
   return returnValue;
 }
 
@@ -231,24 +245,14 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
     }
   }
 
-  int lookup = 0;
-  tag.SetLastPlayedPosition(XMLUtils::GetIntValue(pRecordingNode, "playback_position", lookup));
-  if (XMLUtils::GetInt(pRecordingNode, "channel_id", lookup))
-  {
-    if (lookup == 0)
-    {
-      tag.SetChannelUid(PVR_CHANNEL_INVALID_UID);
-    }
-    else
-    {
-      tag.SetChannelUid(lookup);
-      tag.SetIconPath(g_pvrclient->m_channels.GetChannelIconFileName(tag.GetChannelUid()));
-    }
-  }
-  else
-  {
+  tag.SetLastPlayedPosition(XMLUtils::GetIntValue(pRecordingNode, "playback_position"));
+  m_lastPlayed[std::stoi(tag.GetRecordingId())] = tag.GetLastPlayedPosition();
+
+  tag.SetChannelUid(XMLUtils::GetIntValue(pRecordingNode, "channel_id"));
+  if (tag.GetChannelUid() == 0)
     tag.SetChannelUid(PVR_CHANNEL_INVALID_UID);
-  }
+  else
+    tag.SetIconPath(g_pvrclient->m_channels.GetChannelIconFileName(tag.GetChannelUid()));
 
   buffer.clear();
   if (XMLUtils::GetString(pRecordingNode, "channel", buffer))
@@ -449,6 +453,7 @@ PVR_ERROR Recordings::SetRecordingLastPlayedPosition(const kodi::addon::PVRRecor
 PVR_ERROR Recordings::GetRecordingLastPlayedPosition(const kodi::addon::PVRRecording& recording, int& position)
 {
   position = recording.GetLastPlayedPosition();
+  position = m_lastPlayed[std::stoi(recording.GetRecordingId())];
   return PVR_ERROR_NO_ERROR;
 }
 

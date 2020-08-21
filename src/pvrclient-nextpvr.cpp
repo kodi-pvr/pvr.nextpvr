@@ -82,7 +82,7 @@ cPVRClientNextPVR::cPVRClientNextPVR(const CNextPVRAddon& base, KODI_HANDLE inst
 {
   m_bConnected = false;
   m_supportsLiveTimeshift = false;
-  m_lastRecordingUpdateTime = std::numeric_limits<int64_t>::max(); // time of last recording check - force forever
+  m_lastRecordingUpdateTime = std::numeric_limits<time_t>::max(); // time of last recording check - force forever
   m_timeshiftBuffer = new timeshift::DummyBuffer();
   m_recordingBuffer = new timeshift::RecordingBuffer();
   m_realTimeBuffer = new timeshift::DummyBuffer();
@@ -125,6 +125,7 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
   std::string response;
   if (sendWOL)
     SendWakeOnLan();
+  m_request.clearSid();
   if (m_request.DoRequest("/service?method=session.initiate&ver=1.0&device=xbmc", response) == HTTP_OK)
   {
     tinyxml2::XMLDocument doc;
@@ -134,12 +135,8 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
       std::string sid;
       if (XMLUtils::GetString(doc.RootElement(), "salt", salt) && XMLUtils::GetString(doc.RootElement(), "sid", sid))
       {
-        // extract and store sid
-        strcpy(m_sid, sid.c_str());
-        m_request.setSID(m_sid);
-
         // a bit of debug
-        kodi::Log(ADDON_LOG_DEBUG, "session.initiate returns: sid=%s salt=%s", m_sid, salt.c_str());
+        kodi::Log(ADDON_LOG_DEBUG, "session.initiate returns: sid=%s salt=%s", sid.c_str(), salt.c_str());
 
         std::string pinMD5 = kodi::GetMD5(m_settings.m_PIN);
         StringUtils::ToLower(pinMD5);
@@ -156,11 +153,12 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
 
         // login session
         std::string loginResponse;
-        std::string request = StringUtils::Format("/service?method=session.login&sid=%s&md5=%s", m_sid, md5.c_str());
+        std::string request = StringUtils::Format("/service?method=session.login&sid=%s&md5=%s", sid.c_str(), md5.c_str());
         if (m_request.DoRequest(request.c_str(), loginResponse) == HTTP_OK)
         {
           if (m_settings.ReadBackendSettings() == ADDON_STATUS_OK)
           {
+            m_request.setSID(sid);
             // set additional options based on the backend
             ConfigurePostConnectionOptions();
             m_settings.SetConnection(true);
@@ -266,6 +264,10 @@ void cPVRClientNextPVR::ConfigurePostConnectionOptions()
   const bool liveStreams = kodi::GetSettingBoolean("uselivestreams");
   if (liveStreams)
       m_channels.LoadLiveStreams();
+
+  if (m_lastEPGUpdateTime == 0 && m_settings.m_backendVersion >= 5007)
+    m_request.GetLastUpdate("/service?method=system.epg.summary", m_lastEPGUpdateTime);
+
 }
 
 /* IsUp()
@@ -277,35 +279,55 @@ bool cPVRClientNextPVR::IsUp()
   // check time since last time Recordings were updated, update if it has been awhile
   if (m_bConnected == true)
   {
-    if (m_nowPlaying == NotPlaying && m_lastRecordingUpdateTime != std::numeric_limits<int64_t>::max() && time(nullptr) > (m_lastRecordingUpdateTime + 60))
+    if (m_nowPlaying == NotPlaying && m_lastRecordingUpdateTime != std::numeric_limits<time_t>::max() && time(nullptr) > (m_lastRecordingUpdateTime + 60))
     {
-      tinyxml2::XMLDocument doc;
-      const char* request = "/service?method=recording.lastupdated";
-      if (m_request.DoMethodRequest(request, doc) == tinyxml2::XML_SUCCESS)
+      time_t update_time;
+      if (m_request.GetLastUpdate("/service?method=recording.lastupdated", update_time) == tinyxml2::XML_SUCCESS)
       {
         if (m_connectionState == PVR_CONNECTION_STATE_DISCONNECTED)
-        {
           // one time failure resolved
           m_connectionState = PVR_CONNECTION_STATE_CONNECTED;
-        }
 
-        int64_t update_time;
-        if (XMLUtils::GetLong(doc.RootElement(), "last_update", update_time))
+        if (update_time > m_lastRecordingUpdateTime)
         {
-          if (update_time > m_lastRecordingUpdateTime)
+          m_lastRecordingUpdateTime = std::numeric_limits<time_t>::max();
+          if (m_settings.m_backendVersion >= 5007)
           {
-            m_lastRecordingUpdateTime = std::numeric_limits<int64_t>::max();
-            g_pvrclient->TriggerRecordingUpdate();
-            g_pvrclient->TriggerTimerUpdate();
+            time_t lastUpdate;
+            if (m_request.GetLastUpdate("/service?method=system.epg.summary", lastUpdate) == tinyxml2::XML_SUCCESS)
+            {
+              if (lastUpdate > m_lastEPGUpdateTime)
+              {
+                SetConnectionState("Force update", PVR_CONNECTION_STATE_UNKNOWN);
+                SetConnectionState("Reload from backend", PVR_CONNECTION_STATE_CONNECTED);
+                m_lastEPGUpdateTime = lastUpdate;
+                return m_bConnected;
+              }
+            }
+            if (update_time <= m_timers.m_lastTimerUpdateTime + 1)
+            {
+              // we already updated this one in Kodi
+              m_lastRecordingUpdateTime = time(nullptr);
+              return m_bConnected;
+            }
+            if (m_request.GetLastUpdate("/service?method=recording.lastupdated&ignore_resume=true", lastUpdate) == tinyxml2::XML_SUCCESS)
+            {
+
+              if (lastUpdate <= m_timers.m_lastTimerUpdateTime)
+              {
+                // only resume position changed
+                m_recordings.GetRecordingsLastPlayedPosition();
+                m_lastRecordingUpdateTime = update_time;
+                return m_bConnected;
+              }
+            }
           }
-          else
-          {
-            m_lastRecordingUpdateTime = time(nullptr);
-          }
+          g_pvrclient->TriggerRecordingUpdate();
+          g_pvrclient->TriggerTimerUpdate();
         }
         else
         {
-          m_lastRecordingUpdateTime = 0;
+          m_lastRecordingUpdateTime = time(nullptr);
         }
       }
       else
@@ -362,7 +384,7 @@ void* cPVRClientNextPVR::Process(void)
 PVR_ERROR cPVRClientNextPVR::OnSystemSleep()
 {
   m_bConnected = false;
-  m_lastRecordingUpdateTime = std::numeric_limits<int64_t>::max();
+  m_lastRecordingUpdateTime = std::numeric_limits<time_t>::max();
   m_connectionState = PVR_CONNECTION_STATE_DISCONNECTED;
   return PVR_ERROR_NO_ERROR;
 }
@@ -472,7 +494,7 @@ PVR_ERROR cPVRClientNextPVR::GetChannelStreamProperties(const kodi::addon::PVRCh
       m_nowPlaying = NotPlaying;
       m_livePlayer = nullptr;
     }
-    const std::string line = StringUtils::Format("%s/services/service?method=channel.transcode.m3u8&sid=%s", m_settings.m_urlBase, m_sid);
+    const std::string line = StringUtils::Format("%s/services/service?method=channel.transcode.m3u8&sid=%s", m_settings.m_urlBase, m_request.getSID());
     m_livePlayer = m_timeshiftBuffer;
     m_livePlayer->Channel(channel.GetUniqueId());
     if (m_livePlayer->Open(line))
@@ -529,23 +551,23 @@ bool cPVRClientNextPVR::OpenLiveStream(const kodi::addon::PVRChannel& channel)
   }
   else if (channel.GetIsRadio() == false && m_supportsLiveTimeshift && m_settings.m_liveStreamingMethod == Timeshift)
   {
-    line = StringUtils::Format("GET /live?channeloid=%d&mode=liveshift&client=XBMC-%s HTTP/1.0\r\n", channel.GetUniqueId(), m_sid);
+    line = StringUtils::Format("GET /live?channeloid=%d&mode=liveshift&client=XBMC-%s HTTP/1.0\r\n", channel.GetUniqueId(), m_request.getSID());
     m_livePlayer = m_timeshiftBuffer;
   }
   else if (m_settings.m_liveStreamingMethod == RollingFile)
   {
-    line = StringUtils::Format("%s/live?channeloid=%d&client=XBMC-%s&epgmode=true", m_settings.m_urlBase, channel.GetUniqueId(), m_sid);
+    line = StringUtils::Format("%s/live?channeloid=%d&client=XBMC-%s&epgmode=true", m_settings.m_urlBase, channel.GetUniqueId(), m_request.getSID());
     m_livePlayer = m_timeshiftBuffer;
   }
   else if (m_settings.m_liveStreamingMethod == ClientTimeshift)
   {
-    line = StringUtils::Format("%s/live?channeloid=%d&client=%s&sid=%s", m_settings.m_urlBase, channel.GetUniqueId(), m_sid, m_sid);
+    line = StringUtils::Format("%s/live?channeloid=%d&client=%s&sid=%s", m_settings.m_urlBase, channel.GetUniqueId(), m_request.getSID(), m_request.getSID());
     m_livePlayer = m_timeshiftBuffer;
     m_livePlayer->Channel(channel.GetUniqueId());
   }
   else
   {
-    line = StringUtils::Format("%s/live?channeloid=%d&client=XBMC-%s", m_settings.m_urlBase, channel.GetUniqueId(), m_sid);
+    line = StringUtils::Format("%s/live?channeloid=%d&client=XBMC-%s", m_settings.m_urlBase, channel.GetUniqueId(), m_request.getSID());
     m_livePlayer = m_realTimeBuffer;
   }
   kodi::Log(ADDON_LOG_INFO, "Calling Open(%s) on tsb!", line.c_str());
@@ -637,7 +659,7 @@ bool cPVRClientNextPVR::OpenRecordedStream(const kodi::addon::PVRRecording& reco
   kodi::addon::PVRRecording copyRecording = recording;
   m_nowPlaying = Recording;
   copyRecording.SetDirectory(m_recordings.m_hostFilenames[recording.GetRecordingId()]);
-  const std::string line = StringUtils::Format("%s/live?recording=%s&client=XBMC-%s", m_settings.m_urlBase, recording.GetRecordingId().c_str(), m_sid);
+  const std::string line = StringUtils::Format("%s/live?recording=%s&client=XBMC-%s", m_settings.m_urlBase, recording.GetRecordingId().c_str(), m_request.getSID());
   return m_recordingBuffer->Open(line, copyRecording);
 }
 
