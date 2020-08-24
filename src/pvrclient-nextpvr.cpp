@@ -416,8 +416,35 @@ PVR_ERROR cPVRClientNextPVR::GetConnectionString(std::string& connection)
 
 PVR_ERROR cPVRClientNextPVR::GetDriveSpace(uint64_t& total, uint64_t& used)
 {
-  total = 0;
-  used = 0;
+  std::string response;
+  int64_t spaceTotal = 0;
+  int64_t spaceUsed = 0;
+  if (m_request.DoRequest("/service?method=system.space", response) == HTTP_OK)
+  {
+    TiXmlDocument doc;
+    if (doc.Parse(response.c_str()) != nullptr)
+    {
+      TiXmlElement* spaceNode = doc.RootElement()->FirstChildElement("directory");
+      kodi::Log(ADDON_LOG_INFO, "spaceNode %d", spaceNode);
+      if (spaceNode != nullptr)
+      {
+        while (spaceNode)
+        {
+          int64_t tmpTotal;
+          int64_t tmpFree;
+          XMLUtils::GetLong(spaceNode, "total", tmpTotal);
+          XMLUtils::GetLong(spaceNode, "free", tmpFree);
+          int64_t tmpUsed = tmpTotal - tmpFree;
+          spaceTotal += tmpTotal;
+          spaceUsed += tmpUsed;
+
+		  spaceNode = spaceNode->NextSiblingElement("directory");
+        }
+      }
+    }
+  }
+  total = spaceTotal / 1024;
+  used = spaceUsed / 1024;
   return PVR_ERROR_NO_ERROR;
 }
 
