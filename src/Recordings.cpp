@@ -157,9 +157,7 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
     // skip timers
     return false;
   }
-  buffer.clear();
-  XMLUtils::GetString(pRecordingNode, "duration_seconds", buffer);
-  tag.SetDuration(stoi(buffer));
+  tag.SetDuration(XMLUtils::GetIntValue(pRecordingNode, "duration_seconds"));
 
   if (status == "Ready" || status == "Pending" || status == "Recording")
   {
@@ -434,18 +432,33 @@ bool Recordings::ForgetRecording(const kodi::addon::PVRRecording& recording)
 
 PVR_ERROR Recordings::SetRecordingLastPlayedPosition(const kodi::addon::PVRRecording& recording, int lastplayedposition)
 {
+  g_pvrclient->m_lastRecordingUpdateTime = std::numeric_limits<time_t>::max();
+  time_t timerUpdate = m_timers.m_lastTimerUpdateTime;
   const std::string request = StringUtils::Format("/service?method=recording.watched.set&recording_id=%s&position=%d", recording.GetRecordingId().c_str(), lastplayedposition);
-
-  std::string response;
-  if (m_request.DoRequest(request.c_str(), response) == HTTP_OK)
+  tinyxml2::XMLDocument doc;
+  if (m_request.DoMethodRequest(request.c_str(), doc) != tinyxml2::XML_SUCCESS)
   {
-    if (strstr(response.c_str(), "<rsp stat=\"ok\">") == nullptr)
-    {
-      kodi::Log(ADDON_LOG_DEBUG, "SetRecordingLastPlayedPosition failed");
-      return PVR_ERROR_FAILED;
-    }
-    g_pvrclient->m_lastRecordingUpdateTime = 0;
+    kodi::Log(ADDON_LOG_DEBUG, "SetRecordingLastPlayedPosition failed");
+    return PVR_ERROR_FAILED;
   }
+  if (m_settings.m_backendVersion >= 5007)
+  {
+    time_t lastUpdate;
+    if (m_request.GetLastUpdate("/service?method=recording.lastupdated&ignore_resume=true", lastUpdate) == tinyxml2::XML_SUCCESS)
+    {
+      if (timerUpdate >= lastUpdate)
+      {
+        if (m_request.GetLastUpdate("/service?method=recording.lastupdated", lastUpdate) == tinyxml2::XML_SUCCESS)
+        {
+          // only change is watched point so skip it
+          m_lastPlayed[std::stoi(recording.GetRecordingId())] = lastplayedposition;
+          g_pvrclient->m_lastRecordingUpdateTime = lastUpdate;
+        }
+      }
+    }
+  }
+  if ( g_pvrclient->m_lastRecordingUpdateTime == std::numeric_limits<time_t>::max())
+    g_pvrclient->m_lastRecordingUpdateTime = 0;
   return PVR_ERROR_NO_ERROR;
 }
 

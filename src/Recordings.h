@@ -10,6 +10,7 @@
 #pragma once
 
 #include "BackendRequest.h"
+#include "Timers.h"
 #include <kodi/addon-instance/PVR.h>
 
 
@@ -52,6 +53,8 @@ namespace NextPVR
 
     Settings& m_settings = Settings::GetInstance();
     Request& m_request = Request::GetInstance();
+    Timers& m_timers = Timers::GetInstance();
+
     // update these at end of counting loop can be called during action
     int m_iRecordingCount = -1;
     std::map<int, int> m_lastPlayed;
