@@ -305,3 +305,11 @@ msgstr ""
 msgctxt "#30694"
 msgid "Kodi default is DVB genre text.  Default required for Kodi genre search and language translation"
 msgstr ""
+
+msgctxt "#30195"
+msgid "Send Wake On LAN to server"
+msgstr ""
+
+msgctxt "#30196"
+msgid "Open NextPVR settings"
+msgstr ""

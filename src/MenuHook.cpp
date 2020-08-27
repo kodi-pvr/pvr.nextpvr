@@ -28,6 +28,15 @@ PVR_ERROR MenuHook::CallSettingsMenuHook(const kodi::addon::PVRMenuhook& menuhoo
   {
     g_pvrclient->TriggerChannelGroupsUpdate();
   }
+  else if (menuhook.GetHookId() == PVR_MENUHOOK_SETTING_SEND_WOL)
+  {
+    g_pvrclient->SendWakeOnLan();
+  }
+  else if (menuhook.GetHookId() == PVR_MENUHOOK_SETTING_OPEN_SETTINGS)
+  {
+    kodi::OpenSettings();
+  }
+
   return PVR_ERROR_NO_ERROR;
 }
 
@@ -72,6 +81,19 @@ void MenuHook::ConfigureMenuHook()
   menuHook.SetCategory(PVR_MENUHOOK_SETTING);
   menuHook.SetHookId(PVR_MENUHOOK_SETTING_UPDATE_CHANNNEL_GROUPS);
   menuHook.SetLocalizedStringId(30186);
+  g_pvrclient->AddMenuHook(menuHook);
+
+  if (m_settings.m_enableWOL)
+  {
+    menuHook.SetCategory(PVR_MENUHOOK_SETTING);
+    menuHook.SetHookId(PVR_MENUHOOK_SETTING_SEND_WOL);
+    menuHook.SetLocalizedStringId(30195);
+    g_pvrclient->AddMenuHook(menuHook);
+  }
+
+  menuHook.SetCategory(PVR_MENUHOOK_SETTING);
+  menuHook.SetHookId(PVR_MENUHOOK_SETTING_OPEN_SETTINGS);
+  menuHook.SetLocalizedStringId(30196);
   g_pvrclient->AddMenuHook(menuHook);
 
   if (m_settings.m_backendVersion >= 50000)

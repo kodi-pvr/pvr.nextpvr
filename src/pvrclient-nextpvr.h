@@ -31,13 +31,6 @@
 #include "p8-platform/threads/threads.h"
 #include <map>
 
-#define SAFE_DELETE(p) \
-  do \
-  { \
-    delete (p); \
-    (p) = nullptr; \
-  } while (0)
-
 enum eNowPlaying
 {
   NotPlaying = 0,
@@ -62,6 +55,7 @@ public:
   bool IsUp();
   PVR_ERROR OnSystemSleep() override;
   PVR_ERROR OnSystemWake() override;
+  void SendWakeOnLan();
 
   /* General handling */
   PVR_ERROR GetBackendName(std::string& name) override;
@@ -167,7 +161,5 @@ private:
   void SetConnectionState(std::string message, PVR_CONNECTION_STATE state, std::string displayMessage = "");
   PVR_CONNECTION_STATE m_connectionState = PVR_CONNECTION_STATE_UNKNOWN;
   PVR_CONNECTION_STATE m_coreState = PVR_CONNECTION_STATE_UNKNOWN;
-
-  void SendWakeOnLan();
 
 };
