@@ -9,7 +9,6 @@
 
 #include "TranscodedBuffer.h"
 #include "../utilities/XMLUtils.h"
-#include "tinyxml.h"
 #include <limits>
 
 using namespace NextPVR::utilities;
@@ -78,10 +77,10 @@ int TranscodedBuffer::TranscodeStatus()
   std::string response;
   if (m_request.DoRequest("/services/service?method=channel.transcode.status", response) == HTTP_OK)
   {
-    TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != nullptr)
+    tinyxml2::XMLDocument doc;
+    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
     {
-      TiXmlElement* rspNode = doc.FirstChildElement("rsp");
+      tinyxml2::XMLNode* rspNode = doc.FirstChildElement("rsp");
       if (rspNode != nullptr)
       {
         bool final;

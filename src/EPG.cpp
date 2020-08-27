@@ -38,11 +38,11 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
   const std::string request = StringUtils::Format("/service?method=channel.listings&channel_id=%d&start=%d&end=%d&genre=all", channelUid, static_cast<int>(start), static_cast<int>(end));
   if (m_request.DoRequest(request.c_str(), response) == HTTP_OK)
   {
-    TiXmlDocument doc;
-    if (doc.Parse(response.c_str()))
+    tinyxml2::XMLDocument doc;
+    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
     {
-      TiXmlElement* listingsNode = doc.RootElement()->FirstChildElement("listings");
-      for (TiXmlElement* pListingNode = listingsNode->FirstChildElement("l"); pListingNode; pListingNode = pListingNode->NextSiblingElement())
+      tinyxml2::XMLNode* listingsNode = doc.RootElement()->FirstChildElement("listings");
+      for (tinyxml2::XMLNode* pListingNode = listingsNode->FirstChildElement("l"); pListingNode; pListingNode = pListingNode->NextSiblingElement())
       {
         kodi::addon::PVREPGTag broadcast;
         std::string title;
@@ -86,13 +86,13 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
         {
           // artwork URL
           if (m_settings.m_backendVersion < 50000)
-            artworkPath = StringUtils::Format("http://%s:%d/service?method=channel.show.artwork&sid=%s&event_id=%d", m_settings.m_hostname.c_str(), m_settings.m_port, g_pvrclient->m_sid, epgOid);
+            artworkPath = StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&event_id=%d", m_settings.m_urlBase, m_request.getSID(), epgOid);
           else
           {
             if (m_settings.m_sendSidWithMetadata)
-              artworkPath = StringUtils::Format("http://%s:%d/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_hostname.c_str(), m_settings.m_port, g_pvrclient->m_sid, UriEncode(title).c_str());
+              artworkPath = StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_urlBase, m_request.getSID(), UriEncode(title).c_str());
             else
-              artworkPath = StringUtils::Format("http://%s:%d/service?method=channel.show.artwork&name=%s", m_settings.m_hostname.c_str(), m_settings.m_port, UriEncode(title).c_str());
+              artworkPath = StringUtils::Format("%s/service?method=channel.show.artwork&name=%s", m_settings.m_urlBase, UriEncode(title).c_str());
             if (m_settings.m_guideArtPortrait)
               artworkPath += "&prefer=poster";
           }

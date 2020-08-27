@@ -14,7 +14,6 @@
 
 #include <kodi/General.h>
 #include <p8-platform/util/StringUtils.h>
-#include <tinyxml.h>
 
 using namespace NextPVR;
 using namespace NextPVR::utilities;
@@ -30,12 +29,17 @@ void Settings::ReadFromAddon()
 
   /* Connection settings */
   /***********************/
+
+  std::string protocol = kodi::GetSettingString("hostprotocol", DEFAULT_PROTOCOL);
+
   m_hostname = kodi::GetSettingString("host", DEFAULT_HOST);
   uri::decode(m_hostname);
 
   m_port = kodi::GetSettingInt("port", DEFAULT_PORT);
 
   m_PIN = kodi::GetSettingString("pin", DEFAULT_PIN);
+
+  sprintf(m_urlBase, "%s://%.255s:%d", protocol.c_str(), m_hostname.c_str(), m_port);
 
   m_enableWOL = kodi::GetSettingBoolean("wolenable", false);
   m_hostMACAddress = kodi::GetSettingString("host_mac");
@@ -83,65 +87,61 @@ ADDON_STATUS Settings::ReadBackendSettings()
   // check server version
   std::string settings;
   Request& request = Request::GetInstance();
-  if (request.DoRequest("/service?method=setting.list", settings) == HTTP_OK)
+  tinyxml2::XMLDocument settingsDoc;
+  if (request.DoMethodRequest("/service?method=setting.list", settingsDoc) == tinyxml2::XML_SUCCESS)
   {
-    TiXmlDocument settingsDoc;
-    if (settingsDoc.Parse(settings.c_str()) != nullptr)
+    if (XMLUtils::GetInt(settingsDoc.RootElement(), "NextPVRVersion", m_backendVersion))
     {
-      //dump_to_log(&settingsDoc, 0);
-      if (XMLUtils::GetInt(settingsDoc.RootElement(), "NextPVRVersion", m_backendVersion))
-      {
-        // NextPVR server
-        kodi::Log(ADDON_LOG_INFO, "NextPVR version: %d", m_backendVersion);
+      // NextPVR server
+      kodi::Log(ADDON_LOG_INFO, "NextPVR version: %d", m_backendVersion);
 
-        // is the server new enough
-        if (m_backendVersion < 40204)
-        {
-          kodi::Log(ADDON_LOG_ERROR, "NextPVR version '%d' is too old. Please upgrade to '%s' or higher!", m_backendVersion, NEXTPVRC_MIN_VERSION_STRING);
-          kodi::QueueNotification(QUEUE_ERROR, kodi::GetLocalizedString(30050), StringUtils::Format(kodi::GetLocalizedString(30051).c_str(), NEXTPVRC_MIN_VERSION_STRING));
-          return ADDON_STATUS_PERMANENT_FAILURE;
-        }
+      // is the server new enough
+      if (m_backendVersion < 40204)
+      {
+        kodi::Log(ADDON_LOG_ERROR, "NextPVR version '%d' is too old. Please upgrade to '%s' or higher!", m_backendVersion, NEXTPVRC_MIN_VERSION_STRING);
+        kodi::QueueNotification(QUEUE_ERROR, kodi::GetLocalizedString(30050), StringUtils::Format(kodi::GetLocalizedString(30051).c_str(), NEXTPVRC_MIN_VERSION_STRING));
+        return ADDON_STATUS_PERMANENT_FAILURE;
       }
+    }
 
-      // load padding defaults
-      m_defaultPrePadding = 1;
-      XMLUtils::GetInt(settingsDoc.RootElement(), "PrePadding", m_defaultPrePadding);
+    // load padding defaults
+    m_defaultPrePadding = 1;
+    XMLUtils::GetInt(settingsDoc.RootElement(), "PrePadding", m_defaultPrePadding);
 
-      m_defaultPostPadding = 2;
-      XMLUtils::GetInt(settingsDoc.RootElement(), "PostPadding", m_defaultPostPadding);
+    m_defaultPostPadding = 2;
+    XMLUtils::GetInt(settingsDoc.RootElement(), "PostPadding", m_defaultPostPadding);
 
-      m_showNew = false;
-      XMLUtils::GetBoolean(settingsDoc.RootElement(), "ShowNewInGuide", m_showNew);
+    m_showNew = false;
+    XMLUtils::GetBoolean(settingsDoc.RootElement(), "ShowNewInGuide", m_showNew);
 
-      std::string recordingDirectories;
-      if (XMLUtils::GetString(settingsDoc.RootElement(), "RecordingDirectories", recordingDirectories))
+    std::string recordingDirectories;
+    if (XMLUtils::GetString(settingsDoc.RootElement(), "RecordingDirectories", recordingDirectories))
+    {
+      m_recordingDirectories = StringUtils::Split(recordingDirectories, ",", 0);
+    }
+
+    int serverTimestamp;
+    if (XMLUtils::GetInt(settingsDoc.RootElement(), "TimeEpoch", serverTimestamp))
+    {
+      m_serverTimeOffset = time(nullptr) - serverTimestamp;
+      kodi::Log(ADDON_LOG_INFO, "Server time offset in seconds: %d", m_serverTimeOffset);
+    }
+
+    if (XMLUtils::GetInt(settingsDoc.RootElement(), "SlipSeconds", m_timeshiftBufferSeconds))
+      kodi::Log(ADDON_LOG_INFO, "time shift buffer in seconds: %d", m_timeshiftBufferSeconds);
+
+    std::string serverMac;
+    if (XMLUtils::GetString(settingsDoc.RootElement(), "ServerMAC", serverMac))
+    {
+      std::string macAddress = serverMac.substr(0, 2) ;
+      for (int i = 2; i < 12; i+=2)
       {
-        m_recordingDirectories = StringUtils::Split(recordingDirectories, ",", 0);
+        macAddress+= ":" + serverMac.substr(i, 2);
       }
-
-      int serverTimestamp;
-      if (XMLUtils::GetInt(settingsDoc.RootElement(), "TimeEpoch", serverTimestamp))
+      kodi::Log(ADDON_LOG_DEBUG, "Server MAC address %4.4s...", macAddress.c_str());
+      if (m_hostMACAddress != macAddress)
       {
-        m_serverTimeOffset = time(nullptr) - serverTimestamp;
-        kodi::Log(ADDON_LOG_INFO, "Server time offset in seconds: %d", m_serverTimeOffset);
-      }
-
-      if (XMLUtils::GetInt(settingsDoc.RootElement(), "SlipSeconds", m_timeshiftBufferSeconds))
-        kodi::Log(ADDON_LOG_INFO, "time shift buffer in seconds: %d", m_timeshiftBufferSeconds);
-
-      std::string serverMac;
-      if (XMLUtils::GetString(settingsDoc.RootElement(), "ServerMAC", serverMac))
-      {
-        std::string macAddress = serverMac.substr(0, 2) ;
-        for (int i = 2; i < 12; i+=2)
-        {
-          macAddress+= ":" + serverMac.substr(i, 2);
-        }
-        kodi::Log(ADDON_LOG_DEBUG, "Server MAC address %4.4s...", macAddress.c_str());
-        if (m_hostMACAddress != macAddress)
-        {
-          kodi::SetSettingString("host_mac", macAddress);
-        }
+        kodi::SetSettingString("host_mac", macAddress);
       }
     }
   }
@@ -232,56 +232,6 @@ void Settings::SetVersionSpecificSettings()
     m_showRecordingSize = false;
   }
 }
-
-bool Settings::SaveSettings(std::string name, std::string value)
-{
-  bool found = false;
-  TiXmlDocument doc;
-
-  std::string settings = kodi::vfs::TranslateSpecialProtocol("special://profile/addon_data/pvr.nextpvr/settings.xml");
-  if (doc.LoadFile(settings))
-  {
-    //Get Root Node
-    TiXmlElement* rootNode = doc.FirstChildElement("settings");
-    if (rootNode)
-    {
-      TiXmlElement* childNode;
-      std::string key_value;
-      for (childNode = rootNode->FirstChildElement("setting"); childNode; childNode = childNode->NextSiblingElement())
-      {
-        if (childNode->QueryStringAttribute("id", &key_value) == TIXML_SUCCESS)
-        {
-          if (key_value == name)
-          {
-            if (childNode->FirstChild() != nullptr)
-            {
-              childNode->FirstChild()->SetValue(value);
-              found = true;
-              break;
-            }
-            return false;
-          }
-        }
-      }
-      if (found == false)
-      {
-        TiXmlElement* newSetting = new TiXmlElement("setting");
-        TiXmlText* newvalue = new TiXmlText(value);
-        newSetting->SetAttribute("id", name);
-        newSetting->LinkEndChild(newvalue);
-        rootNode->LinkEndChild(newSetting);
-      }
-      doc.SaveFile(settings);
-    }
-  }
-  else
-  {
-    kodi::Log(ADDON_LOG_ERROR, "Error loading settings.xml %s", settings.c_str());
-  }
-  return true;
-}
-
-
 
 ADDON_STATUS Settings::SetValue(const std::string& settingName, const kodi::CSettingValue& settingValue)
 {

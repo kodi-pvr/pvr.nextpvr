@@ -13,7 +13,6 @@
 #include "../utilities/XMLUtils.h"
 #include <regex>
 #include <mutex>
-#include "tinyxml.h"
 
 //#define TESTURL "d:/downloads/abc.ts"
 
@@ -104,7 +103,7 @@ bool RollingFile::RollingFileOpen()
   #if defined(TESTURL)
   const std::string URL = TESTURL;
   #else
-  std::string URL = StringUtils::Format("http://%s:%d/stream?f=%s&mode=http&sid=%s", m_settings.m_hostname.c_str(), m_settings.m_port, UriEncode(m_activeFilename).c_str(), m_request.getSID());
+  std::string URL = StringUtils::Format("%s/stream?f=%s&mode=http&sid=%s", m_settings.m_urlBase, UriEncode(m_activeFilename).c_str(), m_request.getSID());
   if (m_isRadio && m_activeLength == -1)
   {
     // reduce buffer for radio when playing in-progess slip file
@@ -135,10 +134,10 @@ bool RollingFile::GetStreamInfo()
   }
   if (m_request.DoRequest("/services/service?method=channel.stream.info", response) == HTTP_OK)
   {
-    TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != nullptr)
+    tinyxml2::XMLDocument doc;
+    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
     {
-      TiXmlElement* filesNode = doc.FirstChildElement("Files");
+      tinyxml2::XMLNode* filesNode = doc.FirstChildElement("Files");
       if (filesNode != nullptr)
       {
         stream_length = strtoll(filesNode->FirstChildElement("Length")->GetText(), nullptr, 0);
@@ -164,7 +163,7 @@ bool RollingFile::GetStreamInfo()
         }
         m_stream_length = stream_length;
         m_stream_duration = duration/1000;
-        TiXmlElement* pFileNode;
+        tinyxml2::XMLElement* pFileNode;
         for( pFileNode = filesNode->FirstChildElement("File"); pFileNode; pFileNode=pFileNode->NextSiblingElement("File"))
         {
           int64_t offset = strtoll(pFileNode->Attribute("offset"), nullptr, 0);

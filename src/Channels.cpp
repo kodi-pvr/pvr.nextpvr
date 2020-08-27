@@ -26,11 +26,11 @@ int Channels::GetNumChannels()
     std::string response;
     if (m_request.DoRequest("/service?method=channel.list", response) == HTTP_OK)
     {
-      TiXmlDocument doc;
-      if (doc.Parse(response.c_str()) != nullptr)
+      tinyxml2::XMLDocument doc;
+      if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
       {
-        TiXmlElement* channelsNode = doc.RootElement()->FirstChildElement("channels");
-        TiXmlElement* pChannelNode;
+        tinyxml2::XMLNode* channelsNode = doc.RootElement()->FirstChildElement("channels");
+        tinyxml2::XMLNode* pChannelNode;
         for( pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode=pChannelNode->NextSiblingElement())
         {
           channelCount++;
@@ -46,7 +46,7 @@ std::string Channels::GetChannelIcon(int channelID)
   std::string iconFilename = GetChannelIconFileName(channelID);
 
   // do we already have the icon file?
-  if (kodi::vfs::FileExists(iconFilename, false))
+  if (kodi::vfs::FileExists(iconFilename))
   {
     return iconFilename;
   }
@@ -99,11 +99,11 @@ PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& r
   std::string response;
   if (m_request.DoRequest("/service?method=channel.list&extras=true", response) == HTTP_OK)
   {
-    TiXmlDocument doc;
-    if (doc.Parse(response.c_str()))
+    tinyxml2::XMLDocument doc;
+    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
     {
-      TiXmlElement* channelsNode = doc.RootElement()->FirstChildElement("channels");
-      TiXmlElement* pChannelNode;
+      tinyxml2::XMLNode* channelsNode = doc.RootElement()->FirstChildElement("channels");
+      tinyxml2::XMLNode* pChannelNode;
       for( pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode=pChannelNode->NextSiblingElement())
       {
         kodi::addon::PVRChannel tag;
@@ -120,7 +120,12 @@ PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& r
           tag.SetIsRadio(false);
           tag.SetMimeType("application/octet-stream");
           if (IsChannelAPlugin(tag.GetUniqueId()))
-            tag.SetMimeType("video/MP2T");
+          {
+            if (StringUtils::EndsWithNoCase(m_liveStreams[tag.GetUniqueId()], ".m3u8"))
+              tag.SetMimeType("application/x-mpegURL");
+            else
+              tag.SetMimeType("video/MP2T");
+          }
         }
         if (radio != tag.GetIsRadio())
           continue;
@@ -166,11 +171,11 @@ PVR_ERROR Channels::GetChannelGroupsAmount(int& amount)
   std::string response;
   if (m_request.DoRequest("/service?method=channel.groups", response) == HTTP_OK)
   {
-    TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != nullptr)
+    tinyxml2::XMLDocument doc;
+    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
     {
-      TiXmlElement* groupsNode = doc.RootElement()->FirstChildElement("groups");
-      TiXmlElement* pGroupNode;
+      tinyxml2::XMLNode* groupsNode = doc.RootElement()->FirstChildElement("groups");
+      tinyxml2::XMLNode* pGroupNode;
       for( pGroupNode = groupsNode->FirstChildElement("group"); pGroupNode; pGroupNode=pGroupNode->NextSiblingElement())
       {
         groups++;
@@ -201,11 +206,11 @@ PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsRe
   std::string response;
   if (m_request.DoRequest("/service?method=channel.groups", response) == HTTP_OK)
   {
-    TiXmlDocument doc;
-    if (doc.Parse(response.c_str()))
+    tinyxml2::XMLDocument doc;
+    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
     {
-      TiXmlElement* groupsNode = doc.RootElement()->FirstChildElement("groups");
-      TiXmlElement* pGroupNode;
+      tinyxml2::XMLNode* groupsNode = doc.RootElement()->FirstChildElement("groups");
+      tinyxml2::XMLNode* pGroupNode;
       for( pGroupNode = groupsNode->FirstChildElement("group"); pGroupNode; pGroupNode=pGroupNode->NextSiblingElement())
       {
         kodi::addon::PVRChannelGroup tag;
@@ -240,11 +245,11 @@ PVR_ERROR Channels::GetChannelGroupMembers(const kodi::addon::PVRChannelGroup& g
   std::string response;
   if (m_request.DoRequest(request.c_str(), response) == HTTP_OK)
   {
-    TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != nullptr)
+    tinyxml2::XMLDocument doc;
+    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
     {
-      TiXmlElement* channelsNode = doc.RootElement()->FirstChildElement("channels");
-      TiXmlElement* pChannelNode;
+      tinyxml2::XMLNode* channelsNode = doc.RootElement()->FirstChildElement("channels");
+      tinyxml2::XMLNode* pChannelNode;
       for( pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode=pChannelNode->NextSiblingElement())
       {
         kodi::addon::PVRChannelGroupMember tag;
@@ -276,28 +281,25 @@ void Channels::LoadLiveStreams()
   m_liveStreams.clear();
   if (m_request.FileCopy(URL.c_str(), "special://userdata/addon_data/pvr.nextpvr/LiveStreams.xml") == HTTP_OK)
   {
-    TiXmlDocument doc;
+    tinyxml2::XMLDocument doc;
     std::string liveStreams = kodi::vfs::TranslateSpecialProtocol("special://userdata/addon_data/pvr.nextpvr/LiveStreams.xml");
     kodi::Log(ADDON_LOG_DEBUG, "Loading LiveStreams.xml %s", liveStreams.c_str());
-    if (doc.LoadFile(liveStreams))
+    if (doc.LoadFile(liveStreams.c_str()) == tinyxml2::XML_SUCCESS)
     {
-      TiXmlElement* streamsNode = doc.FirstChildElement("streams");
+      tinyxml2::XMLNode* streamsNode = doc.FirstChildElement("streams");
       if (streamsNode)
       {
-        TiXmlElement* streamNode;
+        tinyxml2::XMLElement* streamNode;
         for (streamNode = streamsNode->FirstChildElement("stream"); streamNode; streamNode = streamNode->NextSiblingElement())
         {
-          std::string key_value;
-          if (streamNode->QueryStringAttribute("id", &key_value) == TIXML_SUCCESS)
+          const char* attrib = streamNode->Attribute("id");
+          if (attrib != nullptr)
           {
             try
             {
-              if (streamNode->FirstChild())
-              {
-                int channelID = std::stoi(key_value);
-                kodi::Log(ADDON_LOG_DEBUG, "%d %s", channelID, streamNode->FirstChild()->Value());
-                m_liveStreams[channelID] = streamNode->FirstChild()->Value();
-              }
+              int channelID = std::atoi(attrib);
+              kodi::Log(ADDON_LOG_DEBUG, "%d %s", channelID, streamNode->FirstChild()->Value());
+              m_liveStreams[channelID] = streamNode->FirstChild()->Value();
             }
             catch (...)
             {

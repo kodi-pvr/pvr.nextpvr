@@ -68,7 +68,7 @@ bool RecordingBuffer::Open(const std::string inputUrl, const kodi::addon::PVRRec
     {
       kodiDirectory = "smb:" + kodiDirectory;
     }
-    if ( kodi::vfs::FileExists(kodiDirectory, false))
+    if ( kodi::vfs::FileExists(kodiDirectory))
     {
       m_recordingURL = kodiDirectory;
     }

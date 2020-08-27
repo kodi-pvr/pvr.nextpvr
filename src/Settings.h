@@ -35,6 +35,7 @@ namespace NextPVR
 
   const static std::string PVRCLIENT_NEXTPVR_VERSION_STRING = "1.0.0.0";
   constexpr char NEXTPVRC_MIN_VERSION_STRING[] = "4.2.4";
+  const static std::string DEFAULT_PROTOCOL = "http";
   const static std::string DEFAULT_HOST = "127.0.0.1";
   constexpr int DEFAULT_PORT = 8866;
   const static std::string DEFAULT_PIN = "0000";
@@ -59,7 +60,6 @@ namespace NextPVR
     bool GetConnection();
     void SetConnection(bool status);
     void SetVersionSpecificSettings();
-    bool SaveSettings(std::string name, std::string value);
     void UpdateServerPort(std::string host, int port)
     {
       m_hostname = host;
@@ -71,9 +71,10 @@ namespace NextPVR
 
     //Connection
     std::string m_hostname = DEFAULT_HOST;
+    char m_urlBase[512]{ 0 };
     int m_port = 8866;
     bool m_remoteAccess = false;
-    int m_serverTimeOffset = 0;
+    time_t m_serverTimeOffset = 0;
     std::string m_hostMACAddress = "";
     std::string m_PIN = "";
     bool m_enableWOL = false;

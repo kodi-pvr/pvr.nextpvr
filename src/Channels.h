@@ -11,7 +11,6 @@
 
 #include "BackendRequest.h"
 #include <kodi/addon-instance/PVR.h>
-#include "tinyxml.h"
 
 namespace NextPVR
 {

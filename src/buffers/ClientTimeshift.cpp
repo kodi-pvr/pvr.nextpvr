@@ -11,7 +11,6 @@
 #include  "../BackendRequest.h"
 #include "../utilities/XMLUtils.h"
 #include <kodi/General.h>
-#include "tinyxml.h"
 
 using namespace timeshift;
 using namespace NextPVR::utilities;
@@ -51,7 +50,7 @@ bool ClientTimeShift::Open(const std::string inputUrl)
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     if ( ClientTimeShift::GetStreamInfo())
     {
-      if  ( m_stream_duration  > m_settings.m_prebuffer )
+      if  ( m_stream_duration  > m_prebuffer  || (m_stream_length > 150000 * (m_prebuffer + 2) && m_stream_duration == 0))
       {
         break;
       }
@@ -173,17 +172,17 @@ bool ClientTimeShift::GetStreamInfo()
   }
   if (m_request.DoRequest("/services/service?method=channel.stream.info", response) == HTTP_OK)
   {
-    TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != nullptr)
+    tinyxml2::XMLDocument doc;
+    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
     {
-      TiXmlElement* filesNode = doc.FirstChildElement("map");
+      tinyxml2::XMLNode* filesNode = doc.FirstChildElement("map");
       if (filesNode != nullptr)
       {
         stream_duration = strtoll(filesNode->FirstChildElement("stream_duration")->GetText(), nullptr, 0);
         if (stream_duration != 0)
         {
           m_stream_length = strtoll(filesNode->FirstChildElement("stream_length")->GetText(), nullptr, 0);
-          m_stream_duration = stream_duration/1000;
+          m_stream_duration = stream_duration / 1000;
           if (m_stream_duration > m_settings.m_timeshiftBufferSeconds)
           {
               m_rollingStartSeconds = m_streamStart + m_stream_duration - m_settings.m_timeshiftBufferSeconds;

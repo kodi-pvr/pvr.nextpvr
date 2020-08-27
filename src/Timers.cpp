@@ -33,13 +33,13 @@ PVR_ERROR Timers::GetTimersAmount(int& amount)
   // get list of recurring recordings
   if (m_request.DoRequest("/service?method=recording.recurring.list", response) == HTTP_OK)
   {
-    TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != nullptr)
+    tinyxml2::XMLDocument doc;
+    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
     {
-      TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recurrings");
+      tinyxml2::XMLNode* recordingsNode = doc.RootElement()->FirstChildElement("recurrings");
       if (recordingsNode != nullptr)
       {
-        TiXmlElement* pRecordingNode;
+        tinyxml2::XMLNode* pRecordingNode;
         for (pRecordingNode = recordingsNode->FirstChildElement("recurring"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
         {
           timerCount++;
@@ -51,13 +51,13 @@ PVR_ERROR Timers::GetTimersAmount(int& amount)
   response = "";
   if (m_request.DoRequest("/service?method=recording.list&filter=pending", response) == HTTP_OK)
   {
-    TiXmlDocument doc;
-    if (doc.Parse(response.c_str()))
+    tinyxml2::XMLDocument doc;
+    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
     {
-      TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
+      tinyxml2::XMLNode* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
       if (recordingsNode != nullptr)
       {
-        TiXmlElement* pRecordingNode;
+        tinyxml2::XMLNode* pRecordingNode;
         for (pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
         {
           timerCount++;
@@ -82,16 +82,16 @@ PVR_ERROR Timers::GetTimers(kodi::addon::PVRTimersResultSet& results)
   // first add the recurring recordings
   if (m_request.DoRequest("/service?method=recording.recurring.list", response) == HTTP_OK)
   {
-    TiXmlDocument doc;
-    if (doc.Parse(response.c_str()))
+    tinyxml2::XMLDocument doc;
+    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
     {
-      TiXmlElement* recurringsNode = doc.RootElement()->FirstChildElement("recurrings");
-      TiXmlElement* pRecurringNode;
+      tinyxml2::XMLNode* recurringsNode = doc.RootElement()->FirstChildElement("recurrings");
+      tinyxml2::XMLNode* pRecurringNode;
       for (pRecurringNode = recurringsNode->FirstChildElement("recurring"); pRecurringNode; pRecurringNode = pRecurringNode->NextSiblingElement())
       {
         kodi::addon::PVRTimer tag;
-        TiXmlElement* pMatchRulesNode = pRecurringNode->FirstChildElement("matchrules");
-        TiXmlElement* pRulesNode = pMatchRulesNode->FirstChildElement("Rules");
+        tinyxml2::XMLNode* pMatchRulesNode = pRecurringNode->FirstChildElement("matchrules");
+        tinyxml2::XMLNode* pRulesNode = pMatchRulesNode->FirstChildElement("Rules");
 
         tag.SetClientIndex(XMLUtils::GetUIntValue(pRecurringNode, "id"));
         tag.SetClientChannelUid(XMLUtils::GetIntValue(pRulesNode, "ChannelOID"));
@@ -217,11 +217,11 @@ PVR_ERROR Timers::GetTimers(kodi::addon::PVRTimersResultSet& results)
     response = "";
     if (m_request.DoRequest("/service?method=recording.list&filter=pending", response) == HTTP_OK)
     {
-      TiXmlDocument doc;
-      if (doc.Parse(response.c_str()) != nullptr)
+      tinyxml2::XMLDocument doc;
+      if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
       {
-        TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
-        for (TiXmlElement* pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
+        tinyxml2::XMLNode* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
+        for (tinyxml2::XMLNode* pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
         {
           kodi::addon::PVRTimer tag;
           UpdatePvrTimer(pRecordingNode, tag);
@@ -233,11 +233,11 @@ PVR_ERROR Timers::GetTimers(kodi::addon::PVRTimersResultSet& results)
       response = "";
       if (m_request.DoRequest("/service?method=recording.list&filter=conflict", response) == HTTP_OK)
       {
-        TiXmlDocument doc;
-        if (doc.Parse(response.c_str()))
+        tinyxml2::XMLDocument doc;
+        if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
         {
-          TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
-          for (TiXmlElement* pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
+          tinyxml2::XMLNode* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
+          for (tinyxml2::XMLNode* pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
           {
             kodi::addon::PVRTimer tag;
             UpdatePvrTimer(pRecordingNode, tag);
@@ -249,6 +249,7 @@ PVR_ERROR Timers::GetTimers(kodi::addon::PVRTimersResultSet& results)
         }
       }
     }
+    m_lastTimerUpdateTime = time(nullptr);
   }
   else
   {
@@ -257,7 +258,7 @@ PVR_ERROR Timers::GetTimers(kodi::addon::PVRTimersResultSet& results)
   return returnValue;
 }
 
-bool Timers::UpdatePvrTimer(TiXmlElement* pRecordingNode, kodi::addon::PVRTimer& tag)
+bool Timers::UpdatePvrTimer(tinyxml2::XMLNode* pRecordingNode, kodi::addon::PVRTimer& tag)
 {
   tag.SetTimerType(pRecordingNode->FirstChildElement("epg_event_oid") ? TIMER_ONCE_EPG : TIMER_ONCE_MANUAL);
   tag.SetClientIndex(XMLUtils::GetUIntValue(pRecordingNode, "id"));

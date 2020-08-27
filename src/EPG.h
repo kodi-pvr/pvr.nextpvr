@@ -11,7 +11,6 @@
 
 #include "BackendRequest.h"
 #include <kodi/addon-instance/PVR.h>
-#include "tinyxml.h"
 #include "Channels.h"
 #include "Recordings.h"
 #include "Timers.h"

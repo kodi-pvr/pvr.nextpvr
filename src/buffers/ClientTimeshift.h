@@ -62,10 +62,10 @@ namespace timeshift {
     }
     virtual int Read(byte *buffer, size_t length) override
     {
-      int64_t dataLen = m_inputHandle.Read(buffer, length);
+      ssize_t dataLen = m_inputHandle.Read(buffer, length);
       if (m_complete && dataLen == 0)
       {
-        kodi::Log(ADDON_LOG_DEBUG, "%s:%d: %lld %lld %lld %lld", __FUNCTION__, __LINE__, dataLen, length, m_inputHandle.GetLength() , m_inputHandle.GetPosition());
+        kodi::Log(ADDON_LOG_DEBUG, "%s:%d: %u %lld %lld", __FUNCTION__, __LINE__, length, m_inputHandle.GetLength() , m_inputHandle.GetPosition());
       }
       return dataLen;
     }

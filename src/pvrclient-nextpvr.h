@@ -29,15 +29,7 @@
 #include "buffers/TimeshiftBuffer.h"
 #include "buffers/TranscodedBuffer.h"
 #include "p8-platform/threads/threads.h"
-#include "tinyxml.h"
 #include <map>
-
-#define SAFE_DELETE(p) \
-  do \
-  { \
-    delete (p); \
-    (p) = nullptr; \
-  } while (0)
 
 enum eNowPlaying
 {
@@ -58,11 +50,12 @@ public:
 
 
   /* Server handling */
-  ADDON_STATUS Connect();
+  ADDON_STATUS Connect(bool sendWOL = true);
   void Disconnect();
   bool IsUp();
   PVR_ERROR OnSystemSleep() override;
   PVR_ERROR OnSystemWake() override;
+  void SendWakeOnLan();
 
   /* General handling */
   PVR_ERROR GetBackendName(std::string& name) override;
@@ -109,9 +102,9 @@ public:
   MenuHook& m_menuhook = MenuHook::GetInstance();
   Recordings& m_recordings = Recordings::GetInstance();
   Timers& m_timers = Timers::GetInstance();
-  int64_t m_lastRecordingUpdateTime;
-  time_t m_nextServerCheck = 0;
-  char m_sid[64];
+  time_t m_lastRecordingUpdateTime;
+  time_t m_nextServerCheck{ 0 };
+  time_t m_lastEPGUpdateTime{ 0 };
 
   PVR_ERROR GetCapabilities(kodi::addon::PVRCapabilities& capabilities) override;
 
@@ -151,7 +144,6 @@ private:
   void Close();
 
   bool m_bConnected;
-
   bool m_supportsLiveTimeshift;
 
   time_t m_tsbStartTime;
@@ -166,9 +158,8 @@ private:
   NextPVR::Request& m_request = NextPVR::Request::GetInstance();
 
   eNowPlaying m_nowPlaying = NotPlaying;
-  void SetConnectionState(std::string message, PVR_CONNECTION_STATE state, std::string displayMessage="");
+  void SetConnectionState(std::string message, PVR_CONNECTION_STATE state, std::string displayMessage = "");
   PVR_CONNECTION_STATE m_connectionState = PVR_CONNECTION_STATE_UNKNOWN;
-
-  void SendWakeOnLan();
+  PVR_CONNECTION_STATE m_coreState = PVR_CONNECTION_STATE_UNKNOWN;
 
 };

@@ -36,13 +36,13 @@ PVR_ERROR Recordings::GetRecordingsAmount(bool deleted, int& amount)
   std::string response;
   if (m_request.DoRequest("/service?method=recording.list&filter=ready", response) == HTTP_OK)
   {
-    TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != nullptr)
+    tinyxml2::XMLDocument doc;
+    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
     {
-      TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
+      tinyxml2::XMLNode* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
       if (recordingsNode != nullptr)
       {
-        TiXmlElement* pRecordingNode;
+        tinyxml2::XMLNode* pRecordingNode;
         m_iRecordingCount = 0;
         for (pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
         {
@@ -60,15 +60,16 @@ PVR_ERROR Recordings::GetRecordings(bool deleted, kodi::addon::PVRRecordingsResu
   // include already-completed recordings
   PVR_ERROR returnValue = PVR_ERROR_NO_ERROR;
   m_hostFilenames.clear();
+  m_lastPlayed.clear();
   int recordingCount = 0;
   std::string response;
   if (m_request.DoRequest("/service?method=recording.list&filter=all", response) == HTTP_OK)
   {
-    TiXmlDocument doc;
-    if (doc.Parse(response.c_str()) != nullptr)
+    tinyxml2::XMLDocument doc;
+    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
     {
-      TiXmlElement* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
-      TiXmlElement* pRecordingNode;
+      tinyxml2::XMLNode* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
+      tinyxml2::XMLNode* pRecordingNode;
       std::map<std::string, int> names;
       std::map<std::string, int> seasons;
       if ((m_settings.m_flattenRecording && m_settings.m_kodiLook) || m_settings.m_separateSeasons)
@@ -124,11 +125,24 @@ PVR_ERROR Recordings::GetRecordings(bool deleted, kodi::addon::PVRRecordingsResu
   {
     returnValue = PVR_ERROR_SERVER_ERROR;
   }
-  g_pvrclient->m_lastRecordingUpdateTime = time(0);
+  g_pvrclient->m_lastRecordingUpdateTime = time(nullptr);
+  return returnValue;
+}
+PVR_ERROR Recordings::GetRecordingsLastPlayedPosition()
+{
+  // include already-completed recordings
+  PVR_ERROR returnValue = PVR_ERROR_NO_ERROR;
+  tinyxml2::XMLDocument doc;
+  if (m_request.DoMethodRequest("/service?method=recording.list&filter=ready", doc) == tinyxml2::XML_SUCCESS)
+  {
+    m_lastPlayed.clear();
+    for (const tinyxml2::XMLNode*  pRecordingNode = doc.RootElement()->FirstChildElement("recordings")->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
+      m_lastPlayed[XMLUtils::GetIntValue(pRecordingNode, "id")] =  XMLUtils::GetIntValue(pRecordingNode, "playback_position");
+  }
   return returnValue;
 }
 
-bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::PVRRecording& tag, const std::string& title, bool flatten, bool multipleSeasons)
+bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kodi::addon::PVRRecording& tag, const std::string& title, bool flatten, bool multipleSeasons)
 {
   std::string buffer;
   tag.SetTitle(title);
@@ -143,9 +157,7 @@ bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::P
     // skip timers
     return false;
   }
-  buffer.clear();
-  XMLUtils::GetString(pRecordingNode, "duration_seconds", buffer);
-  tag.SetDuration(stoi(buffer));
+  tag.SetDuration(XMLUtils::GetIntValue(pRecordingNode, "duration_seconds"));
 
   if (status == "Ready" || status == "Pending" || status == "Recording")
   {
@@ -231,24 +243,14 @@ bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::P
     }
   }
 
-  int lookup = 0;
-  tag.SetLastPlayedPosition(XMLUtils::GetIntValue(pRecordingNode, "playback_position", lookup));
-  if (XMLUtils::GetInt(pRecordingNode, "channel_id", lookup))
-  {
-    if (lookup == 0)
-    {
-      tag.SetChannelUid(PVR_CHANNEL_INVALID_UID);
-    }
-    else
-    {
-      tag.SetChannelUid(lookup);
-      tag.SetIconPath(g_pvrclient->m_channels.GetChannelIconFileName(tag.GetChannelUid()));
-    }
-  }
-  else
-  {
+  tag.SetLastPlayedPosition(XMLUtils::GetIntValue(pRecordingNode, "playback_position"));
+  m_lastPlayed[std::stoi(tag.GetRecordingId())] = tag.GetLastPlayedPosition();
+
+  tag.SetChannelUid(XMLUtils::GetIntValue(pRecordingNode, "channel_id"));
+  if (tag.GetChannelUid() == 0)
     tag.SetChannelUid(PVR_CHANNEL_INVALID_UID);
-  }
+  else
+    tag.SetIconPath(g_pvrclient->m_channels.GetChannelIconFileName(tag.GetChannelUid()));
 
   buffer.clear();
   if (XMLUtils::GetString(pRecordingNode, "channel", buffer))
@@ -266,10 +268,10 @@ bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::P
       {
         recordingFile = "smb:" + recordingFile;
       }
-      if (kodi::vfs::FileExists(recordingFile, ADDON_READ_NO_CACHE))
+      if (kodi::vfs::FileExists(recordingFile))
       {
         kodi::vfs::CFile fileSize;
-        if (fileSize.OpenFile(recordingFile, ADDON_READ_NO_CACHE))
+        if (fileSize.OpenFile(recordingFile))
         {
           tag.SetSizeInBytes(fileSize.GetLength());
           fileSize.Close();
@@ -292,17 +294,17 @@ bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::P
     std::string artworkPath;
     if (m_settings.m_backendVersion < 50000)
     {
-      artworkPath = StringUtils::Format("http://%s:%d/service?method=recording.artwork&sid=%s&recording_id=%s", m_settings.m_hostname.c_str(), m_settings.m_port, g_pvrclient->m_sid, tag.GetRecordingId().c_str());
+      artworkPath = StringUtils::Format("%s/service?method=recording.artwork&sid=%s&recording_id=%s", m_settings.m_urlBase, m_request.getSID(), tag.GetRecordingId().c_str());
       tag.SetThumbnailPath(artworkPath);
-      artworkPath = StringUtils::Format("http://%s:%d/service?method=recording.fanart&sid=%s&recording_id=%s", m_settings.m_hostname.c_str(), m_settings.m_port, g_pvrclient->m_sid, tag.GetRecordingId().c_str());
+      artworkPath = StringUtils::Format("%s/service?method=recording.fanart&sid=%s&recording_id=%s", m_settings.m_urlBase, m_request.getSID(), tag.GetRecordingId().c_str());
       tag.SetFanartPath(artworkPath);
     }
     else
     {
       if (m_settings.m_sendSidWithMetadata)
-        artworkPath = StringUtils::Format("http://%s:%d/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_hostname.c_str(), m_settings.m_port, g_pvrclient->m_sid, UriEncode(title).c_str());
+        artworkPath = StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_urlBase, m_request.getSID(), UriEncode(title).c_str());
       else
-        artworkPath = StringUtils::Format("http://%s:%d/service?method=channel.show.artwork&name=%s", m_settings.m_hostname.c_str(), m_settings.m_port, UriEncode(title).c_str());
+        artworkPath = StringUtils::Format("%s/service?method=channel.show.artwork&name=%s", m_settings.m_urlBase, UriEncode(title).c_str());
       tag.SetFanartPath(artworkPath);
       artworkPath += "&prefer=poster";
       tag.SetThumbnailPath(artworkPath);
@@ -335,7 +337,7 @@ bool Recordings::UpdatePvrRecording(TiXmlElement* pRecordingNode, kodi::addon::P
   return true;
 }
 
-bool Recordings::ParseNextPVRSubtitle(TiXmlElement *pRecordingNode, kodi::addon::PVRRecording& tag)
+bool Recordings::ParseNextPVRSubtitle(const tinyxml2::XMLNode *pRecordingNode, kodi::addon::PVRRecording& tag)
 {
   std::string buffer;
   bool hasSeasonEpisode = false;
@@ -430,18 +432,33 @@ bool Recordings::ForgetRecording(const kodi::addon::PVRRecording& recording)
 
 PVR_ERROR Recordings::SetRecordingLastPlayedPosition(const kodi::addon::PVRRecording& recording, int lastplayedposition)
 {
+  g_pvrclient->m_lastRecordingUpdateTime = std::numeric_limits<time_t>::max();
+  time_t timerUpdate = m_timers.m_lastTimerUpdateTime;
   const std::string request = StringUtils::Format("/service?method=recording.watched.set&recording_id=%s&position=%d", recording.GetRecordingId().c_str(), lastplayedposition);
-
-  std::string response;
-  if (m_request.DoRequest(request.c_str(), response) == HTTP_OK)
+  tinyxml2::XMLDocument doc;
+  if (m_request.DoMethodRequest(request.c_str(), doc) != tinyxml2::XML_SUCCESS)
   {
-    if (strstr(response.c_str(), "<rsp stat=\"ok\">") == nullptr)
-    {
-      kodi::Log(ADDON_LOG_DEBUG, "SetRecordingLastPlayedPosition failed");
-      return PVR_ERROR_FAILED;
-    }
-    g_pvrclient->m_lastRecordingUpdateTime = 0;
+    kodi::Log(ADDON_LOG_DEBUG, "SetRecordingLastPlayedPosition failed");
+    return PVR_ERROR_FAILED;
   }
+  if (m_settings.m_backendVersion >= 5007)
+  {
+    time_t lastUpdate;
+    if (m_request.GetLastUpdate("/service?method=recording.lastupdated&ignore_resume=true", lastUpdate) == tinyxml2::XML_SUCCESS)
+    {
+      if (timerUpdate >= lastUpdate)
+      {
+        if (m_request.GetLastUpdate("/service?method=recording.lastupdated", lastUpdate) == tinyxml2::XML_SUCCESS)
+        {
+          // only change is watched point so skip it
+          m_lastPlayed[std::stoi(recording.GetRecordingId())] = lastplayedposition;
+          g_pvrclient->m_lastRecordingUpdateTime = lastUpdate;
+        }
+      }
+    }
+  }
+  if ( g_pvrclient->m_lastRecordingUpdateTime == std::numeric_limits<time_t>::max())
+    g_pvrclient->m_lastRecordingUpdateTime = 0;
   return PVR_ERROR_NO_ERROR;
 }
 
@@ -449,6 +466,7 @@ PVR_ERROR Recordings::SetRecordingLastPlayedPosition(const kodi::addon::PVRRecor
 PVR_ERROR Recordings::GetRecordingLastPlayedPosition(const kodi::addon::PVRRecording& recording, int& position)
 {
   position = recording.GetLastPlayedPosition();
+  position = m_lastPlayed[std::stoi(recording.GetRecordingId())];
   return PVR_ERROR_NO_ERROR;
 }
 
@@ -461,12 +479,12 @@ PVR_ERROR Recordings::GetRecordingEdl(const kodi::addon::PVRRecording& recording
   {
     if (strstr(response.c_str(), "<rsp stat=\"ok\">") != nullptr)
     {
-      TiXmlDocument doc;
-      if (doc.Parse(response.c_str()) != nullptr)
+      tinyxml2::XMLDocument doc;
+      if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
       {
         int index = 0;
-        TiXmlElement* commercialsNode = doc.RootElement()->FirstChildElement("commercials");
-        TiXmlElement* pCommercialNode;
+        tinyxml2::XMLNode* commercialsNode = doc.RootElement()->FirstChildElement("commercials");
+        tinyxml2::XMLNode* pCommercialNode;
         for (pCommercialNode = commercialsNode->FirstChildElement("commercial"); pCommercialNode; pCommercialNode = pCommercialNode->NextSiblingElement())
         {
           kodi::addon::PVREDLEntry entry;
