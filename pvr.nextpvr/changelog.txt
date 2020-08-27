@@ -1,3 +1,12 @@
+v6.2.0
+- Move to tinyxml2
+- Connection improvements when server is stopped or client sleeps
+- Menu hooks for WOL and open settings
+- New backend call with better error handling, option to turn off br compression
+- Update EPG when backend changes
+- Reduce unnecessary timer and recording updates
+- Auto detect localhost with other servers
+
 v6.1.0
 - Connection state improvements for established connections
 - Allow creation of season folders
