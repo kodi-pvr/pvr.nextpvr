@@ -120,7 +120,12 @@ PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& r
           tag.SetIsRadio(false);
           tag.SetMimeType("application/octet-stream");
           if (IsChannelAPlugin(tag.GetUniqueId()))
-            tag.SetMimeType("video/MP2T");
+          {
+            if (StringUtils::EndsWithNoCase(m_liveStreams[tag.GetUniqueId()], ".m3u8"))
+              tag.SetMimeType("application/x-mpegURL");
+            else
+              tag.SetMimeType("video/MP2T");
+          }
         }
         if (radio != tag.GetIsRadio())
           continue;
