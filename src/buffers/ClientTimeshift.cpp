@@ -50,7 +50,7 @@ bool ClientTimeShift::Open(const std::string inputUrl)
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     if ( ClientTimeShift::GetStreamInfo())
     {
-      if  ( m_stream_duration  > m_settings.m_prebuffer )
+      if  ( m_stream_duration  > m_prebuffer  || (m_stream_length > 150000 * (m_prebuffer + 2) && m_stream_duration == 0))
       {
         break;
       }
@@ -182,7 +182,7 @@ bool ClientTimeShift::GetStreamInfo()
         if (stream_duration != 0)
         {
           m_stream_length = strtoll(filesNode->FirstChildElement("stream_length")->GetText(), nullptr, 0);
-          m_stream_duration = stream_duration/1000;
+          m_stream_duration = stream_duration / 1000;
           if (m_stream_duration > m_settings.m_timeshiftBufferSeconds)
           {
               m_rollingStartSeconds = m_streamStart + m_stream_duration - m_settings.m_timeshiftBufferSeconds;
