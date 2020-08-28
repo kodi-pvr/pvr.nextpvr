@@ -125,7 +125,7 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
   std::string response;
   if (sendWOL)
     SendWakeOnLan();
-  m_request.clearSid();
+  m_request.ClearSID();
   if (m_request.DoRequest("/service?method=session.initiate&ver=1.0&device=xbmc", response) == HTTP_OK)
   {
     tinyxml2::XMLDocument doc;
@@ -158,7 +158,7 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
         {
           if (m_settings.ReadBackendSettings() == ADDON_STATUS_OK)
           {
-            m_request.setSID(sid);
+            m_request.SetSID(sid);
             // set additional options based on the backend
             ConfigurePostConnectionOptions();
             m_settings.SetConnection(true);
@@ -397,7 +397,7 @@ PVR_ERROR cPVRClientNextPVR::OnSystemWake()
   // don't trigger updates core does it
   SetConnectionState("Reconnect", PVR_CONNECTION_STATE_UNKNOWN);
 
-  if (m_request.isSidActive())
+  if (m_request.IsActiveSID())
   {
     m_connectionState = PVR_CONNECTION_STATE_CONNECTED;
     m_bConnected = true;
@@ -494,7 +494,7 @@ PVR_ERROR cPVRClientNextPVR::GetChannelStreamProperties(const kodi::addon::PVRCh
       m_nowPlaying = NotPlaying;
       m_livePlayer = nullptr;
     }
-    const std::string line = StringUtils::Format("%s/services/service?method=channel.transcode.m3u8&sid=%s", m_settings.m_urlBase, m_request.getSID());
+    const std::string line = StringUtils::Format("%s/services/service?method=channel.transcode.m3u8&sid=%s", m_settings.m_urlBase, m_request.GetSID());
     m_livePlayer = m_timeshiftBuffer;
     m_livePlayer->Channel(channel.GetUniqueId());
     if (m_livePlayer->Open(line))
@@ -551,23 +551,23 @@ bool cPVRClientNextPVR::OpenLiveStream(const kodi::addon::PVRChannel& channel)
   }
   else if (channel.GetIsRadio() == false && m_supportsLiveTimeshift && m_settings.m_liveStreamingMethod == Timeshift)
   {
-    line = StringUtils::Format("GET /live?channeloid=%d&mode=liveshift&client=XBMC-%s HTTP/1.0\r\n", channel.GetUniqueId(), m_request.getSID());
+    line = StringUtils::Format("GET /live?channeloid=%d&mode=liveshift&client=XBMC-%s HTTP/1.0\r\n", channel.GetUniqueId(), m_request.GetSID());
     m_livePlayer = m_timeshiftBuffer;
   }
   else if (m_settings.m_liveStreamingMethod == RollingFile)
   {
-    line = StringUtils::Format("%s/live?channeloid=%d&client=XBMC-%s&epgmode=true", m_settings.m_urlBase, channel.GetUniqueId(), m_request.getSID());
+    line = StringUtils::Format("%s/live?channeloid=%d&client=XBMC-%s&epgmode=true", m_settings.m_urlBase, channel.GetUniqueId(), m_request.GetSID());
     m_livePlayer = m_timeshiftBuffer;
   }
   else if (m_settings.m_liveStreamingMethod == ClientTimeshift)
   {
-    line = StringUtils::Format("%s/live?channeloid=%d&client=%s&sid=%s", m_settings.m_urlBase, channel.GetUniqueId(), m_request.getSID(), m_request.getSID());
+    line = StringUtils::Format("%s/live?channeloid=%d&client=%s&sid=%s", m_settings.m_urlBase, channel.GetUniqueId(), m_request.GetSID(), m_request.GetSID());
     m_livePlayer = m_timeshiftBuffer;
     m_livePlayer->Channel(channel.GetUniqueId());
   }
   else
   {
-    line = StringUtils::Format("%s/live?channeloid=%d&client=XBMC-%s", m_settings.m_urlBase, channel.GetUniqueId(), m_request.getSID());
+    line = StringUtils::Format("%s/live?channeloid=%d&client=XBMC-%s", m_settings.m_urlBase, channel.GetUniqueId(), m_request.GetSID());
     m_livePlayer = m_realTimeBuffer;
   }
   kodi::Log(ADDON_LOG_INFO, "Calling Open(%s) on tsb!", line.c_str());
@@ -659,7 +659,7 @@ bool cPVRClientNextPVR::OpenRecordedStream(const kodi::addon::PVRRecording& reco
   kodi::addon::PVRRecording copyRecording = recording;
   m_nowPlaying = Recording;
   copyRecording.SetDirectory(m_recordings.m_hostFilenames[recording.GetRecordingId()]);
-  const std::string line = StringUtils::Format("%s/live?recording=%s&client=XBMC-%s", m_settings.m_urlBase, recording.GetRecordingId().c_str(), m_request.getSID());
+  const std::string line = StringUtils::Format("%s/live?recording=%s&client=XBMC-%s", m_settings.m_urlBase, recording.GetRecordingId().c_str(), m_request.GetSID());
   return m_recordingBuffer->Open(line, copyRecording);
 }
 

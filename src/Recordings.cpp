@@ -128,6 +128,7 @@ PVR_ERROR Recordings::GetRecordings(bool deleted, kodi::addon::PVRRecordingsResu
   g_pvrclient->m_lastRecordingUpdateTime = time(nullptr);
   return returnValue;
 }
+
 PVR_ERROR Recordings::GetRecordingsLastPlayedPosition()
 {
   // include already-completed recordings
@@ -294,15 +295,15 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
     std::string artworkPath;
     if (m_settings.m_backendVersion < 50000)
     {
-      artworkPath = StringUtils::Format("%s/service?method=recording.artwork&sid=%s&recording_id=%s", m_settings.m_urlBase, m_request.getSID(), tag.GetRecordingId().c_str());
+      artworkPath = StringUtils::Format("%s/service?method=recording.artwork&sid=%s&recording_id=%s", m_settings.m_urlBase, m_request.GetSID(), tag.GetRecordingId().c_str());
       tag.SetThumbnailPath(artworkPath);
-      artworkPath = StringUtils::Format("%s/service?method=recording.fanart&sid=%s&recording_id=%s", m_settings.m_urlBase, m_request.getSID(), tag.GetRecordingId().c_str());
+      artworkPath = StringUtils::Format("%s/service?method=recording.fanart&sid=%s&recording_id=%s", m_settings.m_urlBase, m_request.GetSID(), tag.GetRecordingId().c_str());
       tag.SetFanartPath(artworkPath);
     }
     else
     {
       if (m_settings.m_sendSidWithMetadata)
-        artworkPath = StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_urlBase, m_request.getSID(), UriEncode(title).c_str());
+        artworkPath = StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_urlBase, m_request.GetSID(), UriEncode(title).c_str());
       else
         artworkPath = StringUtils::Format("%s/service?method=channel.show.artwork&name=%s", m_settings.m_urlBase, UriEncode(title).c_str());
       tag.SetFanartPath(artworkPath);

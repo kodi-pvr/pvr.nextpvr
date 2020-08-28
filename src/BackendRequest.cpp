@@ -26,7 +26,7 @@ namespace NextPVR
     std::string URL;
 
     if (strstr(resource, "method=session") == nullptr)
-      URL = StringUtils::Format("%s%s&sid=%s", m_settings.m_urlBase, resource, getSID());
+      URL = StringUtils::Format("%s%s&sid=%s", m_settings.m_urlBase, resource, GetSID());
     else
       URL = StringUtils::Format("%s%s", m_settings.m_urlBase, resource);
 
@@ -67,8 +67,8 @@ namespace NextPVR
     // build request string, adding SID if requred
     std::string URL;
 
-    if (isSidActive())
-      URL = StringUtils::Format("%s%s&sid=%s", m_settings.m_urlBase, resource, getSID());
+    if (IsActiveSID())
+      URL = StringUtils::Format("%s%s&sid=%s", m_settings.m_urlBase, resource, GetSID());
     else
       URL = StringUtils::Format("%s%s", m_settings.m_urlBase, resource);
 
@@ -130,7 +130,7 @@ namespace NextPVR
 
 
     char separator = (strchr(resource, '?') == nullptr) ? '?' : '&';
-    const std::string URL = StringUtils::Format("%s%s%csid=%s", m_settings.m_urlBase, resource, separator, getSID());
+    const std::string URL = StringUtils::Format("%s%s%csid=%s", m_settings.m_urlBase, resource, separator, GetSID());
 
     // ask XBMC to read the URL for us
     int resultCode = HTTP_NOTFOUND;
