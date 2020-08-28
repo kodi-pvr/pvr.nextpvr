@@ -45,24 +45,34 @@ bool ClientTimeShift::Open(const std::string inputUrl)
     return false;
   }
 
-  time_t timeout = time(nullptr) + 20;
+  time_t timeout = 20;
+
   do {
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    timeout--;
     if ( ClientTimeShift::GetStreamInfo())
     {
-      if  ( m_stream_duration  > m_prebuffer  || (m_stream_length > 150000 * (m_prebuffer + 2) && m_stream_duration == 0))
+      if  (m_stream_length > 50000)
       {
         break;
       }
     }
-    Lease();
-  } while (!m_complete && (timeout > time(nullptr)));
+    if (timeout == 10)
+      Lease();
+  } while (!m_complete && timeout != 0);
 
-  if (m_complete || m_stream_duration == 0)
+  if (m_complete || timeout ==  0)
   {
     kodi::Log(ADDON_LOG_ERROR, "Could not buffer stream");
     StreamStop();
     return false;
+  }
+
+  timeout = time(nullptr) + m_prebuffer;
+
+  while (timeout > time(nullptr))
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   }
 
   if (Buffer::Open(inputUrl, 0 ) == false)
