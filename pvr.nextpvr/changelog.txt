@@ -1,3 +1,8 @@
+v6.2.1
+- Modified client timeshift buffer for fast tuners
+- Refactor changes for 6.2.0
+- Read should be ssize_t
+
 v6.2.0
 - Move to tinyxml2
 - Connection improvements when server is stopped or client sleeps

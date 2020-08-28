@@ -24,7 +24,7 @@ namespace timeshift {
     DummyBuffer() : Buffer() { kodi::Log(ADDON_LOG_INFO, "DummyBuffer created!"); }
     virtual ~DummyBuffer() {}
 
-    virtual int Read(byte *buffer, size_t length) override
+    virtual ssize_t Read(byte *buffer, size_t length) override
     {
       return m_inputHandle.Read(buffer, length);
     }

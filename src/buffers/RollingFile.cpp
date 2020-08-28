@@ -300,11 +300,12 @@ void RollingFile::Close()
 
   m_lastClose = time(nullptr);
 }
-int RollingFile::Read(byte *buffer, size_t length)
+
+ssize_t RollingFile::Read(byte *buffer, size_t length)
 {
   std::unique_lock<std::mutex> lock(m_mutex);
   bool foundFile = false;
-  int dataRead = (int) m_inputHandle.Read(buffer, length);
+  ssize_t dataRead = m_inputHandle.Read(buffer, length);
   if (dataRead == 0)
   {
     RollingFile::GetStreamInfo();
@@ -337,7 +338,7 @@ int RollingFile::Read(byte *buffer, size_t length)
         m_activeLength = slipFiles.front().length;
       }
       RollingFile::RollingFileOpen();
-      dataRead = (int) m_inputHandle.Read(buffer, length);
+      dataRead = m_inputHandle.Read(buffer, length);
     }
     else
     {
@@ -354,10 +355,6 @@ int RollingFile::Read(byte *buffer, size_t length)
       }
     }
     kodi::Log(ADDON_LOG_DEBUG, "%s:%d: %d %d %lld %lld", __FUNCTION__, __LINE__, length, dataRead, m_inputHandle.GetLength() , m_inputHandle.GetPosition());
-  }
-  else if (dataRead < length)
-  {
-    //kodi::Log(ADDON_LOG_DEBUG, "short read %s:%d: %lld %d", __FUNCTION__, __LINE__, length, dataRead);
   }
   return dataRead;
 }

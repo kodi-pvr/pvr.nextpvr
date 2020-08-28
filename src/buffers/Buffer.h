@@ -64,7 +64,7 @@ namespace timeshift {
      * Reads "length" bytes into the specified buffer
      * @return the number of bytes read
      */
-    virtual int Read(byte *buffer, size_t length) = 0;
+    virtual ssize_t Read(byte *buffer, size_t length) = 0;
 
     /**
      * Seeks to the specified position

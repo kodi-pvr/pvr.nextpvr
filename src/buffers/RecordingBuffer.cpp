@@ -76,11 +76,11 @@ bool RecordingBuffer::Open(const std::string inputUrl, const kodi::addon::PVRRec
   return Buffer::Open(m_recordingURL, m_isLive ?  ADDON_READ_NO_CACHE : ADDON_READ_CACHED);
 }
 
-int RecordingBuffer::Read(byte *buffer, size_t length)
+ssize_t RecordingBuffer::Read(byte *buffer, size_t length)
 {
   if (m_recordingTime)
     std::unique_lock<std::mutex> lock(m_mutex);
-  int dataRead = (int) m_inputHandle.Read(buffer, length);
+  ssize_t dataRead = (int) m_inputHandle.Read(buffer, length);
   if (dataRead == 0 && m_isLive)
   {
     kodi::Log(ADDON_LOG_DEBUG, "%s:%d: %lld %lld", __FUNCTION__, __LINE__, m_inputHandle.GetLength() , m_inputHandle.GetPosition());
@@ -91,7 +91,7 @@ int RecordingBuffer::Read(byte *buffer, size_t length)
       std::this_thread::sleep_for(std::chrono::milliseconds(2000));
       Buffer::Open(m_recordingURL);
       Seek(position, 0);
-      dataRead = static_cast<int>(m_inputHandle.Read(buffer, length));
+      dataRead = m_inputHandle.Read(buffer, length);
     } while (dataRead == 0 && time(nullptr) - startTime < 5);
     kodi::Log(ADDON_LOG_DEBUG, "%s:%d: %lld %lld", __FUNCTION__, __LINE__, m_inputHandle.GetLength() , m_inputHandle.GetPosition());
   }
