@@ -81,7 +81,7 @@ namespace timeshift {
       return m_activeLength + m_inputHandle.GetPosition();
     }
 
-    virtual int Read(byte *buffer, size_t length) override;
+    virtual ssize_t Read(byte *buffer, size_t length) override;
 
     int64_t Seek(int64_t position, int whence) override;
 

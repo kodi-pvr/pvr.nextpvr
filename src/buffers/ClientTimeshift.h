@@ -60,7 +60,7 @@ namespace timeshift {
     {
       return m_inputHandle.GetPosition();
     }
-    virtual int Read(byte *buffer, size_t length) override
+    virtual ssize_t Read(byte *buffer, size_t length) override
     {
       ssize_t dataLen = m_inputHandle.Read(buffer, length);
       if (m_complete && dataLen == 0)

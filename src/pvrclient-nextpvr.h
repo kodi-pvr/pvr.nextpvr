@@ -103,8 +103,8 @@ public:
   Recordings& m_recordings = Recordings::GetInstance();
   Timers& m_timers = Timers::GetInstance();
   time_t m_lastRecordingUpdateTime;
-  time_t m_nextServerCheck{ 0 };
-  time_t m_lastEPGUpdateTime{ 0 };
+  time_t m_nextServerCheck = 0;
+  time_t m_lastEPGUpdateTime = 0;
 
   PVR_ERROR GetCapabilities(kodi::addon::PVRCapabilities& capabilities) override;
 

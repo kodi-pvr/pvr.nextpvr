@@ -212,7 +212,7 @@ void TimeshiftBuffer::Reset()
 
 }
 
-int TimeshiftBuffer::Read(byte *buffer, size_t length)
+ssize_t TimeshiftBuffer::Read(byte *buffer, size_t length)
 {
   int bytesRead = 0;
   std::unique_lock<std::mutex> lock(m_mutex);

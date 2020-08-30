@@ -45,12 +45,12 @@ namespace NextPVR
     tinyxml2::XMLError  GetLastUpdate(const char* resource, time_t& last_update);
     bool PingBackend();
     bool OneTimeSetup();
-    const char* getSID() { return m_sid.c_str(); };
+    const char* GetSID() { return m_sid.c_str(); };
     std::vector<std::vector<std::string>> Discovery();
 
-    void setSID(std::string newsid) { m_sid = newsid; };
-    void clearSid() { m_sid.clear(); m_sidUpdate = 0; };
-    bool isSidActive() { return !m_sid.empty() && time(nullptr) < m_sidUpdate + 900; };
+    void SetSID(std::string newsid) { m_sid = newsid; };
+    void ClearSID() { m_sid.clear(); m_sidUpdate = 0; };
+    bool IsActiveSID() { return !m_sid.empty() && time(nullptr) < m_sidUpdate + 900; };
 
   private:
     Request() = default;

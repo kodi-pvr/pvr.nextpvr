@@ -29,7 +29,7 @@ namespace timeshift {
     RecordingBuffer() : Buffer() { m_Duration = 0; kodi::Log(ADDON_LOG_INFO, "RecordingBuffer created!"); }
     virtual ~RecordingBuffer() {}
 
-    virtual int Read(byte *buffer, size_t length) override;
+    virtual ssize_t Read(byte *buffer, size_t length) override;
 
     virtual int64_t Seek(int64_t position, int whence) override
     {

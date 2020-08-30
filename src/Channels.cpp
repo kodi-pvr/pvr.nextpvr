@@ -72,7 +72,6 @@ void  Channels::DeleteChannelIcon(int channelID)
 void Channels::DeleteChannelIcons()
 {
   std::vector<kodi::vfs::CDirEntry> icons;
-  unsigned int count;
   if (kodi::vfs::GetDirectory("special://userdata/addon_data/pvr.nextpvr/", "nextpvr-ch*.png", icons))
   {
     kodi::Log(ADDON_LOG_INFO, "Deleting %d channel icons", icons.size());

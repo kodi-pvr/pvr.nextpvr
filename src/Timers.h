@@ -76,7 +76,7 @@ namespace NextPVR
     PVR_ERROR UpdateTimer(const kodi::addon::PVRTimer& timer);
     bool UpdatePvrTimer(tinyxml2::XMLNode* pRecordingNode, kodi::addon::PVRTimer& tag);
     std::map<std::string, int> m_epgOidLookup;
-    time_t m_lastTimerUpdateTime{ 0 };
+    time_t m_lastTimerUpdateTime = 0;
 
   private:
     Timers() = default;
