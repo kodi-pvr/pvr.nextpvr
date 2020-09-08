@@ -65,8 +65,8 @@ namespace timeshift {
     }
 
     virtual int Duration(void);
-    int GetDuration(void) { return m_Duration; kodi::Log(ADDON_LOG_ERROR, "XXXXX Duration set to %d XXXXX", m_Duration); }
-    void SetDuration(int duration) { m_Duration = duration; kodi::Log(ADDON_LOG_ERROR, "XXXXX Duration set to %d XXXXX", m_Duration); }
+    int GetDuration(void) { return m_Duration; kodi::Log(ADDON_LOG_ERROR, "Duration get %d", m_Duration); }
+    void SetDuration(int duration) { m_Duration = duration; kodi::Log(ADDON_LOG_ERROR, "Duration set to %d", m_Duration); }
 
    PVR_ERROR GetStreamReadChunkSize(int* chunksize)
     {

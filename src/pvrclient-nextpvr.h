@@ -84,6 +84,9 @@ public:
   PVR_ERROR GetStreamTimes(kodi::addon::PVRStreamTimes& times) override;
   PVR_ERROR GetStreamReadChunkSize(int& chunksize) override;
   bool IsRadio() { return m_nowPlaying == Radio; };
+  bool IsServerStreaming();
+  bool IsServerStreamingLive(bool log = true);
+  bool IsServerStreamingRecording(bool log = true);
 
   /* Record stream handling */
   bool OpenRecordedStream(const kodi::addon::PVRRecording& recinfo) override;
