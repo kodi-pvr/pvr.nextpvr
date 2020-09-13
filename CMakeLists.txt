@@ -33,7 +33,6 @@ set(NEXTPVR_SOURCES src/addon.cpp
                     src/buffers/Seeker.cpp)
 
 set(NEXTPVR_HEADERS src/addon.h
-                    src/FileUtils.h
                     src/os-dependent.h
                     src/pvrclient-nextpvr.h
                     src/Socket.h
