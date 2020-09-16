@@ -15,7 +15,7 @@
 
 namespace timeshift {
 
-  class TranscodedBuffer : public DummyBuffer
+  class ATTRIBUTE_HIDDEN TranscodedBuffer : public DummyBuffer
   {
   public:
     TranscodedBuffer() : DummyBuffer()

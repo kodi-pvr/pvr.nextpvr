@@ -44,7 +44,7 @@ namespace NextPVR
   constexpr bool DEFAULT_GUIDE_ARTWORK = false;
   constexpr eStreamingMethod DEFAULT_LIVE_STREAM = RealTime;
 
-  class Settings
+  class ATTRIBUTE_HIDDEN Settings
   {
   public:
 

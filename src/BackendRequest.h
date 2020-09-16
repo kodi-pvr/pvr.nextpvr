@@ -28,7 +28,7 @@
 
 namespace NextPVR
 {
-  class Request
+  class ATTRIBUTE_HIDDEN Request
   {
   public:
     /*
