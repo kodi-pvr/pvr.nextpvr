@@ -137,7 +137,6 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
       {
         // a bit of debug
         kodi::Log(ADDON_LOG_DEBUG, "session.initiate returns: sid=%s salt=%s", sid.c_str(), salt.c_str());
-
         std::string pinMD5 = kodi::GetMD5(m_settings.m_PIN);
         StringUtils::ToLower(pinMD5);
 
