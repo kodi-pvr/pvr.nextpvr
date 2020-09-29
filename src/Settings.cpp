@@ -225,6 +225,8 @@ void Settings::SetVersionSpecificSettings()
     m_showRecordingSize = kodi::GetSettingBoolean("recordingsize", false);
 
     m_transcodedTimeshift = kodi::GetSettingBoolean("ffmpegdirect", false);
+
+    m_castcrew = kodi::GetSettingBoolean("castcrew", false);
   }
   else
   {
@@ -261,6 +263,8 @@ ADDON_STATUS Settings::SetValue(const std::string& settingName, const kodi::CSet
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_downloadGuideArtwork, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
   else if (settingName == "guideartworkportrait")
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_guideArtPortrait, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
+  else if (settingName == "castcrew")
+    return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_castcrew, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
   else if (settingName == "recordingsize")
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_showRecordingSize, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
   else if (settingName == "flattenrecording")

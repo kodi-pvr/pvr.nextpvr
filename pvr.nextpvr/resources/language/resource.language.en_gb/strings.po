@@ -313,3 +313,7 @@ msgstr ""
 msgctxt "#30196"
 msgid "Open NextPVR settings"
 msgstr ""
+
+msgctxt "#30197"
+msgid "Show guide cast, director and writer"
+msgstr ""

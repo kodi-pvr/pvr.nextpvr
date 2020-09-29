@@ -257,6 +257,16 @@
             </dependency>
           </dependencies>
         </setting>
+        <setting help="" id="castcrew" label="30197" type="boolean">
+          <level>1</level>
+          <default>false</default>
+          <control type="toggle"/>
+          <dependencies>
+            <dependency type="visible">
+              <condition operator="is" setting="legacy">false</condition>
+            </dependency>
+          </dependencies>
+        </setting>
         <setting help="30569" id="kodilook" label="30169" type="boolean">
           <level>1</level>
           <default>false</default>
