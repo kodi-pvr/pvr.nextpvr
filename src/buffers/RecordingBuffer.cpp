@@ -60,7 +60,7 @@ bool RecordingBuffer::Open(const std::string inputUrl, const kodi::addon::PVRRec
     m_isLive = false;
   }
   m_recordingURL = inputUrl;
-  if (!recording.GetDirectory().empty())
+  if (!recording.GetDirectory().empty() && m_isLive == false)
   {
     std::string kodiDirectory = recording.GetDirectory();
     StringUtils::Replace(kodiDirectory, '\\', '/');
@@ -73,7 +73,7 @@ bool RecordingBuffer::Open(const std::string inputUrl, const kodi::addon::PVRRec
       m_recordingURL = kodiDirectory;
     }
   }
-  return Buffer::Open(m_recordingURL, m_isLive ?  ADDON_READ_NO_CACHE : ADDON_READ_CACHED);
+  return Buffer::Open(m_recordingURL, ADDON_READ_NO_CACHE);
 }
 
 ssize_t RecordingBuffer::Read(byte *buffer, size_t length)

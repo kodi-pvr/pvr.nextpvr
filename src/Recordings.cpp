@@ -243,6 +243,11 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
       }
     }
   }
+  tag.SetYear(XMLUtils::GetIntValue(pRecordingNode, "year"));
+
+  std::string original;
+  XMLUtils::GetString(pRecordingNode, "original", original);
+  tag.SetFirstAired(original);
 
   tag.SetLastPlayedPosition(XMLUtils::GetIntValue(pRecordingNode, "playback_position"));
   m_lastPlayed[std::stoi(tag.GetRecordingId())] = tag.GetLastPlayedPosition();

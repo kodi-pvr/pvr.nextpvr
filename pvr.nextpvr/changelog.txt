@@ -1,3 +1,8 @@
+v7.0.1
+- Protect against out media calls from Kodi on closed files
+- Formalize and test manual https support
+- Add new recording metadata (year, firstAired)
+
 v7.0.0
 - Update GUI API 5.15.0
 - Remove not used source file

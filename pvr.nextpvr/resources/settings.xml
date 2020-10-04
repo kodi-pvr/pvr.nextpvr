@@ -29,6 +29,14 @@
             <heading>30002</heading>
           </control>
         </setting>
+        <setting help="" id="hostprotocol" label="" type="string" option="hidden">
+          <level>4</level>
+          <default>http</default>
+          <control format="string" type="edit">
+            <heading></heading>
+            <hidden>true</hidden>
+          </control>
+        </setting>
       </group>
       <group id="8">
         <setting help="" id="wolenable" label="30163" type="boolean">

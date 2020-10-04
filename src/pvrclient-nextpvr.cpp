@@ -137,7 +137,6 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
       {
         // a bit of debug
         kodi::Log(ADDON_LOG_DEBUG, "session.initiate returns: sid=%s salt=%s", sid.c_str(), salt.c_str());
-
         std::string pinMD5 = kodi::GetMD5(m_settings.m_PIN);
         StringUtils::ToLower(pinMD5);
 
@@ -580,13 +579,17 @@ bool cPVRClientNextPVR::OpenLiveStream(const kodi::addon::PVRChannel& channel)
 
 int cPVRClientNextPVR::ReadLiveStream(unsigned char* pBuffer, unsigned int iBufferSize)
 {
-  return m_livePlayer->Read(pBuffer, iBufferSize);
+  if (IsServerStreamingLive())
+  {
+    return m_livePlayer->Read(pBuffer, iBufferSize);
+  }
+  return -1;
 }
 
 void cPVRClientNextPVR::CloseLiveStream(void)
 {
   kodi::Log(ADDON_LOG_DEBUG, "CloseLiveStream");
-  if (m_livePlayer != nullptr)
+  if (IsServerStreamingLive())
   {
     m_livePlayer->Close();
     m_livePlayer = nullptr;
@@ -594,21 +597,23 @@ void cPVRClientNextPVR::CloseLiveStream(void)
   m_nowPlaying = NotPlaying;
 }
 
-
 int64_t cPVRClientNextPVR::SeekLiveStream(int64_t iPosition, int iWhence)
 {
-  int64_t retVal;
-  kodi::Log(ADDON_LOG_DEBUG, "calling seek(%lli %d)", iPosition, iWhence);
-  retVal = m_livePlayer->Seek(iPosition, iWhence);
-  kodi::Log(ADDON_LOG_DEBUG, "returned from seek()");
-  return retVal;
+  if (IsServerStreamingLive())
+  {
+    return m_livePlayer->Seek(iPosition, iWhence);
+  }
+  return -1;
 }
-
 
 int64_t cPVRClientNextPVR::LengthLiveStream(void)
 {
-  kodi::Log(ADDON_LOG_DEBUG, "seek length(%lli)", m_livePlayer->Length());
-  return m_livePlayer->Length();
+  if (IsServerStreamingLive())
+  {
+    kodi::Log(ADDON_LOG_DEBUG, "seek length(%lli)", m_livePlayer->Length());
+    return m_livePlayer->Length();
+  }
+  return -1;
 }
 
 PVR_ERROR cPVRClientNextPVR::GetSignalStatus(int channelUid, kodi::addon::PVRSignalStatus& signalStatus)
@@ -623,32 +628,39 @@ PVR_ERROR cPVRClientNextPVR::GetSignalStatus(int channelUid, kodi::addon::PVRSig
 
 bool cPVRClientNextPVR::CanPauseStream(void)
 {
-  if (m_nowPlaying == Recording)
+  if (IsServerStreaming())
   {
-    return true;
+    if (m_nowPlaying == Recording)
+      return true;
+    else
+      return m_livePlayer->CanPauseStream();
   }
-  else
-  {
-    bool retval = m_livePlayer->CanPauseStream();
-    return retval;
-  }
+  return false;
 }
 
 void cPVRClientNextPVR::PauseStream(bool bPaused)
 {
-  if (m_nowPlaying == Recording)
-    m_recordingBuffer->PauseStream(bPaused);
-  else
-    m_livePlayer->PauseStream(bPaused);
+  if (IsServerStreaming())
+  {
+    if (m_nowPlaying == Recording)
+      m_recordingBuffer->PauseStream(bPaused);
+    else
+      m_livePlayer->PauseStream(bPaused);
+  }
 }
 
 bool cPVRClientNextPVR::CanSeekStream(void)
 {
-  if (m_nowPlaying == Recording)
-    return true;
-  else
-    return m_livePlayer->CanSeekStream();
+  if (IsServerStreaming())
+  {
+    if (m_nowPlaying == Recording)
+      return true;
+    else
+      return m_livePlayer->CanSeekStream();
+  }
+  return false;
 }
+
 
 /************************************************************/
 /** Record stream handling */
@@ -665,69 +677,119 @@ bool cPVRClientNextPVR::OpenRecordedStream(const kodi::addon::PVRRecording& reco
 
 void cPVRClientNextPVR::CloseRecordedStream(void)
 {
-  m_recordingBuffer->Close();
-  m_recordingBuffer->SetDuration(0);
+  if (IsServerStreamingRecording())
+  {
+    m_recordingBuffer->Close();
+    m_recordingBuffer->SetDuration(0);
+  }
   m_nowPlaying = NotPlaying;
 }
 
 int cPVRClientNextPVR::ReadRecordedStream(unsigned char* pBuffer, unsigned int iBufferSize)
 {
-  iBufferSize = m_recordingBuffer->Read(pBuffer, iBufferSize);
-  return iBufferSize;
+  if (IsServerStreamingRecording())
+  {
+    return m_recordingBuffer->Read(pBuffer, iBufferSize);
+  }
+  return -1;
 }
 
 int64_t cPVRClientNextPVR::SeekRecordedStream(int64_t iPosition, int iWhence)
 {
-  return m_recordingBuffer->Seek(iPosition, iWhence);
+  if (IsServerStreamingRecording())
+  {
+    return m_recordingBuffer->Seek(iPosition, iWhence);
+  }
+  return -1;
 }
 
 int64_t cPVRClientNextPVR::LengthRecordedStream(void)
 {
-  return m_recordingBuffer->Length();
+  if (IsServerStreamingRecording())
+  {
+    return m_recordingBuffer->Length();
+  }
+  return -1;
 }
 
 bool cPVRClientNextPVR::IsTimeshifting()
 {
-  if (m_nowPlaying == Recording)
-    return false;
-  else
+  if (IsServerStreamingLive())
+  {
     return m_livePlayer->IsTimeshifting();
+  }
+  return false;
 }
 
 bool cPVRClientNextPVR::IsRealTimeStream()
 {
-  bool retval;
-  if (m_nowPlaying == Recording)
+  if (IsServerStreaming())
   {
-    retval = m_recordingBuffer->IsRealTimeStream();
+    if (m_nowPlaying == Recording)
+      return m_recordingBuffer->IsRealTimeStream();
+    else
+      return m_livePlayer->IsRealTimeStream();
   }
-  else
-  {
-    retval = m_livePlayer->IsRealTimeStream();
-  }
-  return retval;
+  return false;
 }
 
 PVR_ERROR cPVRClientNextPVR::GetStreamTimes(kodi::addon::PVRStreamTimes& stimes)
 {
-  PVR_ERROR rez;
-  if (m_nowPlaying == Recording)
-    rez = m_recordingBuffer->GetStreamTimes(stimes);
-  else
-    rez = m_livePlayer->GetStreamTimes(stimes);
-  return rez;
+  if (IsServerStreaming())
+  {
+    if (m_nowPlaying == Recording)
+      return m_recordingBuffer->GetStreamTimes(stimes);
+    else
+      return m_livePlayer->GetStreamTimes(stimes);
+  }
+  return PVR_ERROR_UNKNOWN;
 }
 
 PVR_ERROR cPVRClientNextPVR::GetStreamReadChunkSize(int& chunksize)
 {
-  PVR_ERROR rez = PVR_ERROR_NO_ERROR;
-  if (m_nowPlaying == Recording)
-    chunksize = m_settings.m_chunkRecording * 1024;
-  else if (m_nowPlaying == Radio)
-    chunksize = 4096;
-  else
-    rez = m_livePlayer->GetStreamReadChunkSize(chunksize);
-  return rez;
+  if (IsServerStreaming())
+  {
+    if (m_nowPlaying == TV)
+      return m_livePlayer->GetStreamReadChunkSize(chunksize);
+    if (m_nowPlaying == Recording)
+      chunksize = m_settings.m_chunkRecording * 1024;
+    else if (m_nowPlaying == Radio)
+      chunksize = 4096;
+    return PVR_ERROR_NO_ERROR;
+  }
+  return PVR_ERROR_UNKNOWN;
+}
+
+bool cPVRClientNextPVR::IsServerStreaming()
+{
+  if (IsServerStreamingLive(false) || IsServerStreamingRecording(false))
+  {
+    return true;
+  }
+  kodi::Log(ADDON_LOG_ERROR, "Unknown streaming state %d %d %d %d", m_nowPlaying, m_recordingBuffer->GetDuration(), !m_livePlayer);
+  return false;
+}
+
+bool cPVRClientNextPVR::IsServerStreamingLive(bool log)
+{
+  if ((m_nowPlaying == TV || m_nowPlaying == Radio) && m_livePlayer != nullptr)
+  {
+    return true;
+  }
+  if (log)
+    kodi::Log(ADDON_LOG_ERROR, "Unknown live streaming state %d %d %d", m_nowPlaying, m_recordingBuffer->GetDuration(), !m_livePlayer);
+  return false;
+}
+
+bool cPVRClientNextPVR::IsServerStreamingRecording(bool log)
+{
+  if (m_nowPlaying == Recording && m_recordingBuffer->GetDuration() > 0)
+  {
+    return true;
+  }
+  if (log)
+    kodi::Log(ADDON_LOG_ERROR, "Unknown recording streaming state %d %d %d", m_nowPlaying, m_recordingBuffer->GetDuration(), !m_livePlayer);
+  return false;
 }
 
 /*
