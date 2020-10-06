@@ -88,7 +88,8 @@ cPVRClientNextPVR::cPVRClientNextPVR(const CNextPVRAddon& base, KODI_HANDLE inst
   m_realTimeBuffer = new timeshift::DummyBuffer();
   m_livePlayer = nullptr;
   m_nowPlaying = NotPlaying;
-  CreateThread();
+  m_running = true;
+  m_thread = std::thread([&] { Process(); });
 }
 
 cPVRClientNextPVR::~cPVRClientNextPVR()
@@ -102,7 +103,9 @@ cPVRClientNextPVR::~cPVRClientNextPVR()
       CloseLiveStream();
   }
 
-  StopThread();
+  m_running = false;
+  if (m_thread.joinable())
+    m_thread.join();
 
   kodi::Log(ADDON_LOG_DEBUG, "->~cPVRClientNextPVR()");
   if (m_bConnected)
@@ -370,14 +373,13 @@ bool cPVRClientNextPVR::IsUp()
   return m_bConnected;
 }
 
-void* cPVRClientNextPVR::Process(void)
+void cPVRClientNextPVR::Process()
 {
-  while (!IsStopped())
+  while (m_running)
   {
     IsUp();
     std::this_thread::sleep_for(std::chrono::milliseconds(2500));
   }
-  return nullptr;
 }
 
 PVR_ERROR cPVRClientNextPVR::OnSystemSleep()

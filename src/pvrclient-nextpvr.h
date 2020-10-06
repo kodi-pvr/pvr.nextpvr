@@ -28,7 +28,6 @@
 #include "buffers/RollingFile.h"
 #include "buffers/TimeshiftBuffer.h"
 #include "buffers/TranscodedBuffer.h"
-#include "p8-platform/threads/threads.h"
 #include <map>
 
 enum eNowPlaying
@@ -40,7 +39,7 @@ enum eNowPlaying
   Transcoding
 };
 
-class ATTRIBUTE_HIDDEN cPVRClientNextPVR : public kodi::addon::CInstancePVRClient, P8PLATFORM::CThread
+class ATTRIBUTE_HIDDEN cPVRClientNextPVR : public kodi::addon::CInstancePVRClient
 {
 public:
   /* Class interface */
@@ -98,7 +97,7 @@ public:
   void ForceRecordingUpdate() { m_lastRecordingUpdateTime = 0; }
 
   /* background connection monitoring */
-  void* Process(void) override;
+  void Process();
 
   Channels& m_channels = Channels::GetInstance();
   EPG& m_epg = EPG::GetInstance();
@@ -147,7 +146,10 @@ private:
   void Close();
 
   bool m_bConnected;
+  std::atomic<bool> m_running = {false};
+  std::thread m_thread;
   bool m_supportsLiveTimeshift;
+
 
   time_t m_tsbStartTime;
   int m_timeShiftBufferSeconds;
@@ -155,6 +157,7 @@ private:
   timeshift::Buffer* m_livePlayer;
   timeshift::Buffer* m_realTimeBuffer;
   timeshift::RecordingBuffer* m_recordingBuffer;
+
 
   //Matrix changes
   NextPVR::Settings& m_settings = NextPVR::Settings::GetInstance();

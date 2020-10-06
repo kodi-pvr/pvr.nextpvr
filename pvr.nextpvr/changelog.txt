@@ -1,3 +1,6 @@
+v7.1.0
+- Remove p8-platform dependency
+
 v7.0.2
 - Add cast and crew from NextPVR 5.0.9
 - Fix regression in discovery

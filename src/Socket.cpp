@@ -9,8 +9,6 @@
 #include "pvrclient-nextpvr.h"
 #include "Socket.h"
 #include <string>
-#include "p8-platform/os.h"
-#include "p8-platform/util/timeutils.h"
 
 using namespace NextPVR;
 
