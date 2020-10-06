@@ -1,3 +1,7 @@
+v7.0.2
+- Add cast and crew from NextPVR 5.0.9
+- Fix regression in discovery
+
 v7.0.1
 - Protect against out media calls from Kodi on closed files
 - Formalize and test manual https support

@@ -64,6 +64,8 @@ namespace NextPVR
     {
       m_hostname = host;
       m_port = port;
+      //force to http settings.xml don't exist maybe backend can identify https in the future
+      sprintf(m_urlBase, "http://%.255s:%d", m_hostname.c_str(), m_port);
     };
 
     void ReadFromAddon();
@@ -93,6 +95,7 @@ namespace NextPVR
     bool m_sendSidWithMetadata = false;
     bool m_guideArtPortrait = false;
     bool m_genreString = false;
+    bool m_castcrew = false;
 
     //Recordings
     bool m_showRecordingSize = false;

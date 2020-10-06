@@ -35,7 +35,10 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
     kodi::Log(ADDON_LOG_DEBUG, "Skipping expired EPG data %d %ld %lld", channelUid, start, end);
     return PVR_ERROR_INVALID_PARAMETERS;
   }
-  const std::string request = StringUtils::Format("/service?method=channel.listings&channel_id=%d&start=%d&end=%d&genre=all", channelUid, static_cast<int>(start), static_cast<int>(end));
+  std::string request = StringUtils::Format("/service?method=channel.listings&channel_id=%d&start=%d&end=%d&genre=all", channelUid, static_cast<int>(start), static_cast<int>(end));
+  if (m_settings.m_castcrew)
+    request.append("&extras=true");
+
   if (m_request.DoRequest(request.c_str(), response) == HTTP_OK)
   {
     tinyxml2::XMLDocument doc;
@@ -162,6 +165,43 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
             }
           }
         }
+        if (m_settings.m_castcrew)
+        {
+          std::string castcrew;
+          XMLUtils::GetString(pListingNode, "cast", castcrew);
+          std::replace(castcrew.begin(), castcrew.end(), ';', ',');
+          StringUtils::Replace(castcrew, "Actor:", "");
+          StringUtils::Replace(castcrew, "Host:", "");
+          broadcast.SetCast(castcrew);
+
+          castcrew.clear();
+          XMLUtils::GetString(pListingNode, "crew", castcrew);
+          std::vector<std::string> allcrew = StringUtils::Split(castcrew, ";", 0);
+          std::string writer;
+          std::string director;
+          for (auto it = allcrew.begin(); it != allcrew.end(); ++it)
+          {
+            std::vector<std::string> onecrew = StringUtils::Split(*it, ":", 0);
+            if (onecrew.size() == 2)
+            {
+              if (StringUtils::ContainsKeyword(onecrew[0].c_str(), { "Writer", "Screenwriter" }))
+              {
+                if (!writer.empty())
+                  writer.append(EPG_STRING_TOKEN_SEPARATOR);
+                writer.append(onecrew[1]);
+              }
+              if (onecrew[0] == "Director")
+              {
+                if (!director.empty())
+                  director.append(EPG_STRING_TOKEN_SEPARATOR);
+                director.append(onecrew[1]);
+              }
+            }
+          }
+          broadcast.SetDirector(director);
+          broadcast.SetWriter(writer);
+        }
+        broadcast.SetStarRating(1 + std::rand() % 5);
         results.Add(broadcast);
       }
     }
