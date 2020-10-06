@@ -74,7 +74,7 @@ inline bool GetAdditiveString(const tinyxml2::XMLNode* pRootNode, const std::str
         bResult = true;
         strTemp = node->FirstChild()->Value();
         const char* clear = node->Attribute("clear");
-        if (strStringValue.empty() || (clear && StringUtils::CompareNoCase(clear, "true") == 0))
+        if (strStringValue.empty() || (clear && kodi::tools::StringUtils::CompareNoCase(clear, "true") == 0))
           strStringValue = strTemp;
         else
           strStringValue += strSeparator + strTemp;

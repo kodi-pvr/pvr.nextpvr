@@ -63,8 +63,8 @@ bool RecordingBuffer::Open(const std::string inputUrl, const kodi::addon::PVRRec
   if (!recording.GetDirectory().empty() && m_isLive == false)
   {
     std::string kodiDirectory = recording.GetDirectory();
-    StringUtils::Replace(kodiDirectory, '\\', '/');
-    if (StringUtils::StartsWith(kodiDirectory, "//"))
+    kodi::tools::StringUtils::Replace(kodiDirectory, '\\', '/');
+    if (kodi::tools::StringUtils::StartsWith(kodiDirectory, "//"))
     {
       kodiDirectory = "smb:" + kodiDirectory;
     }

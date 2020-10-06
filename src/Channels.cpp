@@ -10,7 +10,7 @@
 #include "utilities/XMLUtils.h"
 #include "pvrclient-nextpvr.h"
 
-#include <p8-platform/util/StringUtils.h>
+#include <kodi/tools/StringUtils.h>
 
 using namespace NextPVR;
 using namespace NextPVR::utilities;
@@ -61,7 +61,7 @@ std::string Channels::GetChannelIcon(int channelID)
 
 std::string Channels::GetChannelIconFileName(int channelID)
 {
-  return StringUtils::Format("special://userdata/addon_data/pvr.nextpvr/nextpvr-ch%d.png", channelID);
+  return kodi::tools::StringUtils::Format("special://userdata/addon_data/pvr.nextpvr/nextpvr-ch%d.png", channelID);
 }
 
 void  Channels::DeleteChannelIcon(int channelID)
@@ -120,7 +120,7 @@ PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& r
           tag.SetMimeType("application/octet-stream");
           if (IsChannelAPlugin(tag.GetUniqueId()))
           {
-            if (StringUtils::EndsWithNoCase(m_liveStreams[tag.GetUniqueId()], ".m3u8"))
+            if (kodi::tools::StringUtils::EndsWithNoCase(m_liveStreams[tag.GetUniqueId()], ".m3u8"))
               tag.SetMimeType("application/x-mpegURL");
             else
               tag.SetMimeType("video/MP2T");
@@ -267,7 +267,7 @@ PVR_ERROR Channels::GetChannelGroupMembers(const kodi::addon::PVRChannelGroup& g
 bool Channels::IsChannelAPlugin(int uid)
 {
   if (m_liveStreams.count(uid) != 0)
-    if (StringUtils::StartsWith(m_liveStreams[uid], "plugin:") || StringUtils::EndsWithNoCase(m_liveStreams[uid], ".m3u8"))
+    if (kodi::tools::StringUtils::StartsWith(m_liveStreams[uid], "plugin:") || kodi::tools::StringUtils::EndsWithNoCase(m_liveStreams[uid], ".m3u8"))
       return true;
 
   return false;

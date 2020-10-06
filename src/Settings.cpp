@@ -13,7 +13,7 @@
 #include "utilities/XMLUtils.h"
 
 #include <kodi/General.h>
-#include <p8-platform/util/StringUtils.h>
+#include <kodi/tools/StringUtils.h>
 
 using namespace NextPVR;
 using namespace NextPVR::utilities;
@@ -99,7 +99,7 @@ ADDON_STATUS Settings::ReadBackendSettings()
       if (m_backendVersion < 40204)
       {
         kodi::Log(ADDON_LOG_ERROR, "NextPVR version '%d' is too old. Please upgrade to '%s' or higher!", m_backendVersion, NEXTPVRC_MIN_VERSION_STRING);
-        kodi::QueueNotification(QUEUE_ERROR, kodi::GetLocalizedString(30050), StringUtils::Format(kodi::GetLocalizedString(30051).c_str(), NEXTPVRC_MIN_VERSION_STRING));
+        kodi::QueueNotification(QUEUE_ERROR, kodi::GetLocalizedString(30050), kodi::tools::StringUtils::Format(kodi::GetLocalizedString(30051).c_str(), NEXTPVRC_MIN_VERSION_STRING));
         return ADDON_STATUS_PERMANENT_FAILURE;
       }
     }
@@ -117,7 +117,7 @@ ADDON_STATUS Settings::ReadBackendSettings()
     std::string recordingDirectories;
     if (XMLUtils::GetString(settingsDoc.RootElement(), "RecordingDirectories", recordingDirectories))
     {
-      m_recordingDirectories = StringUtils::Split(recordingDirectories, ",", 0);
+      m_recordingDirectories = kodi::tools::StringUtils::Split(recordingDirectories, ",", 0);
     }
 
     int serverTimestamp;
@@ -184,13 +184,13 @@ void Settings::SetVersionSpecificSettings()
       if (m_liveStreamingMethod == eStreamingMethod::Transcoded)
       {
         m_liveStreamingMethod = eStreamingMethod::RealTime;
-        kodi::QueueNotification(QUEUE_ERROR, kodi::GetLocalizedString(30050), StringUtils::Format(kodi::GetLocalizedString(30051).c_str(), "5"));
+        kodi::QueueNotification(QUEUE_ERROR, kodi::GetLocalizedString(30050), kodi::tools::StringUtils::Format(kodi::GetLocalizedString(30051).c_str(), "5"));
       }
     }
     else if (m_backendVersion < 50002)
     {
       m_liveStreamingMethod = eStreamingMethod::RealTime;
-      kodi::QueueNotification(QUEUE_ERROR, kodi::GetLocalizedString(30050), StringUtils::Format(kodi::GetLocalizedString(30051).c_str(), "5.0.3"));
+      kodi::QueueNotification(QUEUE_ERROR, kodi::GetLocalizedString(30050), kodi::tools::StringUtils::Format(kodi::GetLocalizedString(30051).c_str(), "5.0.3"));
     }
     else
     {

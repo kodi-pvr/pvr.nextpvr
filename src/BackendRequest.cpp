@@ -12,7 +12,7 @@
 #include <kodi/General.h>
 #include <kodi/Network.h>
 #include <kodi/gui/dialogs/Select.h>
-#include <p8-platform/util/StringUtils.h>
+#include <kodi/tools/StringUtils.h>
 
 using namespace NextPVR::utilities;
 
@@ -26,9 +26,9 @@ namespace NextPVR
     std::string URL;
 
     if (strstr(resource, "method=session") == nullptr)
-      URL = StringUtils::Format("%s%s&sid=%s", m_settings.m_urlBase, resource, GetSID());
+      URL = kodi::tools::StringUtils::Format("%s%s&sid=%s", m_settings.m_urlBase, resource, GetSID());
     else
-      URL = StringUtils::Format("%s%s", m_settings.m_urlBase, resource);
+      URL = kodi::tools::StringUtils::Format("%s%s", m_settings.m_urlBase, resource);
 
     // ask XBMC to read the URL for us
     int resultCode = HTTP_NOTFOUND;
@@ -68,9 +68,9 @@ namespace NextPVR
     std::string URL;
 
     if (IsActiveSID())
-      URL = StringUtils::Format("%s%s&sid=%s", m_settings.m_urlBase, resource, GetSID());
+      URL = kodi::tools::StringUtils::Format("%s%s&sid=%s", m_settings.m_urlBase, resource, GetSID());
     else
-      URL = StringUtils::Format("%s%s", m_settings.m_urlBase, resource);
+      URL = kodi::tools::StringUtils::Format("%s%s", m_settings.m_urlBase, resource);
 
     if (!compressed)
       URL += "|Accept-Encoding=identity";
@@ -130,7 +130,7 @@ namespace NextPVR
 
 
     char separator = (strchr(resource, '?') == nullptr) ? '?' : '&';
-    const std::string URL = StringUtils::Format("%s%s%csid=%s", m_settings.m_urlBase, resource, separator, GetSID());
+    const std::string URL = kodi::tools::StringUtils::Format("%s%s%csid=%s", m_settings.m_urlBase, resource, separator, GetSID());
 
     // ask XBMC to read the URL for us
     int resultCode = HTTP_NOTFOUND;
@@ -162,7 +162,7 @@ namespace NextPVR
   }
   bool Request::PingBackend()
   {
-    const std::string URL = StringUtils::Format("%s%s|connection-timeout=2", m_settings.m_urlBase, "/service?method=recording.lastupdated");
+    const std::string URL = kodi::tools::StringUtils::Format("%s%s|connection-timeout=2", m_settings.m_urlBase, "/service?method=recording.lastupdated");
     kodi::vfs::CFile backend;
     if (backend.OpenFile(URL, ADDON_READ_NO_CACHE))
     {
@@ -197,7 +197,7 @@ namespace NextPVR
         kodi::vfs::CreateDirectory("special://userdata/addon_data/pvr.nextpvr/");
         m_settings.UpdateServerPort(entries[offset], atoi(foundAddress[offset][1].c_str()));
         kodi::QueueNotification(QUEUE_INFO, kodi::GetLocalizedString(30189),
-          StringUtils::Format(kodi::GetLocalizedString(30182).c_str(), m_settings.m_hostname.c_str(), m_settings.m_port));
+          kodi::tools::StringUtils::Format(kodi::GetLocalizedString(30182).c_str(), m_settings.m_hostname.c_str(), m_settings.m_port));
         /* note that these run before the file is created */
         kodi::SetSettingString("host", m_settings.m_hostname);
         kodi::SetSettingInt("port", m_settings.m_port);
@@ -250,7 +250,7 @@ namespace NextPVR
           char response[512]{0};
           if ((sockResult = socket->BroadcastReceiveFrom(response, 512) > 0))
           {
-            std::vector<std::string> parseResponse = StringUtils::Split(response, ":");
+            std::vector<std::string> parseResponse = kodi::tools::StringUtils::Split(response, ":");
             if (parseResponse.size() >= 3)
             {
               kodi::Log(ADDON_LOG_INFO, "Broadcast received %s %s", parseResponse[0].c_str(), parseResponse[1].c_str());
