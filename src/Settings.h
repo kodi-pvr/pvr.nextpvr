@@ -12,7 +12,7 @@
 #include "addon.h"
 #include <string>
 #include <kodi/AddonBase.h>
-#include <p8-platform/util/StringUtils.h>
+#include <kodi/tools/StringUtils.h>
 
 namespace NextPVR
 {

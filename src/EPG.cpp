@@ -11,7 +11,7 @@
 #include "pvrclient-nextpvr.h"
 #include "utilities/XMLUtils.h"
 
-#include <p8-platform/util/StringUtils.h>
+#include <kodi/tools/StringUtils.h>
 
 using namespace NextPVR;
 using namespace NextPVR::utilities;
@@ -35,7 +35,7 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
     kodi::Log(ADDON_LOG_DEBUG, "Skipping expired EPG data %d %ld %lld", channelUid, start, end);
     return PVR_ERROR_INVALID_PARAMETERS;
   }
-  std::string request = StringUtils::Format("/service?method=channel.listings&channel_id=%d&start=%d&end=%d&genre=all", channelUid, static_cast<int>(start), static_cast<int>(end));
+  std::string request = kodi::tools::StringUtils::Format("/service?method=channel.listings&channel_id=%d&start=%d&end=%d&genre=all", channelUid, static_cast<int>(start), static_cast<int>(end));
   if (m_settings.m_castcrew)
     request.append("&extras=true");
 
@@ -56,7 +56,7 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
 
         if (XMLUtils::GetString(pListingNode, "subtitle", subtitle))
         {
-          if (description != subtitle + ":" && StringUtils::StartsWith(description, subtitle + ": "))
+          if (description != subtitle + ":" && kodi::tools::StringUtils::StartsWith(description, subtitle + ": "))
           {
             description = description.substr(subtitle.length() + 2);
           }
@@ -89,13 +89,13 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
         {
           // artwork URL
           if (m_settings.m_backendVersion < 50000)
-            artworkPath = StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&event_id=%d", m_settings.m_urlBase, m_request.GetSID(), epgOid);
+            artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&event_id=%d", m_settings.m_urlBase, m_request.GetSID(), epgOid);
           else
           {
             if (m_settings.m_sendSidWithMetadata)
-              artworkPath = StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_urlBase, m_request.GetSID(), UriEncode(title).c_str());
+              artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_urlBase, m_request.GetSID(), UriEncode(title).c_str());
             else
-              artworkPath = StringUtils::Format("%s/service?method=channel.show.artwork&name=%s", m_settings.m_urlBase, UriEncode(title).c_str());
+              artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&name=%s", m_settings.m_urlBase, UriEncode(title).c_str());
             if (m_settings.m_guideArtPortrait)
               artworkPath += "&prefer=poster";
           }
@@ -170,21 +170,21 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
           std::string castcrew;
           XMLUtils::GetString(pListingNode, "cast", castcrew);
           std::replace(castcrew.begin(), castcrew.end(), ';', ',');
-          StringUtils::Replace(castcrew, "Actor:", "");
-          StringUtils::Replace(castcrew, "Host:", "");
+          kodi::tools::StringUtils::Replace(castcrew, "Actor:", "");
+          kodi::tools::StringUtils::Replace(castcrew, "Host:", "");
           broadcast.SetCast(castcrew);
 
           castcrew.clear();
           XMLUtils::GetString(pListingNode, "crew", castcrew);
-          std::vector<std::string> allcrew = StringUtils::Split(castcrew, ";", 0);
+          std::vector<std::string> allcrew = kodi::tools::StringUtils::Split(castcrew, ";", 0);
           std::string writer;
           std::string director;
           for (auto it = allcrew.begin(); it != allcrew.end(); ++it)
           {
-            std::vector<std::string> onecrew = StringUtils::Split(*it, ":", 0);
+            std::vector<std::string> onecrew = kodi::tools::StringUtils::Split(*it, ":", 0);
             if (onecrew.size() == 2)
             {
-              if (StringUtils::ContainsKeyword(onecrew[0].c_str(), { "Writer", "Screenwriter" }))
+              if (kodi::tools::StringUtils::ContainsKeyword(onecrew[0].c_str(), { "Writer", "Screenwriter" }))
               {
                 if (!writer.empty())
                   writer.append(EPG_STRING_TOKEN_SEPARATOR);

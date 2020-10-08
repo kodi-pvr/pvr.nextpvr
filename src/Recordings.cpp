@@ -14,7 +14,7 @@
 
 #include <regex>
 
-#include <p8-platform/util/StringUtils.h>
+#include <kodi/tools/StringUtils.h>
 
 using namespace NextPVR;
 using namespace NextPVR::utilities;
@@ -164,7 +164,7 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
   {
     if (!flatten)
     {
-      buffer = StringUtils::Format("/%s", title.c_str());
+      buffer = kodi::tools::StringUtils::Format("/%s", title.c_str());
       tag.SetDirectory(buffer);
     }
     buffer.clear();
@@ -175,7 +175,7 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
   }
   else if (status == "Failed")
   {
-    buffer = StringUtils::Format("/%s/%s", kodi::GetLocalizedString(30166).c_str(), title.c_str());
+    buffer = kodi::tools::StringUtils::Format("/%s/%s", kodi::GetLocalizedString(30166).c_str(), title.c_str());
     tag.SetDirectory(buffer);
     if (XMLUtils::GetString(pRecordingNode, "reason", buffer))
     {
@@ -232,13 +232,13 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
       {
         if (!m_settings.m_kodiLook)
         {
-          tag.SetDirectory(StringUtils::Format("/%s/%s %d", title.c_str(), kodi::GetLocalizedString(20373).c_str(), tag.GetSeriesNumber()));
+          tag.SetDirectory(kodi::tools::StringUtils::Format("/%s/%s %d", title.c_str(), kodi::GetLocalizedString(20373).c_str(), tag.GetSeriesNumber()));
           tag.SetSeriesNumber(PVR_RECORDING_INVALID_SERIES_EPISODE);
           tag.SetEpisodeNumber(PVR_RECORDING_INVALID_SERIES_EPISODE);
         }
         else
         {
-          tag.SetDirectory(StringUtils::Format("/%s/%s %d", tag.GetTitle().c_str(), kodi::GetLocalizedString(20373).c_str(), tag.GetSeriesNumber()));
+          tag.SetDirectory(kodi::tools::StringUtils::Format("/%s/%s %d", tag.GetTitle().c_str(), kodi::GetLocalizedString(20373).c_str(), tag.GetSeriesNumber()));
         }
       }
     }
@@ -269,8 +269,8 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
   {
     if (m_settings.m_showRecordingSize)
     {
-      StringUtils::Replace(recordingFile, '\\', '/');
-      if (StringUtils::StartsWith(recordingFile, "//"))
+      kodi::tools::StringUtils::Replace(recordingFile, '\\', '/');
+      if (kodi::tools::StringUtils::StartsWith(recordingFile, "//"))
       {
         recordingFile = "smb:" + recordingFile;
       }
@@ -300,17 +300,17 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
     std::string artworkPath;
     if (m_settings.m_backendVersion < 50000)
     {
-      artworkPath = StringUtils::Format("%s/service?method=recording.artwork&sid=%s&recording_id=%s", m_settings.m_urlBase, m_request.GetSID(), tag.GetRecordingId().c_str());
+      artworkPath = kodi::tools::StringUtils::Format("%s/service?method=recording.artwork&sid=%s&recording_id=%s", m_settings.m_urlBase, m_request.GetSID(), tag.GetRecordingId().c_str());
       tag.SetThumbnailPath(artworkPath);
-      artworkPath = StringUtils::Format("%s/service?method=recording.fanart&sid=%s&recording_id=%s", m_settings.m_urlBase, m_request.GetSID(), tag.GetRecordingId().c_str());
+      artworkPath = kodi::tools::StringUtils::Format("%s/service?method=recording.fanart&sid=%s&recording_id=%s", m_settings.m_urlBase, m_request.GetSID(), tag.GetRecordingId().c_str());
       tag.SetFanartPath(artworkPath);
     }
     else
     {
       if (m_settings.m_sendSidWithMetadata)
-        artworkPath = StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_urlBase, m_request.GetSID(), UriEncode(title).c_str());
+        artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_urlBase, m_request.GetSID(), UriEncode(title).c_str());
       else
-        artworkPath = StringUtils::Format("%s/service?method=channel.show.artwork&name=%s", m_settings.m_urlBase, UriEncode(title).c_str());
+        artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&name=%s", m_settings.m_urlBase, UriEncode(title).c_str());
       tag.SetFanartPath(artworkPath);
       artworkPath += "&prefer=poster";
       tag.SetThumbnailPath(artworkPath);
@@ -395,7 +395,7 @@ bool Recordings::ParseNextPVRSubtitle(const tinyxml2::XMLNode *pRecordingNode, k
           tag.SetEpisodeNumber(std::stoi(base_sub_match.str()));
           if (!m_settings.m_kodiLook)
           {
-            tag.SetTitle(StringUtils::Format("S%2.2dE%2.2d - %s", tag.GetSeriesNumber(), tag.GetEpisodeNumber(), buffer.c_str()));
+            tag.SetTitle(kodi::tools::StringUtils::Format("S%2.2dE%2.2d - %s", tag.GetSeriesNumber(), tag.GetEpisodeNumber(), buffer.c_str()));
           }
           hasSeasonEpisode = true;
         }
@@ -440,7 +440,7 @@ PVR_ERROR Recordings::SetRecordingLastPlayedPosition(const kodi::addon::PVRRecor
 {
   g_pvrclient->m_lastRecordingUpdateTime = std::numeric_limits<time_t>::max();
   time_t timerUpdate = m_timers.m_lastTimerUpdateTime;
-  const std::string request = StringUtils::Format("/service?method=recording.watched.set&recording_id=%s&position=%d", recording.GetRecordingId().c_str(), lastplayedposition);
+  const std::string request = kodi::tools::StringUtils::Format("/service?method=recording.watched.set&recording_id=%s&position=%d", recording.GetRecordingId().c_str(), lastplayedposition);
   tinyxml2::XMLDocument doc;
   if (m_request.DoMethodRequest(request.c_str(), doc) != tinyxml2::XML_SUCCESS)
   {

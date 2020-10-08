@@ -11,7 +11,7 @@
 
 #include "pvrclient-nextpvr.h"
 #include <kodi/General.h>
-#include <p8-platform/util/StringUtils.h>
+#include <kodi/tools/StringUtils.h>
 #include <string>
 
 using namespace NextPVR;
@@ -619,7 +619,7 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
   case TIMER_ONCE_MANUAL:
     kodi::Log(ADDON_LOG_DEBUG, "TIMER_ONCE_MANUAL");
     // build one-off recording request
-    request = StringUtils::Format("/service?method=recording.save&name=%s&channel=%d&time_t=%d&duration=%d&pre_padding=%d&post_padding=%d&directory_id=%s",
+    request = kodi::tools::StringUtils::Format("/service?method=recording.save&name=%s&channel=%d&time_t=%d&duration=%d&pre_padding=%d&post_padding=%d&directory_id=%s",
       encodedName.c_str(),
       timer.GetClientChannelUid(),
       (int)timer.GetStartTime(),
@@ -632,7 +632,7 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
   case TIMER_ONCE_EPG:
     kodi::Log(ADDON_LOG_DEBUG, "TIMER_ONCE_EPG");
     // build one-off recording request
-    request = StringUtils::Format("/service?method=recording.save&recording_id=%d&event_id=%d&pre_padding=%d&post_padding=%d&directory_id=%s",
+    request = kodi::tools::StringUtils::Format("/service?method=recording.save&recording_id=%d&event_id=%d&pre_padding=%d&post_padding=%d&directory_id=%s",
       timer.GetClientIndex(),
       epgOid,
       timer.GetMarginStart(),
@@ -646,7 +646,7 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
       // Fake a manual recording
       kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_EPG ANY CHANNEL");
       std::string title = encodedName + "%";
-      request = StringUtils::Format("/service?method=recording.recurring.save&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s&keyword=%s",
+      request = kodi::tools::StringUtils::Format("/service?method=recording.recurring.save&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s&keyword=%s",
         encodedName.c_str(),
         timer.GetClientChannelUid(),
         (int)timer.GetStartTime(),
@@ -663,7 +663,7 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
     {
       kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_EPG");
       // build recurring recording request
-      request = StringUtils::Format("/service?method=recording.recurring.save&recurring_id=%d&event_id=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s&only_new=%s",
+      request = kodi::tools::StringUtils::Format("/service?method=recording.recurring.save&recurring_id=%d&event_id=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s&only_new=%s",
         timer.GetClientIndex(),
         epgOid,
         timer.GetMaxRecordings(),
@@ -679,7 +679,7 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
   case TIMER_REPEATING_MANUAL:
     kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_MANUAL");
     // build manual recurring request
-    request = StringUtils::Format("/service?method=recording.recurring.save&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s",
+    request = kodi::tools::StringUtils::Format("/service?method=recording.recurring.save&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s",
       timer.GetClientIndex(),
       encodedName.c_str(),
       timer.GetClientChannelUid(),
@@ -696,7 +696,7 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
   case TIMER_REPEATING_KEYWORD:
     kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_KEYWORD");
     // build manual recurring request
-    request = StringUtils::Format("/service?method=recording.recurring.save&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&directory_id=%s&keyword=%s&only_new=%s",
+    request = kodi::tools::StringUtils::Format("/service?method=recording.recurring.save&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&directory_id=%s&keyword=%s&only_new=%s",
       timer.GetClientIndex(),
       encodedName.c_str(),
       timer.GetClientChannelUid(),
@@ -714,7 +714,7 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
   case TIMER_REPEATING_ADVANCED:
     kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_ADVANCED");
     // build manual advanced recurring request
-    request = StringUtils::Format("/service?method=recording.recurring.save&recurring_type=advanced&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&directory_id=%s&advanced=%s&only_new=%s",
+    request = kodi::tools::StringUtils::Format("/service?method=recording.recurring.save&recurring_type=advanced&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&directory_id=%s&advanced=%s&only_new=%s",
       timer.GetClientIndex(),
       encodedName.c_str(),
       timer.GetClientChannelUid(),
