@@ -473,9 +473,13 @@ PVR_ERROR cPVRClientNextPVR::GetConnectionString(std::string& connection)
 
 PVR_ERROR cPVRClientNextPVR::GetDriveSpace(uint64_t& total, uint64_t& used)
 {
-  total = 0;
-  used = 0;
-  return PVR_ERROR_NO_ERROR;
+  if (!m_bConnected)
+  {
+    total = 0;
+    used = 0;
+    return PVR_ERROR_NO_ERROR;
+  }
+  return m_recordings.GetDriveSpace(total, used);
 }
 
 PVR_ERROR cPVRClientNextPVR::GetChannelStreamProperties(const kodi::addon::PVRChannel& channel, std::vector<kodi::addon::PVRStreamProperty>& properties)

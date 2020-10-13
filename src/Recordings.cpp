@@ -13,6 +13,7 @@
 #include "pvrclient-nextpvr.h"
 
 #include <regex>
+#include <unordered_set>
 
 #include <kodi/tools/StringUtils.h>
 
@@ -52,6 +53,63 @@ PVR_ERROR Recordings::GetRecordingsAmount(bool deleted, int& amount)
     }
   }
   amount = m_iRecordingCount;
+  return PVR_ERROR_NO_ERROR;
+}
+
+PVR_ERROR Recordings::GetDriveSpace(uint64_t& total, uint64_t& used)
+{
+  if (m_settings.m_diskSpace != "No" && m_checkedSpace < time(nullptr))
+  {
+    if (m_mutexSpace.try_lock())
+    {
+      tinyxml2::XMLDocument doc;
+      // this call can take 3 seconds or longer.
+      if (m_request.DoMethodRequest("/service?method=system.space", doc) == tinyxml2::XML_SUCCESS)
+      {
+        m_checkedSpace = time(nullptr) + 10;
+        std::string free;
+        std::string total;
+        std::unordered_set<std::string> drives;
+        m_used = 0;
+        m_total = 0;
+        char* end;
+        for (tinyxml2::XMLElement* directoryNode = doc.RootElement()->FirstChildElement("directory"); directoryNode; directoryNode = directoryNode->NextSiblingElement("directory"))
+        {
+          const std::string name = directoryNode->Attribute("name");
+          if (m_settings.m_diskSpace == "Default")
+          {
+            if (name == "Default")
+            {              
+              // ignore errno issues backend parses properly
+              XMLUtils::GetString(directoryNode, "total", total);
+              m_total = std::strtoull(total.c_str(), &end, 10) / 1024;
+              XMLUtils::GetString(directoryNode, "free", free);
+              m_used = m_total - std::strtoull(free.c_str(), &end, 10) / 1024;
+              break;
+            }
+          }
+          else //Span
+          {
+            // ignore errno issues backend parses properly
+            XMLUtils::GetString(directoryNode, "total", total);
+            XMLUtils::GetString(directoryNode, "free", free);
+            // assume if free and total are the same it is the same drive
+            std::string key = total + ":" + free;
+            if (drives.find(key) == drives.end())
+            {
+              drives.insert(key);
+              m_total += std::strtoull(total.c_str(), &end, 10) / 1024;
+              m_used += std::strtoull(total.c_str(), &end, 10) / 1024 - std::strtoull(free.c_str(), &end, 10) / 1024;
+            }
+          }
+        }
+      }
+      m_checkedSpace = time(nullptr) + 300;
+      m_mutexSpace.unlock();
+    }
+  }
+  total = m_total;
+  used = m_used;
   return PVR_ERROR_NO_ERROR;
 }
 
@@ -119,6 +177,11 @@ PVR_ERROR Recordings::GetRecordings(bool deleted, kodi::addon::PVRRecordingsResu
       }
     }
     m_iRecordingCount = recordingCount;
+    // force read disk space
+    m_checkedSpace = 0;
+    uint64_t total;
+    uint64_t used;
+    GetDriveSpace(total, used);
     kodi::Log(ADDON_LOG_DEBUG, "Updated recordings %lld", g_pvrclient->m_lastRecordingUpdateTime);
   }
   else

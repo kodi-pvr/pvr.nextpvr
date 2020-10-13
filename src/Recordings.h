@@ -33,6 +33,7 @@ namespace NextPVR
 
     /* Recording handling **/
     PVR_ERROR GetRecordingsAmount(bool deleted, int& amount);
+    PVR_ERROR GetDriveSpace(uint64_t& total, uint64_t& used);
     PVR_ERROR GetRecordings(bool deleted, kodi::addon::PVRRecordingsResultSet& results);
     PVR_ERROR DeleteRecording(const kodi::addon::PVRRecording& recording);
     PVR_ERROR SetRecordingLastPlayedPosition(const kodi::addon::PVRRecording& recording, int lastplayedposition);
@@ -58,6 +59,11 @@ namespace NextPVR
     // update these at end of counting loop can be called during action
     int m_iRecordingCount = -1;
     std::map<int, int> m_lastPlayed;
+
+    time_t m_checkedSpace = std::numeric_limits<uint64_t>::max();
+    mutable std::mutex m_mutexSpace;
+    uint64_t m_total = 0;
+    uint64_t m_used = 0;
 
   };
 } // namespace NextPVR

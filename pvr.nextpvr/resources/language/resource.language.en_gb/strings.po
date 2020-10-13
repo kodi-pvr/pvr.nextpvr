@@ -317,3 +317,11 @@ msgstr ""
 msgctxt "#30197"
 msgid "Show guide cast, director and writer"
 msgstr ""
+
+msgctxt "#30198"
+msgid "Display disk space"
+msgstr ""
+
+msgctxt "#30698"
+msgid "Default: Show the default drive - Span: Sum all drives"
+msgstr ""
