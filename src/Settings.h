@@ -99,6 +99,7 @@ namespace NextPVR
 
     //Recordings
     bool m_showRecordingSize = false;
+    std::string m_diskSpace = "No";
     bool m_flattenRecording = false;
     bool m_separateSeasons = true;
     bool m_kodiLook = false;

@@ -297,6 +297,26 @@
             </dependency>
           </dependencies>
         </setting>
+        <setting id="diskspace" type="string" label="30198" help="30698">
+          <level>1</level>
+          <default>Default</default>
+          <constraints>
+            <options>
+              <option>No</option>
+              <option>Default</option>
+              <option>Span</option>
+            </options>
+            <allowempty>false</allowempty>
+          </constraints>
+          <control type="list" format="string">
+            <heading>30198</heading>
+          </control>
+          <dependencies>
+            <dependency type="visible">
+              <condition operator="is" setting="legacy">false</condition>
+            </dependency>
+          </dependencies>
+        </setting>
         <setting help="30694" id="genrestring" label="30194" type="boolean">
           <level>1</level>
           <default>false</default>
