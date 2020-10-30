@@ -280,8 +280,8 @@ PVR_ERROR RollingFile::GetStreamTimes(kodi::addon::PVRStreamTimes& stimes)
     return RecordingBuffer::GetStreamTimes(stimes);
   stimes.SetStartTime(m_streamStart);
   stimes.SetPTSStart(0);
-  stimes.SetPTSBegin((m_rollingStartSeconds - m_streamStart) * DVD_TIME_BASE);
-  stimes.SetPTSEnd((time(nullptr) - m_streamStart) * DVD_TIME_BASE);
+  stimes.SetPTSBegin((m_rollingStartSeconds - m_streamStart) * STREAM_TIME_BASE);
+  stimes.SetPTSEnd((time(nullptr) - m_streamStart) * STREAM_TIME_BASE);
   return PVR_ERROR_NO_ERROR;
 }
 

@@ -16,7 +16,7 @@ PVR_ERROR RecordingBuffer::GetStreamTimes(kodi::addon::PVRStreamTimes& stimes)
   stimes.SetStartTime(0);
   stimes.SetPTSStart(0);
   stimes.SetPTSBegin(0);
-  stimes.SetPTSEnd(static_cast<int64_t>(Duration()) * DVD_TIME_BASE);
+  stimes.SetPTSEnd(static_cast<int64_t>(Duration()) * STREAM_TIME_BASE);
   return PVR_ERROR_NO_ERROR;
 }
 

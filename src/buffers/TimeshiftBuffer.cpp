@@ -505,8 +505,8 @@ bool TimeshiftBuffer::WriteData(const byte *buf, unsigned int size, uint64_t blo
      m_sd.tsbStart.store(tsbStart);
      m_sd.lastKnownLength.store(lastKnownLength);
      m_sd.iBytesPerSecond = iBytesPerSecond;
-     m_sd.ptsBegin.store((tsbStartTime - sessionStartTime) * DVD_TIME_BASE);
-     m_sd.ptsEnd.store((now - sessionStartTime) * DVD_TIME_BASE);
+     m_sd.ptsBegin.store((tsbStartTime - sessionStartTime) * STREAM_TIME_BASE);
+     m_sd.ptsEnd.store((now - sessionStartTime) * STREAM_TIME_BASE);
      m_sd.lastPauseAdjust = lastPauseAdjust;
 
 
