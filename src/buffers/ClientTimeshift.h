@@ -74,5 +74,10 @@ namespace timeshift {
     int64_t Seek(int64_t position, int whence) override;
     void StreamStop();
 
+    virtual bool CanSeekStream() const override
+    {
+      return true;
+    }
+
   };
 }

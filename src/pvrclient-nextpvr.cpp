@@ -656,12 +656,9 @@ void cPVRClientNextPVR::PauseStream(bool bPaused)
 
 bool cPVRClientNextPVR::CanSeekStream(void)
 {
-  if (IsServerStreaming())
+  if (IsServerStreamingLive())
   {
-    if (m_nowPlaying == Recording)
-      return true;
-    else
-      return m_livePlayer->CanSeekStream();
+    return m_livePlayer->CanSeekStream();
   }
   return false;
 }
