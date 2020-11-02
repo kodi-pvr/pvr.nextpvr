@@ -27,41 +27,32 @@ PVR_ERROR Timers::GetTimersAmount(int& amount)
     amount = m_iTimerCount;
     return PVR_ERROR_NO_ERROR;
   }
-
-  std::string response;
   int timerCount = -1;
   // get list of recurring recordings
-  if (m_request.DoRequest("/service?method=recording.recurring.list", response) == HTTP_OK)
+  tinyxml2::XMLDocument doc;
+  if (m_request.DoMethodRequest("recording.recurring.list", doc) == tinyxml2::XML_SUCCESS)
   {
-    tinyxml2::XMLDocument doc;
-    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
+    tinyxml2::XMLNode* recordingsNode = doc.RootElement()->FirstChildElement("recurrings");
+    if (recordingsNode != nullptr)
     {
-      tinyxml2::XMLNode* recordingsNode = doc.RootElement()->FirstChildElement("recurrings");
-      if (recordingsNode != nullptr)
+      tinyxml2::XMLNode* pRecordingNode;
+      for (pRecordingNode = recordingsNode->FirstChildElement("recurring"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
       {
-        tinyxml2::XMLNode* pRecordingNode;
-        for (pRecordingNode = recordingsNode->FirstChildElement("recurring"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
-        {
-          timerCount++;
-        }
+        timerCount++;
       }
     }
   }
   // get list of pending recordings
-  response = "";
-  if (m_request.DoRequest("/service?method=recording.list&filter=pending", response) == HTTP_OK)
+  doc.Clear();
+  if (m_request.DoMethodRequest("recording.list&filter=pending", doc) == tinyxml2::XML_SUCCESS)
   {
-    tinyxml2::XMLDocument doc;
-    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
+    tinyxml2::XMLNode* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
+    if (recordingsNode != nullptr)
     {
-      tinyxml2::XMLNode* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
-      if (recordingsNode != nullptr)
+      tinyxml2::XMLNode* pRecordingNode;
+      for (pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
       {
-        tinyxml2::XMLNode* pRecordingNode;
-        for (pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
-        {
-          timerCount++;
-        }
+        timerCount++;
       }
     }
   }
@@ -76,178 +67,166 @@ PVR_ERROR Timers::GetTimersAmount(int& amount)
 
 PVR_ERROR Timers::GetTimers(kodi::addon::PVRTimersResultSet& results)
 {
-  std::string response;
   PVR_ERROR returnValue = PVR_ERROR_NO_ERROR;
   int timerCount = 0;
   // first add the recurring recordings
-  if (m_request.DoRequest("/service?method=recording.recurring.list", response) == HTTP_OK)
+  tinyxml2::XMLDocument doc;
+  if (m_request.DoMethodRequest("recording.recurring.list", doc) == tinyxml2::XML_SUCCESS)
   {
-    tinyxml2::XMLDocument doc;
-    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
+    tinyxml2::XMLNode* recurringsNode = doc.RootElement()->FirstChildElement("recurrings");
+    tinyxml2::XMLNode* pRecurringNode;
+    for (pRecurringNode = recurringsNode->FirstChildElement("recurring"); pRecurringNode; pRecurringNode = pRecurringNode->NextSiblingElement())
     {
-      tinyxml2::XMLNode* recurringsNode = doc.RootElement()->FirstChildElement("recurrings");
-      tinyxml2::XMLNode* pRecurringNode;
-      for (pRecurringNode = recurringsNode->FirstChildElement("recurring"); pRecurringNode; pRecurringNode = pRecurringNode->NextSiblingElement())
+      kodi::addon::PVRTimer tag;
+      tinyxml2::XMLNode* pMatchRulesNode = pRecurringNode->FirstChildElement("matchrules");
+      tinyxml2::XMLNode* pRulesNode = pMatchRulesNode->FirstChildElement("Rules");
+
+      tag.SetClientIndex(XMLUtils::GetUIntValue(pRecurringNode, "id"));
+      tag.SetClientChannelUid(XMLUtils::GetIntValue(pRulesNode, "ChannelOID"));
+      tag.SetTimerType(pRulesNode->FirstChildElement("EPGTitle") ? TIMER_REPEATING_EPG : TIMER_REPEATING_MANUAL);
+
+      std::string buffer;
+
+      // start/end time
+
+      const int recordingType = XMLUtils::GetUIntValue(pRecurringNode, "type");
+
+      if (recordingType == 1 || recordingType == 2)
       {
-        kodi::addon::PVRTimer tag;
-        tinyxml2::XMLNode* pMatchRulesNode = pRecurringNode->FirstChildElement("matchrules");
-        tinyxml2::XMLNode* pRulesNode = pMatchRulesNode->FirstChildElement("Rules");
+        tag.SetStartTime(0);
+        tag.SetEndTime(0);
+        tag.SetStartAnyTime(true);
+        tag.SetEndAnyTime(true);
+      }
+      else
+      {
+        if (XMLUtils::GetString(pRulesNode, "StartTimeTicks", buffer))
+          tag.SetStartTime(stoll(buffer));
+        if (XMLUtils::GetString(pRulesNode, "EndTimeTicks", buffer))
+          tag.SetEndTime(stoll(buffer));
+      }
 
-        tag.SetClientIndex(XMLUtils::GetUIntValue(pRecurringNode, "id"));
-        tag.SetClientChannelUid(XMLUtils::GetIntValue(pRulesNode, "ChannelOID"));
-        tag.SetTimerType(pRulesNode->FirstChildElement("EPGTitle") ? TIMER_REPEATING_EPG : TIMER_REPEATING_MANUAL);
-
-        std::string buffer;
-
-        // start/end time
-
-        const int recordingType = XMLUtils::GetUIntValue(pRecurringNode, "type");
-
-        if (recordingType == 1 || recordingType == 2)
+      // keyword recordings
+      std::string advancedRulesText;
+      if (XMLUtils::GetString(pRulesNode, "AdvancedRules", advancedRulesText))
+      {
+        if (advancedRulesText.find("KEYWORD: ") != std::string::npos)
         {
+          tag.SetTimerType(TIMER_REPEATING_KEYWORD);
           tag.SetStartTime(0);
           tag.SetEndTime(0);
           tag.SetStartAnyTime(true);
           tag.SetEndAnyTime(true);
+          tag.SetEPGSearchString(advancedRulesText.substr(9));
         }
         else
         {
-          if (XMLUtils::GetString(pRulesNode, "StartTimeTicks", buffer))
-            tag.SetStartTime(stoll(buffer));
-          if (XMLUtils::GetString(pRulesNode, "EndTimeTicks", buffer))
-            tag.SetEndTime(stoll(buffer));
+          tag.SetTimerType(TIMER_REPEATING_ADVANCED);
+          tag.SetStartTime(0);
+          tag.SetEndTime(0);
+          tag.SetStartAnyTime(true);
+          tag.SetEndAnyTime(true);
+          tag.SetFullTextEpgSearch(true);
+          tag.SetEPGSearchString(advancedRulesText);
         }
+      }
 
-        // keyword recordings
-        std::string advancedRulesText;
-        if (XMLUtils::GetString(pRulesNode, "AdvancedRules", advancedRulesText))
+      // days
+      tag.SetWeekdays(PVR_WEEKDAY_ALLDAYS);
+      std::string daysText;
+      if (XMLUtils::GetString(pRulesNode, "Days", daysText))
+      {
+        unsigned int weekdays = PVR_WEEKDAY_NONE;
+        if (daysText.find("SUN") != std::string::npos)
+          weekdays |= PVR_WEEKDAY_SUNDAY;
+        if (daysText.find("MON") != std::string::npos)
+          weekdays |= PVR_WEEKDAY_MONDAY;
+        if (daysText.find("TUE") != std::string::npos)
+          weekdays |= PVR_WEEKDAY_TUESDAY;
+        if (daysText.find("WED") != std::string::npos)
+          weekdays |= PVR_WEEKDAY_WEDNESDAY;
+        if (daysText.find("THU") != std::string::npos)
+          weekdays |= PVR_WEEKDAY_THURSDAY;
+        if (daysText.find("FRI") != std::string::npos)
+          weekdays |= PVR_WEEKDAY_FRIDAY;
+        if (daysText.find("SAT") != std::string::npos)
+          weekdays |= PVR_WEEKDAY_SATURDAY;
+        tag.SetWeekdays(weekdays);
+      }
+
+      // pre/post padding
+      tag.SetMarginStart(XMLUtils::GetUIntValue(pRulesNode, "PrePadding"));
+      tag.SetMarginEnd(XMLUtils::GetUIntValue(pRulesNode, "PostPadding"));
+
+      // number of recordings to keep
+      tag.SetMaxRecordings(XMLUtils::GetIntValue(pRulesNode, "Keep"));
+
+      // prevent duplicates
+      bool duplicate;
+      if (XMLUtils::GetBoolean(pRulesNode, "OnlyNewEpisodes", duplicate))
+      {
+        if (duplicate == true)
         {
-          if (advancedRulesText.find("KEYWORD: ") != std::string::npos)
-          {
-            tag.SetTimerType(TIMER_REPEATING_KEYWORD);
-            tag.SetStartTime(0);
-            tag.SetEndTime(0);
-            tag.SetStartAnyTime(true);
-            tag.SetEndAnyTime(true);
-            tag.SetEPGSearchString(advancedRulesText.substr(9));
-          }
-          else
-          {
-            tag.SetTimerType(TIMER_REPEATING_ADVANCED);
-            tag.SetStartTime(0);
-            tag.SetEndTime(0);
-            tag.SetStartAnyTime(true);
-            tag.SetEndAnyTime(true);
-            tag.SetFullTextEpgSearch(true);
-            tag.SetEPGSearchString(advancedRulesText);
-          }
+          tag.SetPreventDuplicateEpisodes(1);
         }
+      }
 
-        // days
-        tag.SetWeekdays(PVR_WEEKDAY_ALLDAYS);
-        std::string daysText;
-        if (XMLUtils::GetString(pRulesNode, "Days", daysText))
+      std::string recordingDirectoryID;
+      if (XMLUtils::GetString(pRulesNode, "RecordingDirectoryID", recordingDirectoryID))
+      {
+        int i = 0;
+        for (auto it = m_settings.m_recordingDirectories.begin(); it != m_settings.m_recordingDirectories.end(); ++it, i++)
         {
-          unsigned int weekdays = PVR_WEEKDAY_NONE;
-          if (daysText.find("SUN") != std::string::npos)
-            weekdays |= PVR_WEEKDAY_SUNDAY;
-          if (daysText.find("MON") != std::string::npos)
-            weekdays |= PVR_WEEKDAY_MONDAY;
-          if (daysText.find("TUE") != std::string::npos)
-            weekdays |= PVR_WEEKDAY_TUESDAY;
-          if (daysText.find("WED") != std::string::npos)
-            weekdays |= PVR_WEEKDAY_WEDNESDAY;
-          if (daysText.find("THU") != std::string::npos)
-            weekdays |= PVR_WEEKDAY_THURSDAY;
-          if (daysText.find("FRI") != std::string::npos)
-            weekdays |= PVR_WEEKDAY_FRIDAY;
-          if (daysText.find("SAT") != std::string::npos)
-            weekdays |= PVR_WEEKDAY_SATURDAY;
-          tag.SetWeekdays(weekdays);
-        }
-
-        // pre/post padding
-        tag.SetMarginStart(XMLUtils::GetUIntValue(pRulesNode, "PrePadding"));
-        tag.SetMarginEnd(XMLUtils::GetUIntValue(pRulesNode, "PostPadding"));
-
-        // number of recordings to keep
-        tag.SetMaxRecordings(XMLUtils::GetIntValue(pRulesNode, "Keep"));
-
-        // prevent duplicates
-        bool duplicate;
-        if (XMLUtils::GetBoolean(pRulesNode, "OnlyNewEpisodes", duplicate))
-        {
-          if (duplicate == true)
+          std::string bracketed = "[" + m_settings.m_recordingDirectories[i] + "]";
+          if (bracketed == recordingDirectoryID)
           {
-            tag.SetPreventDuplicateEpisodes(1);
+            tag.SetRecordingGroup(i);
+            break;
           }
         }
+      }
 
-        std::string recordingDirectoryID;
-        if (XMLUtils::GetString(pRulesNode, "RecordingDirectoryID", recordingDirectoryID))
-        {
-          int i = 0;
-          for (auto it = m_settings.m_recordingDirectories.begin(); it != m_settings.m_recordingDirectories.end(); ++it, i++)
-          {
-            std::string bracketed = "[" + m_settings.m_recordingDirectories[i] + "]";
-            if (bracketed == recordingDirectoryID)
-            {
-              tag.SetRecordingGroup(i);
-              break;
-            }
-          }
-        }
-
-        buffer.clear();
-        XMLUtils::GetString(pRecurringNode, "name", buffer);
-        tag.SetTitle(buffer);
-        bool state = true;
-        XMLUtils::GetBoolean(pRulesNode, "enabled", state);
-        if (state == false)
-            tag.SetState(PVR_TIMER_STATE_DISABLED);
-        else
-            tag.SetState(PVR_TIMER_STATE_SCHEDULED);
-        tag.SetSummary("summary");
+      buffer.clear();
+      XMLUtils::GetString(pRecurringNode, "name", buffer);
+      tag.SetTitle(buffer);
+      bool state = true;
+      XMLUtils::GetBoolean(pRulesNode, "enabled", state);
+      if (state == false)
+          tag.SetState(PVR_TIMER_STATE_DISABLED);
+      else
+          tag.SetState(PVR_TIMER_STATE_SCHEDULED);
+      tag.SetSummary("summary");
+      // pass timer to xbmc
+      timerCount++;
+      results.Add(tag);
+    }
+    // next add the one-off recordings.
+    doc.Clear();
+    if (m_request.DoMethodRequest("recording.list&filter=pending", doc) == tinyxml2::XML_SUCCESS)
+    {
+      tinyxml2::XMLNode* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
+      for (tinyxml2::XMLNode* pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
+      {
+        kodi::addon::PVRTimer tag;
+        UpdatePvrTimer(pRecordingNode, tag);
         // pass timer to xbmc
         timerCount++;
         results.Add(tag);
       }
     }
-    // next add the one-off recordings.
-    response = "";
-    if (m_request.DoRequest("/service?method=recording.list&filter=pending", response) == HTTP_OK)
+    doc.Clear();
+    if (m_request.DoMethodRequest("recording.list&filter=conflict", doc) == tinyxml2::XML_SUCCESS)
     {
-      tinyxml2::XMLDocument doc;
-      if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
+      tinyxml2::XMLNode* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
+      for (tinyxml2::XMLNode* pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
       {
-        tinyxml2::XMLNode* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
-        for (tinyxml2::XMLNode* pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
-        {
-          kodi::addon::PVRTimer tag;
-          UpdatePvrTimer(pRecordingNode, tag);
-          // pass timer to xbmc
-          timerCount++;
-          results.Add(tag);
-        }
+        kodi::addon::PVRTimer tag;
+        UpdatePvrTimer(pRecordingNode, tag);
+        // pass timer to xbmc
+        timerCount++;
+        results.Add(tag);
       }
-      response = "";
-      if (m_request.DoRequest("/service?method=recording.list&filter=conflict", response) == HTTP_OK)
-      {
-        tinyxml2::XMLDocument doc;
-        if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
-        {
-          tinyxml2::XMLNode* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
-          for (tinyxml2::XMLNode* pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
-          {
-            kodi::addon::PVRTimer tag;
-            UpdatePvrTimer(pRecordingNode, tag);
-            // pass timer to xbmc
-            timerCount++;
-            results.Add(tag);
-          }
-          m_iTimerCount = timerCount;
-        }
-      }
+      m_iTimerCount = timerCount;
     }
     m_lastTimerUpdateTime = time(nullptr);
   }
@@ -619,7 +598,7 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
   case TIMER_ONCE_MANUAL:
     kodi::Log(ADDON_LOG_DEBUG, "TIMER_ONCE_MANUAL");
     // build one-off recording request
-    request = kodi::tools::StringUtils::Format("/service?method=recording.save&name=%s&channel=%d&time_t=%d&duration=%d&pre_padding=%d&post_padding=%d&directory_id=%s",
+    request = kodi::tools::StringUtils::Format("recording.save&name=%s&channel=%d&time_t=%d&duration=%d&pre_padding=%d&post_padding=%d&directory_id=%s",
       encodedName.c_str(),
       timer.GetClientChannelUid(),
       (int)timer.GetStartTime(),
@@ -632,7 +611,7 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
   case TIMER_ONCE_EPG:
     kodi::Log(ADDON_LOG_DEBUG, "TIMER_ONCE_EPG");
     // build one-off recording request
-    request = kodi::tools::StringUtils::Format("/service?method=recording.save&recording_id=%d&event_id=%d&pre_padding=%d&post_padding=%d&directory_id=%s",
+    request = kodi::tools::StringUtils::Format("recording.save&recording_id=%d&event_id=%d&pre_padding=%d&post_padding=%d&directory_id=%s",
       timer.GetClientIndex(),
       epgOid,
       timer.GetMarginStart(),
@@ -646,7 +625,7 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
       // Fake a manual recording
       kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_EPG ANY CHANNEL");
       std::string title = encodedName + "%";
-      request = kodi::tools::StringUtils::Format("/service?method=recording.recurring.save&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s&keyword=%s",
+      request = kodi::tools::StringUtils::Format("recording.recurring.save&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s&keyword=%s",
         encodedName.c_str(),
         timer.GetClientChannelUid(),
         (int)timer.GetStartTime(),
@@ -663,7 +642,7 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
     {
       kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_EPG");
       // build recurring recording request
-      request = kodi::tools::StringUtils::Format("/service?method=recording.recurring.save&recurring_id=%d&event_id=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s&only_new=%s",
+      request = kodi::tools::StringUtils::Format("recording.recurring.save&recurring_id=%d&event_id=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s&only_new=%s",
         timer.GetClientIndex(),
         epgOid,
         timer.GetMaxRecordings(),
@@ -679,7 +658,7 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
   case TIMER_REPEATING_MANUAL:
     kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_MANUAL");
     // build manual recurring request
-    request = kodi::tools::StringUtils::Format("/service?method=recording.recurring.save&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s",
+    request = kodi::tools::StringUtils::Format("recording.recurring.save&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s",
       timer.GetClientIndex(),
       encodedName.c_str(),
       timer.GetClientChannelUid(),
@@ -696,7 +675,7 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
   case TIMER_REPEATING_KEYWORD:
     kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_KEYWORD");
     // build manual recurring request
-    request = kodi::tools::StringUtils::Format("/service?method=recording.recurring.save&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&directory_id=%s&keyword=%s&only_new=%s",
+    request = kodi::tools::StringUtils::Format("recording.recurring.save&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&directory_id=%s&keyword=%s&only_new=%s",
       timer.GetClientIndex(),
       encodedName.c_str(),
       timer.GetClientChannelUid(),
@@ -714,7 +693,7 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
   case TIMER_REPEATING_ADVANCED:
     kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_ADVANCED");
     // build manual advanced recurring request
-    request = kodi::tools::StringUtils::Format("/service?method=recording.recurring.save&recurring_type=advanced&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&directory_id=%s&advanced=%s&only_new=%s",
+    request = kodi::tools::StringUtils::Format("recording.recurring.save&recurring_type=advanced&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&directory_id=%s&advanced=%s&only_new=%s",
       timer.GetClientIndex(),
       encodedName.c_str(),
       timer.GetClientChannelUid(),
@@ -731,17 +710,14 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
   }
 
   // send request to NextPVR
-  std::string response;
-  if (m_request.DoRequest(request.c_str(), response) == HTTP_OK)
+  tinyxml2::XMLDocument doc;
+  if (m_request.DoMethodRequest(request, doc) == tinyxml2::XML_SUCCESS)
   {
-    if (strstr(response.c_str(), "<rsp stat=\"ok\">"))
-    {
-      if (timer.GetStartTime() <= time(nullptr) && timer.GetEndTime() > time(nullptr))
-        g_pvrclient->TriggerRecordingUpdate();
+    if (timer.GetStartTime() <= time(nullptr) && timer.GetEndTime() > time(nullptr))
+      g_pvrclient->TriggerRecordingUpdate();
 
-      g_pvrclient->TriggerTimerUpdate();
-      return PVR_ERROR_NO_ERROR;
-    }
+    g_pvrclient->TriggerTimerUpdate();
+    return PVR_ERROR_NO_ERROR;
   }
 
   return PVR_ERROR_FAILED;
@@ -749,24 +725,21 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
 
 PVR_ERROR Timers::DeleteTimer(const kodi::addon::PVRTimer& timer, bool forceDelete)
 {
-  std::string request = "/service?method=recording.delete&recording_id=" + std::to_string(timer.GetClientIndex());
+  std::string request = "recording.delete&recording_id=" + std::to_string(timer.GetClientIndex());
 
   // handle recurring recordings
   if (timer.GetTimerType() >= TIMER_REPEATING_MIN && timer.GetTimerType() <= TIMER_REPEATING_MAX)
   {
-    request = "/service?method=recording.recurring.delete&recurring_id=" + std::to_string(timer.GetClientIndex());
+    request = "recording.recurring.delete&recurring_id=" + std::to_string(timer.GetClientIndex());
   }
 
-  std::string response;
-  if (m_request.DoRequest(request.c_str(), response) == HTTP_OK)
+  tinyxml2::XMLDocument doc;
+  if (m_request.DoMethodRequest(request, doc) == tinyxml2::XML_SUCCESS)
   {
-    if (strstr(response.c_str(), "<rsp stat=\"ok\">"))
-    {
-      g_pvrclient->TriggerTimerUpdate();
-      if (timer.GetStartTime() <= time(nullptr) && timer.GetEndTime() > time(nullptr))
-        g_pvrclient->TriggerRecordingUpdate();
-      return PVR_ERROR_NO_ERROR;
-    }
+    g_pvrclient->TriggerTimerUpdate();
+    if (timer.GetStartTime() <= time(nullptr) && timer.GetEndTime() > time(nullptr))
+      g_pvrclient->TriggerRecordingUpdate();
+    return PVR_ERROR_NO_ERROR;
   }
 
   return PVR_ERROR_FAILED;

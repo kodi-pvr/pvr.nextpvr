@@ -18,17 +18,12 @@ using namespace NextPVR::utilities;
 
 namespace NextPVR
 {
-  int Request::DoRequest(const char* resource, std::string& response)
+  int Request::DoRequest(std::string resource, std::string& response)
   {
     auto start = std::chrono::steady_clock::now();
     std::unique_lock<std::mutex> lock(m_mutexRequest);
     // build request string, adding SID if requred
-    std::string URL;
-
-    if (strstr(resource, "method=session") == nullptr)
-      URL = kodi::tools::StringUtils::Format("%s%s&sid=%s", m_settings.m_urlBase, resource, GetSID());
-    else
-      URL = kodi::tools::StringUtils::Format("%s%s", m_settings.m_urlBase, resource);
+    const std::string URL = kodi::tools::StringUtils::Format("%s%s&sid=%s", m_settings.m_urlBase, resource.c_str(), GetSID());
 
     // ask XBMC to read the URL for us
     int resultCode = HTTP_NOTFOUND;
@@ -43,7 +38,7 @@ namespace NextPVR
       }
       stream.Close();
       resultCode = HTTP_OK;
-      if ((response.empty() || strstr(response.c_str(), "<rsp stat=\"ok\">") == nullptr) && strstr(resource, "method=channel.stream.info") == nullptr)
+      if ((response.empty() || strstr(response.c_str(), "<rsp stat=\"ok\">") == nullptr) && resource.find("channel.stream.info") == std::string::npos)
       {
         kodi::Log(ADDON_LOG_ERROR, "DoRequest failed, response=%s", response.c_str());
         resultCode = HTTP_BADREQUEST;
@@ -53,11 +48,18 @@ namespace NextPVR
         m_sidUpdate = time(nullptr);
       }
     }
-    kodi::Log(ADDON_LOG_DEBUG, "DoRequest return %s %d %d %d", resource, resultCode, response.length(), std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start));
+    kodi::Log(ADDON_LOG_DEBUG, "DoRequest return %s %d %d %d", resource.c_str(), resultCode, response.length(), std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start));
     return resultCode;
   }
 
-  tinyxml2::XMLError Request::DoMethodRequest(const char* resource, tinyxml2::XMLDocument& doc, bool compressed)
+  bool Request::DoActionRequest(std::string resource)
+  {
+    // caller only wants success/failure
+    tinyxml2::XMLDocument doc;
+    return DoMethodRequest(resource, doc, false) == tinyxml2::XML_SUCCESS;
+  }
+
+  tinyxml2::XMLError Request::DoMethodRequest(std::string resource, tinyxml2::XMLDocument& doc, bool compressed)
   {
     auto start = std::chrono::steady_clock::now();
     // return is same on timeout or http return ie 404, 500.
@@ -68,9 +70,9 @@ namespace NextPVR
     std::string URL;
 
     if (IsActiveSID())
-      URL = kodi::tools::StringUtils::Format("%s%s&sid=%s", m_settings.m_urlBase, resource, GetSID());
+      URL = kodi::tools::StringUtils::Format("%s/service?method=%s&sid=%s", m_settings.m_urlBase, resource.c_str(), GetSID());
     else
-      URL = kodi::tools::StringUtils::Format("%s%s", m_settings.m_urlBase, resource);
+      URL = kodi::tools::StringUtils::Format("%s/service?method=%s", m_settings.m_urlBase, resource.c_str());
 
     if (!compressed)
       URL += "|Accept-Encoding=identity";
@@ -102,11 +104,11 @@ namespace NextPVR
         }
       }
     }
-    kodi::Log(ADDON_LOG_DEBUG, "DoMethodRequest return %s %d %d %d", resource, retError, response.length(), std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start));
+    kodi::Log(ADDON_LOG_DEBUG, "DoMethodRequest %s %d %d %d", resource.c_str(), retError, response.length(), std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start));
     return retError;
   }
 
-  tinyxml2::XMLError Request::GetLastUpdate(const char* resource, time_t& last_update)
+  tinyxml2::XMLError Request::GetLastUpdate(std::string resource, time_t& last_update)
   {
     tinyxml2::XMLDocument doc;
     tinyxml2::XMLError xmlReturn = DoMethodRequest(resource, doc, false);

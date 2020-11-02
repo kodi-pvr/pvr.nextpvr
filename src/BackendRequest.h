@@ -39,10 +39,11 @@ namespace NextPVR
       static Request request;
       return request;
     }
-    int DoRequest(const char* resource, std::string& response);
-    tinyxml2::XMLError DoMethodRequest(const char* resource, tinyxml2::XMLDocument& doc, bool compresssed = true);
+    int DoRequest(std::string resource, std::string& response);
+    bool DoActionRequest(std::string resource);
+    tinyxml2::XMLError DoMethodRequest(std::string resource, tinyxml2::XMLDocument& doc, bool compresssed = true);
     int FileCopy(const char* resource, std::string fileName);
-    tinyxml2::XMLError  GetLastUpdate(const char* resource, time_t& last_update);
+    tinyxml2::XMLError  GetLastUpdate(std::string resource, time_t& last_update);
     bool PingBackend();
     bool OneTimeSetup();
     const char* GetSID() { return m_sid.c_str(); };

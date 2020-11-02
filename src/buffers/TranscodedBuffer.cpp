@@ -24,9 +24,8 @@ bool TranscodedBuffer::Open(const std::string inputUrl)
       Close();
     }
     kodi::Log(ADDON_LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
-    std::string response;
-    std::string formattedRequest = "/services/service?method=channel.transcode.initiate&force=true&channel_id=" + std::to_string(m_channel_id) + "&profile=" + m_settings.m_resolution + "p";
-    if (m_request.DoRequest(formattedRequest.c_str(), response) != HTTP_OK)
+    std::string formattedRequest = "channel.transcode.initiate&force=true&channel_id=" + std::to_string(m_channel_id) + "&profile=" + m_settings.m_resolution + "p";
+    if (!m_request.DoActionRequest(formattedRequest))
     {
       return false;
     }
@@ -66,32 +65,27 @@ void TranscodedBuffer::Close()
       m_leaseThread.detach();
       kodi::Log(ADDON_LOG_DEBUG, "%s:%d: %d", __FUNCTION__, __LINE__, m_leaseThread.joinable());
     }
-    std::string response;
-    m_request.DoRequest("/services/service?method=channel.transcode.stop", response);
+    m_request.DoActionRequest("channel.transcode.stop");
   }
 }
 
 int TranscodedBuffer::TranscodeStatus()
 {
   int percentage = -1;
-  std::string response;
-  if (m_request.DoRequest("/services/service?method=channel.transcode.status", response) == HTTP_OK)
+  tinyxml2::XMLDocument doc;
+  if (m_request.DoMethodRequest("channel.transcode.status", doc) == tinyxml2::XML_SUCCESS)
   {
-    tinyxml2::XMLDocument doc;
-    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
+    bool final;
+    XMLUtils::GetInt(doc.RootElement(), "percentage", percentage);
+    XMLUtils::GetBoolean(doc.RootElement(), "final", final);
+    if (final)
     {
-      tinyxml2::XMLNode* rspNode = doc.FirstChildElement("rsp");
-      if (rspNode != nullptr)
+      if (percentage != 100)
       {
-        bool final;
-        XMLUtils::GetInt(rspNode, "percentage", percentage);
-        XMLUtils::GetBoolean(rspNode, "final", final);
-        if (final)
-        {
-          kodi::Log(ADDON_LOG_DEBUG, "%s:%d: %s", __FUNCTION__, __LINE__, response.c_str());
-          if (percentage != 100)
-            percentage = -1;
-        }
+        tinyxml2::XMLPrinter printer;
+        doc.Print(&printer);
+        kodi::Log(ADDON_LOG_DEBUG, "%s:%d: %s", __FUNCTION__, __LINE__, printer.CStr());
+        percentage = -1;
       }
     }
   }
@@ -99,10 +93,10 @@ int TranscodedBuffer::TranscodeStatus()
   return percentage;
 }
 
-int TranscodedBuffer::Lease()
+enum LeaseStatus TranscodedBuffer::Lease()
 {
   m_nextStreamInfo = time(nullptr) + 5;
-  return true;
+  return Leased;
 }
 
 bool TranscodedBuffer::GetStreamInfo()

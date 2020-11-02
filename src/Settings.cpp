@@ -88,7 +88,7 @@ ADDON_STATUS Settings::ReadBackendSettings()
   std::string settings;
   Request& request = Request::GetInstance();
   tinyxml2::XMLDocument settingsDoc;
-  if (request.DoMethodRequest("/service?method=setting.list", settingsDoc) == tinyxml2::XML_SUCCESS)
+  if (request.DoMethodRequest("setting.list", settingsDoc) == tinyxml2::XML_SUCCESS)
   {
     if (XMLUtils::GetInt(settingsDoc.RootElement(), "NextPVRVersion", m_backendVersion))
     {

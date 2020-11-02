@@ -34,21 +34,17 @@ PVR_ERROR Recordings::GetRecordingsAmount(bool deleted, int& amount)
     return PVR_ERROR_NO_ERROR;
   }
 
-  std::string response;
-  if (m_request.DoRequest("/service?method=recording.list&filter=ready", response) == HTTP_OK)
+  tinyxml2::XMLDocument doc;
+  if (m_request.DoMethodRequest("recording.list&filter=ready", doc) == tinyxml2::XML_SUCCESS)
   {
-    tinyxml2::XMLDocument doc;
-    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
+    tinyxml2::XMLNode* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
+    if (recordingsNode != nullptr)
     {
-      tinyxml2::XMLNode* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
-      if (recordingsNode != nullptr)
+      tinyxml2::XMLNode* pRecordingNode;
+      m_iRecordingCount = 0;
+      for (pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
       {
-        tinyxml2::XMLNode* pRecordingNode;
-        m_iRecordingCount = 0;
-        for (pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
-        {
-          m_iRecordingCount++;
-        }
+        m_iRecordingCount++;
       }
     }
   }
@@ -64,7 +60,7 @@ PVR_ERROR Recordings::GetDriveSpace(uint64_t& total, uint64_t& used)
     {
       tinyxml2::XMLDocument doc;
       // this call can take 3 seconds or longer.
-      if (m_request.DoMethodRequest("/service?method=system.space", doc) == tinyxml2::XML_SUCCESS)
+      if (m_request.DoMethodRequest("system.space", doc) == tinyxml2::XML_SUCCESS)
       {
         m_checkedSpace = time(nullptr) + 10;
         std::string free;
@@ -79,7 +75,7 @@ PVR_ERROR Recordings::GetDriveSpace(uint64_t& total, uint64_t& used)
           if (m_settings.m_diskSpace == "Default")
           {
             if (name == "Default")
-            {              
+            {
               // ignore errno issues backend parses properly
               XMLUtils::GetString(directoryNode, "total", total);
               m_total = std::strtoull(total.c_str(), &end, 10) / 1024;
@@ -120,60 +116,56 @@ PVR_ERROR Recordings::GetRecordings(bool deleted, kodi::addon::PVRRecordingsResu
   m_hostFilenames.clear();
   m_lastPlayed.clear();
   int recordingCount = 0;
-  std::string response;
-  if (m_request.DoRequest("/service?method=recording.list&filter=all", response) == HTTP_OK)
+  tinyxml2::XMLDocument doc;
+  if (m_request.DoMethodRequest("recording.list&filter=all", doc) == tinyxml2::XML_SUCCESS)
   {
-    tinyxml2::XMLDocument doc;
-    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
+    tinyxml2::XMLNode* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
+    tinyxml2::XMLNode* pRecordingNode;
+    std::map<std::string, int> names;
+    std::map<std::string, int> seasons;
+    if ((m_settings.m_flattenRecording && m_settings.m_kodiLook) || m_settings.m_separateSeasons)
     {
-      tinyxml2::XMLNode* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
-      tinyxml2::XMLNode* pRecordingNode;
-      std::map<std::string, int> names;
-      std::map<std::string, int> seasons;
-      if ((m_settings.m_flattenRecording && m_settings.m_kodiLook) || m_settings.m_separateSeasons)
-      {
-        kodi::addon::PVRRecording mytag;
-        int season;
-        for (pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
-        {
-          std::string status;
-          XMLUtils::GetString(pRecordingNode, "status", status);
-          if (status != "Ready" && status != "Recording")
-            continue;
-          std::string title;
-          XMLUtils::GetString(pRecordingNode, "name", title);
-          if ((m_settings.m_flattenRecording && m_settings.m_kodiLook))
-            names[title]++;
-
-          if (ParseNextPVRSubtitle(pRecordingNode, mytag))
-            season = mytag.GetSeriesNumber();
-          else
-            season = PVR_RECORDING_INVALID_SERIES_EPISODE;
-
-          if (seasons[title])
-          {
-            if (seasons[title] != std::numeric_limits<int>::max())
-            {
-              if (season != seasons[title])
-                seasons[title] = std::numeric_limits<int>::max();
-            }
-          }
-          else
-          {
-            seasons[title] = season;
-          }
-        }
-      }
+      kodi::addon::PVRRecording mytag;
+      int season;
       for (pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
       {
-        kodi::addon::PVRRecording tag;
+        std::string status;
+        XMLUtils::GetString(pRecordingNode, "status", status);
+        if (status != "Ready" && status != "Recording")
+          continue;
         std::string title;
         XMLUtils::GetString(pRecordingNode, "name", title);
-        if (UpdatePvrRecording(pRecordingNode, tag, title, names[title] == 1, seasons[title] == std::numeric_limits<int>::max()))
+        if ((m_settings.m_flattenRecording && m_settings.m_kodiLook))
+          names[title]++;
+
+        if (ParseNextPVRSubtitle(pRecordingNode, mytag))
+          season = mytag.GetSeriesNumber();
+        else
+          season = PVR_RECORDING_INVALID_SERIES_EPISODE;
+
+        if (seasons[title])
         {
-          recordingCount++;
-          results.Add(tag);
+          if (seasons[title] != std::numeric_limits<int>::max())
+          {
+            if (season != seasons[title])
+              seasons[title] = std::numeric_limits<int>::max();
+          }
         }
+        else
+        {
+          seasons[title] = season;
+        }
+      }
+    }
+    for (pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
+    {
+      kodi::addon::PVRRecording tag;
+      std::string title;
+      XMLUtils::GetString(pRecordingNode, "name", title);
+      if (UpdatePvrRecording(pRecordingNode, tag, title, names[title] == 1, seasons[title] == std::numeric_limits<int>::max()))
+      {
+        recordingCount++;
+        results.Add(tag);
       }
     }
     m_iRecordingCount = recordingCount;
@@ -197,7 +189,7 @@ PVR_ERROR Recordings::GetRecordingsLastPlayedPosition()
   // include already-completed recordings
   PVR_ERROR returnValue = PVR_ERROR_NO_ERROR;
   tinyxml2::XMLDocument doc;
-  if (m_request.DoMethodRequest("/service?method=recording.list&filter=ready", doc) == tinyxml2::XML_SUCCESS)
+  if (m_request.DoMethodRequest("recording.list&filter=ready", doc) == tinyxml2::XML_SUCCESS)
   {
     m_lastPlayed.clear();
     for (const tinyxml2::XMLNode*  pRecordingNode = doc.RootElement()->FirstChildElement("recordings")->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
@@ -473,15 +465,11 @@ PVR_ERROR Recordings::DeleteRecording(const kodi::addon::PVRRecording& recording
   if (recording.GetRecordingTime() < time(nullptr) && recording.GetRecordingTime() + recording.GetDuration() > time(nullptr))
     return PVR_ERROR_RECORDING_RUNNING;
 
-  const std::string request = "/service?method=recording.delete&recording_id=" + recording.GetRecordingId();
-
-  std::string response;
-  if (m_request.DoRequest(request.c_str(), response) == HTTP_OK)
+  const std::string request = "recording.delete&recording_id=" + recording.GetRecordingId();
+  tinyxml2::XMLDocument doc;
+  if ( m_request.DoMethodRequest(request, doc) == tinyxml2::XML_SUCCESS)
   {
-    if (strstr(response.c_str(), "<rsp stat=\"ok\">"))
-    {
-      return PVR_ERROR_NO_ERROR;
-    }
+    return PVR_ERROR_NO_ERROR;
   }
   else
   {
@@ -493,19 +481,19 @@ PVR_ERROR Recordings::DeleteRecording(const kodi::addon::PVRRecording& recording
 bool Recordings::ForgetRecording(const kodi::addon::PVRRecording& recording)
 {
   // tell backend to forget recording history so it can re recorded.
-  std::string request = "/service?method=recording.forget&recording_id=";
+  std::string request = "recording.forget&recording_id=";
   request.append(recording.GetRecordingId());
-  std::string response;
-  return m_request.DoRequest(request.c_str(), response) == HTTP_OK;
+  tinyxml2::XMLDocument doc;
+  return m_request.DoMethodRequest(request, doc) == tinyxml2::XML_SUCCESS;
 }
 
 PVR_ERROR Recordings::SetRecordingLastPlayedPosition(const kodi::addon::PVRRecording& recording, int lastplayedposition)
 {
   g_pvrclient->m_lastRecordingUpdateTime = std::numeric_limits<time_t>::max();
   time_t timerUpdate = m_timers.m_lastTimerUpdateTime;
-  const std::string request = kodi::tools::StringUtils::Format("/service?method=recording.watched.set&recording_id=%s&position=%d", recording.GetRecordingId().c_str(), lastplayedposition);
+  const std::string request = kodi::tools::StringUtils::Format("recording.watched.set&recording_id=%s&position=%d", recording.GetRecordingId().c_str(), lastplayedposition);
   tinyxml2::XMLDocument doc;
-  if (m_request.DoMethodRequest(request.c_str(), doc) != tinyxml2::XML_SUCCESS)
+  if (m_request.DoMethodRequest(request, doc) != tinyxml2::XML_SUCCESS)
   {
     kodi::Log(ADDON_LOG_DEBUG, "SetRecordingLastPlayedPosition failed");
     return PVR_ERROR_FAILED;
@@ -513,11 +501,11 @@ PVR_ERROR Recordings::SetRecordingLastPlayedPosition(const kodi::addon::PVRRecor
   if (m_settings.m_backendVersion >= 5007)
   {
     time_t lastUpdate;
-    if (m_request.GetLastUpdate("/service?method=recording.lastupdated&ignore_resume=true", lastUpdate) == tinyxml2::XML_SUCCESS)
+    if (m_request.GetLastUpdate("recording.lastupdated&ignore_resume=true", lastUpdate) == tinyxml2::XML_SUCCESS)
     {
       if (timerUpdate >= lastUpdate)
       {
-        if (m_request.GetLastUpdate("/service?method=recording.lastupdated", lastUpdate) == tinyxml2::XML_SUCCESS)
+        if (m_request.GetLastUpdate("recording.lastupdated", lastUpdate) == tinyxml2::XML_SUCCESS)
         {
           // only change is watched point so skip it
           m_lastPlayed[std::stoi(recording.GetRecordingId())] = lastplayedposition;
@@ -542,33 +530,26 @@ PVR_ERROR Recordings::GetRecordingLastPlayedPosition(const kodi::addon::PVRRecor
 
 PVR_ERROR Recordings::GetRecordingEdl(const kodi::addon::PVRRecording& recording, std::vector<kodi::addon::PVREDLEntry>& edl)
 {
-  const std::string request = "/service?method=recording.edl&recording_id=" + recording.GetRecordingId();
-  std::string response;
-  if (m_request.DoRequest(request.c_str(), response) == HTTP_OK)
+  const std::string request = "recording.edl&recording_id=" + recording.GetRecordingId();
+  tinyxml2::XMLDocument doc;
+  if (m_request.DoMethodRequest(request, doc) == tinyxml2::XML_SUCCESS)
   {
-    if (strstr(response.c_str(), "<rsp stat=\"ok\">") != nullptr)
+    int index = 0;
+    tinyxml2::XMLNode* commercialsNode = doc.RootElement()->FirstChildElement("commercials");
+    tinyxml2::XMLNode* pCommercialNode;
+    for (pCommercialNode = commercialsNode->FirstChildElement("commercial"); pCommercialNode; pCommercialNode = pCommercialNode->NextSiblingElement())
     {
-      tinyxml2::XMLDocument doc;
-      if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
-      {
-        int index = 0;
-        tinyxml2::XMLNode* commercialsNode = doc.RootElement()->FirstChildElement("commercials");
-        tinyxml2::XMLNode* pCommercialNode;
-        for (pCommercialNode = commercialsNode->FirstChildElement("commercial"); pCommercialNode; pCommercialNode = pCommercialNode->NextSiblingElement())
-        {
-          kodi::addon::PVREDLEntry entry;
-          std::string buffer;
-          XMLUtils::GetString(pCommercialNode, "start", buffer);
-          entry.SetStart(std::stoll(buffer) * 1000);
-          buffer.clear();
-          XMLUtils::GetString(pCommercialNode, "end", buffer);
-          entry.SetEnd(std::stoll(buffer) * 1000);
-          entry.SetType(PVR_EDL_TYPE_COMBREAK);
-          edl.emplace_back(entry);
-        }
-        return PVR_ERROR_NO_ERROR;
-      }
+      kodi::addon::PVREDLEntry entry;
+      std::string buffer;
+      XMLUtils::GetString(pCommercialNode, "start", buffer);
+      entry.SetStart(std::stoll(buffer) * 1000);
+      buffer.clear();
+      XMLUtils::GetString(pCommercialNode, "end", buffer);
+      entry.SetEnd(std::stoll(buffer) * 1000);
+      entry.SetType(PVR_EDL_TYPE_COMBREAK);
+      edl.emplace_back(entry);
     }
+    return PVR_ERROR_NO_ERROR;
   }
   return PVR_ERROR_FAILED;
 }

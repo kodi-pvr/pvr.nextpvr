@@ -125,63 +125,60 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
   ADDON_STATUS status = ADDON_STATUS_UNKNOWN;
   // initiate session
   m_connectionState = PVR_CONNECTION_STATE_CONNECTING;
-  std::string response;
   if (sendWOL)
     SendWakeOnLan();
   m_request.ClearSID();
-  if (m_request.DoRequest("/service?method=session.initiate&ver=1.0&device=xbmc", response) == HTTP_OK)
+  tinyxml2::XMLDocument doc;
+  if (m_request.DoMethodRequest("session.initiate&ver=1.0&device=xbmc", doc) == tinyxml2::XML_SUCCESS)
   {
-    tinyxml2::XMLDocument doc;
-    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
+    std::string salt;
+    std::string sid;
+    if (XMLUtils::GetString(doc.RootElement(), "salt", salt) && XMLUtils::GetString(doc.RootElement(), "sid", sid))
     {
-      std::string salt;
-      std::string sid;
-      if (XMLUtils::GetString(doc.RootElement(), "salt", salt) && XMLUtils::GetString(doc.RootElement(), "sid", sid))
+      // a bit of debug
+      kodi::Log(ADDON_LOG_DEBUG, "session.initiate returns: sid=%s salt=%s", sid.c_str(), salt.c_str());
+      std::string pinMD5 = kodi::GetMD5(m_settings.m_PIN);
+      kodi::tools::StringUtils::ToLower(pinMD5);
+
+      // calculate combined MD5
+      std::string combinedMD5;
+      combinedMD5.append(":");
+      combinedMD5.append(pinMD5);
+      combinedMD5.append(":");
+      combinedMD5.append(salt);
+
+      // get digest
+      std::string md5 = kodi::GetMD5(combinedMD5);
+
+      // login session
+      std::string loginResponse;
+      std::string request = kodi::tools::StringUtils::Format("session.login&sid=%s&md5=%s", sid.c_str(), md5.c_str());
+      doc.Clear();
+      if (m_request.DoMethodRequest(request, doc) == tinyxml2::XML_SUCCESS)
       {
-        // a bit of debug
-        kodi::Log(ADDON_LOG_DEBUG, "session.initiate returns: sid=%s salt=%s", sid.c_str(), salt.c_str());
-        std::string pinMD5 = kodi::GetMD5(m_settings.m_PIN);
-        kodi::tools::StringUtils::ToLower(pinMD5);
-
-        // calculate combined MD5
-        std::string combinedMD5;
-        combinedMD5.append(":");
-        combinedMD5.append(pinMD5);
-        combinedMD5.append(":");
-        combinedMD5.append(salt);
-
-        // get digest
-        std::string md5 = kodi::GetMD5(combinedMD5);
-
-        // login session
-        std::string loginResponse;
-        std::string request = kodi::tools::StringUtils::Format("/service?method=session.login&sid=%s&md5=%s", sid.c_str(), md5.c_str());
-        if (m_request.DoRequest(request.c_str(), loginResponse) == HTTP_OK)
+        m_request.SetSID(sid);
+        if (m_settings.ReadBackendSettings() == ADDON_STATUS_OK)
         {
-          if (m_settings.ReadBackendSettings() == ADDON_STATUS_OK)
-          {
-            m_request.SetSID(sid);
-            // set additional options based on the backend
-            ConfigurePostConnectionOptions();
-            m_settings.SetConnection(true);
-            kodi::Log(ADDON_LOG_DEBUG, "session.login successful");
-            status = ADDON_STATUS_OK;
-            // don't notify core could be before addon is created
-            m_connectionState = PVR_CONNECTION_STATE_CONNECTED;
-            m_bConnected = true;
-          }
-          else
-          {
-            SetConnectionState("Version failure", PVR_CONNECTION_STATE_VERSION_MISMATCH, kodi::GetLocalizedString(30050));
-            status = ADDON_STATUS_PERMANENT_FAILURE;
-          }
+          // set additional options based on the backend
+          ConfigurePostConnectionOptions();
+          m_settings.SetConnection(true);
+          kodi::Log(ADDON_LOG_DEBUG, "session.login successful");
+          status = ADDON_STATUS_OK;
+          // don't notify core could be before addon is created
+          m_connectionState = PVR_CONNECTION_STATE_CONNECTED;
+          m_bConnected = true;
         }
         else
         {
-          kodi::Log(ADDON_LOG_DEBUG, "session.login failed");
-          SetConnectionState("Access denied", PVR_CONNECTION_STATE_ACCESS_DENIED, kodi::GetLocalizedString(30052));
+          SetConnectionState("Version failure", PVR_CONNECTION_STATE_VERSION_MISMATCH, kodi::GetLocalizedString(30050));
           status = ADDON_STATUS_PERMANENT_FAILURE;
         }
+      }
+      else
+      {
+        kodi::Log(ADDON_LOG_DEBUG, "session.login failed");
+        SetConnectionState("Access denied", PVR_CONNECTION_STATE_ACCESS_DENIED, kodi::GetLocalizedString(30052));
+        status = ADDON_STATUS_PERMANENT_FAILURE;
       }
     }
   }
@@ -268,7 +265,7 @@ void cPVRClientNextPVR::ConfigurePostConnectionOptions()
       m_channels.LoadLiveStreams();
 
   if (m_lastEPGUpdateTime == 0 && m_settings.m_backendVersion >= 5007)
-    m_request.GetLastUpdate("/service?method=system.epg.summary", m_lastEPGUpdateTime);
+    m_request.GetLastUpdate("system.epg.summary", m_lastEPGUpdateTime);
 
 }
 
@@ -284,7 +281,7 @@ bool cPVRClientNextPVR::IsUp()
     if (m_nowPlaying == NotPlaying && m_lastRecordingUpdateTime != std::numeric_limits<time_t>::max() && time(nullptr) > (m_lastRecordingUpdateTime + 60))
     {
       time_t update_time;
-      if (m_request.GetLastUpdate("/service?method=recording.lastupdated", update_time) == tinyxml2::XML_SUCCESS)
+      if (m_request.GetLastUpdate("recording.lastupdated", update_time) == tinyxml2::XML_SUCCESS)
       {
         if (m_connectionState == PVR_CONNECTION_STATE_DISCONNECTED)
           // one time failure resolved
@@ -296,7 +293,7 @@ bool cPVRClientNextPVR::IsUp()
           if (m_settings.m_backendVersion >= 5007)
           {
             time_t lastUpdate;
-            if (m_request.GetLastUpdate("/service?method=system.epg.summary", lastUpdate) == tinyxml2::XML_SUCCESS)
+            if (m_request.GetLastUpdate("system.epg.summary", lastUpdate) == tinyxml2::XML_SUCCESS)
             {
               if (lastUpdate > m_lastEPGUpdateTime)
               {
@@ -312,7 +309,7 @@ bool cPVRClientNextPVR::IsUp()
               m_lastRecordingUpdateTime = time(nullptr);
               return m_bConnected;
             }
-            if (m_request.GetLastUpdate("/service?method=recording.lastupdated&ignore_resume=true", lastUpdate) == tinyxml2::XML_SUCCESS)
+            if (m_request.GetLastUpdate("recording.lastupdated&ignore_resume=true", lastUpdate) == tinyxml2::XML_SUCCESS)
             {
 
               if (lastUpdate <= m_timers.m_lastTimerUpdateTime)
@@ -499,7 +496,7 @@ PVR_ERROR cPVRClientNextPVR::GetChannelStreamProperties(const kodi::addon::PVRCh
       m_nowPlaying = NotPlaying;
       m_livePlayer = nullptr;
     }
-    const std::string line = kodi::tools::StringUtils::Format("%s/services/service?method=channel.transcode.m3u8&sid=%s", m_settings.m_urlBase, m_request.GetSID());
+    const std::string line = kodi::tools::StringUtils::Format("%s/service?method=channel.transcode.m3u8&sid=%s", m_settings.m_urlBase, m_request.GetSID());
     m_livePlayer = m_timeshiftBuffer;
     m_livePlayer->Channel(channel.GetUniqueId());
     if (m_livePlayer->Open(line))
