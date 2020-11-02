@@ -170,6 +170,7 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
         }
         else
         {
+          m_request.DoActionRequest("session.logout");
           SetConnectionState("Version failure", PVR_CONNECTION_STATE_VERSION_MISMATCH, kodi::GetLocalizedString(30050));
           status = ADDON_STATUS_PERMANENT_FAILURE;
         }
@@ -208,6 +209,7 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
 
 void cPVRClientNextPVR::Disconnect()
 {
+  m_request.DoActionRequest("session.logout");
   SetConnectionState("Disconnect", PVR_CONNECTION_STATE_DISCONNECTED);
   m_bConnected = false;
 }
