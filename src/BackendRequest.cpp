@@ -7,6 +7,7 @@
  */
 
 #include "BackendRequest.h"
+#include "pvrclient-nextpvr.h"
 #include "Socket.h"
 #include "utilities/XMLUtils.h"
 #include <kodi/General.h>
@@ -71,8 +72,10 @@ namespace NextPVR
 
     if (IsActiveSID())
       URL = kodi::tools::StringUtils::Format("%s/service?method=%s&sid=%s", m_settings.m_urlBase, resource.c_str(), GetSID());
-    else
+    else if (kodi::tools::StringUtils::StartsWith(resource, "session"))
       URL = kodi::tools::StringUtils::Format("%s/service?method=%s", m_settings.m_urlBase, resource.c_str());
+    else
+      return tinyxml2::XML_ERROR_FILE_COULD_NOT_BE_OPENED;
 
     if (!compressed)
       URL += "|Accept-Encoding=identity";
@@ -97,6 +100,24 @@ namespace NextPVR
         {
           kodi::Log(ADDON_LOG_DEBUG, "DoMethodRequest bad return %s", attrib);
           retError = tinyxml2::XML_NO_ATTRIBUTE;
+          if (!strcmp(attrib, "fail"))
+          {
+            const tinyxml2::XMLElement* err = doc.RootElement()->FirstChildElement("err");
+            if (err)
+            {
+              const char* code = err->Attribute("code");
+              if (code)
+              {
+                kodi::Log(ADDON_LOG_DEBUG, "DoMethodRequest error code %s", code);
+                if (atoi(code) == 8)
+                {
+                  ClearSID();
+                  retError = tinyxml2::XML_ERROR_FILE_COULD_NOT_BE_OPENED;
+                  g_pvrclient->ResetConnection();
+                }
+              }
+            }
+          }
         }
         else
         {

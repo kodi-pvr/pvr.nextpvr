@@ -207,6 +207,14 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
   return status;
 }
 
+
+void cPVRClientNextPVR::ResetConnection()
+{
+  m_nextServerCheck = 0;
+  m_connectionState = PVR_CONNECTION_STATE_DISCONNECTED;
+  m_bConnected = false;
+}
+
 void cPVRClientNextPVR::Disconnect()
 {
   m_request.DoActionRequest("session.logout");
@@ -336,10 +344,10 @@ bool cPVRClientNextPVR::IsUp()
         if (m_connectionState == PVR_CONNECTION_STATE_CONNECTED)
         {
           // allow a one time retry in 60 seconds
-          m_connectionState = PVR_CONNECTION_STATE_DISCONNECTED;
+          m_connectionState = PVR_CONNECTION_STATE_SERVER_UNREACHABLE;
           m_lastRecordingUpdateTime = time(nullptr);
         }
-        else
+        else if (m_connectionState == PVR_CONNECTION_STATE_SERVER_UNREACHABLE)
         {
           SetConnectionState("Lost connection", PVR_CONNECTION_STATE_SERVER_UNREACHABLE);
           m_nextServerCheck = time(nullptr) + 60;
@@ -357,7 +365,7 @@ bool cPVRClientNextPVR::IsUp()
       }
     }
   }
-  else if (m_connectionState == PVR_CONNECTION_STATE_SERVER_UNREACHABLE)
+  else if (m_connectionState == PVR_CONNECTION_STATE_SERVER_UNREACHABLE || m_connectionState == PVR_CONNECTION_STATE_DISCONNECTED)
   {
     if (time(nullptr) > m_nextServerCheck)
     {
