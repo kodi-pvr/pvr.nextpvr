@@ -1,3 +1,9 @@
+v8.0.1
+- Rework backend request logic
+- Improved security model on logout/login
+- Added logic to handle fast server restarts
+- When http file is not seekable, force pts start and end to be the same
+
 v8.0.0
 - Update PVR API 7.0.2
 

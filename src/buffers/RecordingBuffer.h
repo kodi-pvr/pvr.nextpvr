@@ -45,7 +45,7 @@ namespace timeshift {
 
     virtual bool CanSeekStream() const override
     {
-      return true;
+      return m_inputHandle.GetLength() != 0;
     }
 
     virtual bool IsRealTimeStream() const override

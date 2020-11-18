@@ -32,9 +32,8 @@ bool ClientTimeShift::Open(const std::string inputUrl)
 
   if (m_channel_id != 0)
   {
-    std::string timeshift = "/services/service?method=channel.stream.start&channel_id=" + std::to_string(m_channel_id);
-    std::string response;
-    if (m_request.DoRequest(timeshift.c_str(), response) != HTTP_OK)
+    std::string timeshift = "channel.stream.start&channel_id=" + std::to_string(m_channel_id);
+    if (!m_request.DoActionRequest(timeshift))
     {
       return false;
     }
@@ -126,8 +125,7 @@ void ClientTimeShift::Resume()
 
 void ClientTimeShift::StreamStop()
 {
-  std::string response;
-  if (m_request.DoRequest("/services/service?method=channel.stream.stop", response) != HTTP_OK)
+  if (!m_request.DoActionRequest("channel.stream.stop"))
   {
     kodi::Log(ADDON_LOG_ERROR, "%s:%d:", __FUNCTION__, __LINE__);
   }
@@ -180,7 +178,8 @@ bool ClientTimeShift::GetStreamInfo()
     kodi::Log(ADDON_LOG_ERROR, "NextPVR not updating completed rolling file");
     return ( m_stream_length != 0 );
   }
-  if (m_request.DoRequest("/services/service?method=channel.stream.info", response) == HTTP_OK)
+  // this call sends raw xml not a method response
+  if (m_request.DoRequest("/service?method=channel.stream.info", response) == HTTP_OK)
   {
     tinyxml2::XMLDocument doc;
     if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)

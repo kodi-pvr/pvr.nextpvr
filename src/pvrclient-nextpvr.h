@@ -51,6 +51,7 @@ public:
   /* Server handling */
   ADDON_STATUS Connect(bool sendWOL = true);
   void Disconnect();
+  void ResetConnection();
   bool IsUp();
   PVR_ERROR OnSystemSleep() override;
   PVR_ERROR OnSystemWake() override;

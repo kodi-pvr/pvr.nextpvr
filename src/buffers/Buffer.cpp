@@ -14,7 +14,6 @@
 
 using namespace timeshift;
 
-
 const int Buffer::DEFAULT_READ_TIMEOUT = 10;
 
 bool Buffer::Open(const std::string inputUrl)
@@ -75,12 +74,12 @@ void Buffer::LeaseWorker(void)
     {
       std::this_thread::yield();
       std::unique_lock<std::mutex> lock(m_mutex);
-      int retval = Buffer::Lease();
-      if ( retval == HTTP_OK)
+      enum LeaseStatus retval = Buffer::Lease();
+      if ( retval == Leased)
       {
         m_nextLease = now + 7;
       }
-      else if (retval == HTTP_BADREQUEST)
+      else if (retval == LeaseClosed)
       {
         complete = true;
         kodi::QueueNotification(QUEUE_ERROR, kodi::GetLocalizedString(30190), kodi::GetLocalizedString(30053));
@@ -100,8 +99,16 @@ void Buffer::LeaseWorker(void)
   }
 }
 
-int Buffer::Lease()
+enum LeaseStatus Buffer::Lease()
 {
-  std::string response;
-  return m_request.DoRequest("/service?method=channel.transcode.lease", response);
+  tinyxml2::XMLDocument doc;
+  enum LeaseStatus retval;
+  tinyxml2::XMLError status = m_request.DoMethodRequest("channel.transcode.lease", doc);
+  if (status == tinyxml2::XML_SUCCESS)
+    retval = Leased;
+  else if (status == tinyxml2::XML_NO_ATTRIBUTE)
+    retval = LeaseClosed;
+  else
+    retval = LeaseError;
+  return retval;
 }

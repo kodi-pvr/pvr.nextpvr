@@ -23,18 +23,14 @@ int Channels::GetNumChannels()
   int channelCount = m_channelDetails.size();
   if (channelCount == 0)
   {
-    std::string response;
-    if (m_request.DoRequest("/service?method=channel.list", response) == HTTP_OK)
+    tinyxml2::XMLDocument doc;
+    if (m_request.DoMethodRequest("channel.list", doc) == tinyxml2::XML_SUCCESS)
     {
-      tinyxml2::XMLDocument doc;
-      if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
+      tinyxml2::XMLNode* channelsNode = doc.RootElement()->FirstChildElement("channels");
+      tinyxml2::XMLNode* pChannelNode;
+      for( pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode=pChannelNode->NextSiblingElement())
       {
-        tinyxml2::XMLNode* channelsNode = doc.RootElement()->FirstChildElement("channels");
-        tinyxml2::XMLNode* pChannelNode;
-        for( pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode=pChannelNode->NextSiblingElement())
-        {
-          channelCount++;
-        }
+        channelCount++;
       }
     }
   }
@@ -95,67 +91,63 @@ PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& r
       ++itr;
   }
 
-  std::string response;
-  if (m_request.DoRequest("/service?method=channel.list&extras=true", response) == HTTP_OK)
+  tinyxml2::XMLDocument doc;
+  if (m_request.DoMethodRequest("channel.list&extras=true", doc) == tinyxml2::XML_SUCCESS)
   {
-    tinyxml2::XMLDocument doc;
-    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
+    tinyxml2::XMLNode* channelsNode = doc.RootElement()->FirstChildElement("channels");
+    tinyxml2::XMLNode* pChannelNode;
+    for( pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode=pChannelNode->NextSiblingElement())
     {
-      tinyxml2::XMLNode* channelsNode = doc.RootElement()->FirstChildElement("channels");
-      tinyxml2::XMLNode* pChannelNode;
-      for( pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode=pChannelNode->NextSiblingElement())
+      kodi::addon::PVRChannel tag;
+      tag.SetUniqueId(XMLUtils::GetUIntValue(pChannelNode, "id"));
+      std::string buffer;
+      XMLUtils::GetString(pChannelNode, "type", buffer);
+      if ( buffer =="0xa")
       {
-        kodi::addon::PVRChannel tag;
-        tag.SetUniqueId(XMLUtils::GetUIntValue(pChannelNode, "id"));
-        std::string buffer;
-        XMLUtils::GetString(pChannelNode, "type", buffer);
-        if ( buffer =="0xa")
-        {
-          tag.SetIsRadio(true);
-          tag.SetMimeType("application/octet-stream");
-        }
-        else
-        {
-          tag.SetIsRadio(false);
-          tag.SetMimeType("application/octet-stream");
-          if (IsChannelAPlugin(tag.GetUniqueId()))
-          {
-            if (kodi::tools::StringUtils::EndsWithNoCase(m_liveStreams[tag.GetUniqueId()], ".m3u8"))
-              tag.SetMimeType("application/x-mpegURL");
-            else
-              tag.SetMimeType("video/MP2T");
-          }
-        }
-        if (radio != tag.GetIsRadio())
-          continue;
-
-        tag.SetChannelNumber(XMLUtils::GetUIntValue(pChannelNode, "number"));
-        tag.SetSubChannelNumber(XMLUtils::GetUIntValue(pChannelNode, "minor"));
-
-        buffer.clear();
-        XMLUtils::GetString(pChannelNode, "name", buffer);
-        tag.SetChannelName(buffer);
-
-        // check if we need to download a channel icon
-        bool isIcon;
-        if (XMLUtils::GetBoolean(pChannelNode, "icon", isIcon))
-        {
-          // only set when true;
-          std::string iconFile = GetChannelIcon(tag.GetUniqueId());
-          if (iconFile.length() > 0)
-            tag.SetIconPath(iconFile);
-        }
-
-        // V5 has the EPG source type info.
-        std::string epg;
-        if (XMLUtils::GetString(pChannelNode, "epg", epg))
-          m_channelDetails[tag.GetUniqueId()] = std::make_pair(epg == "None", tag.GetIsRadio());
-        else
-          m_channelDetails[tag.GetUniqueId()] = std::make_pair(false, tag.GetIsRadio());
-
-        // transfer channel to XBMC
-        results.Add(tag);
+        tag.SetIsRadio(true);
+        tag.SetMimeType("application/octet-stream");
       }
+      else
+      {
+        tag.SetIsRadio(false);
+        tag.SetMimeType("application/octet-stream");
+        if (IsChannelAPlugin(tag.GetUniqueId()))
+        {
+          if (kodi::tools::StringUtils::EndsWithNoCase(m_liveStreams[tag.GetUniqueId()], ".m3u8"))
+            tag.SetMimeType("application/x-mpegURL");
+          else
+            tag.SetMimeType("video/MP2T");
+        }
+      }
+      if (radio != tag.GetIsRadio())
+        continue;
+
+      tag.SetChannelNumber(XMLUtils::GetUIntValue(pChannelNode, "number"));
+      tag.SetSubChannelNumber(XMLUtils::GetUIntValue(pChannelNode, "minor"));
+
+      buffer.clear();
+      XMLUtils::GetString(pChannelNode, "name", buffer);
+      tag.SetChannelName(buffer);
+
+      // check if we need to download a channel icon
+      bool isIcon;
+      if (XMLUtils::GetBoolean(pChannelNode, "icon", isIcon))
+      {
+        // only set when true;
+        std::string iconFile = GetChannelIcon(tag.GetUniqueId());
+        if (iconFile.length() > 0)
+          tag.SetIconPath(iconFile);
+      }
+
+      // V5 has the EPG source type info.
+      std::string epg;
+      if (XMLUtils::GetString(pChannelNode, "epg", epg))
+        m_channelDetails[tag.GetUniqueId()] = std::make_pair(epg == "None", tag.GetIsRadio());
+      else
+        m_channelDetails[tag.GetUniqueId()] = std::make_pair(false, tag.GetIsRadio());
+
+      // transfer channel to XBMC
+      results.Add(tag);
     }
   }
   return PVR_ERROR_NO_ERROR;
@@ -167,21 +159,16 @@ PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& r
 PVR_ERROR Channels::GetChannelGroupsAmount(int& amount)
 {
   int groups = 0;
-  std::string response;
-  if (m_request.DoRequest("/service?method=channel.groups", response) == HTTP_OK)
+  tinyxml2::XMLDocument doc;
+  if (m_request.DoMethodRequest("channel.groups", doc) == tinyxml2::XML_SUCCESS)
   {
-    tinyxml2::XMLDocument doc;
-    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
+    tinyxml2::XMLNode* groupsNode = doc.RootElement()->FirstChildElement("groups");
+    tinyxml2::XMLNode* pGroupNode;
+    for( pGroupNode = groupsNode->FirstChildElement("group"); pGroupNode; pGroupNode=pGroupNode->NextSiblingElement())
     {
-      tinyxml2::XMLNode* groupsNode = doc.RootElement()->FirstChildElement("groups");
-      tinyxml2::XMLNode* pGroupNode;
-      for( pGroupNode = groupsNode->FirstChildElement("group"); pGroupNode; pGroupNode=pGroupNode->NextSiblingElement())
-      {
-        groups++;
-      }
+      groups++;
     }
   }
-
   amount = groups;
   return PVR_ERROR_NO_ERROR;
 }
@@ -202,36 +189,31 @@ PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsRe
     return PVR_ERROR_NO_ERROR;
 
   // for tv, use the groups returned by nextpvr
-  std::string response;
-  if (m_request.DoRequest("/service?method=channel.groups", response) == HTTP_OK)
+  tinyxml2::XMLDocument doc;
+  if (m_request.DoMethodRequest("channel.groups", doc) == tinyxml2::XML_SUCCESS)
   {
-    tinyxml2::XMLDocument doc;
-    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
+    tinyxml2::XMLNode* groupsNode = doc.RootElement()->FirstChildElement("groups");
+    tinyxml2::XMLNode* pGroupNode;
+    for (pGroupNode = groupsNode->FirstChildElement("group"); pGroupNode; pGroupNode = pGroupNode->NextSiblingElement())
     {
-      tinyxml2::XMLNode* groupsNode = doc.RootElement()->FirstChildElement("groups");
-      tinyxml2::XMLNode* pGroupNode;
-      for( pGroupNode = groupsNode->FirstChildElement("group"); pGroupNode; pGroupNode=pGroupNode->NextSiblingElement())
+      kodi::addon::PVRChannelGroup tag;
+      tag.SetIsRadio(false);
+      tag.SetPosition(0); // groups default order, unused
+      std::string group;
+      if (XMLUtils::GetString(pGroupNode, "name", group))
       {
-        kodi::addon::PVRChannelGroup tag;
-        tag.SetIsRadio(false);
-        tag.SetPosition(0); // groups default order, unused
-        std::string group;
-        if ( XMLUtils::GetString(pGroupNode, "name", group) )
+        // tell XBMC about channel, ignoring "All Channels" since xbmc has an built in group with effectively the same function
+        tag.SetGroupName(group);
+        if (group != "All Channels")
         {
-          // tell XBMC about channel, ignoring "All Channels" since xbmc has an built in group with effectively the same function
-          tag.SetGroupName(group);
-          if (group != "All Channels")
-          {
-            results.Add(tag);
-          }
+          results.Add(tag);
         }
       }
     }
-    else
-    {
-      kodi::Log(ADDON_LOG_DEBUG, "GetChannelGroupsAmount");
-    }
-
+  }
+  else
+  {
+    kodi::Log(ADDON_LOG_DEBUG, "No Channel Group");
   }
   return PVR_ERROR_NO_ERROR;
 }
@@ -240,27 +222,22 @@ PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsRe
 PVR_ERROR Channels::GetChannelGroupMembers(const kodi::addon::PVRChannelGroup& group, kodi::addon::PVRChannelGroupMembersResultSet& results)
 {
   std::string encodedGroupName = UriEncode(group.GetGroupName());
-  std::string request = "/service?method=channel.list&group_id=" + encodedGroupName;
-  std::string response;
-  if (m_request.DoRequest(request.c_str(), response) == HTTP_OK)
+  std::string request = "channel.list&group_id=" + encodedGroupName;
+  tinyxml2::XMLDocument doc;
+  if (m_request.DoMethodRequest(request, doc) == tinyxml2::XML_SUCCESS)
   {
-    tinyxml2::XMLDocument doc;
-    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
+    tinyxml2::XMLNode* channelsNode = doc.RootElement()->FirstChildElement("channels");
+    tinyxml2::XMLNode* pChannelNode;
+    for( pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode=pChannelNode->NextSiblingElement())
     {
-      tinyxml2::XMLNode* channelsNode = doc.RootElement()->FirstChildElement("channels");
-      tinyxml2::XMLNode* pChannelNode;
-      for( pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode=pChannelNode->NextSiblingElement())
-      {
-        kodi::addon::PVRChannelGroupMember tag;
-        tag.SetGroupName(group.GetGroupName());
-        tag.SetChannelUniqueId(XMLUtils::GetUIntValue(pChannelNode, "id"));
-        tag.SetChannelNumber(XMLUtils::GetUIntValue(pChannelNode, "number"));
-        tag.SetSubChannelNumber(XMLUtils::GetUIntValue(pChannelNode, "minor"));
-        results.Add(tag);
-      }
+      kodi::addon::PVRChannelGroupMember tag;
+      tag.SetGroupName(group.GetGroupName());
+      tag.SetChannelUniqueId(XMLUtils::GetUIntValue(pChannelNode, "id"));
+      tag.SetChannelNumber(XMLUtils::GetUIntValue(pChannelNode, "number"));
+      tag.SetSubChannelNumber(XMLUtils::GetUIntValue(pChannelNode, "minor"));
+      results.Add(tag);
     }
   }
-
   return PVR_ERROR_NO_ERROR;
 }
 

@@ -26,6 +26,14 @@ using namespace NextPVR;
 
 namespace timeshift {
 
+  enum LeaseStatus
+  {
+    NotActive = -0,
+    Leased = 1,
+    LeaseClosed = 2,
+    LeaseError = 3
+  };
+
   /**
    * The basic type all buffers operate on
    */
@@ -156,7 +164,7 @@ namespace timeshift {
       m_channel_id = channel_id;
     }
 
-    virtual int Lease();
+    virtual enum LeaseStatus Lease();
 
   protected:
 

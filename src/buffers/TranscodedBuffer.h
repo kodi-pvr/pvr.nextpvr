@@ -31,7 +31,7 @@ namespace timeshift {
 
     int TranscodeStatus();
 
-    int Lease();
+    enum LeaseStatus Lease();
 
     bool CheckStatus();
 

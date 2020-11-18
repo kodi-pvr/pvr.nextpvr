@@ -132,7 +132,8 @@ bool RollingFile::GetStreamInfo()
     kodi::Log(ADDON_LOG_ERROR, "NextPVR not updating completed rolling file");
     return ( m_stream_length != 0 );
   }
-  if (m_request.DoRequest("/services/service?method=channel.stream.info", response) == HTTP_OK)
+  // this call returns XML not a response
+  if (m_request.DoRequest("/service?method=channel.stream.info", response) == HTTP_OK)
   {
     tinyxml2::XMLDocument doc;
     if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
