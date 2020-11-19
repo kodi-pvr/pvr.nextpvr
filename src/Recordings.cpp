@@ -213,7 +213,13 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
     // skip timers
     return false;
   }
+
   tag.SetDuration(XMLUtils::GetIntValue(pRecordingNode, "duration_seconds"));
+
+  if (status == "Recording")
+  {
+    tag.SetDuration(tag.GetDuration() + 60 * XMLUtils::GetIntValue(pRecordingNode, "post_padding"));
+  }
 
   if (status == "Ready" || status == "Pending" || status == "Recording")
   {

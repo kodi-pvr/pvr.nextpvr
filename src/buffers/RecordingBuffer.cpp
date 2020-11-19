@@ -7,8 +7,11 @@
  *  See LICENSE.md for more information.
  */
 
+#include "../BackendRequest.h"
+#include "../utilities/XMLUtils.h"
 #include "RecordingBuffer.h"
 
+using namespace NextPVR::utilities;
 using namespace timeshift;
 
 PVR_ERROR RecordingBuffer::GetStreamTimes(kodi::addon::PVRStreamTimes& stimes)
@@ -29,7 +32,28 @@ int RecordingBuffer::Duration(void)
   {
     std::unique_lock<std::mutex> lock(m_mutex);
     int diff = static_cast<int>(time(nullptr) - m_recordingTime) - 15;
-    if (diff > 0)
+    if (diff > m_Duration)
+    {
+      tinyxml2::XMLDocument doc;
+      if (m_request.DoMethodRequest("recording.list&recording_id=" + m_recordingID, doc) == tinyxml2::XML_SUCCESS)
+      {
+        tinyxml2::XMLElement* recordingNode = doc.RootElement()->FirstChildElement("recordings")->FirstChildElement("recording");
+        std::string status;
+
+        XMLUtils::GetString(recordingNode, "status", status);
+
+        if (status != "Recording")
+        {
+          diff = m_Duration;
+          m_recordingTime = 0;
+        }
+        else
+        {
+          m_Duration += 60;
+        }
+      }
+    }
+    else if (diff > 0)
     {
       m_isLive = true;
       diff += 15;
@@ -51,11 +75,12 @@ bool RecordingBuffer::Open(const std::string inputUrl, const kodi::addon::PVRRec
 {
   m_Duration = recording.GetDuration();
 
-  kodi::Log(ADDON_LOG_DEBUG, "RecordingBuffer::Open In Progress %d %lld", recording.GetDuration(), recording.GetRecordingTime());
+  kodi::Log(ADDON_LOG_DEBUG, "RecordingBuffer::Open %d %lld", recording.GetDuration(), recording.GetRecordingTime());
   if (recording.GetDuration() + recording.GetRecordingTime() > time(nullptr))
   {
     m_recordingTime = recording.GetRecordingTime() + m_settings.m_serverTimeOffset;
     m_isLive = true;
+    m_recordingID = recording.GetRecordingId();
   }
   else
   {

@@ -24,6 +24,7 @@ namespace timeshift {
     int m_Duration;
     bool m_buffering = false;
     std::string m_recordingURL;
+    std::string m_recordingID;
 
   public:
     RecordingBuffer() : Buffer() { m_Duration = 0; kodi::Log(ADDON_LOG_INFO, "RecordingBuffer created!"); }
