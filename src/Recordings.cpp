@@ -311,6 +311,21 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
   tag.SetFirstAired(original);
 
   tag.SetLastPlayedPosition(XMLUtils::GetIntValue(pRecordingNode, "playback_position"));
+  bool played = false;
+  if (XMLUtils::GetBoolean(pRecordingNode, "played", played))
+  {
+    tag.SetPlayCount(1);
+    if (endEpgTime > 0)
+    {
+      if (tag.GetLastPlayedPosition() > (tag.GetDuration() - endEpgTime + tag.GetRecordingTime() - 60))
+        tag.SetLastPlayedPosition(-1);
+    }
+    else if (tag.GetLastPlayedPosition() >= tag.GetDuration() -60)
+    {
+      tag.SetLastPlayedPosition(-1);
+    }
+
+  }
   m_lastPlayed[std::stoi(tag.GetRecordingId())] = tag.GetLastPlayedPosition();
 
   tag.SetChannelUid(XMLUtils::GetIntValue(pRecordingNode, "channel_id"));
@@ -393,12 +408,6 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
   else if (significance.find("Finale") != std::string::npos)
   {
     tag.SetFlags(PVR_RECORDING_FLAG_IS_FINALE);
-  }
-
-  bool played = false;
-  if (XMLUtils::GetBoolean(pRecordingNode, "played", played))
-  {
-    tag.SetPlayCount(1);
   }
 
   return true;
@@ -495,8 +504,13 @@ bool Recordings::ForgetRecording(const kodi::addon::PVRRecording& recording)
 
 PVR_ERROR Recordings::SetRecordingLastPlayedPosition(const kodi::addon::PVRRecording& recording, int lastplayedposition)
 {
+  int originalPosition = lastplayedposition;
   g_pvrclient->m_lastRecordingUpdateTime = std::numeric_limits<time_t>::max();
   time_t timerUpdate = m_timers.m_lastTimerUpdateTime;
+  if (lastplayedposition == -1)
+  {
+    lastplayedposition = recording.GetDuration();
+  }
   const std::string request = kodi::tools::StringUtils::Format("recording.watched.set&recording_id=%s&position=%d", recording.GetRecordingId().c_str(), lastplayedposition);
   tinyxml2::XMLDocument doc;
   if (m_request.DoMethodRequest(request, doc) != tinyxml2::XML_SUCCESS)
@@ -514,7 +528,7 @@ PVR_ERROR Recordings::SetRecordingLastPlayedPosition(const kodi::addon::PVRRecor
         if (m_request.GetLastUpdate("recording.lastupdated", lastUpdate) == tinyxml2::XML_SUCCESS)
         {
           // only change is watched point so skip it
-          m_lastPlayed[std::stoi(recording.GetRecordingId())] = lastplayedposition;
+          m_lastPlayed[std::stoi(recording.GetRecordingId())] = originalPosition;
           g_pvrclient->m_lastRecordingUpdateTime = lastUpdate;
         }
       }
