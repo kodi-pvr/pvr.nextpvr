@@ -207,7 +207,7 @@ msgid "Streaming options"
 msgstr ""
 
 msgctxt "#30175"
-msgid "Display options"
+msgid "Display and recordings"
 msgstr ""
 
 msgctxt "#30176"
@@ -324,4 +324,12 @@ msgstr ""
 
 msgctxt "#30698"
 msgid "Default: Show the default drive - Span: Sum all drives"
+msgstr ""
+
+msgctxt "#30199"
+msgid "Override Kodi no timer padding default"
+msgstr ""
+
+msgctxt "#30699"
+msgid "Use NextPVR timer padding when no padding is entered"
 msgstr ""

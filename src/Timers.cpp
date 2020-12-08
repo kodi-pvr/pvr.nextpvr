@@ -593,6 +593,15 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
   const int epgOid = m_epgOidLookup[oidKey];
   kodi::Log(ADDON_LOG_DEBUG, "TIMER_%d %s", epgOid, oidKey.c_str());
   std::string request;
+
+  int marginStart = timer.GetMarginStart();
+  int marginEnd = timer.GetMarginEnd();
+  if (m_settings.m_ignorePadding && timer.GetClientIndex() == PVR_TIMER_NO_CLIENT_INDEX && marginStart == 0 && marginStart == 0)
+  {
+    marginStart = m_settings.m_defaultPrePadding;
+    marginEnd = m_settings.m_defaultPostPadding;
+  }
+
   switch (timer.GetTimerType())
   {
   case TIMER_ONCE_MANUAL:
@@ -603,8 +612,8 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
       timer.GetClientChannelUid(),
       (int)timer.GetStartTime(),
       (int)(timer.GetEndTime() - timer.GetStartTime()),
-      timer.GetMarginStart(),
-      timer.GetMarginEnd(),
+      marginStart,
+      marginEnd,
       directory.c_str()
       );
     break;
@@ -614,8 +623,8 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
     request = kodi::tools::StringUtils::Format("recording.save&recording_id=%d&event_id=%d&pre_padding=%d&post_padding=%d&directory_id=%s",
       timer.GetClientIndex(),
       epgOid,
-      timer.GetMarginStart(),
-      timer.GetMarginEnd(),
+      marginStart,
+      marginEnd,
       directory.c_str());
     break;
 
@@ -631,8 +640,8 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
         (int)timer.GetStartTime(),
         (int)timer.GetEndTime(),
         timer.GetMaxRecordings(),
-        timer.GetMarginStart(),
-        timer.GetMarginEnd(),
+        marginStart,
+        marginEnd,
         days.c_str(),
         directory.c_str(),
         title.c_str()
@@ -646,8 +655,8 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
         timer.GetClientIndex(),
         epgOid,
         timer.GetMaxRecordings(),
-        timer.GetMarginStart(),
-        timer.GetMarginEnd(),
+        marginStart,
+        marginEnd,
         days.c_str(),
         directory.c_str(),
         preventDuplicates
@@ -665,8 +674,8 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
       (int)timer.GetStartTime(),
       (int)timer.GetEndTime(),
       timer.GetMaxRecordings(),
-      timer.GetMarginStart(),
-      timer.GetMarginEnd(),
+      marginStart,
+      marginEnd,
       days.c_str(),
       directory.c_str()
       );
@@ -682,8 +691,8 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
       (int)timer.GetStartTime(),
       (int)timer.GetEndTime(),
       timer.GetMaxRecordings(),
-      timer.GetMarginStart(),
-      timer.GetMarginEnd(),
+      marginStart,
+      marginEnd,
       directory.c_str(),
       encodedKeyword.c_str(),
       preventDuplicates
@@ -700,8 +709,8 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
       (int)timer.GetStartTime(),
       (int)timer.GetEndTime(),
       timer.GetMaxRecordings(),
-      timer.GetMarginStart(),
-      timer.GetMarginEnd(),
+      marginStart,
+      marginEnd,
       directory.c_str(),
       encodedKeyword.c_str(),
       preventDuplicates

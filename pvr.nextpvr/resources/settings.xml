@@ -282,6 +282,11 @@
             </dependency>
           </dependencies>
         </setting>
+        <setting help="30699" id="ignorepadding" label="30199" type="boolean">
+          <level>2</level>
+          <default>true</default>
+          <control type="toggle"/>
+        </setting>
         <setting help="30693" id="separateseasons" label="30193" type="boolean">
           <level>2</level>
           <default>false</default>

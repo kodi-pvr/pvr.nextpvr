@@ -109,6 +109,7 @@ namespace NextPVR
     int m_defaultPrePadding = 0;
     int m_defaultPostPadding = 0;
     std::vector<std::string> m_recordingDirectories;
+    bool m_ignorePadding = true;
 
     //Timeshift
     int m_timeshiftBufferSeconds = 1200;

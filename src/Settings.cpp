@@ -71,6 +71,8 @@ void Settings::ReadFromAddon()
 
   m_chunkRecording = kodi::GetSettingInt("chunkrecording", 32);
 
+  m_ignorePadding = kodi::GetSettingBoolean("ignorepadding", true);
+
   m_resolution = kodi::GetSettingString("resolution",  "720");
 
   m_showRadio = kodi::GetSettingBoolean("showradio", true);
@@ -273,6 +275,8 @@ ADDON_STATUS Settings::SetValue(const std::string& settingName, const kodi::CSet
     return SetStringSetting<ADDON_STATUS>(settingName, settingValue, m_diskSpace, ADDON_STATUS_OK, ADDON_STATUS_OK);
   else if (settingName == "flattenrecording")
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_flattenRecording, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
+  else if (settingName == "ignorepadding")
+    return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_ignorePadding, ADDON_STATUS_OK, ADDON_STATUS_OK);
   else if (settingName == "separateseasons")
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_separateSeasons, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
   else if (settingName == "kodilook")

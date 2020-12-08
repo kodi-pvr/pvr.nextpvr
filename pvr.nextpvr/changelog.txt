@@ -1,6 +1,7 @@
 v8.0.2
 - Stop timeline from growing when in-progress recording finish at the backend
 - Logic changes for the -1 Kodi uses to indicated a "watched" recording
+- Add setting to override initial Kodi padding when empty
 
 v8.0.1
 - Rework backend request logic
