@@ -12,6 +12,7 @@
 #include "utilities/XMLUtils.h"
 
 #include <kodi/tools/StringUtils.h>
+#include <regex>
 
 using namespace NextPVR;
 using namespace NextPVR::utilities;
@@ -199,7 +200,25 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
         broadcast.SetDirector(director);
         broadcast.SetWriter(writer);
       }
-      broadcast.SetStarRating(1 + std::rand() % 5);
+      std::string rating;
+      if (XMLUtils::GetString(pListingNode, "star_rating", rating))
+      {
+        std::regex base_regex("(\\d+[.]?\\d*)(?:(?:/)(\\d+[.]?\\d*))?");
+        std::smatch base_match;
+        if (std::regex_match(rating, base_match, base_regex))
+        {
+          if (base_match.size() == 3)
+          {
+            float quotient = std::atof(base_match[1].str().c_str());
+            float denominator = std::atof(base_match[2].str().c_str());
+            // if single value passed assume base 4
+            if (denominator == 0)
+              denominator = 4;
+            int starRating = (quotient / denominator * 10.0) + 0.5;
+            broadcast.SetStarRating(starRating);
+          }
+        }
+      }
       results.Add(broadcast);
     }
     return PVR_ERROR_NO_ERROR;
