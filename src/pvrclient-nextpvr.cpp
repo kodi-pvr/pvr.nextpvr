@@ -321,12 +321,14 @@ bool cPVRClientNextPVR::IsUp()
             }
             if (m_request.GetLastUpdate("recording.lastupdated&ignore_resume=true", lastUpdate) == tinyxml2::XML_SUCCESS)
             {
-
               if (lastUpdate <= m_timers.m_lastTimerUpdateTime)
               {
-                // only resume position changed
-                m_recordings.GetRecordingsLastPlayedPosition();
-                m_lastRecordingUpdateTime = update_time;
+                if (m_settings.m_backendResume)
+                {
+                  // only resume position changed
+                  m_recordings.GetRecordingsLastPlayedPosition();
+                  m_lastRecordingUpdateTime = update_time;
+                }
                 return m_bConnected;
               }
             }
@@ -902,8 +904,7 @@ PVR_ERROR cPVRClientNextPVR::SetRecordingLastPlayedPosition(const kodi::addon::P
 
 PVR_ERROR cPVRClientNextPVR::SetRecordingPlayCount(const kodi::addon::PVRRecording& recording, int count)
 {
-  kodi::Log(ADDON_LOG_DEBUG, "Play count %s %d", recording.GetTitle().c_str(), count);
-  return PVR_ERROR_NO_ERROR;
+  return m_recordings.SetRecordingPlayCount(recording, count);
 }
 
 /*******************************************/
@@ -957,11 +958,11 @@ PVR_ERROR cPVRClientNextPVR::GetCapabilities(kodi::addon::PVRCapabilities& capab
   capabilities.SetHandlesInputStream(true);
   capabilities.SetHandlesDemuxing(false);
   capabilities.SetSupportsChannelScan(false);
-  capabilities.SetSupportsLastPlayedPosition(true);
+  capabilities.SetSupportsLastPlayedPosition(m_settings.m_backendResume);
   capabilities.SetSupportsRecordingEdl(true);
   capabilities.SetSupportsRecordingsRename(false);
   capabilities.SetSupportsRecordingsLifetimeChange(false);
   capabilities.SetSupportsDescrambleInfo(false);
-  capabilities.SetSupportsRecordingPlayCount(true);
+  capabilities.SetSupportsRecordingPlayCount(m_settings.m_backendResume);
   return PVR_ERROR_NO_ERROR;
 }

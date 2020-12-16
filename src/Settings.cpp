@@ -77,6 +77,8 @@ void Settings::ReadFromAddon()
 
   m_showRadio = kodi::GetSettingBoolean("showradio", true);
 
+  m_backendResume = kodi::GetSettingBoolean("backendresume", true);
+
   m_connectionConfirmed = kodi::vfs::FileExists(connectionFlag);
 
   /* Log the current settings for debugging purposes */
@@ -263,6 +265,8 @@ ADDON_STATUS Settings::SetValue(const std::string& settingName, const kodi::CSet
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_remoteAccess, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
   else if (settingName == "showradio")
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_showRadio, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
+  else if (settingName == "backendresume")
+    return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_backendResume, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
   else if (settingName == "guideartwork")
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_downloadGuideArtwork, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
   else if (settingName == "guideartworkportrait")

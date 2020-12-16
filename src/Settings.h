@@ -82,6 +82,7 @@ namespace NextPVR
     bool m_enableWOL = false;
     int m_timeoutWOL = 0;
     bool m_connectionConfirmed = false;
+    bool m_backendResume = true;
 
     //General
     int m_backendVersion = 0;
