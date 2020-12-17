@@ -651,8 +651,9 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
     {
       kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_EPG");
       // build recurring recording request
-      request = kodi::tools::StringUtils::Format("recording.recurring.save&recurring_id=%d&event_id=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s&only_new=%s",
+      request = kodi::tools::StringUtils::Format("recording.recurring.save&recurring_id=%d&channel_id=%d&event_id=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s&only_new=%s",
         timer.GetClientIndex(),
+        timer.GetClientChannelUid(),
         epgOid,
         timer.GetMaxRecordings(),
         marginStart,
