@@ -93,8 +93,8 @@ PVR_ERROR Timers::GetTimers(kodi::addon::PVRTimersResultSet& results)
 
       if (recordingType == 1 || recordingType == 2)
       {
-        tag.SetStartTime(0);
-        tag.SetEndTime(0);
+        tag.SetStartTime(TIMER_DATE_MIN);
+        tag.SetEndTime(TIMER_DATE_MIN);
         tag.SetStartAnyTime(true);
         tag.SetEndAnyTime(true);
       }
@@ -113,8 +113,8 @@ PVR_ERROR Timers::GetTimers(kodi::addon::PVRTimersResultSet& results)
         if (advancedRulesText.find("KEYWORD: ") != std::string::npos)
         {
           tag.SetTimerType(TIMER_REPEATING_KEYWORD);
-          tag.SetStartTime(0);
-          tag.SetEndTime(0);
+          tag.SetStartTime(TIMER_DATE_MIN);
+          tag.SetEndTime(TIMER_DATE_MIN);
           tag.SetStartAnyTime(true);
           tag.SetEndAnyTime(true);
           tag.SetEPGSearchString(advancedRulesText.substr(9));
@@ -122,8 +122,8 @@ PVR_ERROR Timers::GetTimers(kodi::addon::PVRTimersResultSet& results)
         else
         {
           tag.SetTimerType(TIMER_REPEATING_ADVANCED);
-          tag.SetStartTime(0);
-          tag.SetEndTime(0);
+          tag.SetStartTime(TIMER_DATE_MIN);
+          tag.SetEndTime(TIMER_DATE_MIN);
           tag.SetStartAnyTime(true);
           tag.SetEndAnyTime(true);
           tag.SetFullTextEpgSearch(true);
