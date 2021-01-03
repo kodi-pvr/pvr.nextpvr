@@ -104,6 +104,10 @@ PVR_ERROR Timers::GetTimers(kodi::addon::PVRTimersResultSet& results)
           tag.SetStartTime(stoll(buffer));
         if (XMLUtils::GetString(pRulesNode, "EndTimeTicks", buffer))
           tag.SetEndTime(stoll(buffer));
+        if (recordingType == 7)
+        {
+          tag.SetEPGSearchString(TYPE_7_TITLE);
+        }
       }
 
       // keyword recordings
@@ -607,8 +611,9 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
   case TIMER_ONCE_MANUAL:
     kodi::Log(ADDON_LOG_DEBUG, "TIMER_ONCE_MANUAL");
     // build one-off recording request
-    request = kodi::tools::StringUtils::Format("recording.save&name=%s&channel=%d&time_t=%d&duration=%d&pre_padding=%d&post_padding=%d&directory_id=%s",
+    request = kodi::tools::StringUtils::Format("recording.save&name=%s&recording_id=%d&channel=%d&time_t=%d&duration=%d&pre_padding=%d&post_padding=%d&directory_id=%s",
       encodedName.c_str(),
+      timer.GetClientIndex(),
       timer.GetClientChannelUid(),
       (int)timer.GetStartTime(),
       (int)(timer.GetEndTime() - timer.GetStartTime()),
@@ -630,22 +635,39 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
 
   case TIMER_REPEATING_EPG:
     if (timer.GetClientChannelUid() == PVR_TIMER_ANY_CHANNEL)
+    // Fake a manual recording not a specific type in NextPVR
     {
-      // Fake a manual recording
-      kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_EPG ANY CHANNEL");
-      std::string title = encodedName + "%";
-      request = kodi::tools::StringUtils::Format("recording.recurring.save&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s&keyword=%s",
-        encodedName.c_str(),
-        timer.GetClientChannelUid(),
-        (int)timer.GetStartTime(),
-        (int)timer.GetEndTime(),
-        timer.GetMaxRecordings(),
-        marginStart,
-        marginEnd,
-        days.c_str(),
-        directory.c_str(),
-        title.c_str()
-        );
+      if (timer.GetEPGSearchString() == TYPE_7_TITLE)
+      {
+        kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_EPG ANY CHANNEL - TYPE 7");
+        request = kodi::tools::StringUtils::Format("recording.recurring.save&type=7&recurring_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s",
+          timer.GetClientIndex(),
+          (int)timer.GetStartTime(),
+          (int)timer.GetEndTime(),
+          timer.GetMaxRecordings(),
+          marginStart,
+          marginEnd,
+          days.c_str(),
+          directory.c_str()
+          );
+      }
+      else
+      {
+        kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_EPG ANY CHANNEL");
+        std::string title = encodedName + "%";
+        request = kodi::tools::StringUtils::Format("recording.recurring.save&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s&keyword=%s",
+          encodedName.c_str(),
+          0,
+          (int)timer.GetStartTime(),
+          (int)timer.GetEndTime(),
+          timer.GetMaxRecordings(),
+          marginStart,
+          marginEnd,
+          days.c_str(),
+          directory.c_str(),
+          title.c_str()
+          );
+      }
     }
     else
     {

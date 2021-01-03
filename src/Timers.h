@@ -20,6 +20,8 @@ namespace NextPVR
   /* Arbitrary time_t in the past well after epoch */
   constexpr time_t TIMER_DATE_MIN = 1359478800;  // Frodo PVR release date
 
+  const std::string TYPE_7_TITLE = "FIXED_TITLE_TYPE_7";
+
   /* timer type ids */
   constexpr unsigned int TIMER_MANUAL_MIN = PVR_TIMER_TYPE_NONE + 1;
   constexpr unsigned int TIMER_ONCE_MANUAL = TIMER_MANUAL_MIN;
