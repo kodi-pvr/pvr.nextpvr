@@ -333,3 +333,11 @@ msgstr ""
 msgctxt "#30699"
 msgid "Use NextPVR timer padding when no padding is entered"
 msgstr ""
+
+msgctxt "#30200"
+msgid "Store recording resume location in NextPVR"
+msgstr ""
+
+msgctxt "#30700"
+msgid "When disabled resume location and watched status will be managed only in Kodi"
+msgstr ""
