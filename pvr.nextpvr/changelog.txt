@@ -1,3 +1,7 @@
+v8.1.0
+- Update PVR API 7.1.0
+- Fix std::chrono::duration_cast needs count()
+
 v8.0.3
 - Rework last resume and fake watch position
 - Option to not send resume to NextPVR
