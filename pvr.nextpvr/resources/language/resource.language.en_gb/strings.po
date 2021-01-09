@@ -303,7 +303,7 @@ msgid "Use backend genre text"
 msgstr ""
 
 msgctxt "#30694"
-msgid "Kodi default is DVB genre text.  Default required for Kodi genre search and language translation"
+msgid "Kodi default is DVB genre text. Default required for Kodi genre search and language translation"
 msgstr ""
 
 msgctxt "#30195"
@@ -340,4 +340,8 @@ msgstr ""
 
 msgctxt "#30700"
 msgid "When disabled resume location and watched status will be managed only in Kodi"
+msgstr ""
+
+msgctxt "#30201"
+msgid "End time invalid. Choose a recording duration"
 msgstr ""

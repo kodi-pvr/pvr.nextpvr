@@ -12,6 +12,7 @@
 #include "pvrclient-nextpvr.h"
 #include <kodi/General.h>
 #include <kodi/tools/StringUtils.h>
+#include <kodi/gui/dialogs/Select.h>
 #include <string>
 
 using namespace NextPVR;
@@ -606,6 +607,29 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
     marginEnd = m_settings.m_defaultPostPadding;
   }
 
+  time_t endTime = timer.GetEndTime();
+
+  if (timer.GetEndTime() - timer.GetStartTime() <= 0 && timer.GetTimerType() == TIMER_ONCE_MANUAL)
+  {
+    std::vector<std::string> options;
+    int offset = 0;
+    for (unsigned int minutes = 30; minutes <= 180; minutes += 30)
+    {
+      const std::string option = kodi::tools::StringUtils::Format("%d %s", minutes, kodi::GetLocalizedString(12391).c_str());
+      options.emplace_back(option);
+    }
+    int option = kodi::gui::dialogs::Select::Show(kodi::GetLocalizedString(30201), options, 1);
+    if (option >= 0)
+    {
+      endTime = timer.GetStartTime() + (option + 1) * 1800;
+    }
+    else
+    {
+      kodi::Log(ADDON_LOG_ERROR, "Invalid end date/time on manual recording");
+      return PVR_ERROR_INVALID_PARAMETERS;
+    }
+  }
+
   switch (timer.GetTimerType())
   {
   case TIMER_ONCE_MANUAL:
@@ -615,8 +639,8 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
       encodedName.c_str(),
       timer.GetClientIndex(),
       timer.GetClientChannelUid(),
-      (int)timer.GetStartTime(),
-      (int)(timer.GetEndTime() - timer.GetStartTime()),
+      static_cast<int>(timer.GetStartTime()),
+      static_cast<int>(endTime - timer.GetStartTime()),
       marginStart,
       marginEnd,
       directory.c_str()
@@ -642,8 +666,8 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
         kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_EPG ANY CHANNEL - TYPE 7");
         request = kodi::tools::StringUtils::Format("recording.recurring.save&type=7&recurring_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s",
           timer.GetClientIndex(),
-          (int)timer.GetStartTime(),
-          (int)timer.GetEndTime(),
+          static_cast<int>(timer.GetStartTime()),
+          static_cast<int>(timer.GetEndTime()),
           timer.GetMaxRecordings(),
           marginStart,
           marginEnd,
@@ -658,8 +682,8 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
         request = kodi::tools::StringUtils::Format("recording.recurring.save&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s&keyword=%s",
           encodedName.c_str(),
           0,
-          (int)timer.GetStartTime(),
-          (int)timer.GetEndTime(),
+          static_cast<int>(timer.GetStartTime()),
+          static_cast<int>(timer.GetEndTime()),
           timer.GetMaxRecordings(),
           marginStart,
           marginEnd,
@@ -694,8 +718,8 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
       timer.GetClientIndex(),
       encodedName.c_str(),
       timer.GetClientChannelUid(),
-      (int)timer.GetStartTime(),
-      (int)timer.GetEndTime(),
+      static_cast<int>(timer.GetStartTime()),
+      static_cast<int>(timer.GetEndTime()),
       timer.GetMaxRecordings(),
       marginStart,
       marginEnd,
@@ -711,8 +735,8 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
       timer.GetClientIndex(),
       encodedName.c_str(),
       timer.GetClientChannelUid(),
-      (int)timer.GetStartTime(),
-      (int)timer.GetEndTime(),
+      static_cast<int>(timer.GetStartTime()),
+      static_cast<int>(timer.GetEndTime()),
       timer.GetMaxRecordings(),
       marginStart,
       marginEnd,
@@ -729,8 +753,8 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
       timer.GetClientIndex(),
       encodedName.c_str(),
       timer.GetClientChannelUid(),
-      (int)timer.GetStartTime(),
-      (int)timer.GetEndTime(),
+      static_cast<int>(timer.GetStartTime()),
+      static_cast<int>(timer.GetEndTime()),
       timer.GetMaxRecordings(),
       marginStart,
       marginEnd,
