@@ -82,7 +82,20 @@ PVR_ERROR Timers::GetTimers(kodi::addon::PVRTimersResultSet& results)
       tinyxml2::XMLNode* pRulesNode = pMatchRulesNode->FirstChildElement("Rules");
 
       tag.SetClientIndex(XMLUtils::GetUIntValue(pRecurringNode, "id"));
-      tag.SetClientChannelUid(XMLUtils::GetIntValue(pRulesNode, "ChannelOID"));
+      int channelUID = XMLUtils::GetIntValue(pRulesNode, "ChannelOID");
+      if (channelUID == 0)
+      {
+        tag.SetClientChannelUid(PVR_TIMER_ANY_CHANNEL);
+      }
+      else if (m_channels.m_channelDetails.find(channelUID) == m_channels.m_channelDetails.end())
+      {
+        kodi::Log(ADDON_LOG_DEBUG, "Invalid channel uid %d", channelUID);
+        tag.SetClientChannelUid(PVR_CHANNEL_INVALID_UID);
+      }
+      else
+      {
+        tag.SetClientChannelUid(channelUID);
+      }
       tag.SetTimerType(pRulesNode->FirstChildElement("EPGTitle") ? TIMER_REPEATING_EPG : TIMER_REPEATING_MANUAL);
 
       std::string buffer;
@@ -615,8 +628,8 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
       encodedName.c_str(),
       timer.GetClientIndex(),
       timer.GetClientChannelUid(),
-      (int)timer.GetStartTime(),
-      (int)(timer.GetEndTime() - timer.GetStartTime()),
+      static_cast<int>(timer.GetStartTime()),
+      static_cast<int>(timer.GetEndTime() - timer.GetStartTime()),
       marginStart,
       marginEnd,
       directory.c_str()
@@ -642,8 +655,8 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
         kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_EPG ANY CHANNEL - TYPE 7");
         request = kodi::tools::StringUtils::Format("recording.recurring.save&type=7&recurring_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s",
           timer.GetClientIndex(),
-          (int)timer.GetStartTime(),
-          (int)timer.GetEndTime(),
+          static_cast<int>(timer.GetStartTime()),
+          static_cast<int>(timer.GetEndTime()),
           timer.GetMaxRecordings(),
           marginStart,
           marginEnd,
@@ -658,8 +671,8 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
         request = kodi::tools::StringUtils::Format("recording.recurring.save&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s&keyword=%s",
           encodedName.c_str(),
           0,
-          (int)timer.GetStartTime(),
-          (int)timer.GetEndTime(),
+          static_cast<int>(timer.GetStartTime()),
+          static_cast<int>(timer.GetEndTime()),
           timer.GetMaxRecordings(),
           marginStart,
           marginEnd,
@@ -694,8 +707,8 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
       timer.GetClientIndex(),
       encodedName.c_str(),
       timer.GetClientChannelUid(),
-      (int)timer.GetStartTime(),
-      (int)timer.GetEndTime(),
+      static_cast<int>(timer.GetStartTime()),
+      static_cast<int>(timer.GetEndTime()),
       timer.GetMaxRecordings(),
       marginStart,
       marginEnd,
@@ -711,8 +724,8 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
       timer.GetClientIndex(),
       encodedName.c_str(),
       timer.GetClientChannelUid(),
-      (int)timer.GetStartTime(),
-      (int)timer.GetEndTime(),
+      static_cast<int>(timer.GetStartTime()),
+      static_cast<int>(timer.GetEndTime()),
       timer.GetMaxRecordings(),
       marginStart,
       marginEnd,
@@ -729,8 +742,8 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
       timer.GetClientIndex(),
       encodedName.c_str(),
       timer.GetClientChannelUid(),
-      (int)timer.GetStartTime(),
-      (int)timer.GetEndTime(),
+      static_cast<int>(timer.GetStartTime()),
+      static_cast<int>(timer.GetEndTime()),
       timer.GetMaxRecordings(),
       marginStart,
       marginEnd,

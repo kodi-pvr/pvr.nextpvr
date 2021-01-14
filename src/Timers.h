@@ -10,6 +10,7 @@
 #pragma once
 
 #include "BackendRequest.h"
+#include "Channels.h"
 #include <kodi/addon-instance/PVR.h>
 #include <algorithm>
 
@@ -91,6 +92,7 @@ namespace NextPVR
 
     Settings& m_settings = Settings::GetInstance();
     Request& m_request = Request::GetInstance();
+    Channels& m_channels = Channels::GetInstance();
     //kodi::addon::CInstancePVRClient& m_instance;
 
     int m_defaultLimit = NEXTPVR_LIMIT_ASMANY;
