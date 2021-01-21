@@ -1,3 +1,9 @@
+v8.2.0
+- Flag timers with invalid channel life
+- Automatically renew sid lifetime on playback close
+- Remove EPG uid cache
+- Rework EPG update logic
+
 v8.1.0
 - Update PVR API 7.1.0
 - Fix std::chrono::duration_cast needs count()

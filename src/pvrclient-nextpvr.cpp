@@ -306,9 +306,21 @@ bool cPVRClientNextPVR::IsUp()
             {
               if (lastUpdate > m_lastEPGUpdateTime)
               {
-                SetConnectionState("Force update", PVR_CONNECTION_STATE_UNKNOWN);
-                SetConnectionState("Reload from backend", PVR_CONNECTION_STATE_CONNECTED);
+                // trigger EPG updates for all channels with a guide source
+                kodi::Log(ADDON_LOG_DEBUG, "Trigger EPG update start");
+                int channels = 0;
+                for (const auto &updateChannel : m_channels.m_channelDetails)
+                {
+                  if (updateChannel.second.first == false)
+                  {
+                    channels++;
+                    TriggerEpgUpdate(updateChannel.first);
+                  }
+                }
+                kodi::Log(ADDON_LOG_DEBUG, "Triggered %d channel updates", channels);
+
                 m_lastEPGUpdateTime = lastUpdate;
+                m_lastRecordingUpdateTime = update_time;
                 return m_bConnected;
               }
             }
