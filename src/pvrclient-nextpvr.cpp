@@ -357,13 +357,17 @@ bool cPVRClientNextPVR::IsUp()
         }
       }
     }
-    else if (m_nowPlaying == Transcoding)
+    else if (m_nowPlaying != NotPlaying)
     {
-      if (m_livePlayer->IsRealTimeStream() == false)
+      m_request.RenewSID();
+      if (m_nowPlaying == Transcoding)
       {
-        //m_livePlayer->Close();
-        m_nowPlaying = NotPlaying;
-        m_livePlayer = nullptr;
+        if (m_livePlayer->IsRealTimeStream() == false)
+        {
+          //m_livePlayer->Close();
+          m_nowPlaying = NotPlaying;
+          m_livePlayer = nullptr;
+        }
       }
     }
   }
