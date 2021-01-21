@@ -81,7 +81,6 @@ namespace NextPVR
     PVR_ERROR DeleteTimer(const kodi::addon::PVRTimer& timer, bool forceDelete);
     PVR_ERROR UpdateTimer(const kodi::addon::PVRTimer& timer);
     bool UpdatePvrTimer(tinyxml2::XMLNode* pRecordingNode, kodi::addon::PVRTimer& tag);
-    std::map<std::string, int> m_epgOidLookup;
     time_t m_lastTimerUpdateTime = 0;
 
   private:
@@ -93,12 +92,13 @@ namespace NextPVR
     Settings& m_settings = Settings::GetInstance();
     Request& m_request = Request::GetInstance();
     Channels& m_channels = Channels::GetInstance();
-    //kodi::addon::CInstancePVRClient& m_instance;
 
     int m_defaultLimit = NEXTPVR_LIMIT_ASMANY;
     int m_defaultShowType = NEXTPVR_SHOWTYPE_ANY;
     int m_iTimerCount = -1;
 
     std::string GetDayString(int dayMask);
+
+    int GetEPGOidForTimer(const kodi::addon::PVRTimer& timer);
   };
 } // namespace NextPVR

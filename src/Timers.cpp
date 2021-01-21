@@ -606,9 +606,15 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
   const std::string encodedKeyword = UriEncode(timer.GetEPGSearchString());
   const std::string days = GetDayString(timer.GetWeekdays());
   const std::string directory = UriEncode(m_settings.m_recordingDirectories[timer.GetRecordingGroup()]);
-  const std::string oidKey = std::to_string(timer.GetEPGUid()) + ":" + std::to_string(timer.GetClientChannelUid());
-  const int epgOid = m_epgOidLookup[oidKey];
-  kodi::Log(ADDON_LOG_DEBUG, "TIMER_%d %s", epgOid, oidKey.c_str());
+
+  int epgOid = 0;
+  if (timer.GetEPGUid() > 0)
+  {
+    const std::string oidKey = std::to_string(timer.GetEPGUid()) + ":" + std::to_string(timer.GetClientChannelUid());
+    epgOid = GetEPGOidForTimer(timer);
+    kodi::Log(ADDON_LOG_DEBUG, "TIMER %d %s", epgOid, oidKey.c_str());
+  }
+
   std::string request;
 
   int marginStart = timer.GetMarginStart();
@@ -793,4 +799,29 @@ PVR_ERROR Timers::DeleteTimer(const kodi::addon::PVRTimer& timer, bool forceDele
 PVR_ERROR Timers::UpdateTimer(const kodi::addon::PVRTimer& timer)
 {
   return AddTimer(timer);
+}
+
+int Timers::GetEPGOidForTimer(const kodi::addon::PVRTimer& timer)
+{
+  std::string request = kodi::tools::StringUtils::Format("channel.listings&channel_id=%d&start=%d&end=%d",
+    timer.GetClientChannelUid(),timer.GetEPGUid() - 1, timer.GetEPGUid());
+
+  tinyxml2::XMLDocument doc;
+  int epgOid = 0;
+  if (m_request.DoMethodRequest(request, doc) == tinyxml2::XML_SUCCESS)
+  {
+    tinyxml2::XMLNode* listingsNode = doc.RootElement()->FirstChildElement("listings");
+    for (tinyxml2::XMLNode* pListingNode = listingsNode->FirstChildElement("l"); pListingNode; pListingNode = pListingNode->NextSiblingElement())
+    {
+      std::string endTime;
+      XMLUtils::GetString(pListingNode, "end", endTime);
+      endTime.resize(10);
+      if (atoi(endTime.c_str()) == timer.GetEPGUid())
+      {
+        epgOid = XMLUtils::GetIntValue(pListingNode, "id");
+        break;
+      }
+    }
+  }
+  return epgOid;
 }

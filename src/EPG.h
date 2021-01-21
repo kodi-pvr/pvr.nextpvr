@@ -13,9 +13,6 @@
 #include <kodi/addon-instance/PVR.h>
 #include "Channels.h"
 #include "Recordings.h"
-#include "Timers.h"
-
-
 
 namespace NextPVR
 {
@@ -34,13 +31,11 @@ namespace NextPVR
 
   private:
     EPG() = default;
-
     EPG(EPG const&) = delete;
     void operator=(EPG const&) = delete;
 
     Settings& m_settings = Settings::GetInstance();
     Request& m_request = Request::GetInstance();
-    Timers& m_timers = Timers::GetInstance();
     Recordings& m_recordings = Recordings::GetInstance();
     Channels& m_channels = Channels::GetInstance();
   };
