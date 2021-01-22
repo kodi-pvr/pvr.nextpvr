@@ -14,12 +14,11 @@
 #include <kodi/addon-instance/PVR.h>
 #include <algorithm>
 
-
-
 namespace NextPVR
 {
   /* Arbitrary time_t in the past well after epoch */
   constexpr time_t TIMER_DATE_MIN = 1359478800;  // Frodo PVR release date
+  constexpr unsigned int ENABLE_DISABLE_VERSION = 50101;
 
   const std::string TYPE_7_TITLE = "FIXED_TITLE_TYPE_7";
 

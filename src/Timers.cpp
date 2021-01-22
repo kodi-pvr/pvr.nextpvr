@@ -207,7 +207,7 @@ PVR_ERROR Timers::GetTimers(kodi::addon::PVRTimersResultSet& results)
       XMLUtils::GetString(pRecurringNode, "name", buffer);
       tag.SetTitle(buffer);
       bool state = true;
-      XMLUtils::GetBoolean(pRulesNode, "enabled", state);
+      XMLUtils::GetBoolean(pMatchRulesNode, "enabled", state);
       if (state == false)
           tag.SetState(PVR_TIMER_STATE_DISABLED);
       else
@@ -419,6 +419,7 @@ PVR_ERROR Timers::GetTimerTypes(std::vector<kodi::addon::PVRTimerType>& types)
 
   static const unsigned int TIMER_REPEATING_MANUAL_ATTRIBS
     = PVR_TIMER_TYPE_IS_REPEATING |
+      static_cast<int>(m_settings.m_backendVersion >= ENABLE_DISABLE_VERSION ? PVR_TIMER_TYPE_SUPPORTS_ENABLE_DISABLE : PVR_TIMER_TYPE_ATTRIBUTE_NONE) |
       PVR_TIMER_TYPE_SUPPORTS_START_END_MARGIN |
       PVR_TIMER_TYPE_SUPPORTS_RECORDING_GROUP |
       PVR_TIMER_TYPE_SUPPORTS_WEEKDAYS |
@@ -426,6 +427,7 @@ PVR_ERROR Timers::GetTimerTypes(std::vector<kodi::addon::PVRTimerType>& types)
 
   static const unsigned int TIMER_REPEATING_EPG_ATTRIBS
     = PVR_TIMER_TYPE_IS_REPEATING |
+      static_cast<int>(m_settings.m_backendVersion >= ENABLE_DISABLE_VERSION ? PVR_TIMER_TYPE_SUPPORTS_ENABLE_DISABLE : PVR_TIMER_TYPE_ATTRIBUTE_NONE) |
       PVR_TIMER_TYPE_SUPPORTS_START_END_MARGIN |
       PVR_TIMER_TYPE_SUPPORTS_WEEKDAYS |
       PVR_TIMER_TYPE_SUPPORTS_RECORDING_GROUP |
@@ -445,7 +447,8 @@ PVR_ERROR Timers::GetTimerTypes(std::vector<kodi::addon::PVRTimerType>& types)
       PVR_TIMER_TYPE_SUPPORTS_START_END_MARGIN;
 
   static const unsigned int TIMER_REPEATING_KEYWORD_ATTRIBS
-      = PVR_TIMER_TYPE_IS_REPEATING |
+    = PVR_TIMER_TYPE_IS_REPEATING |
+      static_cast<int>(m_settings.m_backendVersion >= ENABLE_DISABLE_VERSION ? PVR_TIMER_TYPE_SUPPORTS_ENABLE_DISABLE : PVR_TIMER_TYPE_ATTRIBUTE_NONE) |
       PVR_TIMER_TYPE_SUPPORTS_RECORD_ONLY_NEW_EPISODES |
       PVR_TIMER_TYPE_SUPPORTS_ANY_CHANNEL |
       PVR_TIMER_TYPE_SUPPORTS_MAX_RECORDINGS;
@@ -602,6 +605,26 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
   else
     strcpy(preventDuplicates, "false");
 
+  std::string enabled;
+  if (m_settings.m_backendVersion >= ENABLE_DISABLE_VERSION)
+  {
+    // NextPVR cannot create new disabled timers
+    if (timer.GetState() == PVR_TIMER_STATE_DISABLED)
+      if (timer.GetClientIndex() != PVR_TIMER_NO_CLIENT_INDEX)
+      {
+        enabled = "&enabled=false";
+      }
+      else
+      {
+        kodi::Log(ADDON_LOG_ERROR, "Cannot create a new disabled timer");
+        return PVR_ERROR_INVALID_PARAMETERS;
+      }
+    else if (timer.GetState() == PVR_TIMER_STATE_SCHEDULED)
+    {
+      enabled = "&enabled=true";
+    }
+  }
+
   const std::string encodedName = UriEncode(timer.GetTitle());
   const std::string encodedKeyword = UriEncode(timer.GetEPGSearchString());
   const std::string days = GetDayString(timer.GetWeekdays());
@@ -659,7 +682,7 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
       if (timer.GetEPGSearchString() == TYPE_7_TITLE)
       {
         kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_EPG ANY CHANNEL - TYPE 7");
-        request = kodi::tools::StringUtils::Format("recording.recurring.save&type=7&recurring_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s",
+        request = kodi::tools::StringUtils::Format("recording.recurring.save&type=7&recurring_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s%s",
           timer.GetClientIndex(),
           static_cast<int>(timer.GetStartTime()),
           static_cast<int>(timer.GetEndTime()),
@@ -667,14 +690,15 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
           marginStart,
           marginEnd,
           days.c_str(),
-          directory.c_str()
+          directory.c_str(),
+          enabled.c_str()
           );
       }
       else
       {
         kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_EPG ANY CHANNEL");
         std::string title = encodedName + "%";
-        request = kodi::tools::StringUtils::Format("recording.recurring.save&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s&keyword=%s",
+        request = kodi::tools::StringUtils::Format("recording.recurring.save&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s&keyword=%s%s",
           encodedName.c_str(),
           0,
           static_cast<int>(timer.GetStartTime()),
@@ -684,7 +708,8 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
           marginEnd,
           days.c_str(),
           directory.c_str(),
-          title.c_str()
+          title.c_str(),
+          enabled.c_str()
           );
       }
     }
@@ -692,7 +717,7 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
     {
       kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_EPG");
       // build recurring recording request
-      request = kodi::tools::StringUtils::Format("recording.recurring.save&recurring_id=%d&channel_id=%d&event_id=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s&only_new=%s",
+      request = kodi::tools::StringUtils::Format("recording.recurring.save&recurring_id=%d&channel_id=%d&event_id=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s&only_new=%s%s",
         timer.GetClientIndex(),
         timer.GetClientChannelUid(),
         epgOid,
@@ -701,7 +726,8 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
         marginEnd,
         days.c_str(),
         directory.c_str(),
-        preventDuplicates
+        preventDuplicates,
+        enabled.c_str()
         );
     }
     break;
@@ -709,7 +735,7 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
   case TIMER_REPEATING_MANUAL:
     kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_MANUAL");
     // build manual recurring request
-    request = kodi::tools::StringUtils::Format("recording.recurring.save&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s",
+    request = kodi::tools::StringUtils::Format("recording.recurring.save&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s%s",
       timer.GetClientIndex(),
       encodedName.c_str(),
       timer.GetClientChannelUid(),
@@ -719,14 +745,15 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
       marginStart,
       marginEnd,
       days.c_str(),
-      directory.c_str()
+      directory.c_str(),
+      enabled.c_str()
       );
     break;
 
   case TIMER_REPEATING_KEYWORD:
     kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_KEYWORD");
     // build manual recurring request
-    request = kodi::tools::StringUtils::Format("recording.recurring.save&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&directory_id=%s&keyword=%s&only_new=%s",
+    request = kodi::tools::StringUtils::Format("recording.recurring.save&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&directory_id=%s&keyword=%s&only_new=%s%s",
       timer.GetClientIndex(),
       encodedName.c_str(),
       timer.GetClientChannelUid(),
@@ -737,14 +764,14 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
       marginEnd,
       directory.c_str(),
       encodedKeyword.c_str(),
-      preventDuplicates
+      preventDuplicates,
+      enabled.c_str()
       );
-    break;
 
   case TIMER_REPEATING_ADVANCED:
     kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_ADVANCED");
     // build manual advanced recurring request
-    request = kodi::tools::StringUtils::Format("recording.recurring.save&recurring_type=advanced&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&directory_id=%s&advanced=%s&only_new=%s",
+    request = kodi::tools::StringUtils::Format("recording.recurring.save&recurring_type=advanced&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&directory_id=%s&advanced=%s&only_new=%s%s",
       timer.GetClientIndex(),
       encodedName.c_str(),
       timer.GetClientChannelUid(),
@@ -755,7 +782,8 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
       marginEnd,
       directory.c_str(),
       encodedKeyword.c_str(),
-      preventDuplicates
+      preventDuplicates,
+      enabled.c_str()
       );
     break;
   }

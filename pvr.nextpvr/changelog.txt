@@ -3,6 +3,7 @@ v8.2.0
 - Automatically renew sid lifetime on playback close
 - Remove EPG uid cache
 - Rework EPG update logic
+- Enable or disable recurring timers
 
 v8.1.0
 - Update PVR API 7.1.0
