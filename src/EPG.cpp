@@ -72,9 +72,6 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
 
       const std::string oidLookup(endTime + ":" + std::to_string(channelUid));
 
-      const int epgOid = XMLUtils::GetIntValue(pListingNode, "id");
-      m_timers.m_epgOidLookup[oidLookup] = epgOid;
-
       broadcast.SetTitle(title);
       broadcast.SetEpisodeName(subtitle);
       broadcast.SetUniqueChannelId(channelUid);
@@ -88,7 +85,10 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
       {
         // artwork URL
         if (m_settings.m_backendVersion < 50000)
+        {
+          const int epgOid = XMLUtils::GetIntValue(pListingNode, "id");
           artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&event_id=%d", m_settings.m_urlBase, m_request.GetSID(), epgOid);
+        }
         else
         {
           if (m_settings.m_sendSidWithMetadata)
@@ -209,8 +209,8 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
         {
           if (base_match.size() == 3)
           {
-            float quotient = std::atof(base_match[1].str().c_str());
-            float denominator = std::atof(base_match[2].str().c_str());
+            double quotient = std::atof(base_match[1].str().c_str());
+            double denominator = std::atof(base_match[2].str().c_str());
             // if single value passed assume base 4
             if (denominator == 0)
               denominator = 4;

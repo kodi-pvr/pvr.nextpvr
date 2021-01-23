@@ -113,7 +113,6 @@ cPVRClientNextPVR::~cPVRClientNextPVR()
   delete m_timeshiftBuffer;
   delete m_recordingBuffer;
   delete m_realTimeBuffer;
-  m_timers.m_epgOidLookup.clear();
   m_recordings.m_hostFilenames.clear();
   m_channels.m_channelDetails.clear();
   m_channels.m_liveStreams.clear();
@@ -307,9 +306,21 @@ bool cPVRClientNextPVR::IsUp()
             {
               if (lastUpdate > m_lastEPGUpdateTime)
               {
-                SetConnectionState("Force update", PVR_CONNECTION_STATE_UNKNOWN);
-                SetConnectionState("Reload from backend", PVR_CONNECTION_STATE_CONNECTED);
+                // trigger EPG updates for all channels with a guide source
+                kodi::Log(ADDON_LOG_DEBUG, "Trigger EPG update start");
+                int channels = 0;
+                for (const auto &updateChannel : m_channels.m_channelDetails)
+                {
+                  if (updateChannel.second.first == false)
+                  {
+                    channels++;
+                    TriggerEpgUpdate(updateChannel.first);
+                  }
+                }
+                kodi::Log(ADDON_LOG_DEBUG, "Triggered %d channel updates", channels);
+
                 m_lastEPGUpdateTime = lastUpdate;
+                m_lastRecordingUpdateTime = update_time;
                 return m_bConnected;
               }
             }
@@ -357,13 +368,17 @@ bool cPVRClientNextPVR::IsUp()
         }
       }
     }
-    else if (m_nowPlaying == Transcoding)
+    else if (m_nowPlaying != NotPlaying)
     {
-      if (m_livePlayer->IsRealTimeStream() == false)
+      m_request.RenewSID();
+      if (m_nowPlaying == Transcoding)
       {
-        //m_livePlayer->Close();
-        m_nowPlaying = NotPlaying;
-        m_livePlayer = nullptr;
+        if (m_livePlayer->IsRealTimeStream() == false)
+        {
+          //m_livePlayer->Close();
+          m_nowPlaying = NotPlaying;
+          m_livePlayer = nullptr;
+        }
       }
     }
   }

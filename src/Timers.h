@@ -10,15 +10,15 @@
 #pragma once
 
 #include "BackendRequest.h"
+#include "Channels.h"
 #include <kodi/addon-instance/PVR.h>
 #include <algorithm>
-
-
 
 namespace NextPVR
 {
   /* Arbitrary time_t in the past well after epoch */
   constexpr time_t TIMER_DATE_MIN = 1359478800;  // Frodo PVR release date
+  constexpr unsigned int ENABLE_DISABLE_VERSION = 50101;
 
   const std::string TYPE_7_TITLE = "FIXED_TITLE_TYPE_7";
 
@@ -80,7 +80,6 @@ namespace NextPVR
     PVR_ERROR DeleteTimer(const kodi::addon::PVRTimer& timer, bool forceDelete);
     PVR_ERROR UpdateTimer(const kodi::addon::PVRTimer& timer);
     bool UpdatePvrTimer(tinyxml2::XMLNode* pRecordingNode, kodi::addon::PVRTimer& tag);
-    std::map<std::string, int> m_epgOidLookup;
     time_t m_lastTimerUpdateTime = 0;
 
   private:
@@ -91,12 +90,14 @@ namespace NextPVR
 
     Settings& m_settings = Settings::GetInstance();
     Request& m_request = Request::GetInstance();
-    //kodi::addon::CInstancePVRClient& m_instance;
+    Channels& m_channels = Channels::GetInstance();
 
     int m_defaultLimit = NEXTPVR_LIMIT_ASMANY;
     int m_defaultShowType = NEXTPVR_SHOWTYPE_ANY;
     int m_iTimerCount = -1;
 
     std::string GetDayString(int dayMask);
+
+    int GetEPGOidForTimer(const kodi::addon::PVRTimer& timer);
   };
 } // namespace NextPVR

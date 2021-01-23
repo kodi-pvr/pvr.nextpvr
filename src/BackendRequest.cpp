@@ -46,7 +46,7 @@ namespace NextPVR
       }
       else
       {
-        m_sidUpdate = time(nullptr);
+        RenewSID();
       }
     }
     kodi::Log(ADDON_LOG_DEBUG, "DoRequest return %s %d %d %d", resource.c_str(), resultCode, response.length(), std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start));
@@ -120,7 +120,7 @@ namespace NextPVR
         }
         else
         {
-          m_sidUpdate = time(nullptr);
+          RenewSID();
         }
       }
     }

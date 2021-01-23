@@ -51,7 +51,8 @@ namespace NextPVR
 
     void SetSID(std::string newsid) { m_sid = newsid; };
     void ClearSID() { m_sid.clear(); m_sidUpdate = 0; };
-    bool IsActiveSID() { return !m_sid.empty() && time(nullptr) < m_sidUpdate + 900; };
+    void RenewSID() { m_sidUpdate = time(nullptr); };
+    bool IsActiveSID() { return !m_sid.empty() && time(nullptr) < m_sidUpdate + 3600; };
 
   private:
     Request() = default;
