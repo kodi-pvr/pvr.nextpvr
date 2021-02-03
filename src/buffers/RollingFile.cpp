@@ -141,8 +141,8 @@ bool RollingFile::GetStreamInfo()
       tinyxml2::XMLNode* filesNode = doc.FirstChildElement("Files");
       if (filesNode != nullptr)
       {
-        stream_length = strtoll(filesNode->FirstChildElement("Length")->GetText(), nullptr, 0);
-        duration = strtoll(filesNode->FirstChildElement("Duration")->GetText(), nullptr, 0);
+        stream_length = strtoll(filesNode->FirstChildElement("Length")->GetText(), nullptr, 10);
+        duration = strtoll(filesNode->FirstChildElement("Duration")->GetText(), nullptr, 10);
         XMLUtils::GetBoolean(filesNode, "Complete", m_complete);
         kodi::Log(ADDON_LOG_DEBUG, "channel.stream.info %lld %lld %d %d", stream_length, duration, m_complete, m_bytesPerSecond.load());
         if (m_complete == true)
@@ -281,8 +281,8 @@ PVR_ERROR RollingFile::GetStreamTimes(kodi::addon::PVRStreamTimes& stimes)
     return RecordingBuffer::GetStreamTimes(stimes);
   stimes.SetStartTime(m_streamStart);
   stimes.SetPTSStart(0);
-  stimes.SetPTSBegin((m_rollingStartSeconds - m_streamStart) * STREAM_TIME_BASE);
-  stimes.SetPTSEnd((time(nullptr) - m_streamStart) * STREAM_TIME_BASE);
+  stimes.SetPTSBegin(static_cast<int64_t>(m_rollingStartSeconds - m_streamStart) * STREAM_TIME_BASE);
+  stimes.SetPTSEnd(static_cast<int64_t>(time(nullptr) - m_streamStart) * STREAM_TIME_BASE);
   return PVR_ERROR_NO_ERROR;
 }
 

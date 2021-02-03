@@ -187,10 +187,10 @@ bool ClientTimeShift::GetStreamInfo()
       tinyxml2::XMLNode* filesNode = doc.FirstChildElement("map");
       if (filesNode != nullptr)
       {
-        stream_duration = strtoll(filesNode->FirstChildElement("stream_duration")->GetText(), nullptr, 0);
+        stream_duration = strtoll(filesNode->FirstChildElement("stream_duration")->GetText(), nullptr, 10);
         if (stream_duration != 0)
         {
-          m_stream_length = strtoll(filesNode->FirstChildElement("stream_length")->GetText(), nullptr, 0);
+          m_stream_length = strtoll(filesNode->FirstChildElement("stream_length")->GetText(), nullptr, 10);
           m_stream_duration = stream_duration / 1000;
           if (m_stream_duration > m_settings.m_timeshiftBufferSeconds)
           {
