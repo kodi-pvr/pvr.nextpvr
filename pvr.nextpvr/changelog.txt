@@ -1,7 +1,10 @@
+v8.2.2
+- Missing break, keyword searches became advanced text searches
+
 v8.2.1
 - Fixed a missing count on another duration call
 - force radix 10 on strtoll
-- Add 64 bit cast to time_t for 
+- Add 64 bit cast to time_t
 
 v8.2.0
 - Flag timers with invalid channel life
