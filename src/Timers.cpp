@@ -767,6 +767,7 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
       preventDuplicates,
       enabled.c_str()
       );
+    break;
 
   case TIMER_REPEATING_ADVANCED:
     kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_ADVANCED");
