@@ -191,8 +191,7 @@ PVR_ERROR Timers::GetTimers(kodi::addon::PVRTimersResultSet& results)
       std::string recordingDirectoryID;
       if (XMLUtils::GetString(pRulesNode, "RecordingDirectoryID", recordingDirectoryID))
       {
-        int i = 0;
-        for (auto it = m_settings.m_recordingDirectories.begin(); it != m_settings.m_recordingDirectories.end(); ++it, i++)
+        for (unsigned int i = 0; i < m_settings.m_recordingDirectories.size(); ++i)
         {
           std::string bracketed = "[" + m_settings.m_recordingDirectories[i] + "]";
           if (bracketed == recordingDirectoryID)
@@ -319,6 +318,22 @@ bool Timers::UpdatePvrTimer(tinyxml2::XMLNode* pRecordingNode, kodi::addon::PVRT
     }
   }
 
+  if (status == "Pending")
+  {
+    std::string directory;
+    if (XMLUtils::GetString(pRecordingNode, "directory", directory))
+    {
+        for (unsigned int i = 0; i < m_settings.m_recordingDirectories.size(); ++i)
+        {
+          if (directory == m_settings.m_recordingDirectories[i])
+          {
+            tag.SetRecordingGroup(i);
+            break;
+          }
+        }
+    }
+  }
+
   return true;
 }
 
@@ -396,9 +411,8 @@ PVR_ERROR Timers::GetTimerTypes(std::vector<kodi::addon::PVRTimerType>& types)
   }
 
   /* PVR_Timer.iRecordingGroup values and presentation */
-  int i = 0;
   static std::vector<kodi::addon::PVRTypeIntValue> recordingGroupValues;
-  for (auto it = m_settings.m_recordingDirectories.begin(); it != m_settings.m_recordingDirectories.end(); ++it, i++)
+  for (unsigned int i = 0; i < m_settings.m_recordingDirectories.size(); ++i)
   {
     recordingGroupValues.emplace_back(kodi::addon::PVRTypeIntValue(i, m_settings.m_recordingDirectories[i]));
   }

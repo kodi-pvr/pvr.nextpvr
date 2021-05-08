@@ -1,3 +1,6 @@
+v8.2.3
+- Add directory for pending recordings server API update
+
 v8.2.2
 - Missing break, keyword searches became advanced text searches
 
