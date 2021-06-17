@@ -689,6 +689,23 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
       directory.c_str());
     break;
 
+  case TIMER_ONCE_EPG_CHILD:
+    kodi::Log(ADDON_LOG_DEBUG, "TIMER_ONCE_EPG_CHILD");
+    // build one-off recording request
+    if (m_settings.m_backendVersion < 50102)
+    {
+      kodi::Log(ADDON_LOG_ERROR, "Feature added in NextPVR 5.1.2");
+      return PVR_ERROR_REJECTED;
+    }
+    request = kodi::tools::StringUtils::Format("recording.save&recording_id=%d&recurring_id=%d&event_id=%d&pre_padding=%d&post_padding=%d&directory_id=%s",
+      timer.GetClientIndex(),
+      timer.GetParentClientIndex(),
+      epgOid,
+      marginStart,
+      marginEnd,
+      directory.c_str());
+    break;
+
   case TIMER_REPEATING_EPG:
     if (timer.GetClientChannelUid() == PVR_TIMER_ANY_CHANNEL)
     // Fake a manual recording not a specific type in NextPVR
