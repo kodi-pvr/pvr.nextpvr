@@ -1,6 +1,7 @@
 v8.2.5
 - Update timer from a recurring recording
 - Remove extra parameter on log call
+- Allow records with year as season
 
 v8.2.4
 - Language update from Weblate
