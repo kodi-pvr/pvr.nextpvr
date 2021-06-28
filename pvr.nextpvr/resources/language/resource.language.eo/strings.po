@@ -10,12 +10,329 @@ msgstr ""
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Kodi Translation Team\n"
 "Language-Team: Esperanto (http://www.transifex.com/projects/p/kodi-main/language/eo/)\n"
+"Language: eo\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: eo\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "#30000"
+msgid "NextPVR hostname"
+msgstr ""
+
+msgctxt "#30001"
+msgid "NextPVR port (usually 8866)"
+msgstr ""
+
+msgctxt "#30002"
+msgid "NextPVR PinCode"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Enable timeshift with live TV"
+msgstr ""
+
+msgctxt "#30603"
+msgid "Open settings dialog for inputstream.ffmpegdirect for modification of timeshift settings"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Download TV guide artwork"
+msgstr ""
+
+msgctxt "#30504"
+msgid "Not enabled for Matrix when remote"
+msgstr ""
+
+# empty strings from id 30005 to 30039
+msgctxt "#30040"
+msgid "Connection"
+msgstr ""
+
+msgctxt "#30041"
+msgid "Advanced"
+msgstr ""
+
+# empty strings from id 30042 to 30049
+msgctxt "#30050"
+msgid "NextPVR version not supported"
+msgstr ""
+
+msgctxt "#30051"
+msgid "Upgrade to '%s' or higher!"
+msgstr ""
+
+msgctxt "#30052"
+msgid "Connection failed. Incorrect PIN?"
+msgstr ""
+
+msgctxt "#30053"
+msgid "Tuner no longer available"
+msgstr ""
+
+# empty strings from id 30054 to 30139
+msgctxt "#30140"
+msgid "One time (manual)"
+msgstr ""
+
+msgctxt "#30141"
+msgid "One time (guide)"
+msgstr ""
+
+msgctxt "#30142"
+msgid "Repeating (manual)"
+msgstr ""
+
+msgctxt "#30143"
+msgid "Repeating (guide)"
+msgstr ""
+
+msgctxt "#30144"
+msgid "Child recording"
+msgstr ""
+
+msgctxt "#30145"
+msgid "Repeating (keyword)"
+msgstr ""
+
+# empty strings from id 30146 to 30149
+msgctxt "#30150"
+msgid "All Recordings"
+msgstr ""
+
+msgctxt "#30151"
+msgid "1 Recording"
+msgstr ""
+
+msgctxt "#30152"
+msgid "2 Recordings"
+msgstr ""
+
+msgctxt "#30153"
+msgid "3 Recordings"
+msgstr ""
+
+msgctxt "#30154"
+msgid "4 Recordings"
+msgstr ""
+
+msgctxt "#30155"
+msgid "5 Recordings"
+msgstr ""
+
+msgctxt "#30156"
+msgid "6 Recordings"
+msgstr ""
+
+msgctxt "#30157"
+msgid "7 Recordings"
+msgstr ""
+
+msgctxt "#30158"
+msgid "10 Recordings"
+msgstr ""
+
+# empty string with id 30159
+msgctxt "#30160"
+msgid "New Only"
+msgstr ""
 
 msgctxt "#30161"
 msgid "All"
 msgstr "ĉiom"
+
+msgctxt "#30162"
+msgid "Pre-buffer time in seconds"
+msgstr ""
+
+msgctxt "#30163"
+msgid "Enable Wake On LAN"
+msgstr ""
+
+msgctxt "#30164"
+msgid "Wait for server after wake in seconds"
+msgstr ""
+
+msgctxt "#30165"
+msgid "NextPVR server MAC address"
+msgstr ""
+
+msgctxt "#30166"
+msgid "Failed recordings"
+msgstr ""
+
+msgctxt "#30167"
+msgid "Live TV chunk size"
+msgstr ""
+
+msgctxt "#30567"
+msgid "Change chunk size for LAN performance"
+msgstr ""
+
+msgctxt "#30168"
+msgid "Recording chunk size"
+msgstr ""
+
+msgctxt "#30169"
+msgid "Kodi skin styled recordings"
+msgstr ""
+
+msgctxt "#30569"
+msgid "Separate title, season and episode for skin - season and episode numbers will not be shown in lists"
+msgstr ""
+
+msgctxt "#30170"
+msgid "Refresh cache for channel icons"
+msgstr ""
+
+msgctxt "#30171"
+msgid "Repeating (advanced)"
+msgstr ""
+
+msgctxt "#30172"
+msgid "Live TV method"
+msgstr ""
+
+msgctxt "#30173"
+msgid "Transcoding profile"
+msgstr ""
+
+msgctxt "#30174"
+msgid "Streaming options"
+msgstr ""
+
+msgctxt "#30175"
+msgid "Display and recordings"
+msgstr ""
+
+msgctxt "#30176"
+msgid "Enable direct streams"
+msgstr ""
+
+msgctxt "#30177"
+msgid "Use legacy (V4) setting"
+msgstr ""
+
+msgctxt "#30178"
+msgid "Include filesize with recordings"
+msgstr ""
+
+msgctxt "#30678"
+msgid "Use file system to get the recording size if available"
+msgstr ""
+
+msgctxt "#30179"
+msgid "Remote access"
+msgstr ""
+
+msgctxt "#30180"
+msgid "Single recording display"
+msgstr ""
+
+msgctxt "#30680"
+msgid "Movies and single episode TV shows display at top level"
+msgstr ""
+
+msgctxt "#30181"
+msgid "TV guide portrait format"
+msgstr ""
+
+msgctxt "#30182"
+msgid "NextPVR server %s:%d"
+msgstr ""
+
+msgctxt "#30183"
+msgid "Reset channel icon"
+msgstr ""
+
+msgctxt "#30184"
+msgid "Forget recording"
+msgstr ""
+
+msgctxt "#30185"
+msgid "Update all channels"
+msgstr ""
+
+msgctxt "#30186"
+msgid "Update all channel groups"
+msgstr ""
+
+msgctxt "#30187"
+msgid "Select NextPVR IP address"
+msgstr ""
+
+msgctxt "#30188"
+msgid "Show radio channels"
+msgstr ""
+
+msgctxt "#30688"
+msgid "Also use skin settings to control radio main menu display"
+msgstr ""
+
+msgctxt "#30189"
+msgid "Discovered host"
+msgstr ""
+
+msgctxt "#30190"
+msgid "Timeshifting disabled"
+msgstr ""
+
+msgctxt "#30191"
+msgid "%s is not enabled"
+msgstr ""
+
+msgctxt "#30192"
+msgid "%s is not installed"
+msgstr ""
+
+msgctxt "#30193"
+msgid "Show season folders"
+msgstr ""
+
+msgctxt "#30693"
+msgid "Create separate folders for multiple seasons of recordings"
+msgstr ""
+
+msgctxt "#30194"
+msgid "Use backend genre text"
+msgstr ""
+
+msgctxt "#30694"
+msgid "Kodi default is DVB genre text.  Default required for Kodi genre search and language translation"
+msgstr ""
+
+msgctxt "#30195"
+msgid "Send Wake On LAN to server"
+msgstr ""
+
+msgctxt "#30196"
+msgid "Open NextPVR settings"
+msgstr ""
+
+msgctxt "#30197"
+msgid "Show guide cast, director and writer"
+msgstr ""
+
+msgctxt "#30198"
+msgid "Display disk space"
+msgstr ""
+
+msgctxt "#30698"
+msgid "Default: Show the default drive - Span: Sum all drives"
+msgstr ""
+
+msgctxt "#30199"
+msgid "Override Kodi no timer padding default"
+msgstr ""
+
+msgctxt "#30699"
+msgid "Use NextPVR timer padding when no padding is entered"
+msgstr ""
+
+msgctxt "#30200"
+msgid "Store recording resume location in NextPVR"
+msgstr ""
+
+msgctxt "#30700"
+msgid "When disabled resume location and watched status will be managed only in Kodi"
+msgstr ""

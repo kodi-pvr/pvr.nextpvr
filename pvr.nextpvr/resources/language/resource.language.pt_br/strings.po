@@ -7,34 +7,43 @@ msgstr ""
 "Project-Id-Version: KODI Main\n"
 "Report-Msgid-Bugs-To: https://github.com/xbmc/xbmc/issues/\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Kodi Translation Team\n"
-"Language-Team: Portuguese (Brazil) (http://www.transifex.com/projects/p/kodi-main/language/pt_BR/)\n"
+"PO-Revision-Date: 2021-06-28 08:29+0000\n"
+"Last-Translator: Christian Gade <gade@kodi.tv>\n"
+"Language-Team: Portuguese (Brazil) <https://kodi.weblate.cloud/projects/kodi-add-ons-pvr-clients/pvr-nextpvr/pt_br/>\n"
+"Language: pt_br\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: pt_BR\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: Weblate 4.7\n"
 
 msgctxt "#30000"
-msgid "NextPVR Hostname"
-msgstr "Nome do servidor NextPVR"
+msgid "NextPVR hostname"
+msgstr ""
 
 msgctxt "#30001"
-msgid "NextPVR Port (usually 8866 or 7799)"
-msgstr "Porta do NextPVR (normalmente 8866 ou 7799)"
+msgid "NextPVR port (usually 8866)"
+msgstr ""
 
 msgctxt "#30002"
 msgid "NextPVR PinCode"
 msgstr "Código Pin do NextPVR"
 
 msgctxt "#30003"
-msgid "Enable TimeShift with Live TV"
-msgstr "Ativar TimeShift com TV em Direto"
+msgid "Enable timeshift with live TV"
+msgstr ""
+
+msgctxt "#30603"
+msgid "Open settings dialog for inputstream.ffmpegdirect for modification of timeshift settings"
+msgstr ""
 
 msgctxt "#30004"
-msgid "Download TV Guide Artwork"
-msgstr "Descarregar imagens do guia"
+msgid "Download TV guide artwork"
+msgstr ""
+
+msgctxt "#30504"
+msgid "Not enabled for Matrix when remote"
+msgstr ""
 
 msgctxt "#30040"
 msgid "Connection"
@@ -44,9 +53,10 @@ msgctxt "#30041"
 msgid "Advanced"
 msgstr "Avançado"
 
+# empty strings from id 30042 to 30049
 msgctxt "#30050"
-msgid "NextPVR server is too old."
-msgstr "O servidor NextPVR é muito antigo."
+msgid "NextPVR version not supported"
+msgstr ""
 
 msgctxt "#30051"
 msgid "Upgrade to '%s' or higher!"
@@ -54,7 +64,7 @@ msgstr "Atualize para a versão '%s' ou superior!"
 
 msgctxt "#30052"
 msgid "Connection failed. Incorrect PIN?"
-msgstr "Erro de ligação. PIN incorreto? "
+msgstr "Erro de ligação. PIN incorreto?"
 
 msgctxt "#30053"
 msgid "Tuner no longer available"
@@ -77,8 +87,8 @@ msgid "Repeating (guide)"
 msgstr "Repetição (guia)"
 
 msgctxt "#30144"
-msgid "Child Recording"
-msgstr "Gravação para crianças"
+msgid "Child recording"
+msgstr ""
 
 msgctxt "#30145"
 msgid "Repeating (keyword)"
@@ -145,33 +155,233 @@ msgid "NextPVR server MAC address"
 msgstr "Endereço MAC do servidor NextPVR"
 
 msgctxt "#30166"
-msgid "Failed Recordings"
-msgstr "Gravações falhadas"
+msgid "Failed recordings"
+msgstr ""
 
 msgctxt "#30167"
-msgid "Live TV Chunk Size"
-msgstr "Tamanho do pacote da TV em Direto"
+msgid "Live TV chunk size"
+msgstr ""
+
+msgctxt "#30567"
+msgid "Change chunk size for LAN performance"
+msgstr ""
 
 msgctxt "#30168"
-msgid "Recording Chunk Size"
-msgstr "Tamanho do pacote de gravação"
+msgid "Recording chunk size"
+msgstr ""
 
 msgctxt "#30169"
-msgid "Kodi Style Recordings"
-msgstr "Gravações ao estilo do Kodi"
+msgid "Kodi skin styled recordings"
+msgstr ""
+
+msgctxt "#30569"
+msgid "Separate title, season and episode for skin - season and episode numbers will not be shown in lists"
+msgstr ""
 
 msgctxt "#30170"
-msgid "Erase Channel Icons"
-msgstr "Excluir Ícones dos Canais"
+msgid "Refresh cache for channel icons"
+msgstr ""
 
 msgctxt "#30171"
 msgid "Repeating (advanced)"
 msgstr "Repetição (avançado)"
 
 msgctxt "#30172"
-msgid "Live TV Stream"
-msgstr "Stream de TV Ao Vivo"
+msgid "Live TV method"
+msgstr ""
 
 msgctxt "#30173"
-msgid "Streaming Profile"
-msgstr "Perfil de Streaming"
+msgid "Transcoding profile"
+msgstr ""
+
+msgctxt "#30174"
+msgid "Streaming options"
+msgstr ""
+
+msgctxt "#30175"
+msgid "Display and recordings"
+msgstr ""
+
+msgctxt "#30176"
+msgid "Enable direct streams"
+msgstr ""
+
+msgctxt "#30177"
+msgid "Use legacy (V4) setting"
+msgstr ""
+
+msgctxt "#30178"
+msgid "Include filesize with recordings"
+msgstr ""
+
+msgctxt "#30678"
+msgid "Use file system to get the recording size if available"
+msgstr ""
+
+msgctxt "#30179"
+msgid "Remote access"
+msgstr ""
+
+msgctxt "#30180"
+msgid "Single recording display"
+msgstr ""
+
+msgctxt "#30680"
+msgid "Movies and single episode TV shows display at top level"
+msgstr ""
+
+msgctxt "#30181"
+msgid "TV guide portrait format"
+msgstr ""
+
+msgctxt "#30182"
+msgid "NextPVR server %s:%d"
+msgstr ""
+
+msgctxt "#30183"
+msgid "Reset channel icon"
+msgstr ""
+
+msgctxt "#30184"
+msgid "Forget recording"
+msgstr ""
+
+msgctxt "#30185"
+msgid "Update all channels"
+msgstr ""
+
+msgctxt "#30186"
+msgid "Update all channel groups"
+msgstr ""
+
+msgctxt "#30187"
+msgid "Select NextPVR IP address"
+msgstr ""
+
+msgctxt "#30188"
+msgid "Show radio channels"
+msgstr ""
+
+msgctxt "#30688"
+msgid "Also use skin settings to control radio main menu display"
+msgstr ""
+
+msgctxt "#30189"
+msgid "Discovered host"
+msgstr ""
+
+msgctxt "#30190"
+msgid "Timeshifting disabled"
+msgstr ""
+
+msgctxt "#30191"
+msgid "%s is not enabled"
+msgstr ""
+
+msgctxt "#30192"
+msgid "%s is not installed"
+msgstr ""
+
+msgctxt "#30193"
+msgid "Show season folders"
+msgstr ""
+
+msgctxt "#30693"
+msgid "Create separate folders for multiple seasons of recordings"
+msgstr ""
+
+msgctxt "#30194"
+msgid "Use backend genre text"
+msgstr ""
+
+msgctxt "#30694"
+msgid "Kodi default is DVB genre text.  Default required for Kodi genre search and language translation"
+msgstr ""
+
+msgctxt "#30195"
+msgid "Send Wake On LAN to server"
+msgstr ""
+
+msgctxt "#30196"
+msgid "Open NextPVR settings"
+msgstr ""
+
+msgctxt "#30197"
+msgid "Show guide cast, director and writer"
+msgstr ""
+
+msgctxt "#30198"
+msgid "Display disk space"
+msgstr ""
+
+msgctxt "#30698"
+msgid "Default: Show the default drive - Span: Sum all drives"
+msgstr ""
+
+msgctxt "#30199"
+msgid "Override Kodi no timer padding default"
+msgstr ""
+
+msgctxt "#30699"
+msgid "Use NextPVR timer padding when no padding is entered"
+msgstr ""
+
+msgctxt "#30200"
+msgid "Store recording resume location in NextPVR"
+msgstr ""
+
+msgctxt "#30700"
+msgid "When disabled resume location and watched status will be managed only in Kodi"
+msgstr ""
+
+#~ msgctxt "#30000"
+#~ msgid "NextPVR Hostname"
+#~ msgstr "Nome do servidor NextPVR"
+
+#~ msgctxt "#30001"
+#~ msgid "NextPVR Port (usually 8866 or 7799)"
+#~ msgstr "Porta do NextPVR (normalmente 8866 ou 7799)"
+
+#~ msgctxt "#30003"
+#~ msgid "Enable TimeShift with Live TV"
+#~ msgstr "Ativar TimeShift com TV em Direto"
+
+#~ msgctxt "#30004"
+#~ msgid "Download TV Guide Artwork"
+#~ msgstr "Descarregar imagens do guia"
+
+#~ msgctxt "#30050"
+#~ msgid "NextPVR server is too old."
+#~ msgstr "O servidor NextPVR é muito antigo."
+
+#~ msgctxt "#30144"
+#~ msgid "Child Recording"
+#~ msgstr "Gravação para crianças"
+
+#~ msgctxt "#30166"
+#~ msgid "Failed Recordings"
+#~ msgstr "Gravações falhadas"
+
+#~ msgctxt "#30167"
+#~ msgid "Live TV Chunk Size"
+#~ msgstr "Tamanho do pacote da TV em Direto"
+
+#~ msgctxt "#30168"
+#~ msgid "Recording Chunk Size"
+#~ msgstr "Tamanho do pacote de gravação"
+
+#~ msgctxt "#30169"
+#~ msgid "Kodi Style Recordings"
+#~ msgstr "Gravações ao estilo do Kodi"
+
+#~ msgctxt "#30170"
+#~ msgid "Erase Channel Icons"
+#~ msgstr "Excluir Ícones dos Canais"
+
+#~ msgctxt "#30172"
+#~ msgid "Live TV Stream"
+#~ msgstr "Stream de TV Ao Vivo"
+
+#~ msgctxt "#30173"
+#~ msgid "Streaming Profile"
+#~ msgstr "Perfil de Streaming"
