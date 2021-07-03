@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon
   id="pvr.nextpvr"
-  version="8.2.3"
+  version="8.2.4"
   name="NextPVR PVR Client"
   provider-name="Graeme Blackley">
   <requires>@ADDON_DEPENDS@
@@ -177,5 +177,9 @@
     <assets>
       <icon>icon.png</icon>
     </assets>
+    <news>
+v8.2.4
+- Language update from Weblate
+    </news>
   </extension>
 </addon>
