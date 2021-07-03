@@ -1,3 +1,6 @@
+v8.2.4
+- Language update from Weblate
+
 v8.2.3
 - Add directory for pending recordings server API update
 
