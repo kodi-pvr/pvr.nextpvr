@@ -793,7 +793,7 @@ bool cPVRClientNextPVR::IsServerStreaming()
   {
     return true;
   }
-  kodi::Log(ADDON_LOG_ERROR, "Unknown streaming state %d %d %d %d", m_nowPlaying, m_recordingBuffer->GetDuration(), !m_livePlayer);
+  kodi::Log(ADDON_LOG_ERROR, "Unknown streaming state %d %d %d", m_nowPlaying, m_recordingBuffer->GetDuration(), !m_livePlayer);
   return false;
 }
 

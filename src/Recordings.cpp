@@ -420,7 +420,7 @@ bool Recordings::ParseNextPVRSubtitle(const tinyxml2::XMLNode *pRecordingNode, k
   bool hasSeasonEpisode = false;
   if (XMLUtils::GetString(pRecordingNode, "subtitle", buffer))
   {
-    std::regex base_regex("S(\\d\\d)E(\\d+) - ?(.+)?");
+    std::regex base_regex("S(\\d{2,4})E(\\d+) - ?(.+)?");
     std::smatch base_match;
     // note NextPVR does not support S0 for specials
     if (std::regex_match(buffer, base_match, base_regex))
@@ -454,7 +454,7 @@ bool Recordings::ParseNextPVRSubtitle(const tinyxml2::XMLNode *pRecordingNode, k
     std::string recordingFile;
     if (XMLUtils::GetString(pRecordingNode, "file", recordingFile))
     {
-      std::regex base_regex("S(\\d\\d)E(\\d+)");
+      std::regex base_regex("S(\\d{2,4})E(\\d+)");
       std::smatch base_match;
       if (std::regex_search(recordingFile, base_match, base_regex))
       {
