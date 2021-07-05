@@ -177,9 +177,5 @@
     <assets>
       <icon>icon.png</icon>
     </assets>
-    <news>
-v8.2.4
-- Language update from Weblate
-    </news>
   </extension>
 </addon>
