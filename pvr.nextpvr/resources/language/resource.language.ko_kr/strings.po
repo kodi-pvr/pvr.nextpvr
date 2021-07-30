@@ -16,6 +16,18 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
+msgctxt "Addon Summary"
+msgid "Kodi frontend for the NextPVR"
+msgstr "NextPVR을 위한 Kodi 프론트엔드"
+
+msgctxt "Addon Description"
+msgid "NextPVR frontend. Supports streaming of Live TV &amp; Recordings, listening to Radio channels and EPG."
+msgstr "NextPVR 프론트엔드. 라이브 TV 스트리밍과 녹화, 라디오 청취, EPG를 지원합니다."
+
+msgctxt "Addon Disclaimer"
+msgid "This is a work in progress. Use at your own risk."
+msgstr "아직 개발 진행중입니다. 부족한 부분이 있을 수 있습니다."
+
 msgctxt "#30000"
 msgid "NextPVR hostname"
 msgstr ""

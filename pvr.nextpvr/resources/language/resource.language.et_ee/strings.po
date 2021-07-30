@@ -16,6 +16,18 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+msgctxt "Addon Summary"
+msgid "Kodi frontend for the NextPVR"
+msgstr "Kodi liides NextPVR'ile"
+
+msgctxt "Addon Description"
+msgid "NextPVR frontend. Supports streaming of Live TV &amp; Recordings, listening to Radio channels and EPG."
+msgstr "NextPVR'i liides. Toetab telekanalite striimimist ja salvestamist, raadio kuulamist ja elektroonilist saatekava."
+
+msgctxt "Addon Disclaimer"
+msgid "This is a work in progress. Use at your own risk."
+msgstr "See on pooleliolev töö. Kasutada omal vastutusel."
+
 msgctxt "#30000"
 msgid "NextPVR hostname"
 msgstr ""

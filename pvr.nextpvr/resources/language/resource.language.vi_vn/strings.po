@@ -16,6 +16,18 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
+msgctxt "Addon Summary"
+msgid "Kodi frontend for the NextPVR"
+msgstr "Giao tiếp Kodi cho NextPVR"
+
+msgctxt "Addon Description"
+msgid "NextPVR frontend. Supports streaming of Live TV &amp; Recordings, listening to Radio channels and EPG."
+msgstr "Giao tiếp NextPVR. Hỗ trợ truyền phát và thu chương trình Live TV, nghe Radio và hiển thị lịch trình chiếu (EPG)."
+
+msgctxt "Addon Disclaimer"
+msgid "This is a work in progress. Use at your own risk."
+msgstr "Đây là bản thử nghiệm. Bạn phải tự chịu trách nhiệm với nó"
+
 msgctxt "#30000"
 msgid "NextPVR hostname"
 msgstr ""

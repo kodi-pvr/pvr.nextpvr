@@ -17,6 +17,18 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 4.6\n"
 
+msgctxt "Addon Summary"
+msgid "Kodi frontend for the NextPVR"
+msgstr "Kodi frontend til NextPVR"
+
+msgctxt "Addon Description"
+msgid "NextPVR frontend. Supports streaming of Live TV &amp; Recordings, listening to Radio channels and EPG."
+msgstr "NextPVR frontend; understøtter streaming af direkte tv og optagelser, aflytning af radiokanaler og EPG."
+
+msgctxt "Addon Disclaimer"
+msgid "This is a work in progress. Use at your own risk."
+msgstr "Dette er igangværende arbejde. Benyttes på eget ansvar."
+
 msgctxt "#30000"
 msgid "NextPVR hostname"
 msgstr ""

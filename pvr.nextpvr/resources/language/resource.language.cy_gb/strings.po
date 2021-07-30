@@ -16,6 +16,18 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n==2) ? 1 : (n != 8 && n != 11) ? 2 : 3;\n"
 
+msgctxt "Addon Summary"
+msgid "Kodi frontend for the NextPVR"
+msgstr "Blaen Kodi ar gyfer NextPVR"
+
+msgctxt "Addon Description"
+msgid "NextPVR frontend. Supports streaming of Live TV &amp; Recordings, listening to Radio channels and EPG."
+msgstr "Blaen NextPVR. Mae'n cynnal ffrydio Teledu Byw a Recordiadau, gwrando ar sianeli Radio ac Amserlenni Rhaglenni Electronig."
+
+msgctxt "Addon Disclaimer"
+msgid "This is a work in progress. Use at your own risk."
+msgstr "Gwaith ar y gweill ydy hwn. Defnyddiwch er eich risg eich hun."
+
 msgctxt "#30000"
 msgid "NextPVR hostname"
 msgstr ""
