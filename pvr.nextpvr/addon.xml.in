@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon
   id="pvr.nextpvr"
-  version="8.2.5"
+  version="8.2.6"
   name="NextPVR PVR Client"
   provider-name="Graeme Blackley">
   <requires>@ADDON_DEPENDS@

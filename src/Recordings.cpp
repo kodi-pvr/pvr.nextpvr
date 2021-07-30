@@ -602,11 +602,20 @@ PVR_ERROR Recordings::GetRecordingEdl(const kodi::addon::PVRRecording& recording
   tinyxml2::XMLDocument doc;
   if (m_request.DoMethodRequest(request, doc) == tinyxml2::XML_SUCCESS)
   {
-    int index = 0;
+    int numEDL = 0;
     tinyxml2::XMLNode* commercialsNode = doc.RootElement()->FirstChildElement("commercials");
     tinyxml2::XMLNode* pCommercialNode;
     for (pCommercialNode = commercialsNode->FirstChildElement("commercial"); pCommercialNode; pCommercialNode = pCommercialNode->NextSiblingElement())
     {
+      if (numEDL++ == PVR_ADDON_EDL_LENGTH)
+      {
+        /* PVR core stores EDL breaks in a hard-coded array in PVRClient.cpp PVR_EDL_ENTRY edl_array[PVR_ADDON_EDL_LENGTH];
+        * currently https://github.com/xbmc/xbmc/blob/master/xbmc/pvr/addons/PVRClient.cpp#L1056
+        * This check avoids overflowing this arrray */
+         
+        kodi::Log(ADDON_LOG_WARNING, "Maximum EDL entries reached");
+        break;
+      }
       kodi::addon::PVREDLEntry entry;
       std::string buffer;
       XMLUtils::GetString(pCommercialNode, "start", buffer);
