@@ -412,9 +412,12 @@ PVR_ERROR Timers::GetTimerTypes(std::vector<kodi::addon::PVRTimerType>& types)
 
   /* PVR_Timer.iRecordingGroup values and presentation */
   static std::vector<kodi::addon::PVRTypeIntValue> recordingGroupValues;
-  for (unsigned int i = 0; i < m_settings.m_recordingDirectories.size(); ++i)
+  if (recordingGroupValues.size() == 0)
   {
-    recordingGroupValues.emplace_back(kodi::addon::PVRTypeIntValue(i, m_settings.m_recordingDirectories[i]));
+    for (unsigned int i = 0; i < m_settings.m_recordingDirectories.size(); ++i)
+    {
+      recordingGroupValues.emplace_back(kodi::addon::PVRTypeIntValue(i, m_settings.m_recordingDirectories[i]));
+    }
   }
 
   static const unsigned int TIMER_MANUAL_ATTRIBS

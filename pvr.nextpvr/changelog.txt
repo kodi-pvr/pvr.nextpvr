@@ -1,3 +1,6 @@
+v8.2.7
+- Check if recording groups have already been added
+
 v8.2.6
 - Kodi has a limit of 32 EDL breaks in PVR
 
