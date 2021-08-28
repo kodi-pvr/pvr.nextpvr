@@ -1,3 +1,7 @@
+v8.2.8
+- Use recording size available in NextPVR API 5.2
+- Create radio groups using API 5.2
+
 v8.2.7
 - Check if recording groups have already been added
 
