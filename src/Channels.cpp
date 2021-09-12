@@ -91,6 +91,11 @@ PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& r
       ++itr;
   }
 
+  if (radio)
+    m_radioGroups.clear();
+  else
+    m_tvGroups.clear();
+
   tinyxml2::XMLDocument doc;
   if (m_request.DoMethodRequest("channel.list&extras=true", doc) == tinyxml2::XML_SUCCESS)
   {
@@ -139,6 +144,19 @@ PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& r
           tag.SetIconPath(iconFile);
       }
 
+      buffer.clear();
+      if (XMLUtils::GetAdditiveString(pChannelNode->FirstChildElement("groups"), "group", "\t", buffer, true))
+      {
+        std::vector<std::string> groups = kodi::tools::StringUtils::Split(buffer, '\t');
+        for(auto const& group : groups)
+        {
+          if (!radio && m_tvGroups.find(group) == m_tvGroups.end())
+            m_tvGroups.insert(group);
+          else if (radio && m_radioGroups.find(group) == m_radioGroups.end())
+            m_radioGroups.insert(group);
+        }
+      }
+
       // V5 has the EPG source type info.
       std::string epg;
       if (XMLUtils::GetString(pChannelNode, "epg", epg))
@@ -184,9 +202,23 @@ PVR_RECORDING_CHANNEL_TYPE Channels::GetChannelType(unsigned int uid)
 
 PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsResultSet& results)
 {
-  // nextpvr doesn't have a separate concept of radio channel groups
-  if (radio)
+  // radioGroups.size() will be zero before 5.2 API
+  if (radio && m_radioGroups.size() == 0)
     return PVR_ERROR_NO_ERROR;
+
+  if (m_settings.m_backendVersion >= 50200)
+  {
+    // empty groups will not be added
+    for (auto const& group : radio ? m_radioGroups : m_tvGroups)
+    {
+      kodi::addon::PVRChannelGroup tag;
+      tag.SetIsRadio(radio);
+      tag.SetPosition(0);
+      tag.SetGroupName(group);
+      results.Add(tag);
+    }
+    return PVR_ERROR_NO_ERROR;
+  }
 
   // for tv, use the groups returned by nextpvr
   tinyxml2::XMLDocument doc;
@@ -197,7 +229,7 @@ PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsRe
     for (pGroupNode = groupsNode->FirstChildElement("group"); pGroupNode; pGroupNode = pGroupNode->NextSiblingElement())
     {
       kodi::addon::PVRChannelGroup tag;
-      tag.SetIsRadio(false);
+      tag.SetIsRadio(radio);
       tag.SetPosition(0); // groups default order, unused
       std::string group;
       if (XMLUtils::GetString(pGroupNode, "name", group))
@@ -228,14 +260,19 @@ PVR_ERROR Channels::GetChannelGroupMembers(const kodi::addon::PVRChannelGroup& g
   {
     tinyxml2::XMLNode* channelsNode = doc.RootElement()->FirstChildElement("channels");
     tinyxml2::XMLNode* pChannelNode;
-    for( pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode=pChannelNode->NextSiblingElement())
+    for (pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode = pChannelNode->NextSiblingElement())
     {
       kodi::addon::PVRChannelGroupMember tag;
-      tag.SetGroupName(group.GetGroupName());
       tag.SetChannelUniqueId(XMLUtils::GetUIntValue(pChannelNode, "id"));
-      tag.SetChannelNumber(XMLUtils::GetUIntValue(pChannelNode, "number"));
-      tag.SetSubChannelNumber(XMLUtils::GetUIntValue(pChannelNode, "minor"));
-      results.Add(tag);
+      // ignore orphan channels in groups
+      if (m_channelDetails.find(tag.GetChannelUniqueId()) != m_channelDetails.end()
+        && group.GetIsRadio() == m_channelDetails[tag.GetChannelUniqueId()].second)
+      {
+        tag.SetGroupName(group.GetGroupName());
+        tag.SetChannelNumber(XMLUtils::GetUIntValue(pChannelNode, "number"));
+        tag.SetSubChannelNumber(XMLUtils::GetUIntValue(pChannelNode, "minor"));
+        results.Add(tag);
+      }
     }
   }
   return PVR_ERROR_NO_ERROR;

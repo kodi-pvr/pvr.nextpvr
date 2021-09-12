@@ -344,7 +344,12 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
   std::string recordingFile;
   if (XMLUtils::GetString(pRecordingNode, "file", recordingFile))
   {
-    if (m_settings.m_showRecordingSize)
+    int64_t filesize = 0;
+    if (XMLUtils::GetLong(pRecordingNode, "size", filesize))
+    {
+      tag.SetSizeInBytes(filesize);
+    }
+    else if (m_settings.m_showRecordingSize)
     {
       kodi::tools::StringUtils::Replace(recordingFile, '\\', '/');
       if (kodi::tools::StringUtils::StartsWith(recordingFile, "//"))

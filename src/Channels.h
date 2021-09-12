@@ -11,6 +11,7 @@
 
 #include "BackendRequest.h"
 #include <kodi/addon-instance/PVR.h>
+#include <set>
 
 namespace NextPVR
 {
@@ -44,6 +45,8 @@ namespace NextPVR
     void DeleteChannelIcons();
     PVR_RECORDING_CHANNEL_TYPE GetChannelType(unsigned int uid);
     std::map<int, std::pair<bool, bool>> m_channelDetails;
+    std::set<std::string> m_tvGroups;
+    std::set<std::string> m_radioGroups;
 
   private:
     Channels() = default;
