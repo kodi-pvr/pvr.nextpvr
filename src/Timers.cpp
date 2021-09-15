@@ -659,7 +659,7 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
 
   int marginStart = timer.GetMarginStart();
   int marginEnd = timer.GetMarginEnd();
-  if (m_settings.m_ignorePadding && timer.GetClientIndex() == PVR_TIMER_NO_CLIENT_INDEX && marginStart == 0 && marginStart == 0)
+  if (m_settings.m_ignorePadding && timer.GetClientIndex() == PVR_TIMER_NO_CLIENT_INDEX && marginStart == 0 && marginEnd == 0)
   {
     marginStart = m_settings.m_defaultPrePadding;
     marginEnd = m_settings.m_defaultPostPadding;
