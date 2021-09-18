@@ -19,7 +19,6 @@
       <icon>icon.png</icon>
     </assets>
     <summary lang="af_ZA">Kodi voorprogram vir die NextPVR</summary>
-    <summary lang="be_BY">Kodi frontend for the NextPVR</summary>
     <summary lang="bg_BG">Клиент за „NextPVR“</summary>
     <summary lang="ca_ES">Frontal de Kodi per a NextPVR</summary>
     <summary lang="cs_CZ">Rozhraní Kodi pro NextPVR</summary>
@@ -72,7 +71,6 @@
     <summary lang="zh_CN">Kodi 的 NextPVR 前端</summary>
     <summary lang="zh_TW">NextPVR的Kodi前端</summary>
     <description lang="af_ZA">NextPVR voorprogram. Ondersteun stroom van Lewendige TV &amp; Opnames, luister na Radio kanale en EPG.</description>
-    <description lang="be_BY">NextPVR frontend. Supports streaming of Live TV &amp; Recordings, listening to Radio channels and EPG.</description>
     <description lang="bg_BG">Клиент за „NextPVR“. Поддържа телевизия на живо и записване, слушане на радио канали и електронен програмен справочник.</description>
     <description lang="ca_ES">Frontal de NextPVR. És compatible amb les transmissions en línia de TV en directe i enregistraments, escolta d'emissores de ràdio i guia electrònica de programació (EPG).</description>
     <description lang="cs_CZ">Rozhraní NextPVR. Podporuje streamování živého vysílání a nahrávek, poslech kanálů rádia a televizní program.</description>
@@ -125,7 +123,6 @@
     <description lang="zh_CN">NextPVR 前端。支持直播电视和录像流媒体、收听电台和电子节目单。</description>
     <description lang="zh_TW">NextPVR前端。支援的串流媒體包括有：直播電視和錄影，收聽廣播頻道和電子節目表。</description>
     <disclaimer lang="af_ZA">Hierdie is werk in vordering. Gebruik op jou eie risiko.</disclaimer>
-    <disclaimer lang="be_BY">This is a work in progress. Use at your own risk.</disclaimer>
     <disclaimer lang="bg_BG">Разработката на програмата не е завършена. Ползвайте на своя отговорност.</disclaimer>
     <disclaimer lang="ca_ES">Això és un treball en curs. Utilitzeu-lo sota la vostra responsabilitat.</disclaimer>
     <disclaimer lang="cs_CZ">Práce na tomto rozhraní stále probíhají. Používejte na vlastní nebezpečí.</disclaimer>
