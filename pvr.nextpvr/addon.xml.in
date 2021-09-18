@@ -11,6 +11,13 @@
     point="kodi.pvrclient"
     library_@PLATFORM@="@LIBRARY_FILENAME@"/>
   <extension point="xbmc.addon.metadata">
+    <platform>@PLATFORM@</platform>
+    <license>GPL-2.0-or-later</license>
+    <source>https://github.com/kodi-pvr/pvr.nextpvr</source>
+    <forum>https://forum.kodi.tv/forumdisplay.php?fid=175</forum>
+    <assets>
+      <icon>icon.png</icon>
+    </assets>
     <summary lang="af_ZA">Kodi voorprogram vir die NextPVR</summary>
     <summary lang="be_BY">Kodi frontend for the NextPVR</summary>
     <summary lang="bg_BG">Клиент за „NextPVR“</summary>
@@ -82,7 +89,7 @@
     <description lang="es_MX">NextPVR frontend. Soporta transmisión de TV en directo y Grabaciones, escuchando canales de Radio y EPG.</description>
     <description lang="et_EE">NextPVR'i liides. Toetab telekanalite striimimist ja salvestamist, raadio kuulamist ja elektroonilist saatekava.</description>
     <description lang="fi_FI">NextPVR-asiakasohjelma. Tukee suorien tv-lähetysten ja tallennusten katsomista, radiokanavia, ohjelmaopasta ja ohjelmien ajastamista.</description>
-    <description lang="fr_CA">Frontale de numériscope pour NextPVR, prenant en charge la diffusion en continu des télés en direct  et les enregistrements, l’écoute de chaînes radio, et le GÉP.</description>
+    <description lang="fr_CA">Frontale de numériscope pour NextPVR, prenant en charge la diffusion en continu des télés en direct et les enregistrements, l’écoute de chaînes radio, et le GÉP.</description>
     <description lang="fr_FR">Interface logicielle pour l'enregistreur vidéo (PVR) NextPVR. Gère la diffusion de la TV en direct et des enregistrements en direct, l'écoute de chaînes de radios et le guide électronique des programmes TV.</description>
     <description lang="gl_ES">Interface de NextPVR. Compatíbel coa transmisión de TV en directo, gravacións, escoita de canles de radio e Guía.</description>
     <description lang="he_IL">לקוח טלוויזיה חיה של NextPVR. תומך בהזרמת שידורים חיים והקלטות, האזנה לרדיו, הצגת לוח שידורים ותזמון הקלטות.</description>
@@ -170,12 +177,5 @@
     <disclaimer lang="vi_VN">Đây là bản thử nghiệm. Bạn phải tự chịu trách nhiệm với nó</disclaimer>
     <disclaimer lang="zh_CN">此插件仍在开发中，请自行把握试用风险。</disclaimer>
     <disclaimer lang="zh_TW">這個程式尚在開發中。使用上您須自行考慮到可能有的風險。</disclaimer>
-    <platform>@PLATFORM@</platform>
-    <license>GPL-2.0-or-later</license>
-    <source>https://github.com/kodi-pvr/pvr.nextpvr</source>
-    <forum>https://forum.kodi.tv/forumdisplay.php?fid=175</forum>
-    <assets>
-      <icon>icon.png</icon>
-    </assets>
   </extension>
 </addon>
