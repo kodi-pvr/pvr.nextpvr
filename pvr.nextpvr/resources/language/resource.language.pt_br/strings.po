@@ -17,6 +17,18 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
 "X-Generator: Weblate 4.7\n"
 
+msgctxt "Addon Summary"
+msgid "Kodi frontend for the NextPVR"
+msgstr "Interface Kodi para NextPVR"
+
+msgctxt "Addon Description"
+msgid "NextPVR frontend. Supports streaming of Live TV &amp; Recordings, listening to Radio channels and EPG."
+msgstr "Interface NextPVR. Suporta transmissão de TV em Direto, gravações, estações de rádio e EPG."
+
+msgctxt "Addon Disclaimer"
+msgid "This is a work in progress. Use at your own risk."
+msgstr "Este é um trabalho em curso. Use-o por sua conta e risco."
+
 msgctxt "#30000"
 msgid "NextPVR hostname"
 msgstr ""
@@ -295,7 +307,7 @@ msgid "Use backend genre text"
 msgstr ""
 
 msgctxt "#30694"
-msgid "Kodi default is DVB genre text.  Default required for Kodi genre search and language translation"
+msgid "Kodi default is DVB genre text. Default required for Kodi genre search and language translation"
 msgstr ""
 
 msgctxt "#30195"

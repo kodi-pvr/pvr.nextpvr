@@ -16,6 +16,18 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+msgctxt "Addon Summary"
+msgid "Kodi frontend for the NextPVR"
+msgstr "Frontend Kodi per NextPVR"
+
+msgctxt "Addon Description"
+msgid "NextPVR frontend. Supports streaming of Live TV &amp; Recordings, listening to Radio channels and EPG."
+msgstr "Frontend NextPVR. Supporta lo streaming di Live TV, le Registrazioni, l'ascolto dei Canali Radio e l'EPG."
+
+msgctxt "Addon Disclaimer"
+msgid "This is a work in progress. Use at your own risk."
+msgstr "Questo è un lavoro in corso d'opera. Utilizzalo a tuo rischio e pericolo."
+
 msgctxt "#30000"
 msgid "NextPVR hostname"
 msgstr ""
@@ -294,7 +306,7 @@ msgid "Use backend genre text"
 msgstr ""
 
 msgctxt "#30694"
-msgid "Kodi default is DVB genre text.  Default required for Kodi genre search and language translation"
+msgid "Kodi default is DVB genre text. Default required for Kodi genre search and language translation"
 msgstr ""
 
 msgctxt "#30195"
