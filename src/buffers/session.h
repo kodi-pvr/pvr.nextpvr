@@ -1,7 +1,6 @@
 /*
- *  Copyright (C) 2020 Team Kodi
+ *  Copyright (C) 2020-2021 Team Kodi (https://kodi.tv)
  *  Copyright (C) 2017 Mike Burgett
- *  https://kodi.tv
  *
  *  SPDX-License-Identifier: GPL-2.0-or-later
  *  See LICENSE.md for more information.
