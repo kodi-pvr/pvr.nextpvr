@@ -963,6 +963,7 @@ PVR_ERROR cPVRClientNextPVR::GetCapabilities(kodi::addon::PVRCapabilities& capab
 
   capabilities.SetSupportsEPG(true);
   capabilities.SetSupportsRecordings(true);
+  capabilities.SetSupportsRecordingsDelete(true);
   capabilities.SetSupportsRecordingsUndelete(false);
   capabilities.SetSupportsRecordingSize(m_settings.m_showRecordingSize);
   capabilities.SetSupportsTimers(true);
