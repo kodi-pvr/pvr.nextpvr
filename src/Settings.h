@@ -33,7 +33,7 @@ namespace NextPVR
   };
 
   const static std::string PVRCLIENT_NEXTPVR_VERSION_STRING = "1.0.0.0";
-  constexpr char NEXTPVRC_MIN_VERSION_STRING[] = "4.2.4";
+  constexpr char NEXTPVRC_MIN_VERSION_STRING[] = "5.2.0";
   const static std::string DEFAULT_PROTOCOL = "http";
   const static std::string DEFAULT_HOST = "127.0.0.1";
   constexpr int DEFAULT_PORT = 8866;
