@@ -107,6 +107,7 @@ public:
   time_t m_lastRecordingUpdateTime;
   time_t m_nextServerCheck = 0;
   time_t m_lastEPGUpdateTime = 0;
+  eNowPlaying m_nowPlaying = NotPlaying;
 
   PVR_ERROR GetCapabilities(kodi::addon::PVRCapabilities& capabilities) override;
 
@@ -163,7 +164,6 @@ private:
   NextPVR::Settings& m_settings = NextPVR::Settings::GetInstance();
   NextPVR::Request& m_request = NextPVR::Request::GetInstance();
 
-  eNowPlaying m_nowPlaying = NotPlaying;
   void SetConnectionState(std::string message, PVR_CONNECTION_STATE state, std::string displayMessage = "");
   PVR_CONNECTION_STATE m_connectionState = PVR_CONNECTION_STATE_UNKNOWN;
   PVR_CONNECTION_STATE m_coreState = PVR_CONNECTION_STATE_UNKNOWN;

@@ -216,6 +216,7 @@ PVR_ERROR Timers::GetTimers(kodi::addon::PVRTimersResultSet& results)
       results.Add(tag);
     }
     // next add the one-off recordings.
+    bool isRecordingUpdated = false;
     doc.Clear();
     if (m_request.DoMethodRequest("recording.list&filter=pending", doc) == tinyxml2::XML_SUCCESS)
     {
@@ -226,24 +227,33 @@ PVR_ERROR Timers::GetTimers(kodi::addon::PVRTimersResultSet& results)
         UpdatePvrTimer(pRecordingNode, tag);
         // pass timer to xbmc
         timerCount++;
+        if (tag.GetState() == PVR_TIMER_STATE_RECORDING)
+          isRecordingUpdated = true;
         results.Add(tag);
       }
     }
     doc.Clear();
     if (m_request.DoMethodRequest("recording.list&filter=conflict", doc) == tinyxml2::XML_SUCCESS)
     {
-      tinyxml2::XMLNode* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
-      for (tinyxml2::XMLNode* pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
-      {
-        kodi::addon::PVRTimer tag;
-        UpdatePvrTimer(pRecordingNode, tag);
-        // pass timer to xbmc
-        timerCount++;
-        results.Add(tag);
-      }
-      m_iTimerCount = timerCount;
+     tinyxml2::XMLNode* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
+     for (tinyxml2::XMLNode* pRecordingNode = recordingsNode->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
+     {
+       kodi::addon::PVRTimer tag;
+       UpdatePvrTimer(pRecordingNode, tag);
+       // pass timer to xbmc
+       timerCount++;
+       results.Add(tag);
+     }
+     m_iTimerCount = timerCount;
     }
-    m_lastTimerUpdateTime = time(nullptr);
+
+    if (isRecordingUpdated) {
+      g_pvrclient->TriggerRecordingUpdate();
+      m_lastTimerUpdateTime = time(nullptr);
+    } else if (g_pvrclient->m_nowPlaying == NotPlaying)
+      m_lastTimerUpdateTime = time(nullptr);
+    // else unknown recording state during playback
+
   }
   else
   {
@@ -830,6 +840,7 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
       g_pvrclient->TriggerRecordingUpdate();
 
     g_pvrclient->TriggerTimerUpdate();
+
     return PVR_ERROR_NO_ERROR;
   }
 
