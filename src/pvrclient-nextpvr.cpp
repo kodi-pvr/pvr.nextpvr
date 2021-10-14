@@ -981,5 +981,6 @@ PVR_ERROR cPVRClientNextPVR::GetCapabilities(kodi::addon::PVRCapabilities& capab
   capabilities.SetSupportsRecordingsLifetimeChange(false);
   capabilities.SetSupportsDescrambleInfo(false);
   capabilities.SetSupportsRecordingPlayCount(m_settings.m_backendResume);
+  capabilities.SetSupportsProviders(false);
   return PVR_ERROR_NO_ERROR;
 }
