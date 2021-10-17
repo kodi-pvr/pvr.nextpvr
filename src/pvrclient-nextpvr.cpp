@@ -409,15 +409,17 @@ PVR_ERROR cPVRClientNextPVR::OnSystemSleep()
 {
   m_bConnected = false;
   m_lastRecordingUpdateTime = std::numeric_limits<time_t>::max();
+  m_nextServerCheck = std::numeric_limits<time_t>::max();
   m_connectionState = PVR_CONNECTION_STATE_DISCONNECTED;
   return PVR_ERROR_NO_ERROR;
 }
 
 PVR_ERROR cPVRClientNextPVR::OnSystemWake()
 {
+  kodi::Log(ADDON_LOG_DEBUG, "NextPVR wake");
   // allow time for core to reset
   m_lastRecordingUpdateTime = time(nullptr) + 60;
-
+  m_nextServerCheck = 0;
   // don't trigger updates core does it
   SetConnectionState("Reconnect", PVR_CONNECTION_STATE_UNKNOWN);
 
@@ -979,5 +981,6 @@ PVR_ERROR cPVRClientNextPVR::GetCapabilities(kodi::addon::PVRCapabilities& capab
   capabilities.SetSupportsRecordingsLifetimeChange(false);
   capabilities.SetSupportsDescrambleInfo(false);
   capabilities.SetSupportsRecordingPlayCount(m_settings.m_backendResume);
+  capabilities.SetSupportsProviders(false);
   return PVR_ERROR_NO_ERROR;
 }

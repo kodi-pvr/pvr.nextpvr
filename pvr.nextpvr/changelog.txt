@@ -1,3 +1,11 @@
+v20.1.1
+- Block access for v4 backend users
+- Don't try and reconnect server after sleep announced
+- Handle situations where Kodi requests timer updates without a recording update
+- Document no provider support
+- Remove EDL limit check
+- Support new API XML to get recording specific art
+
 v20.1.0
 - Kodi API to 8.0.0
   - Add supports recordings delete capability

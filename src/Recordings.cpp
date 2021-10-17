@@ -388,10 +388,17 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
     }
     else
     {
-      if (m_settings.m_sendSidWithMetadata)
-        artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_urlBase, m_request.GetSID(), UriEncode(title).c_str());
+      std::string name;
+      buffer.clear();
+      if (XMLUtils::GetString(pRecordingNode, "group", buffer))
+          name = UriEncode(buffer);
       else
-        artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&name=%s", m_settings.m_urlBase, UriEncode(title).c_str());
+          name = UriEncode(title);
+
+      if (m_settings.m_sendSidWithMetadata)
+        artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_urlBase, m_request.GetSID(), name.c_str());
+      else
+        artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&name=%s", m_settings.m_urlBase, name.c_str());
       tag.SetFanartPath(artworkPath);
       artworkPath += "&prefer=poster";
       tag.SetThumbnailPath(artworkPath);
@@ -606,20 +613,10 @@ PVR_ERROR Recordings::GetRecordingEdl(const kodi::addon::PVRRecording& recording
   tinyxml2::XMLDocument doc;
   if (m_request.DoMethodRequest(request, doc) == tinyxml2::XML_SUCCESS)
   {
-    int numEDL = 0;
     tinyxml2::XMLNode* commercialsNode = doc.RootElement()->FirstChildElement("commercials");
     tinyxml2::XMLNode* pCommercialNode;
     for (pCommercialNode = commercialsNode->FirstChildElement("commercial"); pCommercialNode; pCommercialNode = pCommercialNode->NextSiblingElement())
     {
-      if (numEDL++ == PVR_ADDON_EDL_LENGTH)
-      {
-        /* PVR core stores EDL breaks in a hard-coded array in PVRClient.cpp PVR_EDL_ENTRY edl_array[PVR_ADDON_EDL_LENGTH];
-        * currently https://github.com/xbmc/xbmc/blob/master/xbmc/pvr/addons/PVRClient.cpp#L1056
-        * This check avoids overflowing this arrray */
-         
-        kodi::Log(ADDON_LOG_WARNING, "Maximum EDL entries reached");
-        break;
-      }
       kodi::addon::PVREDLEntry entry;
       std::string buffer;
       XMLUtils::GetString(pCommercialNode, "start", buffer);
