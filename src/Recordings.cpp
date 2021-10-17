@@ -388,10 +388,17 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
     }
     else
     {
-      if (m_settings.m_sendSidWithMetadata)
-        artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_urlBase, m_request.GetSID(), UriEncode(title).c_str());
+      std::string name;
+      buffer.clear();
+      if (XMLUtils::GetString(pRecordingNode, "group", buffer))
+          name = UriEncode(buffer);
       else
-        artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&name=%s", m_settings.m_urlBase, UriEncode(title).c_str());
+          name = UriEncode(title);
+
+      if (m_settings.m_sendSidWithMetadata)
+        artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_urlBase, m_request.GetSID(), name.c_str());
+      else
+        artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&name=%s", m_settings.m_urlBase, name.c_str());
       tag.SetFanartPath(artworkPath);
       artworkPath += "&prefer=poster";
       tag.SetThumbnailPath(artworkPath);

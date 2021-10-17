@@ -1,3 +1,9 @@
+v19.0.1
+- Don't try and reconnect server after sleep announced
+- Adjust timeshift when v4 setting logic get confused
+- Handle situations where Kodi requests timer updates without a recording update
+- Support new API XML to get recording specific art
+
 v19.0.0
 - Translations updates from Weblate
   - be_by, ko_kr, ru_ru
