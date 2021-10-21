@@ -24,8 +24,6 @@
 #include "buffers/ClientTimeshift.h"
 #include "buffers/DummyBuffer.h"
 #include "buffers/RecordingBuffer.h"
-#include "buffers/RollingFile.h"
-#include "buffers/TimeshiftBuffer.h"
 #include "buffers/TranscodedBuffer.h"
 #include <map>
 

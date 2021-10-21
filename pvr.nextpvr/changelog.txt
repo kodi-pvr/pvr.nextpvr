@@ -1,3 +1,9 @@
+v20.1.2
+- Remove obsolete V4 settings from settings.xml
+- Load and save only V5 settings
+- Remove conditional settings from code
+- Remove obsolete V4 timeshifting modes
+
 v20.1.1
 - Block access for v4 backend users
 - Don't try and reconnect server after sleep announced

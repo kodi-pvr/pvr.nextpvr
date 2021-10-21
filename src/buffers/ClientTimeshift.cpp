@@ -90,6 +90,15 @@ bool ClientTimeShift::Open(const std::string inputUrl)
   return true;
 }
 
+PVR_ERROR ClientTimeShift::GetStreamTimes(kodi::addon::PVRStreamTimes& stimes)
+{
+  stimes.SetStartTime(m_streamStart);
+  stimes.SetPTSStart(0);
+  stimes.SetPTSBegin(static_cast<int64_t>(m_rollingStartSeconds - m_streamStart) * STREAM_TIME_BASE);
+  stimes.SetPTSEnd(static_cast<int64_t>(time(nullptr) - m_streamStart) * STREAM_TIME_BASE);
+  return PVR_ERROR_NO_ERROR;
+}
+
 void ClientTimeShift::Close()
 {
   if (m_active)

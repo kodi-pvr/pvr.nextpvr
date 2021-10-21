@@ -258,14 +258,6 @@ void cPVRClientNextPVR::ConfigurePostConnectionOptions()
     {
       m_timeshiftBuffer = new timeshift::ClientTimeShift();
     }
-    else if (m_settings.m_liveStreamingMethod != eStreamingMethod::Timeshift)
-    {
-      m_timeshiftBuffer = new timeshift::RollingFile();
-    }
-    else
-    {
-      m_timeshiftBuffer = new timeshift::TimeshiftBuffer();
-    }
   }
 
   const bool liveStreams = kodi::GetSettingBoolean("uselivestreams");
@@ -575,16 +567,6 @@ bool cPVRClientNextPVR::OpenLiveStream(const kodi::addon::PVRChannel& channel)
     line = m_channels.m_liveStreams[channel.GetUniqueId()];
     m_livePlayer = m_realTimeBuffer;
     return m_livePlayer->Open(line, ADDON_READ_CACHED);
-  }
-  else if (channel.GetIsRadio() == false && m_supportsLiveTimeshift && m_settings.m_liveStreamingMethod == Timeshift)
-  {
-    line = kodi::tools::StringUtils::Format("GET /live?channeloid=%d&mode=liveshift&client=XBMC-%s HTTP/1.0\r\n", channel.GetUniqueId(), m_request.GetSID());
-    m_livePlayer = m_timeshiftBuffer;
-  }
-  else if (m_settings.m_liveStreamingMethod == RollingFile)
-  {
-    line = kodi::tools::StringUtils::Format("%s/live?channeloid=%d&client=XBMC-%s&epgmode=true", m_settings.m_urlBase, channel.GetUniqueId(), m_request.GetSID());
-    m_livePlayer = m_timeshiftBuffer;
   }
   else if (m_settings.m_liveStreamingMethod == ClientTimeshift)
   {

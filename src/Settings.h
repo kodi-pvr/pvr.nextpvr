@@ -18,9 +18,6 @@ namespace NextPVR
 
   enum eStreamingMethod
   {
-    Default = -1,
-    Timeshift = 0,
-    RollingFile = 1,
     RealTime = 2,
     Transcoded = 3,
     ClientTimeshift = 4

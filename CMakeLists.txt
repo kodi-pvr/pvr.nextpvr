@@ -24,10 +24,8 @@ set(NEXTPVR_SOURCES src/addon.cpp
                     src/buffers/DummyBuffer.cpp
                     src/buffers/TranscodedBuffer.cpp
                     src/buffers/ClientTimeshift.cpp
-                    src/buffers/TimeshiftBuffer.cpp
                     src/buffers/RecordingBuffer.cpp
                     src/buffers/CircularBuffer.cpp
-                    src/buffers/RollingFile.cpp
                     src/buffers/Seeker.cpp)
 
 set(NEXTPVR_HEADERS src/addon.h
@@ -46,10 +44,8 @@ set(NEXTPVR_HEADERS src/addon.h
                     src/buffers/DummyBuffer.h
                     src/buffers/TranscodedBuffer.h
                     src/buffers/ClientTimeshift.h
-                    src/buffers/TimeshiftBuffer.h
                     src/buffers/RecordingBuffer.h
                     src/buffers/CircularBuffer.h
-                    src/buffers/RollingFile.h
                     src/buffers/Seeker.h
                     src/utilities/XMLUtils.h)
 
