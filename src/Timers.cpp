@@ -445,7 +445,7 @@ PVR_ERROR Timers::GetTimerTypes(std::vector<kodi::addon::PVRTimerType>& types)
 
   static const unsigned int TIMER_REPEATING_MANUAL_ATTRIBS
     = PVR_TIMER_TYPE_IS_REPEATING |
-      static_cast<int>(m_settings.m_backendVersion >= ENABLE_DISABLE_VERSION ? PVR_TIMER_TYPE_SUPPORTS_ENABLE_DISABLE : PVR_TIMER_TYPE_ATTRIBUTE_NONE) |
+      static_cast<int>(PVR_TIMER_TYPE_SUPPORTS_ENABLE_DISABLE) |
       PVR_TIMER_TYPE_SUPPORTS_START_END_MARGIN |
       PVR_TIMER_TYPE_SUPPORTS_RECORDING_GROUP |
       PVR_TIMER_TYPE_SUPPORTS_WEEKDAYS |
@@ -453,7 +453,7 @@ PVR_ERROR Timers::GetTimerTypes(std::vector<kodi::addon::PVRTimerType>& types)
 
   static const unsigned int TIMER_REPEATING_EPG_ATTRIBS
     = PVR_TIMER_TYPE_IS_REPEATING |
-      static_cast<int>(m_settings.m_backendVersion >= ENABLE_DISABLE_VERSION ? PVR_TIMER_TYPE_SUPPORTS_ENABLE_DISABLE : PVR_TIMER_TYPE_ATTRIBUTE_NONE) |
+      static_cast<int>(PVR_TIMER_TYPE_SUPPORTS_ENABLE_DISABLE) |
       PVR_TIMER_TYPE_SUPPORTS_START_END_MARGIN |
       PVR_TIMER_TYPE_SUPPORTS_WEEKDAYS |
       PVR_TIMER_TYPE_SUPPORTS_RECORDING_GROUP |
@@ -474,7 +474,7 @@ PVR_ERROR Timers::GetTimerTypes(std::vector<kodi::addon::PVRTimerType>& types)
 
   static const unsigned int TIMER_REPEATING_KEYWORD_ATTRIBS
     = PVR_TIMER_TYPE_IS_REPEATING |
-      static_cast<int>(m_settings.m_backendVersion >= ENABLE_DISABLE_VERSION ? PVR_TIMER_TYPE_SUPPORTS_ENABLE_DISABLE : PVR_TIMER_TYPE_ATTRIBUTE_NONE) |
+      static_cast<int>(PVR_TIMER_TYPE_SUPPORTS_ENABLE_DISABLE) |
       PVR_TIMER_TYPE_SUPPORTS_RECORD_ONLY_NEW_EPISODES |
       PVR_TIMER_TYPE_SUPPORTS_ANY_CHANNEL |
       PVR_TIMER_TYPE_SUPPORTS_MAX_RECORDINGS;
@@ -632,23 +632,20 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
     strcpy(preventDuplicates, "false");
 
   std::string enabled;
-  if (m_settings.m_backendVersion >= ENABLE_DISABLE_VERSION)
-  {
-    // NextPVR cannot create new disabled timers
-    if (timer.GetState() == PVR_TIMER_STATE_DISABLED)
-      if (timer.GetClientIndex() != PVR_TIMER_NO_CLIENT_INDEX)
-      {
-        enabled = "&enabled=false";
-      }
-      else
-      {
-        kodi::Log(ADDON_LOG_ERROR, "Cannot create a new disabled timer");
-        return PVR_ERROR_INVALID_PARAMETERS;
-      }
-    else if (timer.GetState() == PVR_TIMER_STATE_SCHEDULED)
+  // NextPVR cannot create new disabled timers
+  if (timer.GetState() == PVR_TIMER_STATE_DISABLED)
+    if (timer.GetClientIndex() != PVR_TIMER_NO_CLIENT_INDEX)
     {
-      enabled = "&enabled=true";
+      enabled = "&enabled=false";
     }
+    else
+    {
+      kodi::Log(ADDON_LOG_ERROR, "Cannot create a new disabled timer");
+      return PVR_ERROR_INVALID_PARAMETERS;
+    }
+  else if (timer.GetState() == PVR_TIMER_STATE_SCHEDULED)
+  {
+    enabled = "&enabled=true";
   }
 
   const std::string encodedName = UriEncode(timer.GetTitle());
@@ -704,11 +701,6 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
   case TIMER_ONCE_EPG_CHILD:
     kodi::Log(ADDON_LOG_DEBUG, "TIMER_ONCE_EPG_CHILD");
     // build one-off recording request
-    if (m_settings.m_backendVersion < 50102)
-    {
-      kodi::Log(ADDON_LOG_ERROR, "Feature added in NextPVR 5.1.2");
-      return PVR_ERROR_REJECTED;
-    }
     request = kodi::tools::StringUtils::Format("recording.save&recording_id=%d&recurring_id=%d&event_id=%d&pre_padding=%d&post_padding=%d&directory_id=%s",
       timer.GetClientIndex(),
       timer.GetParentClientIndex(),

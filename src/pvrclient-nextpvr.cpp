@@ -272,7 +272,7 @@ void cPVRClientNextPVR::ConfigurePostConnectionOptions()
   if (liveStreams)
       m_channels.LoadLiveStreams();
 
-  if (m_lastEPGUpdateTime == 0 && m_settings.m_backendVersion >= 5007)
+  if (m_lastEPGUpdateTime == 0)
     m_request.GetLastUpdate("system.epg.summary", m_lastEPGUpdateTime);
 
 }
@@ -298,49 +298,46 @@ bool cPVRClientNextPVR::IsUp()
         if (update_time > m_lastRecordingUpdateTime)
         {
           m_lastRecordingUpdateTime = std::numeric_limits<time_t>::max();
-          if (m_settings.m_backendVersion >= 5007)
+          time_t lastUpdate;
+          if (m_request.GetLastUpdate("system.epg.summary", lastUpdate) == tinyxml2::XML_SUCCESS)
           {
-            time_t lastUpdate;
-            if (m_request.GetLastUpdate("system.epg.summary", lastUpdate) == tinyxml2::XML_SUCCESS)
+            if (lastUpdate > m_lastEPGUpdateTime)
             {
-              if (lastUpdate > m_lastEPGUpdateTime)
+              // trigger EPG updates for all channels with a guide source
+              kodi::Log(ADDON_LOG_DEBUG, "Trigger EPG update start");
+              int channels = 0;
+              for (const auto &updateChannel : m_channels.m_channelDetails)
               {
-                // trigger EPG updates for all channels with a guide source
-                kodi::Log(ADDON_LOG_DEBUG, "Trigger EPG update start");
-                int channels = 0;
-                for (const auto &updateChannel : m_channels.m_channelDetails)
+                if (updateChannel.second.first == false)
                 {
-                  if (updateChannel.second.first == false)
-                  {
-                    channels++;
-                    TriggerEpgUpdate(updateChannel.first);
-                  }
+                  channels++;
+                  TriggerEpgUpdate(updateChannel.first);
                 }
-                kodi::Log(ADDON_LOG_DEBUG, "Triggered %d channel updates", channels);
-
-                m_lastEPGUpdateTime = lastUpdate;
-                m_lastRecordingUpdateTime = update_time;
-                return m_bConnected;
               }
-            }
-            if (update_time <= m_timers.m_lastTimerUpdateTime + 1)
-            {
-              // we already updated this one in Kodi
-              m_lastRecordingUpdateTime = time(nullptr);
+              kodi::Log(ADDON_LOG_DEBUG, "Triggered %d channel updates", channels);
+
+              m_lastEPGUpdateTime = lastUpdate;
+              m_lastRecordingUpdateTime = update_time;
               return m_bConnected;
             }
-            if (m_request.GetLastUpdate("recording.lastupdated&ignore_resume=true", lastUpdate) == tinyxml2::XML_SUCCESS)
+          }
+          if (update_time <= m_timers.m_lastTimerUpdateTime + 1)
+          {
+            // we already updated this one in Kodi
+            m_lastRecordingUpdateTime = time(nullptr);
+            return m_bConnected;
+          }
+          if (m_request.GetLastUpdate("recording.lastupdated&ignore_resume=true", lastUpdate) == tinyxml2::XML_SUCCESS)
+          {
+            if (lastUpdate <= m_timers.m_lastTimerUpdateTime)
             {
-              if (lastUpdate <= m_timers.m_lastTimerUpdateTime)
+              if (m_settings.m_backendResume)
               {
-                if (m_settings.m_backendResume)
-                {
-                  // only resume position changed
-                  m_recordings.GetRecordingsLastPlayedPosition();
-                  m_lastRecordingUpdateTime = update_time;
-                }
-                return m_bConnected;
+                // only resume position changed
+                m_recordings.GetRecordingsLastPlayedPosition();
+                m_lastRecordingUpdateTime = update_time;
               }
+              return m_bConnected;
             }
           }
           g_pvrclient->TriggerRecordingUpdate();

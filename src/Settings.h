@@ -32,7 +32,7 @@ namespace NextPVR
     Landscape = 1
   };
 
-  const static std::string PVRCLIENT_NEXTPVR_VERSION_STRING = "1.0.0.0";
+  constexpr int NEXTPVRC_MIN_VERSION = 50200;
   constexpr char NEXTPVRC_MIN_VERSION_STRING[] = "5.2.0";
   const static std::string DEFAULT_PROTOCOL = "http";
   const static std::string DEFAULT_HOST = "127.0.0.1";

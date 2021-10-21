@@ -82,21 +82,12 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
       std::string artworkPath;
       if (m_settings.m_downloadGuideArtwork)
       {
-        // artwork URL
-        if (m_settings.m_backendVersion < 50000)
-        {
-          const int epgOid = XMLUtils::GetIntValue(pListingNode, "id");
-          artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&event_id=%d", m_settings.m_urlBase, m_request.GetSID(), epgOid);
-        }
+        if (m_settings.m_sendSidWithMetadata)
+          artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_urlBase, m_request.GetSID(), UriEncode(title).c_str());
         else
-        {
-          if (m_settings.m_sendSidWithMetadata)
-            artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_urlBase, m_request.GetSID(), UriEncode(title).c_str());
-          else
-            artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&name=%s", m_settings.m_urlBase, UriEncode(title).c_str());
-          if (m_settings.m_guideArtPortrait)
-            artworkPath += "&prefer=poster";
-        }
+          artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&name=%s", m_settings.m_urlBase, UriEncode(title).c_str());
+        if (m_settings.m_guideArtPortrait)
+          artworkPath += "&prefer=poster";
         broadcast.SetIconPath(artworkPath);
       }
       std::string sGenre;

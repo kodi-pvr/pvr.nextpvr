@@ -119,7 +119,7 @@ ADDON_STATUS Settings::ReadBackendSettings()
       kodi::Log(ADDON_LOG_INFO, "NextPVR version: %d", m_backendVersion);
 
       // is the server new enough
-      if (m_backendVersion < 40204)
+      if (m_backendVersion < NEXTPVRC_MIN_VERSION)
       {
         kodi::Log(ADDON_LOG_ERROR, "NextPVR version '%d' is too old. Please upgrade to '%s' or higher!", m_backendVersion, NEXTPVRC_MIN_VERSION_STRING);
         kodi::QueueNotification(QUEUE_ERROR, kodi::GetLocalizedString(30050), kodi::tools::StringUtils::Format(kodi::GetLocalizedString(30051).c_str(), NEXTPVRC_MIN_VERSION_STRING));
