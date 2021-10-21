@@ -115,8 +115,6 @@ namespace NextPVR
     int m_timeshiftBufferSeconds = 1200;
     eStreamingMethod m_liveStreamingMethod = RealTime;
     int m_liveChunkSize = 64;
-    //int m_prebuffer;
-    int m_prebuffer = 8;
     int m_prebuffer5 = 0;
     std::string m_resolution = "720";
     bool m_transcodedTimeshift = false;
