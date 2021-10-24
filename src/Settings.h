@@ -18,9 +18,6 @@ namespace NextPVR
 
   enum eStreamingMethod
   {
-    Default = -1,
-    Timeshift = 0,
-    RollingFile = 1,
     RealTime = 2,
     Transcoded = 3,
     ClientTimeshift = 4
@@ -32,7 +29,7 @@ namespace NextPVR
     Landscape = 1
   };
 
-  const static std::string PVRCLIENT_NEXTPVR_VERSION_STRING = "1.0.0.0";
+  constexpr int NEXTPVRC_MIN_VERSION = 50200;
   constexpr char NEXTPVRC_MIN_VERSION_STRING[] = "5.2.0";
   const static std::string DEFAULT_PROTOCOL = "http";
   const static std::string DEFAULT_HOST = "127.0.0.1";
@@ -115,8 +112,6 @@ namespace NextPVR
     int m_timeshiftBufferSeconds = 1200;
     eStreamingMethod m_liveStreamingMethod = RealTime;
     int m_liveChunkSize = 64;
-    //int m_prebuffer;
-    int m_prebuffer = 8;
     int m_prebuffer5 = 0;
     std::string m_resolution = "720";
     bool m_transcodedTimeshift = false;

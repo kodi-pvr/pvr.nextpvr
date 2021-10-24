@@ -205,50 +205,17 @@ PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsRe
   if (radio && m_radioGroups.size() == 0)
     return PVR_ERROR_NO_ERROR;
 
-  if (m_settings.m_backendVersion >= 50200)
+  // empty groups will not be added
+  for (auto const& group : radio ? m_radioGroups : m_tvGroups)
   {
-    // empty groups will not be added
-    for (auto const& group : radio ? m_radioGroups : m_tvGroups)
-    {
-      kodi::addon::PVRChannelGroup tag;
-      tag.SetIsRadio(radio);
-      tag.SetPosition(0);
-      tag.SetGroupName(group);
-      results.Add(tag);
-    }
-    return PVR_ERROR_NO_ERROR;
-  }
-
-  // for tv, use the groups returned by nextpvr
-  tinyxml2::XMLDocument doc;
-  if (m_request.DoMethodRequest("channel.groups", doc) == tinyxml2::XML_SUCCESS)
-  {
-    tinyxml2::XMLNode* groupsNode = doc.RootElement()->FirstChildElement("groups");
-    tinyxml2::XMLNode* pGroupNode;
-    for (pGroupNode = groupsNode->FirstChildElement("group"); pGroupNode; pGroupNode = pGroupNode->NextSiblingElement())
-    {
-      kodi::addon::PVRChannelGroup tag;
-      tag.SetIsRadio(radio);
-      tag.SetPosition(0); // groups default order, unused
-      std::string group;
-      if (XMLUtils::GetString(pGroupNode, "name", group))
-      {
-        // tell XBMC about channel, ignoring "All Channels" since xbmc has an built in group with effectively the same function
-        tag.SetGroupName(group);
-        if (group != "All Channels")
-        {
-          results.Add(tag);
-        }
-      }
-    }
-  }
-  else
-  {
-    kodi::Log(ADDON_LOG_DEBUG, "No Channel Group");
+    kodi::addon::PVRChannelGroup tag;
+    tag.SetIsRadio(radio);
+    tag.SetPosition(0);
+    tag.SetGroupName(group);
+    results.Add(tag);
   }
   return PVR_ERROR_NO_ERROR;
 }
-
 
 PVR_ERROR Channels::GetChannelGroupMembers(const kodi::addon::PVRChannelGroup& group, kodi::addon::PVRChannelGroupMembersResultSet& results)
 {

@@ -379,30 +379,20 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
   if (tag.GetChannelType() != PVR_RECORDING_CHANNEL_TYPE_RADIO)
   {
     std::string artworkPath;
-    if (m_settings.m_backendVersion < 50000)
-    {
-      artworkPath = kodi::tools::StringUtils::Format("%s/service?method=recording.artwork&sid=%s&recording_id=%s", m_settings.m_urlBase, m_request.GetSID(), tag.GetRecordingId().c_str());
-      tag.SetThumbnailPath(artworkPath);
-      artworkPath = kodi::tools::StringUtils::Format("%s/service?method=recording.fanart&sid=%s&recording_id=%s", m_settings.m_urlBase, m_request.GetSID(), tag.GetRecordingId().c_str());
-      tag.SetFanartPath(artworkPath);
-    }
+    std::string name;
+    buffer.clear();
+    if (XMLUtils::GetString(pRecordingNode, "group", buffer))
+        name = UriEncode(buffer);
     else
-    {
-      std::string name;
-      buffer.clear();
-      if (XMLUtils::GetString(pRecordingNode, "group", buffer))
-          name = UriEncode(buffer);
-      else
-          name = UriEncode(title);
+        name = UriEncode(title);
 
-      if (m_settings.m_sendSidWithMetadata)
-        artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_urlBase, m_request.GetSID(), name.c_str());
-      else
-        artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&name=%s", m_settings.m_urlBase, name.c_str());
-      tag.SetFanartPath(artworkPath);
-      artworkPath += "&prefer=poster";
-      tag.SetThumbnailPath(artworkPath);
-    }
+    if (m_settings.m_sendSidWithMetadata)
+      artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_urlBase, m_request.GetSID(), name.c_str());
+    else
+      artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&name=%s", m_settings.m_urlBase, name.c_str());
+    tag.SetFanartPath(artworkPath);
+    artworkPath += "&prefer=poster";
+    tag.SetThumbnailPath(artworkPath);
   }
   if (XMLUtils::GetAdditiveString(pRecordingNode->FirstChildElement("genres"), "genre", EPG_STRING_TOKEN_SEPARATOR, buffer, true))
   {
@@ -577,19 +567,16 @@ PVR_ERROR Recordings::SetRecordingLastPlayedPosition(const kodi::addon::PVRRecor
       kodi::Log(ADDON_LOG_DEBUG, "SetRecordingLastPlayedPosition failed");
       return PVR_ERROR_FAILED;
     }
-    if (m_settings.m_backendVersion >= 5007)
+    time_t lastUpdate;
+    if (m_request.GetLastUpdate("recording.lastupdated&ignore_resume=true", lastUpdate) == tinyxml2::XML_SUCCESS)
     {
-      time_t lastUpdate;
-      if (m_request.GetLastUpdate("recording.lastupdated&ignore_resume=true", lastUpdate) == tinyxml2::XML_SUCCESS)
+      if (timerUpdate >= lastUpdate)
       {
-        if (timerUpdate >= lastUpdate)
+        if (m_request.GetLastUpdate("recording.lastupdated", lastUpdate) == tinyxml2::XML_SUCCESS)
         {
-          if (m_request.GetLastUpdate("recording.lastupdated", lastUpdate) == tinyxml2::XML_SUCCESS)
-          {
-            // only change is watched point so skip it
-            m_lastPlayed[std::stoi(recording.GetRecordingId())] = lastplayedposition;
-            g_pvrclient->m_lastRecordingUpdateTime = lastUpdate;
-          }
+          // only change is watched point so skip it
+          m_lastPlayed[std::stoi(recording.GetRecordingId())] = lastplayedposition;
+          g_pvrclient->m_lastRecordingUpdateTime = lastUpdate;
         }
       }
     }

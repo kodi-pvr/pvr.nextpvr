@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "RollingFile.h"
+#include "RecordingBuffer.h"
 #include <thread>
 #include <list>
 
@@ -16,7 +16,7 @@ using namespace NextPVR;
 
 namespace timeshift {
 
-  class ATTRIBUTE_HIDDEN ClientTimeShift : public RollingFile
+  class ATTRIBUTE_HIDDEN ClientTimeShift : public RecordingBuffer
   {
   private:
     bool m_isPaused = false;
@@ -27,8 +27,17 @@ namespace timeshift {
 	 */
 	std::string m_sourceURL;
 
+  std::atomic<int64_t> m_stream_length;
+  std::atomic<int64_t> m_stream_duration;
+  std::atomic<int> m_bytesPerSecond;
+  time_t m_lastClose;
+  int m_prebuffer;
+  std::atomic<time_t> m_rollingStartSeconds;
+  time_t m_streamStart;
+
+
   public:
-    ClientTimeShift() : RollingFile()
+    ClientTimeShift() : RecordingBuffer()
     {
       m_lastClose = 0;
       m_channel_id = 0;
@@ -55,6 +64,11 @@ namespace timeshift {
 
     virtual bool GetStreamInfo() override;
 
+    virtual int64_t Length() const override
+    {
+      return m_stream_length;
+    }
+
     virtual int64_t Position() const override
     {
       return m_inputHandle.GetPosition();
@@ -77,6 +91,7 @@ namespace timeshift {
     {
       return true;
     }
+    virtual PVR_ERROR GetStreamTimes(kodi::addon::PVRStreamTimes& times) override;
 
   };
 }

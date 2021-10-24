@@ -3,11 +3,6 @@
   <section id="pvr.nextpvr">
     <category help="" id="connection" label="30040">
       <group id="0">
-        <setting help="" id="legacy" label="30177" type="boolean">
-          <level>1</level>
-          <default>false</default>
-          <control type="toggle"/>
-        </setting>
         <setting help="" id="host" label="30000" type="urlencodedstring">
           <level>0</level>
           <default>127.0.0.1</default>
@@ -81,60 +76,18 @@
       </group>
     </category>
     <category help="" id="advanced" label="30174">
-      <group id="01">
-        <setting help="Timeshift" id="livestreamingmethod" label="30172" type="integer">
+      <group id="501">
+        <setting help="" id="livestreamingmethod5" label="30172" type="integer">
           <level>0</level>
           <default>2</default>
           <constraints>
             <options>
-              <option label="Timeshift">0</option>
-              <option label="Extended Timeshift">1</option>
               <option label="Real Time">2</option>
-            </options>
-          </constraints>
-          <control format="string" type="spinner"/>
-          <dependencies>
-            <dependency type="visible">
-              <condition operator="is" setting="legacy">true</condition>
-            </dependency>
-          </dependencies>
-        </setting>
-        <setting help="" id="prebuffer" label="30162" type="integer">
-          <level>2</level>
-          <default>8</default>
-          <constraints>
-            <minimum>0</minimum>
-            <step>1</step>
-            <maximum>16</maximum>
-          </constraints>
-          <dependencies>
-            <dependency type="visible">
-              <condition operator="is" setting="livestreamingmethod">1</condition>
-              <condition operator="is" setting="legacy">true</condition>
-            </dependency>
-          </dependencies>
-          <control format="integer" type="slider">
-            <popup>false</popup>
-          </control>
-        </setting>
-      </group>
-      <group id="501">
-        <setting help="" id="livestreamingmethod5" label="30172" type="integer">
-          <level>0</level>
-          <default>-1</default>
-          <constraints>
-            <options>
-              <option label="Real Time">2</option>
-              <option label="Timeshift">0</option>
+              <option label="Timeshift">4</option>
               <option label="Transcoded">3</option>
             </options>
           </constraints>
           <control format="string" type="spinner"/>
-          <dependencies>
-            <dependency type="visible">
-              <condition operator="is" setting="legacy">false</condition>
-            </dependency>
-          </dependencies>
         </setting>
         <setting help="" id="resolution" label="30173" type="string" parent="livestreamingmethod5">
           <level>1</level>
@@ -154,7 +107,6 @@
           <dependencies>
             <dependency type="visible">
               <condition operator="is" setting="livestreamingmethod5">3</condition>
-              <condition operator="is" setting="legacy">false</condition>
             </dependency>
           </dependencies>
           <control format="string" type="spinner"/>
@@ -172,8 +124,7 @@
           </control>
           <dependencies>
             <dependency type="visible">
-              <condition operator="is" setting="livestreamingmethod5">0</condition>
-              <condition operator="is" setting="legacy">false</condition>
+              <condition operator="is" setting="livestreamingmethod5">4</condition>
             </dependency>
           </dependencies>
         </setting>
@@ -184,7 +135,6 @@
           <dependencies>
             <dependency type="visible">
               <condition operator="is" setting="livestreamingmethod5">3</condition>
-              <condition operator="is" setting="legacy">false</condition>
             </dependency>
           </dependencies>
         </setting>
@@ -231,7 +181,6 @@
           <control type="toggle"/>
           <dependencies>
             <dependency type="visible">
-              <condition operator="is" setting="legacy">false</condition>
               <condition operator="!is" setting="pin">0000</condition>
             </dependency>
           </dependencies>
@@ -242,7 +191,6 @@
           <control type="toggle"/>
           <dependencies>
             <dependency type="visible">
-              <condition operator="is" setting="legacy">false</condition>
               <condition operator="is" setting="remoteaccess">false</condition>
             </dependency>
           </dependencies>
@@ -261,11 +209,6 @@
           <level>1</level>
           <default>false</default>
           <control type="toggle"/>
-          <dependencies>
-            <dependency type="visible">
-              <condition operator="is" setting="legacy">false</condition>
-            </dependency>
-          </dependencies>
         </setting>
         <setting help="30569" id="kodilook" label="30169" type="boolean">
           <level>1</level>
@@ -296,11 +239,6 @@
           <level>3</level>
           <default>false</default>
           <control type="toggle"/>
-          <dependencies>
-            <dependency type="visible">
-              <condition operator="is" setting="legacy">false</condition>
-            </dependency>
-          </dependencies>
         </setting>
         <setting id="diskspace" type="string" label="30198" help="30698">
           <level>1</level>
@@ -316,21 +254,11 @@
           <control type="list" format="string">
             <heading>30198</heading>
           </control>
-          <dependencies>
-            <dependency type="visible">
-              <condition operator="is" setting="legacy">false</condition>
-            </dependency>
-          </dependencies>
         </setting>
         <setting help="30694" id="genrestring" label="30194" type="boolean">
           <level>1</level>
           <default>false</default>
           <control type="toggle"/>
-          <dependencies>
-            <dependency type="visible">
-              <condition operator="is" setting="legacy">false</condition>
-            </dependency>
-          </dependencies>
         </setting>
         <setting help="30700" id="backendresume" label="30200" type="boolean">
           <level>3</level>
@@ -340,12 +268,25 @@
       </group>
     </category>
     <category help="" id="deadsettings" label="">
-      <!-- Avoid Kodi creating many log messages for obsolete user settings -->>
+      <!-- Avoid Kodi creating debug log messages for obsolete user settings -->>
       <group id="13">
         <setting help="" id="usetimeshift" label="" type="boolean" option="hidden">
           <level>4</level>
           <default>false</default>
           <control type="toggle"/>
+        </setting>
+        <setting help="" id="legacy" label="30177" type="boolean" option="hidden">
+          <level>4</level>
+          <default>false</default>
+          <control type="toggle"/>
+        </setting>
+        <setting help="" id="prebuffer" label="30162" type="integer" option="hidden">
+          <level>4</level>
+          <default>8</default>
+        </setting>
+        <setting help="Timeshift" id="livestreamingmethod" label="30172" type="integer" option="hidden">
+          <level>4</level>
+          <default>2</default>
         </setting>
       </group>
     </category>

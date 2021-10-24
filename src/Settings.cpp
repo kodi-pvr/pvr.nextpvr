@@ -52,17 +52,15 @@ void Settings::ReadFromAddon()
 
   m_timeoutWOL = kodi::GetSettingInt("woltimeout", 20);
 
-  m_downloadGuideArtwork = kodi::GetSettingBoolean("guideartwork" ,DEFAULT_GUIDE_ARTWORK);
-
   m_remoteAccess = kodi::GetSettingBoolean("remoteaccess", false);
+
+  m_liveStreamingMethod = kodi::GetSettingEnum<eStreamingMethod>("livestreamingmethod5", DEFAULT_LIVE_STREAM);
 
   m_flattenRecording = kodi::GetSettingBoolean("flattenrecording", false);
 
   m_separateSeasons = kodi::GetSettingBoolean("separateseasons", false);
 
   m_kodiLook = kodi::GetSettingBoolean("kodilook", false);
-
-  m_prebuffer = kodi::GetSettingInt("prebuffer", 8);
 
   m_prebuffer5 = kodi::GetSettingInt("prebuffer5", 0);
 
@@ -79,6 +77,28 @@ void Settings::ReadFromAddon()
   m_backendResume = kodi::GetSettingBoolean("backendresume", true);
 
   m_connectionConfirmed = kodi::vfs::FileExists(connectionFlag);
+
+  if (m_PIN != "0000" && m_remoteAccess)
+  {
+    m_downloadGuideArtwork = false;
+    m_sendSidWithMetadata = true;
+  }  else {
+    m_downloadGuideArtwork = kodi::GetSettingBoolean("guideartwork" ,DEFAULT_GUIDE_ARTWORK);
+    m_sendSidWithMetadata = false;
+  }
+
+  m_guideArtPortrait = kodi::GetSettingBoolean("guideartworkportrait", false);
+
+  m_genreString = kodi::GetSettingBoolean("genrestring", false);
+
+  m_showRecordingSize = kodi::GetSettingBoolean("recordingsize", false);
+
+  m_diskSpace = kodi::GetSettingString("diskspace", "Default");
+
+  m_transcodedTimeshift = kodi::GetSettingBoolean("ffmpegdirect", false);
+
+  m_castcrew = kodi::GetSettingBoolean("castcrew", false);
+
 
   /* Log the current settings for debugging purposes */
   kodi::Log(ADDON_LOG_DEBUG, "settings: host='%s', port=%i, mac=%4.4s...", m_hostname.c_str(), m_port, m_hostMACAddress.c_str());
@@ -99,7 +119,7 @@ ADDON_STATUS Settings::ReadBackendSettings()
       kodi::Log(ADDON_LOG_INFO, "NextPVR version: %d", m_backendVersion);
 
       // is the server new enough
-      if (m_backendVersion < 40204)
+      if (m_backendVersion < NEXTPVRC_MIN_VERSION)
       {
         kodi::Log(ADDON_LOG_ERROR, "NextPVR version '%d' is too old. Please upgrade to '%s' or higher!", m_backendVersion, NEXTPVRC_MIN_VERSION_STRING);
         kodi::QueueNotification(QUEUE_ERROR, kodi::GetLocalizedString(30050), kodi::tools::StringUtils::Format(kodi::GetLocalizedString(30051).c_str(), NEXTPVRC_MIN_VERSION_STRING));
@@ -168,76 +188,9 @@ void Settings::SetConnection(bool status)
 
 void Settings::SetVersionSpecificSettings()
 {
-  m_liveStreamingMethod = DEFAULT_LIVE_STREAM;
 
-  if ((m_backendVersion < 50000) != kodi::GetSettingBoolean("legacy", false))
-  {
-    kodi::SetSettingEnum<eStreamingMethod>("livestreamingmethod5", eStreamingMethod::Default);
-    kodi::SetSettingBoolean("legacy", m_backendVersion < 50000);
-  }
+  // No version specific setting
 
-  eStreamingMethod streamingMethod;
-  if (kodi::CheckSettingEnum<eStreamingMethod>("livestreamingmethod", streamingMethod))
-  {
-    m_liveStreamingMethod = streamingMethod;
-    // has v4 setting
-    if (m_backendVersion < 50000)
-    {
-      // previous Matrix clients had a transcoding option
-      if (m_liveStreamingMethod == eStreamingMethod::Transcoded)
-      {
-        m_liveStreamingMethod = eStreamingMethod::RealTime;
-        kodi::QueueNotification(QUEUE_ERROR, kodi::GetLocalizedString(30050), kodi::tools::StringUtils::Format(kodi::GetLocalizedString(30051).c_str(), "5"));
-      }
-    }
-    else if (m_backendVersion < 50002)
-    {
-      m_liveStreamingMethod = eStreamingMethod::RealTime;
-      kodi::QueueNotification(QUEUE_ERROR, kodi::GetLocalizedString(30050), kodi::tools::StringUtils::Format(kodi::GetLocalizedString(30051).c_str(), "5.0.3"));
-    }
-    else
-    {
-      // check for new v5 setting with no settings.xml
-      eStreamingMethod oldMethod = m_liveStreamingMethod;
-
-      if (kodi::CheckSettingEnum<eStreamingMethod>("livestreamingmethod5", streamingMethod))
-        m_liveStreamingMethod = streamingMethod;
-
-      if (m_liveStreamingMethod == eStreamingMethod::Default)
-        m_liveStreamingMethod = oldMethod;
-
-      if (m_liveStreamingMethod == RollingFile || m_liveStreamingMethod == Timeshift)
-        m_liveStreamingMethod = eStreamingMethod::ClientTimeshift;
-
-    }
-  }
-
-  if (m_backendVersion >= 50000)
-  {
-    m_sendSidWithMetadata = false;
-    if (m_PIN != "0000" && m_remoteAccess)
-    {
-      m_downloadGuideArtwork = false;
-      m_sendSidWithMetadata = true;
-    }
-
-    m_guideArtPortrait = kodi::GetSettingBoolean("guideartworkportrait", false);
-
-    m_genreString = kodi::GetSettingBoolean("genrestring", false);
-
-    m_showRecordingSize = kodi::GetSettingBoolean("recordingsize", false);
-
-    m_diskSpace = kodi::GetSettingString("diskspace", "Default");
-
-    m_transcodedTimeshift = kodi::GetSettingBoolean("ffmpegdirect", false);
-
-    m_castcrew = kodi::GetSettingBoolean("castcrew", false);
-  }
-  else
-  {
-    m_sendSidWithMetadata = true;
-    m_showRecordingSize = false;
-  }
 }
 
 ADDON_STATUS Settings::SetValue(const std::string& settingName, const kodi::CSettingValue& settingValue)
@@ -288,12 +241,8 @@ ADDON_STATUS Settings::SetValue(const std::string& settingName, const kodi::CSet
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_genreString, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
   else if (settingName == "host_mac")
     return SetStringSetting<ADDON_STATUS>(settingName, settingValue, m_hostMACAddress, ADDON_STATUS_OK, ADDON_STATUS_OK);
-  else if (settingName == "livestreamingmethod" && m_backendVersion < 50000)
+  else if (settingName == "livestreamingmethod5")
     return SetEnumSetting<eStreamingMethod, ADDON_STATUS>(settingName, settingValue, m_liveStreamingMethod, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
-  else if (settingName == "livestreamingmethod5" && m_backendVersion >= 50000 && settingValue.GetEnum<const eStreamingMethod>() != eStreamingMethod::Default)
-    return SetEnumSetting<eStreamingMethod, ADDON_STATUS>(settingName, settingValue, m_liveStreamingMethod, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
-  else if (settingName == "prebuffer")
-    return SetSetting<int, ADDON_STATUS>(settingName, settingValue, m_prebuffer, ADDON_STATUS_OK, ADDON_STATUS_OK);
   else if (settingName == "prebuffer5")
     return SetSetting<int, ADDON_STATUS>(settingName, settingValue, m_prebuffer5, ADDON_STATUS_OK, ADDON_STATUS_OK);
   else if (settingName == "chucksize")

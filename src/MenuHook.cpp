@@ -95,11 +95,8 @@ void MenuHook::ConfigureMenuHook()
   menuHook.SetLocalizedStringId(30196);
   g_pvrclient->AddMenuHook(menuHook);
 
-  if (m_settings.m_backendVersion >= 50000)
-  {
-    menuHook.SetCategory(PVR_MENUHOOK_RECORDING);
-    menuHook.SetHookId(PVR_MENUHOOK_RECORDING_FORGET_RECORDING);
-    menuHook.SetLocalizedStringId(30184);
-    g_pvrclient->AddMenuHook(menuHook);
-  }
+  menuHook.SetCategory(PVR_MENUHOOK_RECORDING);
+  menuHook.SetHookId(PVR_MENUHOOK_RECORDING_FORGET_RECORDING);
+  menuHook.SetLocalizedStringId(30184);
+  g_pvrclient->AddMenuHook(menuHook);
 }
