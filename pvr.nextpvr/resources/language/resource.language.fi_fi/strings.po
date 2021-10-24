@@ -21,7 +21,7 @@ msgid "Kodi frontend for the NextPVR"
 msgstr "Kodin NextPVR-asiakasohjelma"
 
 msgctxt "Addon Description"
-msgid "NextPVR frontend. Supports streaming of Live TV &amp; Recordings, listening to Radio channels and EPG."
+msgid "NextPVR frontend. Supports streaming of Live TV & Recordings, listening to Radio channels and EPG."
 msgstr "NextPVR-asiakasohjelma. Tukee suorien tv-lähetysten ja tallennusten katsomista, radiokanavia, ohjelmaopasta ja ohjelmien ajastamista."
 
 msgctxt "Addon Disclaimer"
