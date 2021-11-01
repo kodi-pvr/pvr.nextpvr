@@ -553,7 +553,7 @@ PVR_ERROR Recordings::SetRecordingPlayCount(const kodi::addon::PVRRecording& rec
 PVR_ERROR Recordings::SetRecordingLastPlayedPosition(const kodi::addon::PVRRecording& recording, int lastplayedposition)
 {
 
-  int originalPosition = lastplayedposition;
+  bool isWatched = true;
   int current = m_playCount[std::stoi(recording.GetRecordingId())];
   if (recording.GetPlayCount() > current && lastplayedposition == 0)
   {
@@ -568,7 +568,15 @@ PVR_ERROR Recordings::SetRecordingLastPlayedPosition(const kodi::addon::PVRRecor
     time_t timerUpdate = m_timers.m_lastTimerUpdateTime;
     if (lastplayedposition == -1)
     {
-      lastplayedposition = recording.GetDuration();
+      if (recording.GetRecordingTime() + recording.GetDuration() > time(nullptr))
+      {
+        lastplayedposition = time(nullptr) - recording.GetRecordingTime() - 5;
+        isWatched = false;
+      }
+      else
+      {
+        lastplayedposition = recording.GetDuration();
+      }
     }
     const std::string request = kodi::tools::StringUtils::Format("recording.watched.set&recording_id=%s&position=%d", recording.GetRecordingId().c_str(), lastplayedposition);
     tinyxml2::XMLDocument doc;
@@ -588,6 +596,9 @@ PVR_ERROR Recordings::SetRecordingLastPlayedPosition(const kodi::addon::PVRRecor
           {
             // only change is watched point so skip it
             m_lastPlayed[std::stoi(recording.GetRecordingId())] = lastplayedposition;
+            // reload recording list so Kodi can get new duration
+            if (!isWatched)
+              g_pvrclient->TriggerRecordingUpdate();
             g_pvrclient->m_lastRecordingUpdateTime = lastUpdate;
           }
         }
