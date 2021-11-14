@@ -1,3 +1,6 @@
+v19.0.2
+- Fix for Kodi marking in-progress recordings as watched
+
 v19.0.1
 - Don't try and reconnect server after sleep announced
 - Adjust timeshift when v4 setting logic get confused
