@@ -56,7 +56,7 @@ msgctxt "#30504"
 msgid "Not enabled for Matrix when remote"
 msgstr ""
 
-#empty strings from id 30005 to 30039
+# empty strings from id 30005 to 30039
 msgctxt "#30040"
 msgid "Connection"
 msgstr ""
@@ -65,7 +65,7 @@ msgctxt "#30041"
 msgid "Advanced"
 msgstr ""
 
-#empty strings from id 30042 to 30049
+# empty strings from id 30042 to 30049
 msgctxt "#30050"
 msgid "NextPVR version not supported"
 msgstr ""
@@ -82,7 +82,7 @@ msgctxt "#30053"
 msgid "Tuner no longer available"
 msgstr ""
 
-#empty strings from id 30054 to 30139
+# empty strings from id 30054 to 30139
 msgctxt "#30140"
 msgid "One time (manual)"
 msgstr ""
@@ -107,7 +107,7 @@ msgctxt "#30145"
 msgid "Repeating (keyword)"
 msgstr ""
 
-#empty strings from id 30146 to 30149
+# empty strings from id 30146 to 30149
 msgctxt "#30150"
 msgid "All Recordings"
 msgstr ""
@@ -144,7 +144,7 @@ msgctxt "#30158"
 msgid "10 Recordings"
 msgstr ""
 
-#empty string with id 30159
+# empty string with id 30159
 msgctxt "#30160"
 msgid "New Only"
 msgstr ""
@@ -310,7 +310,7 @@ msgid "Use backend genre text"
 msgstr ""
 
 msgctxt "#30694"
-msgid "Kodi default is DVB genre text.  Default required for Kodi genre search and language translation"
+msgid "Kodi default is DVB genre text. Default required for Kodi genre search and language translation"
 msgstr ""
 
 msgctxt "#30195"
