@@ -23,7 +23,7 @@ namespace NextPVR
   constexpr int PVR_MENUHOOK_SETTING_SEND_WOL = 604;
   constexpr int PVR_MENUHOOK_SETTING_OPEN_SETTINGS = 605;
 
-  class ATTRIBUTE_HIDDEN MenuHook
+  class ATTR_DLL_LOCAL MenuHook
   {
   public:
     /**

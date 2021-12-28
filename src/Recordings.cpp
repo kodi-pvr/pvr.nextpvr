@@ -236,7 +236,7 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
   }
   else if (status == "Failed")
   {
-    buffer = kodi::tools::StringUtils::Format("/%s/%s", kodi::GetLocalizedString(30166).c_str(), title.c_str());
+    buffer = kodi::tools::StringUtils::Format("/%s/%s", kodi::addon::GetLocalizedString(30166).c_str(), title.c_str());
     tag.SetDirectory(buffer);
     if (XMLUtils::GetString(pRecordingNode, "reason", buffer))
     {
@@ -293,13 +293,13 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
       {
         if (!m_settings.m_kodiLook)
         {
-          tag.SetDirectory(kodi::tools::StringUtils::Format("/%s/%s %d", title.c_str(), kodi::GetLocalizedString(20373).c_str(), tag.GetSeriesNumber()));
+          tag.SetDirectory(kodi::tools::StringUtils::Format("/%s/%s %d", title.c_str(), kodi::addon::GetLocalizedString(20373).c_str(), tag.GetSeriesNumber()));
           tag.SetSeriesNumber(PVR_RECORDING_INVALID_SERIES_EPISODE);
           tag.SetEpisodeNumber(PVR_RECORDING_INVALID_SERIES_EPISODE);
         }
         else
         {
-          tag.SetDirectory(kodi::tools::StringUtils::Format("/%s/%s %d", tag.GetTitle().c_str(), kodi::GetLocalizedString(20373).c_str(), tag.GetSeriesNumber()));
+          tag.SetDirectory(kodi::tools::StringUtils::Format("/%s/%s %d", tag.GetTitle().c_str(), kodi::addon::GetLocalizedString(20373).c_str(), tag.GetSeriesNumber()));
         }
       }
     }

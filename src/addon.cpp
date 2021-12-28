@@ -32,9 +32,8 @@ ADDON_STATUS CNextPVRAddon::Create()
   return ADDON_STATUS_OK;
 }
 
-ADDON_STATUS CNextPVRAddon::CreateInstance(int instanceType,
-    const std::string& instanceID, KODI_HANDLE instance,
-    const std::string& version, KODI_HANDLE& addonInstance)
+ADDON_STATUS CNextPVRAddon::CreateInstance(const kodi::addon::IInstanceInfo& instance,
+                                           KODI_ADDON_INSTANCE_HDL& hdl)
 {
   settings.ReadFromAddon();
 
@@ -45,29 +44,28 @@ ADDON_STATUS CNextPVRAddon::CreateInstance(int instanceType,
   }
 
   /* Create connection to NextPVR KODI TV client */
-  g_pvrclient = new cPVRClientNextPVR(*this, instance, version);
-  m_curStatus = g_pvrclient->Connect();
+  g_pvrclient = new cPVRClientNextPVR(*this, instance);
+  ADDON_STATUS status = g_pvrclient->Connect();
 
-  if (m_curStatus != ADDON_STATUS_PERMANENT_FAILURE)
+  if (status != ADDON_STATUS_PERMANENT_FAILURE)
   {
-    m_curStatus = ADDON_STATUS_OK;
-    addonInstance = g_pvrclient;
-    m_usedInstances.emplace(std::make_pair(instanceID, g_pvrclient));
+    status = ADDON_STATUS_OK;
+    hdl = g_pvrclient;
+    m_usedInstances.emplace(std::make_pair(instance.GetID(), g_pvrclient));
     g_pvrclient->m_menuhook.ConfigureMenuHook();
   }
 
-  return m_curStatus;
+  return status;
 }
 
 //-- Destroy ------------------------------------------------------------------
 // Used during destruction of the client, all steps to do clean and safe Create
 // again must be done.
 //-----------------------------------------------------------------------------
-void CNextPVRAddon::DestroyInstance(int instanceType,
-                                    const std::string& instanceID,
-                                    KODI_HANDLE addonInstance)
+void CNextPVRAddon::DestroyInstance(const kodi::addon::IInstanceInfo& instance,
+                                    const KODI_ADDON_INSTANCE_HDL hdl)
 {
-  const auto& it = m_usedInstances.find(instanceID);
+  const auto& it = m_usedInstances.find(instance.GetID());
   if (it != m_usedInstances.end())
   {
     it->second->Disconnect();
@@ -80,7 +78,7 @@ void CNextPVRAddon::DestroyInstance(int instanceType,
 // Called everytime a setting is changed by the user and to inform AddOn about
 // new setting and to do required stuff to apply it.
 //-----------------------------------------------------------------------------
-ADDON_STATUS CNextPVRAddon::SetSetting(const std::string& settingName, const kodi::CSettingValue& settingValue)
+ADDON_STATUS CNextPVRAddon::SetSetting(const std::string& settingName, const kodi::addon::CSettingValue& settingValue)
 {
   std::string str = settingName;
 

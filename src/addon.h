@@ -21,24 +21,20 @@
 class cPVRClientNextPVR;
 extern cPVRClientNextPVR* g_pvrclient;
 
-class ATTRIBUTE_HIDDEN CNextPVRAddon : public kodi::addon::CAddonBase
+class ATTR_DLL_LOCAL CNextPVRAddon : public kodi::addon::CAddonBase
 {
 public:
   CNextPVRAddon() = default;
 
   ADDON_STATUS Create() override;
-  ADDON_STATUS GetStatus() override { return m_curStatus; }
   ADDON_STATUS SetSetting(const std::string& settingName,
-    const kodi::CSettingValue& settingValue) override;
-  ADDON_STATUS CreateInstance(int instanceType, const std::string& instanceID,
-    KODI_HANDLE instance, const std::string& version,
-    KODI_HANDLE& addonInstance) override;
-  void DestroyInstance(int instanceType,
-    const std::string& instanceID,
-    KODI_HANDLE addonInstance) override;
+    const kodi::addon::CSettingValue& settingValue) override;
+  ADDON_STATUS CreateInstance(const kodi::addon::IInstanceInfo& instance,
+    KODI_ADDON_INSTANCE_HDL& hdl) override;
+  void DestroyInstance(const kodi::addon::IInstanceInfo& instance,
+    const KODI_ADDON_INSTANCE_HDL hdl) override;
 
 private:
-  ADDON_STATUS m_curStatus = ADDON_STATUS_UNKNOWN;
   std::unordered_map<std::string, cPVRClientNextPVR*> m_usedInstances;
 };
 

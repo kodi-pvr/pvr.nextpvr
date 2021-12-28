@@ -33,7 +33,7 @@ PVR_ERROR MenuHook::CallSettingsMenuHook(const kodi::addon::PVRMenuhook& menuhoo
   }
   else if (menuhook.GetHookId() == PVR_MENUHOOK_SETTING_OPEN_SETTINGS)
   {
-    kodi::OpenSettings();
+    kodi::addon::OpenSettings();
   }
 
   return PVR_ERROR_NO_ERROR;

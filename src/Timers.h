@@ -37,7 +37,7 @@ namespace NextPVR
   constexpr unsigned int TIMER_REPEATING_ADVANCED = TIMER_REPEATING_MIN + 3;
   constexpr unsigned int TIMER_REPEATING_MAX = TIMER_REPEATING_MIN + 3;
 
-  class ATTRIBUTE_HIDDEN Timers
+  class ATTR_DLL_LOCAL Timers
   {
     typedef enum
     {

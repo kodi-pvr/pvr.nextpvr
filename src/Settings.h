@@ -40,7 +40,7 @@ namespace NextPVR
   constexpr bool DEFAULT_GUIDE_ARTWORK = false;
   constexpr eStreamingMethod DEFAULT_LIVE_STREAM = RealTime;
 
-  class ATTRIBUTE_HIDDEN Settings
+  class ATTR_DLL_LOCAL Settings
   {
   public:
 
@@ -65,7 +65,7 @@ namespace NextPVR
     };
 
     void ReadFromAddon();
-    ADDON_STATUS SetValue(const std::string& settingName, const kodi::CSettingValue& settingValue);
+    ADDON_STATUS SetValue(const std::string& settingName, const kodi::addon::CSettingValue& settingValue);
 
     //Connection
     std::string m_hostname = DEFAULT_HOST;
@@ -124,7 +124,7 @@ namespace NextPVR
     void operator=(Settings const&) = delete;
 
     template<typename T, typename V>
-    V SetSetting(const std::string& settingName, const kodi::CSettingValue& settingValue, T& currentValue, V returnValueIfChanged, V defaultReturnValue)
+    V SetSetting(const std::string& settingName, const kodi::addon::CSettingValue& settingValue, T& currentValue, V returnValueIfChanged, V defaultReturnValue)
     {
       T newValue;
       if (std::is_same<T, float>::value)
@@ -150,7 +150,7 @@ namespace NextPVR
     };
 
     template<typename T, typename V>
-    V SetEnumSetting(const std::string& settingName, const kodi::CSettingValue& settingValue, T& currentValue, V returnValueIfChanged, V defaultReturnValue)
+    V SetEnumSetting(const std::string& settingName, const kodi::addon::CSettingValue& settingValue, T& currentValue, V returnValueIfChanged, V defaultReturnValue)
     {
       T newValue = settingValue.GetEnum<T>();
       if (newValue != currentValue)
@@ -164,7 +164,7 @@ namespace NextPVR
     };
 
     template<typename V>
-    V SetStringSetting(const std::string& settingName, const kodi::CSettingValue& settingValue, std::string& currentValue, V returnValueIfChanged, V defaultReturnValue)
+    V SetStringSetting(const std::string& settingName, const kodi::addon::CSettingValue& settingValue, std::string& currentValue, V returnValueIfChanged, V defaultReturnValue)
     {
       const std::string strSettingValue = settingValue.GetString();
 

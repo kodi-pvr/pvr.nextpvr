@@ -400,23 +400,23 @@ PVR_ERROR Timers::GetTimerTypes(std::vector<kodi::addon::PVRTimerType>& types)
   static std::vector<kodi::addon::PVRTypeIntValue> recordingLimitValues;
   if (recordingLimitValues.size() == 0)
   {
-    recordingLimitValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_LIMIT_ASMANY, kodi::GetLocalizedString(MSG_KEEPALL)));
-    recordingLimitValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_LIMIT_1, kodi::GetLocalizedString(MSG_KEEP1)));
-    recordingLimitValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_LIMIT_2, kodi::GetLocalizedString(MSG_KEEP2)));
-    recordingLimitValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_LIMIT_3, kodi::GetLocalizedString(MSG_KEEP3)));
-    recordingLimitValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_LIMIT_4, kodi::GetLocalizedString(MSG_KEEP4)));
-    recordingLimitValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_LIMIT_5, kodi::GetLocalizedString(MSG_KEEP5)));
-    recordingLimitValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_LIMIT_6, kodi::GetLocalizedString(MSG_KEEP6)));
-    recordingLimitValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_LIMIT_7, kodi::GetLocalizedString(MSG_KEEP7)));
-    recordingLimitValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_LIMIT_10, kodi::GetLocalizedString(MSG_KEEP10)));
+    recordingLimitValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_LIMIT_ASMANY, kodi::addon::GetLocalizedString(MSG_KEEPALL)));
+    recordingLimitValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_LIMIT_1, kodi::addon::GetLocalizedString(MSG_KEEP1)));
+    recordingLimitValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_LIMIT_2, kodi::addon::GetLocalizedString(MSG_KEEP2)));
+    recordingLimitValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_LIMIT_3, kodi::addon::GetLocalizedString(MSG_KEEP3)));
+    recordingLimitValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_LIMIT_4, kodi::addon::GetLocalizedString(MSG_KEEP4)));
+    recordingLimitValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_LIMIT_5, kodi::addon::GetLocalizedString(MSG_KEEP5)));
+    recordingLimitValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_LIMIT_6, kodi::addon::GetLocalizedString(MSG_KEEP6)));
+    recordingLimitValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_LIMIT_7, kodi::addon::GetLocalizedString(MSG_KEEP7)));
+    recordingLimitValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_LIMIT_10, kodi::addon::GetLocalizedString(MSG_KEEP10)));
   }
 
   /* PVR_Timer.iPreventDuplicateEpisodes values and presentation.*/
   static std::vector<kodi::addon::PVRTypeIntValue> showTypeValues;
   if (showTypeValues.size() == 0)
   {
-    showTypeValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_SHOWTYPE_FIRSTRUNONLY, kodi::GetLocalizedString(MSG_SHOWTYPE_FIRSTRUNONLY)));
-    showTypeValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_SHOWTYPE_ANY, kodi::GetLocalizedString(MSG_SHOWTYPE_ANY)));
+    showTypeValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_SHOWTYPE_FIRSTRUNONLY, kodi::addon::GetLocalizedString(MSG_SHOWTYPE_FIRSTRUNONLY)));
+    showTypeValues.emplace_back(kodi::addon::PVRTypeIntValue(NEXTPVR_SHOWTYPE_ANY, kodi::addon::GetLocalizedString(MSG_SHOWTYPE_ANY)));
   }
 
   /* PVR_Timer.iRecordingGroup values and presentation */
@@ -492,7 +492,7 @@ PVR_ERROR Timers::GetTimerTypes(std::vector<kodi::addon::PVRTimerType>& types)
       /* Attributes. */
       TIMER_EPG_ATTRIBS,
       /* Description. */
-      kodi::GetLocalizedString(MSG_ONETIME_GUIDE), // "One time (guide)",
+      kodi::addon::GetLocalizedString(MSG_ONETIME_GUIDE), // "One time (guide)",
       /* Values definitions for attributes. */
       recordingLimitValues, m_defaultLimit, showTypeValues, m_defaultShowType, recordingGroupValues, 0);
     types.emplace_back(*t);
@@ -505,7 +505,7 @@ PVR_ERROR Timers::GetTimerTypes(std::vector<kodi::addon::PVRTimerType>& types)
         /* Attributes. */
         TIMER_MANUAL_ATTRIBS,
         /* Description. */
-        kodi::GetLocalizedString(MSG_ONETIME_MANUAL), // "One time (manual)",
+        kodi::addon::GetLocalizedString(MSG_ONETIME_MANUAL), // "One time (manual)",
         /* Values definitions for attributes. */
         recordingLimitValues, m_defaultLimit, showTypeValues, m_defaultShowType, recordingGroupValues, 0);
     types.emplace_back(*t);
@@ -518,7 +518,7 @@ PVR_ERROR Timers::GetTimerTypes(std::vector<kodi::addon::PVRTimerType>& types)
         /* Attributes. */
         TIMER_MANUAL_ATTRIBS | TIMER_REPEATING_MANUAL_ATTRIBS,
         /* Description. */
-        kodi::GetLocalizedString(MSG_REPEATING_MANUAL), // "Repeating (manual)"
+        kodi::addon::GetLocalizedString(MSG_REPEATING_MANUAL), // "Repeating (manual)"
         /* Values definitions for attributes. */
         recordingLimitValues, m_defaultLimit, showTypeValues, m_defaultShowType, recordingGroupValues, 0);
     types.emplace_back(*t);
@@ -531,7 +531,7 @@ PVR_ERROR Timers::GetTimerTypes(std::vector<kodi::addon::PVRTimerType>& types)
         /* Attributes. */
         TIMER_EPG_ATTRIBS | TIMER_REPEATING_EPG_ATTRIBS,
         /* Description. */
-        kodi::GetLocalizedString(MSG_REPEATING_GUIDE), // "Repeating (guide)"
+        kodi::addon::GetLocalizedString(MSG_REPEATING_GUIDE), // "Repeating (guide)"
         /* Values definitions for attributes. */
         recordingLimitValues, m_defaultLimit, showTypeValues, m_defaultShowType, recordingGroupValues, 0);
     types.emplace_back(*t);
@@ -544,7 +544,7 @@ PVR_ERROR Timers::GetTimerTypes(std::vector<kodi::addon::PVRTimerType>& types)
         /* Attributes. */
         TIMER_MANUAL_ATTRIBS | TIMER_CHILD_ATTRIBUTES,
         /* Description. */
-        kodi::GetLocalizedString(MSG_REPEATING_CHILD), // "Created by Repeating Timer"
+        kodi::addon::GetLocalizedString(MSG_REPEATING_CHILD), // "Created by Repeating Timer"
         /* Values definitions for attributes. */
         recordingLimitValues, m_defaultLimit, showTypeValues, m_defaultShowType, recordingGroupValues, 0);
     types.emplace_back(*t);
@@ -557,7 +557,7 @@ PVR_ERROR Timers::GetTimerTypes(std::vector<kodi::addon::PVRTimerType>& types)
         /* Attributes. */
         TIMER_EPG_ATTRIBS | TIMER_CHILD_ATTRIBUTES,
         /* Description. */
-        kodi::GetLocalizedString(MSG_REPEATING_CHILD), // "Created by Repeating Timer"
+        kodi::addon::GetLocalizedString(MSG_REPEATING_CHILD), // "Created by Repeating Timer"
         /* Values definitions for attributes. */
         recordingLimitValues, m_defaultLimit, showTypeValues, m_defaultShowType, recordingGroupValues, 0);
     types.emplace_back(*t);
@@ -570,7 +570,7 @@ PVR_ERROR Timers::GetTimerTypes(std::vector<kodi::addon::PVRTimerType>& types)
         /* Attributes. */
         TIMER_KEYWORD_ATTRIBS | TIMER_REPEATING_KEYWORD_ATTRIBS,
         /* Description. */
-        kodi::GetLocalizedString(MSG_REPEATING_KEYWORD), // "Repeating (keyword)"
+        kodi::addon::GetLocalizedString(MSG_REPEATING_KEYWORD), // "Repeating (keyword)"
         /* Values definitions for attributes. */
         recordingLimitValues, m_defaultLimit, showTypeValues, m_defaultShowType, recordingGroupValues, 0);
     types.emplace_back(*t);
@@ -582,7 +582,7 @@ PVR_ERROR Timers::GetTimerTypes(std::vector<kodi::addon::PVRTimerType>& types)
         /* Attributes. */
         TIMER_ADVANCED_ATTRIBS | TIMER_REPEATING_KEYWORD_ATTRIBS,
         /* Description. */
-        kodi::GetLocalizedString(MSG_REPEATING_ADVANCED), // "Repeating (advanced)"
+        kodi::addon::GetLocalizedString(MSG_REPEATING_ADVANCED), // "Repeating (advanced)"
         /* Values definitions for attributes. */
         recordingLimitValues, m_defaultLimit, showTypeValues, m_defaultShowType, recordingGroupValues, 0);
     types.emplace_back(*t);

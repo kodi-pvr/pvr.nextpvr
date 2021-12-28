@@ -214,7 +214,7 @@ bool ClientTimeShift::GetStreamInfo()
           }
           else
           {
-            kodi::QueueNotification(QUEUE_ERROR, kodi::GetLocalizedString(30190), kodi::GetLocalizedString(30053));
+            kodi::QueueNotification(QUEUE_ERROR, kodi::addon::GetLocalizedString(30190), kodi::addon::GetLocalizedString(30053));
           }
         }
         kodi::Log(ADDON_LOG_DEBUG, "CT channel.stream.info %lld %lld %d %lld", m_stream_length.load(), stream_duration, m_complete, m_rollingStartSeconds.load());

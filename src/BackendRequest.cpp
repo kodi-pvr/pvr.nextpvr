@@ -213,17 +213,17 @@ namespace NextPVR
       // found multiple hosts using discovery protocol.
       if (foundAddress.size() > 1)
       {
-        offset = kodi::gui::dialogs::Select::Show(kodi::GetLocalizedString(30187), entries);
+        offset = kodi::gui::dialogs::Select::Show(kodi::addon::GetLocalizedString(30187), entries);
       }
       if (offset >= 0)
       {
         kodi::vfs::CreateDirectory("special://userdata/addon_data/pvr.nextpvr/");
         m_settings.UpdateServerPort(entries[offset], atoi(foundAddress[offset][1].c_str()));
-        kodi::QueueNotification(QUEUE_INFO, kodi::GetLocalizedString(30189),
-          kodi::tools::StringUtils::Format(kodi::GetLocalizedString(30182).c_str(), m_settings.m_hostname.c_str(), m_settings.m_port));
+        kodi::QueueNotification(QUEUE_INFO, kodi::addon::GetLocalizedString(30189),
+          kodi::tools::StringUtils::Format(kodi::addon::GetLocalizedString(30182).c_str(), m_settings.m_hostname.c_str(), m_settings.m_port));
         /* note that these run before the file is created */
-        kodi::SetSettingString("host", m_settings.m_hostname);
-        kodi::SetSettingInt("port", m_settings.m_port);
+        kodi::addon::SetSettingString("host", m_settings.m_hostname);
+        kodi::addon::SetSettingInt("port", m_settings.m_port);
         return true;
       }
     }

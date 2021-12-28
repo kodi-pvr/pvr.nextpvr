@@ -81,7 +81,7 @@ void Buffer::LeaseWorker(void)
       else if (retval == LeaseClosed)
       {
         complete = true;
-        kodi::QueueNotification(QUEUE_ERROR, kodi::GetLocalizedString(30190), kodi::GetLocalizedString(30053));
+        kodi::QueueNotification(QUEUE_ERROR, kodi::addon::GetLocalizedString(30190), kodi::addon::GetLocalizedString(30053));
       }
       else
       {
