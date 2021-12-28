@@ -1,3 +1,7 @@
+v19.0.3
+- Translations updates from Weblate
+	- da_dk, es_mx
+
 v19.0.2
 - Fix for Kodi marking in-progress recordings as watched
 
