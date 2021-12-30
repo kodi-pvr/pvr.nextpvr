@@ -175,18 +175,8 @@ PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& r
 
 PVR_ERROR Channels::GetChannelGroupsAmount(int& amount)
 {
-  int groups = 0;
-  tinyxml2::XMLDocument doc;
-  if (m_request.DoMethodRequest("channel.groups", doc) == tinyxml2::XML_SUCCESS)
-  {
-    tinyxml2::XMLNode* groupsNode = doc.RootElement()->FirstChildElement("groups");
-    tinyxml2::XMLNode* pGroupNode;
-    for( pGroupNode = groupsNode->FirstChildElement("group"); pGroupNode; pGroupNode=pGroupNode->NextSiblingElement())
-    {
-      groups++;
-    }
-  }
-  amount = groups;
+  // this could be different from the number of backend groups if radio and TV are mixed or if groups are empty
+  amount = m_radioGroups.size() + m_tvGroups.size();
   return PVR_ERROR_NO_ERROR;
 }
 
