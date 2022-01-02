@@ -1,3 +1,6 @@
+v20.2.1
+- Used cached group counts for GetChannelGroupsAmount()
+
 v20.2.0
 - Translation updates by Weblate
 - Kodi main API update to version 2.0.0
