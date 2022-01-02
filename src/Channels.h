@@ -15,7 +15,7 @@
 namespace NextPVR
 {
 
-  class ATTRIBUTE_HIDDEN Channels
+  class ATTR_DLL_LOCAL Channels
   {
 
   public:

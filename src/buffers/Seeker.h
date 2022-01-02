@@ -16,7 +16,7 @@
 
 namespace timeshift {
 
-  class ATTRIBUTE_HIDDEN Seeker
+  class ATTR_DLL_LOCAL Seeker
   {
   public:
     Seeker(session_data_t *sd, CircularBuffer *cirBuf) :

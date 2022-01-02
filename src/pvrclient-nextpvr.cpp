@@ -76,8 +76,8 @@ std::string UriEncode(const std::string sSrc)
 /************************************************************/
 /** Class interface */
 
-cPVRClientNextPVR::cPVRClientNextPVR(const CNextPVRAddon& base, KODI_HANDLE instance, const std::string& kodiVersion) :
-  kodi::addon::CInstancePVRClient(instance, kodiVersion), m_base(base)
+cPVRClientNextPVR::cPVRClientNextPVR(const CNextPVRAddon& base, const kodi::addon::IInstanceInfo& instance) :
+  kodi::addon::CInstancePVRClient(instance), m_base(base)
 {
   m_bConnected = false;
   m_supportsLiveTimeshift = false;
@@ -169,14 +169,14 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
         else
         {
           m_request.DoActionRequest("session.logout");
-          SetConnectionState("Version failure", PVR_CONNECTION_STATE_VERSION_MISMATCH, kodi::GetLocalizedString(30050));
+          SetConnectionState("Version failure", PVR_CONNECTION_STATE_VERSION_MISMATCH, kodi::addon::GetLocalizedString(30050));
           status = ADDON_STATUS_PERMANENT_FAILURE;
         }
       }
       else
       {
         kodi::Log(ADDON_LOG_DEBUG, "session.login failed");
-        SetConnectionState("Access denied", PVR_CONNECTION_STATE_ACCESS_DENIED, kodi::GetLocalizedString(30052));
+        SetConnectionState("Access denied", PVR_CONNECTION_STATE_ACCESS_DENIED, kodi::addon::GetLocalizedString(30052));
         status = ADDON_STATUS_PERMANENT_FAILURE;
       }
     }
@@ -239,13 +239,13 @@ void cPVRClientNextPVR::ConfigurePostConnectionOptions()
         if (!enabled)
         {
           kodi::Log(ADDON_LOG_INFO, "%s installed but not enabled at startup", addonName.c_str());
-          kodi::QueueFormattedNotification(QueueMsg::QUEUE_ERROR, kodi::GetLocalizedString(30191).c_str(), addonName.c_str());
+          kodi::QueueFormattedNotification(QueueMsg::QUEUE_ERROR, kodi::addon::GetLocalizedString(30191).c_str(), addonName.c_str());
         }
       }
       else // Not installed
       {
         kodi::Log(ADDON_LOG_INFO, "%s not installed", addonName.c_str());
-        kodi::QueueFormattedNotification(QueueMsg::QUEUE_ERROR, kodi::GetLocalizedString(30192).c_str(), addonName.c_str());
+        kodi::QueueFormattedNotification(QueueMsg::QUEUE_ERROR, kodi::addon::GetLocalizedString(30192).c_str(), addonName.c_str());
       }
     }
 
@@ -260,7 +260,7 @@ void cPVRClientNextPVR::ConfigurePostConnectionOptions()
     }
   }
 
-  const bool liveStreams = kodi::GetSettingBoolean("uselivestreams");
+  const bool liveStreams = kodi::addon::GetSettingBoolean("uselivestreams");
   if (liveStreams)
       m_channels.LoadLiveStreams();
 
@@ -473,7 +473,7 @@ PVR_ERROR cPVRClientNextPVR::GetBackendVersion(std::string& version)
   if (m_bConnected)
     version = std::to_string(m_settings.m_backendVersion);
   else
-    version = kodi::GetLocalizedString(13205);
+    version = kodi::addon::GetLocalizedString(13205);
   return PVR_ERROR_NO_ERROR;
 }
 
@@ -481,7 +481,7 @@ PVR_ERROR cPVRClientNextPVR::GetConnectionString(std::string& connection)
 {
   connection = m_settings.m_hostname;
   if (!m_bConnected)
-    connection += ": " + kodi::GetLocalizedString(15208);
+    connection += ": " + kodi::addon::GetLocalizedString(15208);
   return PVR_ERROR_NO_ERROR;
 }
 

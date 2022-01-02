@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon
   id="pvr.nextpvr"
-  version="20.1.3"
+  version="20.2.0"
   name="NextPVR PVR Client"
   provider-name="Graeme Blackley">
   <requires>@ADDON_DEPENDS@
@@ -75,7 +75,7 @@
     <description lang="ca_ES">Frontal de NextPVR. És compatible amb les transmissions en línia de TV en directe i enregistraments, escolta d'emissores de ràdio i guia electrònica de programació (EPG).</description>
     <description lang="cs_CZ">Rozhraní NextPVR. Podporuje streamování živého vysílání a nahrávek, poslech kanálů rádia a televizní program.</description>
     <description lang="cy_GB">Blaen NextPVR. Mae'n cynnal ffrydio Teledu Byw a Recordiadau, gwrando ar sianeli Radio ac Amserlenni Rhaglenni Electronig.</description>
-    <description lang="da_DK">NextPVR frontend; understøtter streaming af direkte tv og optagelser, aflytning af radiokanaler og EPG.</description>
+    <description lang="da_DK">NextPVR frontend; understøtter streaming af direkte tv og optagelser, radiokanaler og EPG.</description>
     <description lang="de_DE">NextPVR Oberfläche. Unterstützt Live TV &amp; Aufnahmen, Radiokanäle und EPG.</description>
     <description lang="el_GR">Frontend για το NextPVR. Υποστηρίζει ροές Live TV &amp; Εγγραφές, ακρόαση Ραδιοφώνου και EPG.</description>
     <description lang="en_AU">NextPVR frontend. Supports streaming of Live TV &amp; Recordings, listening to Radio channels and EPG.</description>

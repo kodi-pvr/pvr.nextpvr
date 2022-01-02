@@ -29,19 +29,19 @@ void Settings::ReadFromAddon()
   /* Connection settings */
   /***********************/
 
-  std::string protocol = kodi::GetSettingString("hostprotocol", DEFAULT_PROTOCOL);
+  std::string protocol = kodi::addon::GetSettingString("hostprotocol", DEFAULT_PROTOCOL);
 
-  m_hostname = kodi::GetSettingString("host", DEFAULT_HOST);
+  m_hostname = kodi::addon::GetSettingString("host", DEFAULT_HOST);
   uri::decode(m_hostname);
 
-  m_port = kodi::GetSettingInt("port", DEFAULT_PORT);
+  m_port = kodi::addon::GetSettingInt("port", DEFAULT_PORT);
 
-  m_PIN = kodi::GetSettingString("pin", DEFAULT_PIN);
+  m_PIN = kodi::addon::GetSettingString("pin", DEFAULT_PIN);
 
   sprintf(m_urlBase, "%s://%.255s:%d", protocol.c_str(), m_hostname.c_str(), m_port);
 
-  m_enableWOL = kodi::GetSettingBoolean("wolenable", false);
-  m_hostMACAddress = kodi::GetSettingString("host_mac");
+  m_enableWOL = kodi::addon::GetSettingBoolean("wolenable", false);
+  m_hostMACAddress = kodi::addon::GetSettingString("host_mac");
   if (m_enableWOL)
   {
     if (m_hostMACAddress.empty())
@@ -50,31 +50,31 @@ void Settings::ReadFromAddon()
       m_enableWOL = false;
   }
 
-  m_timeoutWOL = kodi::GetSettingInt("woltimeout", 20);
+  m_timeoutWOL = kodi::addon::GetSettingInt("woltimeout", 20);
 
-  m_remoteAccess = kodi::GetSettingBoolean("remoteaccess", false);
+  m_remoteAccess = kodi::addon::GetSettingBoolean("remoteaccess", false);
 
-  m_liveStreamingMethod = kodi::GetSettingEnum<eStreamingMethod>("livestreamingmethod5", DEFAULT_LIVE_STREAM);
+  m_liveStreamingMethod = kodi::addon::GetSettingEnum<eStreamingMethod>("livestreamingmethod5", DEFAULT_LIVE_STREAM);
 
-  m_flattenRecording = kodi::GetSettingBoolean("flattenrecording", false);
+  m_flattenRecording = kodi::addon::GetSettingBoolean("flattenrecording", false);
 
-  m_separateSeasons = kodi::GetSettingBoolean("separateseasons", false);
+  m_separateSeasons = kodi::addon::GetSettingBoolean("separateseasons", false);
 
-  m_kodiLook = kodi::GetSettingBoolean("kodilook", false);
+  m_kodiLook = kodi::addon::GetSettingBoolean("kodilook", false);
 
-  m_prebuffer5 = kodi::GetSettingInt("prebuffer5", 0);
+  m_prebuffer5 = kodi::addon::GetSettingInt("prebuffer5", 0);
 
-  m_liveChunkSize = kodi::GetSettingInt("chunklivetv", 64);
+  m_liveChunkSize = kodi::addon::GetSettingInt("chunklivetv", 64);
 
-  m_chunkRecording = kodi::GetSettingInt("chunkrecording", 32);
+  m_chunkRecording = kodi::addon::GetSettingInt("chunkrecording", 32);
 
-  m_ignorePadding = kodi::GetSettingBoolean("ignorepadding", true);
+  m_ignorePadding = kodi::addon::GetSettingBoolean("ignorepadding", true);
 
-  m_resolution = kodi::GetSettingString("resolution",  "720");
+  m_resolution = kodi::addon::GetSettingString("resolution",  "720");
 
-  m_showRadio = kodi::GetSettingBoolean("showradio", true);
+  m_showRadio = kodi::addon::GetSettingBoolean("showradio", true);
 
-  m_backendResume = kodi::GetSettingBoolean("backendresume", true);
+  m_backendResume = kodi::addon::GetSettingBoolean("backendresume", true);
 
   m_connectionConfirmed = kodi::vfs::FileExists(connectionFlag);
 
@@ -83,21 +83,21 @@ void Settings::ReadFromAddon()
     m_downloadGuideArtwork = false;
     m_sendSidWithMetadata = true;
   }  else {
-    m_downloadGuideArtwork = kodi::GetSettingBoolean("guideartwork" ,DEFAULT_GUIDE_ARTWORK);
+    m_downloadGuideArtwork = kodi::addon::GetSettingBoolean("guideartwork" ,DEFAULT_GUIDE_ARTWORK);
     m_sendSidWithMetadata = false;
   }
 
-  m_guideArtPortrait = kodi::GetSettingBoolean("guideartworkportrait", false);
+  m_guideArtPortrait = kodi::addon::GetSettingBoolean("guideartworkportrait", false);
 
-  m_genreString = kodi::GetSettingBoolean("genrestring", false);
+  m_genreString = kodi::addon::GetSettingBoolean("genrestring", false);
 
-  m_showRecordingSize = kodi::GetSettingBoolean("recordingsize", false);
+  m_showRecordingSize = kodi::addon::GetSettingBoolean("recordingsize", false);
 
-  m_diskSpace = kodi::GetSettingString("diskspace", "Default");
+  m_diskSpace = kodi::addon::GetSettingString("diskspace", "Default");
 
-  m_transcodedTimeshift = kodi::GetSettingBoolean("ffmpegdirect", false);
+  m_transcodedTimeshift = kodi::addon::GetSettingBoolean("ffmpegdirect", false);
 
-  m_castcrew = kodi::GetSettingBoolean("castcrew", false);
+  m_castcrew = kodi::addon::GetSettingBoolean("castcrew", false);
 
 
   /* Log the current settings for debugging purposes */
@@ -122,7 +122,7 @@ ADDON_STATUS Settings::ReadBackendSettings()
       if (m_backendVersion < NEXTPVRC_MIN_VERSION)
       {
         kodi::Log(ADDON_LOG_ERROR, "NextPVR version '%d' is too old. Please upgrade to '%s' or higher!", m_backendVersion, NEXTPVRC_MIN_VERSION_STRING);
-        kodi::QueueNotification(QUEUE_ERROR, kodi::GetLocalizedString(30050), kodi::tools::StringUtils::Format(kodi::GetLocalizedString(30051).c_str(), NEXTPVRC_MIN_VERSION_STRING));
+        kodi::QueueNotification(QUEUE_ERROR, kodi::addon::GetLocalizedString(30050), kodi::tools::StringUtils::Format(kodi::addon::GetLocalizedString(30051).c_str(), NEXTPVRC_MIN_VERSION_STRING));
         return ADDON_STATUS_PERMANENT_FAILURE;
       }
     }
@@ -164,7 +164,7 @@ ADDON_STATUS Settings::ReadBackendSettings()
       kodi::Log(ADDON_LOG_DEBUG, "Server MAC address %4.4s...", macAddress.c_str());
       if (m_hostMACAddress != macAddress)
       {
-        kodi::SetSettingString("host_mac", macAddress);
+        kodi::addon::SetSettingString("host_mac", macAddress);
       }
     }
   }
@@ -193,7 +193,7 @@ void Settings::SetVersionSpecificSettings()
 
 }
 
-ADDON_STATUS Settings::SetValue(const std::string& settingName, const kodi::CSettingValue& settingValue)
+ADDON_STATUS Settings::SetValue(const std::string& settingName, const kodi::addon::CSettingValue& settingValue)
 {
   //Connection
   if (g_pvrclient==nullptr)

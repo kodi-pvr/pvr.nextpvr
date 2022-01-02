@@ -40,7 +40,7 @@ namespace timeshift {
   /**
    * Base class for all timeshift buffers
    */
-  class ATTRIBUTE_HIDDEN Buffer
+  class ATTR_DLL_LOCAL Buffer
   {
   public:
     Buffer() :

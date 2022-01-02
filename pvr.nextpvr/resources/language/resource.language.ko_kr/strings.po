@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: KODI Main\n"
-"Report-Msgid-Bugs-To: translations@kodi.tv\n"
+"Report-Msgid-Bugs-To: https://github.com/xbmc/xbmc/issues/\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "PO-Revision-Date: 2021-09-18 09:54+0000\n"
 "Last-Translator: Christian Gade <gade@kodi.tv>\n"
@@ -22,7 +22,7 @@ msgid "Kodi frontend for the NextPVR"
 msgstr "NextPVR을 위한 Kodi 프론트엔드"
 
 msgctxt "Addon Description"
-msgid "NextPVR frontend. Supports streaming of Live TV &amp; Recordings, listening to Radio channels and EPG."
+msgid "NextPVR frontend. Supports streaming of Live TV & Recordings, listening to Radio channels and EPG."
 msgstr "NextPVR 프론트엔드. 라이브 TV 스트리밍과 녹화, 라디오 청취, EPG를 지원합니다."
 
 msgctxt "Addon Disclaimer"

@@ -36,11 +36,11 @@ enum eNowPlaying
   Transcoding
 };
 
-class ATTRIBUTE_HIDDEN cPVRClientNextPVR : public kodi::addon::CInstancePVRClient
+class ATTR_DLL_LOCAL cPVRClientNextPVR : public kodi::addon::CInstancePVRClient
 {
 public:
   /* Class interface */
-   cPVRClientNextPVR(const CNextPVRAddon& base, KODI_HANDLE instance, const std::string& kodiVersion);
+   cPVRClientNextPVR(const CNextPVRAddon& base, const kodi::addon::IInstanceInfo& instance);
 
   ~cPVRClientNextPVR();
 

@@ -27,7 +27,7 @@
 
 namespace NextPVR
 {
-  class ATTRIBUTE_HIDDEN Request
+  class ATTR_DLL_LOCAL Request
   {
   public:
     /*

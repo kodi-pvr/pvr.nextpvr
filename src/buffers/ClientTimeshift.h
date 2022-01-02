@@ -16,7 +16,7 @@ using namespace NextPVR;
 
 namespace timeshift {
 
-  class ATTRIBUTE_HIDDEN ClientTimeShift : public RecordingBuffer
+  class ATTR_DLL_LOCAL ClientTimeShift : public RecordingBuffer
   {
   private:
     bool m_isPaused = false;

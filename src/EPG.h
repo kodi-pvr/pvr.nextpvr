@@ -15,7 +15,7 @@
 
 namespace NextPVR
 {
-  class ATTRIBUTE_HIDDEN EPG
+  class ATTR_DLL_LOCAL EPG
   {
   public:
     /**

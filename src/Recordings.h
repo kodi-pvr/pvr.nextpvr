@@ -17,7 +17,7 @@
 namespace NextPVR
 {
 
-  class ATTRIBUTE_HIDDEN Recordings
+  class ATTR_DLL_LOCAL Recordings
   {
 
   public:
