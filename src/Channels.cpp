@@ -191,19 +191,39 @@ PVR_RECORDING_CHANNEL_TYPE Channels::GetChannelType(unsigned int uid)
 
 PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsResultSet& results)
 {
-  // radioGroups.size() will be zero before 5.2 API
-  if (radio && m_radioGroups.size() == 0)
+  const std::unordered_set selectedGroups = radio ? m_radioGroups : m_tvGroups;
+  // Many users won't have radio groups
+  if (selectedGroups.size() == 0)
     return PVR_ERROR_NO_ERROR;
 
-  // empty groups will not be added
-  for (auto const& group : radio ? m_radioGroups : m_tvGroups)
+  tinyxml2::XMLDocument doc;
+  if (m_request.DoMethodRequest("channel.groups", doc) == tinyxml2::XML_SUCCESS)
   {
-    kodi::addon::PVRChannelGroup tag;
-    tag.SetIsRadio(radio);
-    tag.SetPosition(0);
-    tag.SetGroupName(group);
-    results.Add(tag);
+    tinyxml2::XMLNode* groupsNode = doc.RootElement()->FirstChildElement("groups");
+    tinyxml2::XMLNode* pGroupNode;
+    std::string group;
+    int priority = 1;
+    for (pGroupNode = groupsNode->FirstChildElement("group"); pGroupNode; pGroupNode = pGroupNode->NextSiblingElement())
+    {
+      if (XMLUtils::GetString(pGroupNode, "name", group))
+      {
+        // "All Channels" won't match any group, skip empty NextPVR groups
+        if (selectedGroups.find(group) != selectedGroups.end())
+        {
+          kodi::addon::PVRChannelGroup tag;
+          tag.SetIsRadio(radio);
+          tag.SetPosition(priority++);
+          tag.SetGroupName(group);
+          results.Add(tag);
+        }
+      }
+    }
   }
+  else
+  {
+    kodi::Log(ADDON_LOG_DEBUG, "No Channel Group");
+  }
+
   return PVR_ERROR_NO_ERROR;
 }
 

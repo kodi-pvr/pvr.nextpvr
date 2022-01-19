@@ -1,3 +1,6 @@
+v20.2.2
+- Send channel groups in NextPVR order
+
 v20.2.1
 - Used cached group counts for GetChannelGroupsAmount()
 
