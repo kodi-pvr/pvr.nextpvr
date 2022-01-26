@@ -210,20 +210,10 @@
           <default>false</default>
           <control type="toggle"/>
         </setting>
-        <setting help="30569" id="kodilook" label="30169" type="boolean">
-          <level>1</level>
-          <default>false</default>
-          <control type="toggle"/>
-        </setting>
-        <setting help="30680" id="flattenrecording" label="30180" type="boolean"  parent="kodilook">
+        <setting help="30680" id="flattenrecording" label="30180" type="boolean">
           <level>2</level>
           <default>false</default>
           <control type="toggle"/>
-          <dependencies>
-            <dependency type="visible">
-              <condition operator="is" setting="kodilook">true</condition>
-            </dependency>
-          </dependencies>
         </setting>
         <setting help="30699" id="ignorepadding" label="30199" type="boolean">
           <level>2</level>
@@ -270,6 +260,11 @@
     <category help="" id="deadsettings" label="">
       <!-- Avoid Kodi creating debug log messages for obsolete user settings -->>
       <group id="13">
+        <setting help="" id="kodilook" label="" type="boolean">
+          <level>4</level>
+          <default>false</default>
+          <control type="toggle"/>
+        </setting>
         <setting help="" id="usetimeshift" label="" type="boolean" option="hidden">
           <level>4</level>
           <default>false</default>

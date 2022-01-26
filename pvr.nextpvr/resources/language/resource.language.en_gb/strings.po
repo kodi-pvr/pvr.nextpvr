@@ -190,14 +190,6 @@ msgctxt "#30168"
 msgid "Recording chunk size"
 msgstr ""
 
-msgctxt "#30169"
-msgid "Kodi skin styled recordings"
-msgstr ""
-
-msgctxt "#30569"
-msgid "Separate title, season and episode for skin - season and episode numbers will not be shown in lists"
-msgstr ""
-
 msgctxt "#30170"
 msgid "Refresh cache for channel icons"
 msgstr ""
