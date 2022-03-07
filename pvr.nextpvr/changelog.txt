@@ -1,3 +1,6 @@
+v20.2.3
+- Remove backend forced season/episode support
+
 v20.2.2
 - Send channel groups in NextPVR order
 
