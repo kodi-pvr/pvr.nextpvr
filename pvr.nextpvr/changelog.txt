@@ -1,3 +1,7 @@
+v20.2.4
+- Translations updates from Weblate
+	- en_gb
+
 v20.2.3
 - Remove backend forced season/episode support
 
