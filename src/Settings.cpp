@@ -60,6 +60,8 @@ void Settings::ReadFromAddon()
 
   m_separateSeasons = kodi::addon::GetSettingBoolean("separateseasons", false);
 
+  m_showRoot = kodi::addon::GetSettingBoolean("showroot", false);
+
   m_prebuffer5 = kodi::addon::GetSettingInt("prebuffer5", 0);
 
   m_liveChunkSize = kodi::addon::GetSettingInt("chunklivetv", 64);
@@ -233,6 +235,8 @@ ADDON_STATUS Settings::SetValue(const std::string& settingName, const kodi::addo
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_ignorePadding, ADDON_STATUS_OK, ADDON_STATUS_OK);
   else if (settingName == "separateseasons")
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_separateSeasons, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
+  else if (settingName == "showroot")
+    return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_showRoot, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
   else if (settingName == "genrestring")
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_genreString, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
   else if (settingName == "host_mac")

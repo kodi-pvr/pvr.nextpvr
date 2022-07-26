@@ -215,9 +215,9 @@
           <default>false</default>
           <control type="toggle"/>
         </setting>
-        <setting help="30699" id="ignorepadding" label="30199" type="boolean">
+        <setting help="30701" id="showroot" label="30201" type="boolean">
           <level>2</level>
-          <default>true</default>
+          <default>false</default>
           <control type="toggle"/>
         </setting>
         <setting help="30693" id="separateseasons" label="30193" type="boolean">
@@ -248,6 +248,11 @@
         <setting help="30694" id="genrestring" label="30194" type="boolean">
           <level>1</level>
           <default>false</default>
+          <control type="toggle"/>
+        </setting>
+        <setting help="30699" id="ignorepadding" label="30199" type="boolean">
+          <level>2</level>
+          <default>true</default>
           <control type="toggle"/>
         </setting>
         <setting help="30700" id="backendresume" label="30200" type="boolean">

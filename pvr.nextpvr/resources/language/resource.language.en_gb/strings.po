@@ -345,3 +345,11 @@ msgstr ""
 msgctxt "#30700"
 msgid "When disabled resume location and watched status will be managed only in Kodi"
 msgstr ""
+
+msgctxt "#30201"
+msgid "Show root directory"
+msgstr ""
+
+msgctxt "#30701"
+msgid "Seperate recordings by the NextPVR recording folder"
+msgstr ""
