@@ -63,12 +63,9 @@ public:
   PVR_ERROR GetDriveSpace(uint64_t& total, uint64_t& used) override;
   PVR_ERROR GetSignalStatus(int channelUid, kodi::addon::PVRSignalStatus& signalStatus) override;
 
-  bool IsChannelAPlugin(int uid);
-
   /* Live stream handling */
   bool OpenLiveStream(const kodi::addon::PVRChannel& channel) override;
   void CloseLiveStream() override;
-
 
   int ReadLiveStream(unsigned char* buffer, unsigned int size) override;
   int64_t SeekLiveStream(int64_t position, int whence) override;
@@ -103,7 +100,6 @@ public:
   Recordings& m_recordings = Recordings::GetInstance();
   Timers& m_timers = Timers::GetInstance();
   time_t m_lastRecordingUpdateTime;
-  time_t m_nextServerCheck = 0;
   time_t m_lastEPGUpdateTime = 0;
   eNowPlaying m_nowPlaying = NotPlaying;
 
@@ -142,21 +138,17 @@ protected:
 private:
   void ConfigurePostConnectionOptions();
   const CNextPVRAddon& m_base;
-  void Close();
 
   bool m_bConnected;
   std::atomic<bool> m_running = {false};
   std::thread m_thread;
   bool m_supportsLiveTimeshift;
 
-
-  time_t m_tsbStartTime;
   int m_timeShiftBufferSeconds;
   timeshift::Buffer* m_timeshiftBuffer;
   timeshift::Buffer* m_livePlayer;
   timeshift::Buffer* m_realTimeBuffer;
   timeshift::RecordingBuffer* m_recordingBuffer;
-
 
   //Matrix changes
   NextPVR::Settings& m_settings = NextPVR::Settings::GetInstance();
@@ -165,5 +157,6 @@ private:
   void SetConnectionState(std::string message, PVR_CONNECTION_STATE state, std::string displayMessage = "");
   PVR_CONNECTION_STATE m_connectionState = PVR_CONNECTION_STATE_UNKNOWN;
   PVR_CONNECTION_STATE m_coreState = PVR_CONNECTION_STATE_UNKNOWN;
-
+  time_t m_firstSessionInitiate = 0;
+  time_t m_nextServerCheck = 0;
 };

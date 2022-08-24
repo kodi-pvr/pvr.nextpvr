@@ -1,5 +1,6 @@
 v20.2.4
 - All sorting by recording directory
+- Allow faster reconnect attempts on startup
 
 v20.2.3
 - Remove backend forced season/episode support

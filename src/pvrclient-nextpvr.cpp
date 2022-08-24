@@ -73,6 +73,14 @@ std::string UriEncode(const std::string sSrc)
   return sResult;
 }
 
+#define SLOW_CONNECT_POLL 60
+#define FAST_CONNECT_POLL 5
+
+/* needs extra time to start of zeroconf tuner connection fails 
+* this timeout is 60 seconds so wait a short time afterwards */
+
+#define FAST_SLOW_POLL_TRANSITION 65
+
 /************************************************************/
 /** Class interface */
 
@@ -127,6 +135,8 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
     SendWakeOnLan();
   m_request.ClearSID();
   tinyxml2::XMLDocument doc;
+  if (m_firstSessionInitiate == 0)
+    m_firstSessionInitiate = time(nullptr);
   if (m_request.DoMethodRequest("session.initiate&ver=1.0&device=xbmc", doc) == tinyxml2::XML_SUCCESS)
   {
     std::string salt;
@@ -194,7 +204,10 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
         SetConnectionState("Connnecting", PVR_CONNECTION_STATE_CONNECTING);
       }
       m_connectionState = PVR_CONNECTION_STATE_SERVER_UNREACHABLE;
-      m_nextServerCheck = time(nullptr) + 60;
+      if (time(nullptr) > m_firstSessionInitiate + FAST_SLOW_POLL_TRANSITION)
+        m_nextServerCheck = time(nullptr) + SLOW_CONNECT_POLL;
+      else
+        m_nextServerCheck = time(nullptr) + FAST_CONNECT_POLL;
     }
     else
     {
@@ -351,7 +364,7 @@ bool cPVRClientNextPVR::IsUp()
         else if (m_connectionState == PVR_CONNECTION_STATE_SERVER_UNREACHABLE)
         {
           SetConnectionState("Lost connection", PVR_CONNECTION_STATE_SERVER_UNREACHABLE);
-          m_nextServerCheck = time(nullptr) + 60;
+          m_nextServerCheck = time(nullptr) + SLOW_CONNECT_POLL;
           m_bConnected = false;
         }
       }
@@ -374,7 +387,7 @@ bool cPVRClientNextPVR::IsUp()
   {
     if (time(nullptr) > m_nextServerCheck)
     {
-      m_nextServerCheck = time(nullptr) + 60;
+      m_nextServerCheck = time(nullptr) + SLOW_CONNECT_POLL;
       Connect(false);
       if (m_bConnected)
       {
@@ -407,7 +420,7 @@ PVR_ERROR cPVRClientNextPVR::OnSystemWake()
 {
   kodi::Log(ADDON_LOG_DEBUG, "NextPVR wake");
   // allow time for core to reset
-  m_lastRecordingUpdateTime = time(nullptr) + 60;
+  m_lastRecordingUpdateTime = time(nullptr) + SLOW_CONNECT_POLL;
   m_nextServerCheck = 0;
   // don't trigger updates core does it
   SetConnectionState("Reconnect", PVR_CONNECTION_STATE_UNKNOWN);
