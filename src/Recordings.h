@@ -65,6 +65,7 @@ namespace NextPVR
     mutable std::mutex m_mutexSpace;
     uint64_t m_total = 0;
     uint64_t m_used = 0;
+    std::vector<std::string> extraDirectories;
 
   };
 } // namespace NextPVR

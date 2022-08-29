@@ -117,6 +117,30 @@ PVR_ERROR Recordings::GetRecordings(bool deleted, kodi::addon::PVRRecordingsResu
   m_playCount.clear();
   int recordingCount = 0;
   tinyxml2::XMLDocument doc;
+  if (m_settings.m_showRoot)
+  {
+    extraDirectories.clear();
+
+    if (m_request.DoMethodRequest("setting.get&key=/Settings/Recording/ExtraRecordingDirectories", doc) == tinyxml2::XML_SUCCESS)
+    {
+      tinyxml2::XMLNode* getKey = doc.RootElement();
+      std::string value;
+      XMLUtils::GetString(getKey, "value", value);
+      value = kodi::tools::StringUtils::TrimRight(value, "~");
+      kodi::Log(ADDON_LOG_DEBUG, value.c_str());
+      extraDirectories = kodi::tools::StringUtils::Split(value, "~", 0);
+    }
+    if (m_request.DoMethodRequest("setting.get&key=/Settings/Recording/RecordingDirectory", doc) == tinyxml2::XML_SUCCESS)
+    {
+      tinyxml2::XMLNode* getKey = doc.RootElement();
+      std::string value;
+      XMLUtils::GetString(getKey, "value", value);
+      if (!value.empty()) {
+        extraDirectories.emplace_back("Default");
+        extraDirectories.emplace_back(value);
+      }
+    }
+  }
   if (m_request.DoMethodRequest("recording.list&filter=all", doc) == tinyxml2::XML_SUCCESS)
   {
     tinyxml2::XMLNode* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
@@ -204,7 +228,12 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
   tag.SetTitle(title);
 
   XMLUtils::GetString(pRecordingNode, "start_time_ticks", buffer);
-  tag.SetRecordingTime(stol(buffer));
+  try {
+    tag.SetRecordingTime(std::stol(buffer));
+  }
+  catch (int e) {
+    kodi::Log(ADDON_LOG_ERROR, "Invalid start time %s", buffer.c_str());
+  }
 
   std::string status;
   XMLUtils::GetString(pRecordingNode, "status", status);
@@ -287,7 +316,10 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
     {
       if (m_settings.m_separateSeasons && multipleSeasons && tag.GetSeriesNumber() != PVR_RECORDING_INVALID_SERIES_EPISODE)
       {
-        tag.SetDirectory(kodi::tools::StringUtils::Format("/%s/%s %d", tag.GetTitle().c_str(), kodi::addon::GetLocalizedString(20373).c_str(), tag.GetSeriesNumber()));
+        if (status != "Failed")
+          tag.SetDirectory(kodi::tools::StringUtils::Format("/%s/%s %d", tag.GetTitle().c_str(), kodi::addon::GetLocalizedString(20373).c_str(), tag.GetSeriesNumber()));
+        else
+          tag.SetDirectory(kodi::tools::StringUtils::Format("/%s/%s/%s %d", kodi::addon::GetLocalizedString(30166).c_str(),tag.GetTitle().c_str(), kodi::addon::GetLocalizedString(20373).c_str(), tag.GetSeriesNumber()));
       }
     }
   }
@@ -330,6 +362,26 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
   std::string recordingFile;
   if (XMLUtils::GetString(pRecordingNode, "file", recordingFile))
   {
+    if (m_settings.m_showRoot && status != "Failed")
+    {
+      const std::string original = tag.GetDirectory();
+      std::string root = "Other";
+      for (std::vector<std::string>::iterator i = extraDirectories.begin(); i != extraDirectories.end(); i += 2)
+      {
+        if (kodi::tools::StringUtils::StartsWith(recordingFile, *(i + 1)))
+        {
+          int lengthDirectory = (*(i + 1)).length();
+          if (( root == "Other" || root.length() < lengthDirectory ) && recordingFile.length() > lengthDirectory )
+          {
+            char seperator = recordingFile.at(lengthDirectory);
+            if (seperator == '\\' || seperator == '/')
+              root = *i;
+          }
+        }
+      }
+      tag.SetDirectory("/" + root + original);
+    }
+
     int64_t filesize = 0;
     if (XMLUtils::GetLong(pRecordingNode, "size", filesize))
     {

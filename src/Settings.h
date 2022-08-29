@@ -99,6 +99,7 @@ namespace NextPVR
     std::string m_diskSpace = "No";
     bool m_flattenRecording = false;
     bool m_separateSeasons = true;
+    bool m_showRoot = false;
     int m_chunkRecording = 32;
 
     //Timers
