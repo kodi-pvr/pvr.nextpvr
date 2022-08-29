@@ -5,16 +5,17 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: KODI Main\n"
-"Report-Msgid-Bugs-To: https://github.com/xbmc/xbmc/issues/\n"
+"Report-Msgid-Bugs-To: translations@kodi.tv\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Kodi Translation Team\n"
-"Language-Team: Croatian (Croatia) (http://www.transifex.com/projects/p/kodi-main/language/hr_HR/)\n"
-"Language: hr_HR\n"
+"PO-Revision-Date: 2022-03-06 18:03+0000\n"
+"Last-Translator: Christian Gade <gade@kodi.tv>\n"
+"Language-Team: Croatian <https://kodi.weblate.cloud/projects/kodi-add-ons-pvr-clients/pvr-nextpvr/hr_hr/>\n"
+"Language: hr_hr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"X-Generator: Weblate 4.11.2\n"
 
 msgctxt "Addon Summary"
 msgid "Kodi frontend for the NextPVR"
@@ -26,11 +27,11 @@ msgstr "NextPVR sučelje. Podržava stremanje i snimanje TV programa, slušanje 
 
 msgctxt "Addon Disclaimer"
 msgid "This is a work in progress. Use at your own risk."
-msgstr "NextPVR PVR klijent je je još uvijek pod razvojem. Koristite ga na vlastitu odgovornost."
+msgstr "Ovo je još uvijek u razvoju. Koristite ga na vlastitu odgovornost."
 
 msgctxt "#30000"
 msgid "NextPVR hostname"
-msgstr ""
+msgstr "NextPVR naziv računala"
 
 msgctxt "#30001"
 msgid "NextPVR port (usually 8866)"
@@ -42,7 +43,7 @@ msgstr "NextPVR PIN kôd"
 
 msgctxt "#30003"
 msgid "Enable timeshift with live TV"
-msgstr ""
+msgstr "Omogućiti vremensko premotavanje za TV programe"
 
 msgctxt "#30603"
 msgid "Open settings dialog for inputstream.ffmpegdirect for modification of timeshift settings"
@@ -50,7 +51,7 @@ msgstr ""
 
 msgctxt "#30004"
 msgid "Download TV guide artwork"
-msgstr ""
+msgstr "Preuzmi poster TV vodiča"
 
 msgctxt "#30504"
 msgid "Not enabled for Matrix when remote"
@@ -99,7 +100,7 @@ msgstr "Ponavljajuće (EPG vodič)"
 
 msgctxt "#30144"
 msgid "Child recording"
-msgstr ""
+msgstr "Podsnimke"
 
 msgctxt "#30145"
 msgid "Repeating (keyword)"
@@ -167,11 +168,11 @@ msgstr "MAC adresa NextPVR servera"
 
 msgctxt "#30166"
 msgid "Failed recordings"
-msgstr ""
+msgstr "Neuspješna Snimanja"
 
 msgctxt "#30167"
 msgid "Live TV chunk size"
-msgstr ""
+msgstr "TV Uživo veličina komada"
 
 msgctxt "#30567"
 msgid "Change chunk size for LAN performance"
@@ -179,7 +180,7 @@ msgstr ""
 
 msgctxt "#30168"
 msgid "Recording chunk size"
-msgstr ""
+msgstr "Veličina komada za snimanje"
 
 msgctxt "#30169"
 msgid "Kodi skin styled recordings"
@@ -191,7 +192,7 @@ msgstr ""
 
 msgctxt "#30170"
 msgid "Refresh cache for channel icons"
-msgstr ""
+msgstr "Osvježi predmemoriju za prikaz ikona programa"
 
 msgctxt "#30171"
 msgid "Repeating (advanced)"
