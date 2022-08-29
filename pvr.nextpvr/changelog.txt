@@ -1,3 +1,5 @@
+v19.0.4
+- Backport start fast poll change from PR 214
 v19.0.3
 - Translations updates from Weblate
 	- da_dk, es_mx

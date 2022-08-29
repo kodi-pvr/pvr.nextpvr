@@ -151,14 +151,12 @@ private:
   std::thread m_thread;
   bool m_supportsLiveTimeshift;
 
-
   time_t m_tsbStartTime;
   int m_timeShiftBufferSeconds;
   timeshift::Buffer* m_timeshiftBuffer;
   timeshift::Buffer* m_livePlayer;
   timeshift::Buffer* m_realTimeBuffer;
   timeshift::RecordingBuffer* m_recordingBuffer;
-
 
   //Matrix changes
   NextPVR::Settings& m_settings = NextPVR::Settings::GetInstance();
@@ -167,5 +165,6 @@ private:
   void SetConnectionState(std::string message, PVR_CONNECTION_STATE state, std::string displayMessage = "");
   PVR_CONNECTION_STATE m_connectionState = PVR_CONNECTION_STATE_UNKNOWN;
   PVR_CONNECTION_STATE m_coreState = PVR_CONNECTION_STATE_UNKNOWN;
+  time_t m_firstSessionInitiate = 0;
 
 };
