@@ -1,3 +1,6 @@
+v19.0.5
+- Backport advanced recording title search from PR 220
+
 v19.0.4
 - Backport start fast poll change from PR 214
 v19.0.3
