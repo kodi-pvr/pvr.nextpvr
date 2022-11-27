@@ -1,5 +1,6 @@
 v20.3.1
 - Implement advanced recording title search
+- Adjust for Nexus change in Channel Group order
 
 v20.3.0
 - Kodi inputstream API update to version 3.2.0
