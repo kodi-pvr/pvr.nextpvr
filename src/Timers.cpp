@@ -674,8 +674,8 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
   switch (timer.GetTimerType())
   {
   case TIMER_ONCE_MANUAL:
-    kodi::Log(ADDON_LOG_DEBUG, "TIMER_ONCE_MANUAL");
     // build one-off recording request
+    kodi::Log(ADDON_LOG_DEBUG, "TIMER_ONCE_MANUAL");
     request = kodi::tools::StringUtils::Format("recording.save&name=%s&recording_id=%d&channel=%d&time_t=%d&duration=%d&pre_padding=%d&post_padding=%d&directory_id=%s",
       encodedName.c_str(),
       timer.GetClientIndex(),
@@ -685,11 +685,11 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
       marginStart,
       marginEnd,
       directory.c_str()
-      );
+    );
     break;
   case TIMER_ONCE_EPG:
-    kodi::Log(ADDON_LOG_DEBUG, "TIMER_ONCE_EPG");
     // build one-off recording request
+    kodi::Log(ADDON_LOG_DEBUG, "TIMER_ONCE_EPG");
     request = kodi::tools::StringUtils::Format("recording.save&recording_id=%d&event_id=%d&pre_padding=%d&post_padding=%d&directory_id=%s",
       timer.GetClientIndex(),
       epgOid,
@@ -699,8 +699,8 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
     break;
 
   case TIMER_ONCE_EPG_CHILD:
-    kodi::Log(ADDON_LOG_DEBUG, "TIMER_ONCE_EPG_CHILD");
     // build one-off recording request
+    kodi::Log(ADDON_LOG_DEBUG, "TIMER_ONCE_EPG_CHILD");
     request = kodi::tools::StringUtils::Format("recording.save&recording_id=%d&recurring_id=%d&event_id=%d&pre_padding=%d&post_padding=%d&directory_id=%s",
       timer.GetClientIndex(),
       timer.GetParentClientIndex(),
@@ -712,10 +712,10 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
 
   case TIMER_REPEATING_EPG:
     if (timer.GetClientChannelUid() == PVR_TIMER_ANY_CHANNEL)
-    // Fake a manual recording not a specific type in NextPVR
     {
       if (timer.GetEPGSearchString() == TYPE_7_TITLE)
       {
+        // build recurring recording title keyword request
         kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_EPG ANY CHANNEL - TYPE 7");
         request = kodi::tools::StringUtils::Format("recording.recurring.save&type=7&recurring_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s%s",
           timer.GetClientIndex(),
@@ -727,10 +727,11 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
           days.c_str(),
           directory.c_str(),
           enabled.c_str()
-          );
+        );
       }
       else
       {
+        // build recurring recording title keyword request
         kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_EPG ANY CHANNEL");
         std::string title = encodedName + "%";
         request = kodi::tools::StringUtils::Format("recording.recurring.save&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s&keyword=%s%s",
@@ -745,13 +746,13 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
           directory.c_str(),
           title.c_str(),
           enabled.c_str()
-          );
+        );
       }
     }
     else
     {
-      kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_EPG");
       // build recurring recording request
+      kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_EPG");
       request = kodi::tools::StringUtils::Format("recording.recurring.save&recurring_id=%d&channel_id=%d&event_id=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s&only_new=%s%s",
         timer.GetClientIndex(),
         timer.GetClientChannelUid(),
@@ -763,13 +764,13 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
         directory.c_str(),
         preventDuplicates,
         enabled.c_str()
-        );
+      );
     }
     break;
 
   case TIMER_REPEATING_MANUAL:
-    kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_MANUAL");
     // build manual recurring request
+    kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_MANUAL");
     request = kodi::tools::StringUtils::Format("recording.recurring.save&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s%s",
       timer.GetClientIndex(),
       encodedName.c_str(),
@@ -782,12 +783,12 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
       days.c_str(),
       directory.c_str(),
       enabled.c_str()
-      );
+    );
     break;
 
   case TIMER_REPEATING_KEYWORD:
+    // build manual recurring keyword request
     kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_KEYWORD");
-    // build manual recurring request
     request = kodi::tools::StringUtils::Format("recording.recurring.save&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&directory_id=%s&keyword=%s&only_new=%s%s",
       timer.GetClientIndex(),
       encodedName.c_str(),
@@ -801,23 +802,26 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
       encodedKeyword.c_str(),
       preventDuplicates,
       enabled.c_str()
-      );
+    );
     break;
 
   case TIMER_REPEATING_ADVANCED:
-    kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_ADVANCED");
     // build manual advanced recurring request
-    request = kodi::tools::StringUtils::Format("recording.recurring.save&recurring_type=advanced&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&directory_id=%s&advanced=%s&only_new=%s%s",
+    kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_ADVANCED");
+    std::string searchText;
+    if (timer.GetFullTextEpgSearch())
+      searchText = encodedKeyword;
+    else
+      searchText = UriEncode(kodi::tools::StringUtils::Format("title like \"%s\"", timer.GetEPGSearchString().c_str()));
+    request = kodi::tools::StringUtils::Format("recording.recurring.save&recurring_type=advanced&recurring_id=%d&name=%s&channel_id=%d&keep=%d&pre_padding=%d&post_padding=%d&directory_id=%s&advanced=%s&only_new=%s%s",
       timer.GetClientIndex(),
       encodedName.c_str(),
       timer.GetClientChannelUid(),
-      static_cast<int>(timer.GetStartTime()),
-      static_cast<int>(timer.GetEndTime()),
       timer.GetMaxRecordings(),
       marginStart,
       marginEnd,
       directory.c_str(),
-      encodedKeyword.c_str(),
+      searchText.c_str(),
       preventDuplicates,
       enabled.c_str()
       );
