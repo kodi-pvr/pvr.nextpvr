@@ -80,6 +80,9 @@ void Channels::DeleteChannelIcons()
 
 PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& results)
 {
+  if (radio && !m_settings.m_showRadio)
+    return PVR_ERROR_NO_ERROR;
+
   std::string stream;
   std::map<int, std::pair<bool, bool>>::iterator  itr = m_channelDetails.begin();
   while (itr != m_channelDetails.end())
@@ -89,11 +92,6 @@ PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& r
     else
       ++itr;
   }
-
-  if (radio)
-    m_radioGroups.clear();
-  else
-    m_tvGroups.clear();
 
   tinyxml2::XMLDocument doc;
   if (m_request.DoMethodRequest("channel.list&extras=true", doc) == tinyxml2::XML_SUCCESS)
@@ -143,19 +141,6 @@ PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& r
           tag.SetIconPath(iconFile);
       }
 
-      buffer.clear();
-      if (XMLUtils::GetAdditiveString(pChannelNode->FirstChildElement("groups"), "group", "\t", buffer, true))
-      {
-        std::vector<std::string> groups = kodi::tools::StringUtils::Split(buffer, '\t');
-        for(auto const& group : groups)
-        {
-          if (!radio && m_tvGroups.find(group) == m_tvGroups.end())
-            m_tvGroups.insert(group);
-          else if (radio && m_radioGroups.find(group) == m_radioGroups.end())
-            m_radioGroups.insert(group);
-        }
-      }
-
       // V5 has the EPG source type info.
       std::string epg;
       if (XMLUtils::GetString(pChannelNode, "epg", epg))
@@ -191,12 +176,49 @@ PVR_RECORDING_CHANNEL_TYPE Channels::GetChannelType(unsigned int uid)
 
 PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsResultSet& results)
 {
-  const std::unordered_set selectedGroups = radio ? m_radioGroups : m_tvGroups;
+  if (radio && !m_settings.m_showRadio)
+    return PVR_ERROR_NO_ERROR;
+
+  std::unordered_set selectedGroups = radio ? m_radioGroups : m_tvGroups;
+
+  selectedGroups.clear();
+  tinyxml2::XMLDocument doc;
+  if (m_request.DoMethodRequest("channel.list&extras=true", doc) == tinyxml2::XML_SUCCESS)
+  {
+    tinyxml2::XMLNode* channelsNode = doc.RootElement()->FirstChildElement("channels");
+    tinyxml2::XMLNode* pChannelNode;
+    for( pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode=pChannelNode->NextSiblingElement())
+    {
+      std::string buffer;
+      if (XMLUtils::GetAdditiveString(pChannelNode->FirstChildElement("groups"), "group", "\t", buffer, true))
+      {
+        std::vector<std::string> groups = kodi::tools::StringUtils::Split(buffer, '\t');
+        bool foundRadio = false;
+        buffer.clear();
+        XMLUtils::GetString(pChannelNode, "type", buffer);
+        if ( buffer == "0xa")
+        {
+          foundRadio = true;
+        }
+        if (radio == foundRadio)
+        {
+          for(auto const& group : groups)
+          {
+            if (selectedGroups.find(group) == selectedGroups.end())
+            {
+              selectedGroups.insert(group);
+            }
+          }
+        }
+      }
+    }
+  }
+
   // Many users won't have radio groups
   if (selectedGroups.size() == 0)
     return PVR_ERROR_NO_ERROR;
 
-  tinyxml2::XMLDocument doc;
+  doc.Clear();
   if (m_request.DoMethodRequest("channel.groups", doc) == tinyxml2::XML_SUCCESS)
   {
     tinyxml2::XMLNode* groupsNode = doc.RootElement()->FirstChildElement("groups");
