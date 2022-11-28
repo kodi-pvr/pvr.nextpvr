@@ -262,33 +262,5 @@
         </setting>
       </group>
     </category>
-    <category help="" id="deadsettings" label="">
-      <!-- Avoid Kodi creating debug log messages for obsolete user settings -->>
-      <group id="13">
-        <setting help="" id="kodilook" label="" type="boolean">
-          <level>4</level>
-          <default>false</default>
-          <control type="toggle"/>
-        </setting>
-        <setting help="" id="usetimeshift" label="" type="boolean" option="hidden">
-          <level>4</level>
-          <default>false</default>
-          <control type="toggle"/>
-        </setting>
-        <setting help="" id="legacy" label="30177" type="boolean" option="hidden">
-          <level>4</level>
-          <default>false</default>
-          <control type="toggle"/>
-        </setting>
-        <setting help="" id="prebuffer" label="30162" type="integer" option="hidden">
-          <level>4</level>
-          <default>8</default>
-        </setting>
-        <setting help="Timeshift" id="livestreamingmethod" label="30172" type="integer" option="hidden">
-          <level>4</level>
-          <default>2</default>
-        </setting>
-      </group>
-    </category>
   </section>
 </settings>

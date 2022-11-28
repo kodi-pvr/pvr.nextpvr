@@ -7,6 +7,8 @@
 
 #include "addon.h"
 #include "pvrclient-nextpvr.h"
+#include "AddonSettings.h"
+#include "utilities/SettingsMigration.h"
 /* User adjustable settings are saved here.
  * Default values are defined inside addon.h
  * and exported to the other source files.
@@ -21,8 +23,12 @@
 // must be performed here.
 //-----------------------------------------------------------------------------
 
+using namespace NextPVR;
+using namespace NextPVR::utilities;
+
 ADDON_STATUS CNextPVRAddon::Create()
 {
+  m_settings.reset(new AddonSettings());
   kodi::Log(ADDON_LOG_INFO, "Creating NextPVR PVR-Client");
   return ADDON_STATUS_OK;
 }
@@ -33,6 +39,14 @@ ADDON_STATUS CNextPVRAddon::CreateInstance(const kodi::addon::IInstanceInfo& ins
 
   /* Create connection to NextPVR KODI TV client */
   cPVRClientNextPVR* client = new cPVRClientNextPVR(*this, instance);
+
+  if (SettingsMigration::MigrateSettings(*client))
+  {
+    // Initial client operated on old/incomplete settings
+    delete client;
+    client = new cPVRClientNextPVR(*this, instance);
+  }
+
   ADDON_STATUS status = client->Connect();
 
   if (status != ADDON_STATUS_PERMANENT_FAILURE)
@@ -62,10 +76,9 @@ void CNextPVRAddon::DestroyInstance(const kodi::addon::IInstanceInfo& instance,
 }
 
 ADDON_STATUS CNextPVRAddon::SetSetting(const std::string& settingName,
-  const kodi::addon::CSettingValue& settingValue)
+                                   const kodi::addon::CSettingValue& settingValue)
 {
-  //return m_settings->SetSetting(settingName, settingValue);
-  return ADDON_STATUS_OK;
+  return m_settings->SetSetting(settingName, settingValue);
 }
 
 

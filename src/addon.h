@@ -17,6 +17,10 @@
 #include <kodi/AddonBase.h>
 #include <unordered_map>
 
+namespace NextPVR
+{
+  class AddonSettings;
+}
 
 class cPVRClientNextPVR;
 
@@ -35,6 +39,7 @@ public:
 
 private:
   std::unordered_map<std::string, cPVRClientNextPVR*> m_usedInstances;
+  std::shared_ptr<NextPVR::AddonSettings> m_settings;
 };
 
 typedef unsigned char byte;
