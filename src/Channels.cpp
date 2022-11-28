@@ -62,7 +62,7 @@ std::string Channels::GetChannelIcon(int channelID)
 
 std::string Channels::GetChannelIconFileName(int channelID)
 {
-  return kodi::tools::StringUtils::Format("special://userdata/addon_data/pvr.nextpvr/nextpvr-ch%d.png", channelID);
+  return kodi::tools::StringUtils::Format("%snextpvr-ch%d.png",m_settings->m_instanceDirectory.c_str(), channelID);
 }
 
 void  Channels::DeleteChannelIcon(int channelID)
@@ -73,7 +73,7 @@ void  Channels::DeleteChannelIcon(int channelID)
 void Channels::DeleteChannelIcons()
 {
   std::vector<kodi::vfs::CDirEntry> icons;
-  if (kodi::vfs::GetDirectory("special://userdata/addon_data/pvr.nextpvr/", "nextpvr-ch*.png", icons))
+  if (kodi::vfs::GetDirectory(m_settings->m_instanceDirectory, "nextpvr-ch*.png", icons))
   {
     kodi::Log(ADDON_LOG_INFO, "Deleting %d channel icons", icons.size());
     for (auto const& it : icons)
@@ -296,10 +296,10 @@ void Channels::LoadLiveStreams()
 {
   const std::string URL = "/public/LiveStreams.xml";
   m_liveStreams.clear();
-  if (m_request.FileCopy(URL.c_str(), "special://userdata/addon_data/pvr.nextpvr/LiveStreams.xml") == HTTP_OK)
+  if (m_request.FileCopy(URL.c_str(), m_settings->m_instanceDirectory + "LiveStreams.xml") == HTTP_OK)
   {
     tinyxml2::XMLDocument doc;
-    std::string liveStreams = kodi::vfs::TranslateSpecialProtocol("special://userdata/addon_data/pvr.nextpvr/LiveStreams.xml");
+    std::string liveStreams = kodi::vfs::TranslateSpecialProtocol(m_settings->m_instanceDirectory + "LiveStreams.xml");
     kodi::Log(ADDON_LOG_DEBUG, "Loading LiveStreams.xml %s", liveStreams.c_str());
     if (doc.LoadFile(liveStreams.c_str()) == tinyxml2::XML_SUCCESS)
     {

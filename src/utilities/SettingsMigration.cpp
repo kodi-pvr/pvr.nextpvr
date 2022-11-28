@@ -74,6 +74,8 @@ bool SettingsMigration::MigrateSettings(kodi::addon::IAddonInstance& target)
     // Read pre-multi-instance settings from settings.xml, transfer to instance settings
     SettingsMigration mig(target);
 
+    mig.MoveResourceFiles();
+
     for (const auto& setting : stringMap)
       mig.MigrateStringSetting(setting.first, setting.second);
 
@@ -96,6 +98,28 @@ bool SettingsMigration::MigrateSettings(kodi::addon::IAddonInstance& target)
     }
   }
   return false;
+}
+
+void SettingsMigration::MoveResourceFiles()
+{
+  std::string marti = kodi::vfs::TranslateSpecialProtocol("special://profile/addon_data/pvr.nextpvr/");
+  std::vector<kodi::vfs::CDirEntry> icons;
+  if (kodi::vfs::GetDirectory("special://profile/addon_data/pvr.nextpvr/", "nextpvr-ch*.png", icons))
+  {
+    kodi::Log(ADDON_LOG_DEBUG, "Moving %d channel icons", icons.size());
+    for (auto const& it : icons)
+    {
+      if (!it.IsFolder())
+      {
+        const std::string moveme = it.Path();
+
+        kodi::Log(ADDON_LOG_DEBUG, "Move %s rc:%d", kodi::vfs::TranslateSpecialProtocol(moveme).c_str(),
+          kodi::vfs::RenameFile(moveme, "special://profile/addon_data/pvr.nextpvr/1/" + it.Label()));
+      }
+    }
+  }
+  kodi::vfs::DeleteFile("special://profile/addon_data/pvr.nextpvr/connection.flag");
+  kodi::vfs::DeleteFile("special://profile/addon_data/pvr.nextpvr/LiveStreams.xml");
 }
 
 bool SettingsMigration::IsMigrationSetting(const std::string& key)

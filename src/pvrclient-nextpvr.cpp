@@ -96,11 +96,19 @@ cPVRClientNextPVR::cPVRClientNextPVR(const CNextPVRAddon& base, const kodi::addo
   m_epg(m_settings, m_request, m_recordings, m_channels)
 {
   //m_settings->ReadFromAddon();
-
-  if (!kodi::vfs::DirectoryExists("special://userdata/addon_data/pvr.nextpvr/"))
+  bool isInstanceCreated = true;
+  if (!kodi::vfs::DirectoryExists(m_settings->m_instanceDirectory))
   {
-    m_request.OneTimeSetup();
+    if (!kodi::vfs::DirectoryExists("special://userdata/addon_data/pvr.nextpvr/"))
+    {
+      isInstanceCreated = m_request.OneTimeSetup();
+    }
+    if (isInstanceCreated)
+    {
+      kodi::vfs::CreateDirectory(m_settings->m_instanceDirectory);
+    }
   }
+
   m_bConnected = false;
   m_supportsLiveTimeshift = false;
   m_lastRecordingUpdateTime = std::numeric_limits<time_t>::max(); // time of last recording check - force forever

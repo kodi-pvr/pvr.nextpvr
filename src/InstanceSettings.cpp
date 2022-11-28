@@ -16,13 +16,14 @@
 using namespace NextPVR;
 using namespace NextPVR::utilities;
 
-const std::string connectionFlag = "special://userdata/addon_data/pvr.nextpvr/connection.flag";
+const std::string connectionFlag = "connection.flag";
 
 InstanceSettings::InstanceSettings(kodi::addon::IAddonInstance& instance, const kodi::addon::IInstanceInfo& instanceInfo) :
   m_instance(instance),
   m_instanceInfo(instanceInfo)
 {
   m_instanceNumber = m_instanceInfo.GetNumber();
+  m_instanceDirectory = kodi::tools::StringUtils::Format("special://profile/addon_data/pvr.nextpvr/%d/", m_instanceNumber);
   ReadFromAddon();
 }
 
@@ -83,7 +84,7 @@ void InstanceSettings::ReadFromAddon()
 
   m_backendResume = ReadBoolSetting("backendresume", true);
 
-  m_connectionConfirmed = kodi::vfs::FileExists(connectionFlag);
+  m_connectionConfirmed = kodi::vfs::FileExists(m_instanceDirectory + connectionFlag);
 
   if (m_PIN != "0000" && m_remoteAccess)
   {
@@ -179,12 +180,12 @@ void InstanceSettings::SetConnection(bool status)
   if (status == true)
   {
       kodi::vfs::CFile outputFile;
-      outputFile.OpenFileForWrite(connectionFlag);
+      outputFile.OpenFileForWrite(m_instanceDirectory + connectionFlag);
       m_connectionConfirmed = true;
   }
   else
   {
-    kodi::vfs::DeleteFile(connectionFlag);
+    kodi::vfs::DeleteFile(m_instanceDirectory + connectionFlag);
     m_connectionConfirmed = false;
   }
 }
@@ -228,7 +229,7 @@ ADDON_STATUS InstanceSettings::SetValue(const std::string& settingName, const ko
 {
   //Connection
   //To-do check logic don't want to cause a restart after the first time discovery
-  
+
   if (settingName == "host")
   {
     if (SetStringSetting<ADDON_STATUS>(settingName, settingValue, m_hostname, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK) == ADDON_STATUS_NEED_RESTART)

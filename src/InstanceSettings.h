@@ -77,6 +77,7 @@ namespace NextPVR
     //General
     int m_backendVersion = 0;
     int32_t m_instanceNumber = 0;
+    std::string m_instanceDirectory;
 
     //Channel
     bool m_showRadio = true;

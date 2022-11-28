@@ -33,6 +33,7 @@ private:
   void MigrateStringSetting(const char* key, const std::string& defaultValue);
   void MigrateIntSetting(const char* key, int defaultValue);
   void MigrateBoolSetting(const char* key, bool defaultValue);
+  void MoveResourceFiles();
 
   bool Changed() const { return m_changed; }
   kodi::addon::IAddonInstance& m_target;
