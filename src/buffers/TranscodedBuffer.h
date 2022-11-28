@@ -17,7 +17,7 @@ namespace timeshift {
   class ATTR_DLL_LOCAL TranscodedBuffer : public DummyBuffer
   {
   public:
-    TranscodedBuffer() : DummyBuffer()
+    TranscodedBuffer(const std::shared_ptr<InstanceSettings>& settings, Request& request) : DummyBuffer(settings, request)
     {
       kodi::Log(ADDON_LOG_INFO, "TranscodedBuffer created");
     }

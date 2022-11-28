@@ -77,7 +77,7 @@ bool RecordingBuffer::Open(const std::string inputUrl, const kodi::addon::PVRRec
   kodi::Log(ADDON_LOG_DEBUG, "RecordingBuffer::Open %d %lld", recording.GetDuration(), recording.GetRecordingTime());
   if (recording.GetDuration() + recording.GetRecordingTime() > time(nullptr))
   {
-    m_recordingTime = recording.GetRecordingTime() + m_settings.m_serverTimeOffset;
+    m_recordingTime = recording.GetRecordingTime() + m_settings->m_serverTimeOffset;
     m_isLive = true;
     m_recordingID = recording.GetRecordingId();
   }

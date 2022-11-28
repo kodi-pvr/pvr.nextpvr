@@ -21,15 +21,7 @@ namespace NextPVR
   {
 
   public:
-    /**
-       * Singleton getter for the instance
-       */
-    static Recordings& GetInstance()
-    {
-      static Recordings recordings;
-      return recordings;
-    }
-
+    Recordings(const std::shared_ptr<InstanceSettings>& settings, Request& request, Timers& timers, Channels& channels, cPVRClientNextPVR& pvrclent);
     /* Recording handling **/
     PVR_ERROR GetRecordingsAmount(bool deleted, int& amount);
     PVR_ERROR GetDriveSpace(uint64_t& total, uint64_t& used);
@@ -52,9 +44,11 @@ namespace NextPVR
     Recordings(Recordings const&) = delete;
     void operator=(Recordings const&) = delete;
 
-    Settings& m_settings = Settings::GetInstance();
-    Request& m_request = Request::GetInstance();
-    Timers& m_timers = Timers::GetInstance();
+    const std::shared_ptr<InstanceSettings> m_settings;
+    Request& m_request;
+    Timers& m_timers;
+    Channels& m_channels;
+    cPVRClientNextPVR& m_pvrclient;
 
     // update these at end of counting loop can be called during action
     int m_iRecordingCount = -1;

@@ -6,10 +6,9 @@
  */
 
 
-#include "Settings.h"
-#include "BackendRequest.h"
+#include "InstanceSettings.h"
+#include <kodi/Filesystem.h>
 #include "uri.h"
-#include "utilities/XMLUtils.h"
 
 #include <kodi/General.h>
 #include <kodi/tools/StringUtils.h>
@@ -19,29 +18,37 @@ using namespace NextPVR::utilities;
 
 const std::string connectionFlag = "special://userdata/addon_data/pvr.nextpvr/connection.flag";
 
+InstanceSettings::InstanceSettings(kodi::addon::IAddonInstance& instance, const kodi::addon::IInstanceInfo& instanceInfo) :
+  m_instance(instance),
+  m_instanceInfo(instanceInfo)
+{
+  m_instanceNumber = m_instanceInfo.GetNumber();
+  ReadFromAddon();
+}
+
 /***************************************************************************
  * PVR settings
  **************************************************************************/
-void Settings::ReadFromAddon()
+void InstanceSettings::ReadFromAddon()
 {
   std::string buffer;
 
   /* Connection settings */
   /***********************/
 
-  std::string protocol = kodi::addon::GetSettingString("hostprotocol", DEFAULT_PROTOCOL);
+  std::string protocol = ReadStringSetting("hostprotocol", DEFAULT_PROTOCOL);
 
-  m_hostname = kodi::addon::GetSettingString("host", DEFAULT_HOST);
+  m_hostname = ReadStringSetting("host", DEFAULT_HOST);
   uri::decode(m_hostname);
 
-  m_port = kodi::addon::GetSettingInt("port", DEFAULT_PORT);
+  m_port = ReadIntSetting("port", DEFAULT_PORT);
 
-  m_PIN = kodi::addon::GetSettingString("pin", DEFAULT_PIN);
+  m_PIN = ReadStringSetting("pin", DEFAULT_PIN);
 
   sprintf(m_urlBase, "%s://%.255s:%d", protocol.c_str(), m_hostname.c_str(), m_port);
 
-  m_enableWOL = kodi::addon::GetSettingBoolean("wolenable", false);
-  m_hostMACAddress = kodi::addon::GetSettingString("host_mac");
+  m_enableWOL = ReadBoolSetting("wolenable", false);
+  m_hostMACAddress = ReadStringSetting("host_mac", "");
   if (m_enableWOL)
   {
     if (m_hostMACAddress.empty())
@@ -50,31 +57,31 @@ void Settings::ReadFromAddon()
       m_enableWOL = false;
   }
 
-  m_timeoutWOL = kodi::addon::GetSettingInt("woltimeout", 20);
+  m_timeoutWOL = ReadIntSetting("woltimeout", 20);
 
-  m_remoteAccess = kodi::addon::GetSettingBoolean("remoteaccess", false);
+  m_remoteAccess = ReadBoolSetting("remoteaccess", false);
 
-  m_liveStreamingMethod = kodi::addon::GetSettingEnum<eStreamingMethod>("livestreamingmethod5", DEFAULT_LIVE_STREAM);
+  m_liveStreamingMethod = ReadEnumSetting<eStreamingMethod>("livestreamingmethod5", DEFAULT_LIVE_STREAM);
 
-  m_flattenRecording = kodi::addon::GetSettingBoolean("flattenrecording", false);
+  m_flattenRecording = ReadBoolSetting("flattenrecording", false);
 
-  m_separateSeasons = kodi::addon::GetSettingBoolean("separateseasons", false);
+  m_separateSeasons = ReadBoolSetting("separateseasons", false);
 
-  m_showRoot = kodi::addon::GetSettingBoolean("showroot", false);
+  m_showRoot = ReadBoolSetting("showroot", false);
 
-  m_prebuffer5 = kodi::addon::GetSettingInt("prebuffer5", 0);
+  m_prebuffer5 = ReadIntSetting("prebuffer5", 0);
 
-  m_liveChunkSize = kodi::addon::GetSettingInt("chunklivetv", 64);
+  m_liveChunkSize = ReadIntSetting("chunklivetv", 64);
 
-  m_chunkRecording = kodi::addon::GetSettingInt("chunkrecording", 32);
+  m_chunkRecording = ReadIntSetting("chunkrecording", 32);
 
-  m_ignorePadding = kodi::addon::GetSettingBoolean("ignorepadding", true);
+  m_ignorePadding = ReadBoolSetting("ignorepadding", true);
 
-  m_resolution = kodi::addon::GetSettingString("resolution",  "720");
+  m_resolution = ReadStringSetting("resolution",  "720");
 
-  m_showRadio = kodi::addon::GetSettingBoolean("showradio", true);
+  m_showRadio = ReadBoolSetting("showradio", true);
 
-  m_backendResume = kodi::addon::GetSettingBoolean("backendresume", true);
+  m_backendResume = ReadBoolSetting("backendresume", true);
 
   m_connectionConfirmed = kodi::vfs::FileExists(connectionFlag);
 
@@ -83,21 +90,23 @@ void Settings::ReadFromAddon()
     m_downloadGuideArtwork = false;
     m_sendSidWithMetadata = true;
   }  else {
-    m_downloadGuideArtwork = kodi::addon::GetSettingBoolean("guideartwork" ,DEFAULT_GUIDE_ARTWORK);
+    m_downloadGuideArtwork = ReadBoolSetting("guideartwork" ,DEFAULT_GUIDE_ARTWORK);
     m_sendSidWithMetadata = false;
   }
 
-  m_guideArtPortrait = kodi::addon::GetSettingBoolean("guideartworkportrait", false);
+  m_guideArtPortrait = ReadBoolSetting("guideartworkportrait", false);
 
-  m_genreString = kodi::addon::GetSettingBoolean("genrestring", false);
+  m_genreString = ReadBoolSetting("genrestring", false);
 
-  m_showRecordingSize = kodi::addon::GetSettingBoolean("recordingsize", false);
+  m_showRecordingSize = ReadBoolSetting("recordingsize", false);
 
-  m_diskSpace = kodi::addon::GetSettingString("diskspace", "Default");
+  m_diskSpace = ReadStringSetting("diskspace", "Default");
 
-  m_transcodedTimeshift = kodi::addon::GetSettingBoolean("ffmpegdirect", false);
+  m_transcodedTimeshift = ReadBoolSetting("ffmpegdirect", false);
 
-  m_castcrew = kodi::addon::GetSettingBoolean("castcrew", false);
+  m_castcrew = ReadBoolSetting("castcrew", false);
+
+  m_useLiveStreams = ReadBoolSetting("uselivestreams", false);
 
 
   /* Log the current settings for debugging purposes */
@@ -105,73 +114,67 @@ void Settings::ReadFromAddon()
 
 }
 
-ADDON_STATUS Settings::ReadBackendSettings()
+ADDON_STATUS InstanceSettings::ReadBackendSettings(tinyxml2::XMLDocument& settingsDoc)
 {
   // check server version
-  std::string settings;
-  Request& request = Request::GetInstance();
-  tinyxml2::XMLDocument settingsDoc;
-  if (request.DoMethodRequest("setting.list", settingsDoc) == tinyxml2::XML_SUCCESS)
+  if (XMLUtils::GetInt(settingsDoc.RootElement(), "NextPVRVersion", m_backendVersion))
   {
-    if (XMLUtils::GetInt(settingsDoc.RootElement(), "NextPVRVersion", m_backendVersion))
-    {
-      // NextPVR server
-      kodi::Log(ADDON_LOG_INFO, "NextPVR version: %d", m_backendVersion);
+    // NextPVR server
+    kodi::Log(ADDON_LOG_INFO, "NextPVR version: %d", m_backendVersion);
 
-      // is the server new enough
-      if (m_backendVersion < NEXTPVRC_MIN_VERSION)
-      {
-        kodi::Log(ADDON_LOG_ERROR, "NextPVR version '%d' is too old. Please upgrade to '%s' or higher!", m_backendVersion, NEXTPVRC_MIN_VERSION_STRING);
-        kodi::QueueNotification(QUEUE_ERROR, kodi::addon::GetLocalizedString(30050), kodi::tools::StringUtils::Format(kodi::addon::GetLocalizedString(30051).c_str(), NEXTPVRC_MIN_VERSION_STRING));
-        return ADDON_STATUS_PERMANENT_FAILURE;
-      }
+    // is the server new enough
+    if (m_backendVersion < NEXTPVRC_MIN_VERSION)
+    {
+      kodi::Log(ADDON_LOG_ERROR, "NextPVR version '%d' is too old. Please upgrade to '%s' or higher!", m_backendVersion, NEXTPVRC_MIN_VERSION_STRING);
+      kodi::QueueNotification(QUEUE_ERROR, kodi::addon::GetLocalizedString(30050), kodi::tools::StringUtils::Format(kodi::addon::GetLocalizedString(30051).c_str(), NEXTPVRC_MIN_VERSION_STRING));
+      return ADDON_STATUS_PERMANENT_FAILURE;
     }
+  }
 
-    // load padding defaults
-    m_defaultPrePadding = 1;
-    XMLUtils::GetInt(settingsDoc.RootElement(), "PrePadding", m_defaultPrePadding);
+  // load padding defaults
+  m_defaultPrePadding = 1;
+  XMLUtils::GetInt(settingsDoc.RootElement(), "PrePadding", m_defaultPrePadding);
 
-    m_defaultPostPadding = 2;
-    XMLUtils::GetInt(settingsDoc.RootElement(), "PostPadding", m_defaultPostPadding);
+  m_defaultPostPadding = 2;
+  XMLUtils::GetInt(settingsDoc.RootElement(), "PostPadding", m_defaultPostPadding);
 
-    m_showNew = false;
-    XMLUtils::GetBoolean(settingsDoc.RootElement(), "ShowNewInGuide", m_showNew);
+  m_showNew = false;
+  XMLUtils::GetBoolean(settingsDoc.RootElement(), "ShowNewInGuide", m_showNew);
 
-    std::string recordingDirectories;
-    if (XMLUtils::GetString(settingsDoc.RootElement(), "RecordingDirectories", recordingDirectories))
+  std::string recordingDirectories;
+  if (XMLUtils::GetString(settingsDoc.RootElement(), "RecordingDirectories", recordingDirectories))
+  {
+    m_recordingDirectories = kodi::tools::StringUtils::Split(recordingDirectories, ",", 0);
+  }
+
+  int serverTimestamp;
+  if (XMLUtils::GetInt(settingsDoc.RootElement(), "TimeEpoch", serverTimestamp))
+  {
+    m_serverTimeOffset = time(nullptr) - serverTimestamp;
+    kodi::Log(ADDON_LOG_INFO, "Server time offset in seconds: %d", m_serverTimeOffset);
+  }
+
+  if (XMLUtils::GetInt(settingsDoc.RootElement(), "SlipSeconds", m_timeshiftBufferSeconds))
+    kodi::Log(ADDON_LOG_INFO, "time shift buffer in seconds: %d", m_timeshiftBufferSeconds);
+
+  std::string serverMac;
+  if (XMLUtils::GetString(settingsDoc.RootElement(), "ServerMAC", serverMac))
+  {
+    std::string macAddress = serverMac.substr(0, 2) ;
+    for (int i = 2; i < 12; i+=2)
     {
-      m_recordingDirectories = kodi::tools::StringUtils::Split(recordingDirectories, ",", 0);
+      macAddress+= ":" + serverMac.substr(i, 2);
     }
-
-    int serverTimestamp;
-    if (XMLUtils::GetInt(settingsDoc.RootElement(), "TimeEpoch", serverTimestamp))
+    kodi::Log(ADDON_LOG_DEBUG, "Server MAC address %4.4s...", macAddress.c_str());
+    if (m_hostMACAddress != macAddress)
     {
-      m_serverTimeOffset = time(nullptr) - serverTimestamp;
-      kodi::Log(ADDON_LOG_INFO, "Server time offset in seconds: %d", m_serverTimeOffset);
-    }
-
-    if (XMLUtils::GetInt(settingsDoc.RootElement(), "SlipSeconds", m_timeshiftBufferSeconds))
-      kodi::Log(ADDON_LOG_INFO, "time shift buffer in seconds: %d", m_timeshiftBufferSeconds);
-
-    std::string serverMac;
-    if (XMLUtils::GetString(settingsDoc.RootElement(), "ServerMAC", serverMac))
-    {
-      std::string macAddress = serverMac.substr(0, 2) ;
-      for (int i = 2; i < 12; i+=2)
-      {
-        macAddress+= ":" + serverMac.substr(i, 2);
-      }
-      kodi::Log(ADDON_LOG_DEBUG, "Server MAC address %4.4s...", macAddress.c_str());
-      if (m_hostMACAddress != macAddress)
-      {
-        kodi::addon::SetSettingString("host_mac", macAddress);
-      }
+      m_instance.SetInstanceSettingString("host_mac", macAddress);
     }
   }
   return ADDON_STATUS_OK;
 }
 
-void Settings::SetConnection(bool status)
+void InstanceSettings::SetConnection(bool status)
 {
   if (status == true)
   {
@@ -186,21 +189,46 @@ void Settings::SetConnection(bool status)
   }
 }
 
-void Settings::SetVersionSpecificSettings()
+void InstanceSettings::SetVersionSpecificSettings()
 {
 
   // No version specific setting
 
 }
 
-ADDON_STATUS Settings::SetValue(const std::string& settingName, const kodi::addon::CSettingValue& settingValue)
+std::string InstanceSettings::ReadStringSetting(const std::string& key,
+                                                const std::string& def) const
+{
+  std::string value;
+  if (m_instance.CheckInstanceSettingString(key, value))
+    return value;
+
+  return def;
+}
+
+int InstanceSettings::ReadIntSetting(const std::string& key, int def) const
+{
+  int value;
+  if (m_instance.CheckInstanceSettingInt(key, value))
+    return value;
+
+  return def;
+}
+
+bool InstanceSettings::ReadBoolSetting(const std::string& key, bool def) const
+{
+  bool value;
+  if (m_instance.CheckInstanceSettingBoolean(key, value))
+    return value;
+
+  return def;
+}
+
+ADDON_STATUS InstanceSettings::SetValue(const std::string& settingName, const kodi::addon::CSettingValue& settingValue)
 {
   //Connection
-  if (g_pvrclient==nullptr)
-  {
-    // Don't want to cause a restart after the first time discovery
-    return ADDON_STATUS_OK;
-  }
+  //To-do check logic don't want to cause a restart after the first time discovery
+  
   if (settingName == "host")
   {
     if (SetStringSetting<ADDON_STATUS>(settingName, settingValue, m_hostname, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK) == ADDON_STATUS_NEED_RESTART)

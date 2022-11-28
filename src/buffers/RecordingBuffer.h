@@ -26,7 +26,7 @@ namespace timeshift {
     std::string m_recordingID;
 
   public:
-    RecordingBuffer() : Buffer() { m_Duration = 0; kodi::Log(ADDON_LOG_INFO, "RecordingBuffer created!"); }
+    RecordingBuffer(const std::shared_ptr<InstanceSettings>& settings, Request& request) : Buffer(settings, request) { m_Duration = 0; kodi::Log(ADDON_LOG_INFO, "RecordingBuffer created!"); }
     virtual ~RecordingBuffer() {}
 
     virtual ssize_t Read(byte *buffer, size_t length) override;
@@ -70,7 +70,7 @@ namespace timeshift {
 
    PVR_ERROR GetStreamReadChunkSize(int* chunksize)
     {
-      *chunksize = m_settings.m_chunkRecording * 1024;
+      *chunksize = m_settings->m_chunkRecording * 1024;
       return PVR_ERROR_NO_ERROR;
     }
 

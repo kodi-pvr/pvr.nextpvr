@@ -12,6 +12,7 @@
 #include <string>
 #include <kodi/AddonBase.h>
 #include <kodi/tools/StringUtils.h>
+#include "utilities/XMLUtils.h"
 
 namespace NextPVR
 {
@@ -40,19 +41,12 @@ namespace NextPVR
   constexpr bool DEFAULT_GUIDE_ARTWORK = false;
   constexpr eStreamingMethod DEFAULT_LIVE_STREAM = RealTime;
 
-  class ATTR_DLL_LOCAL Settings
+  class ATTR_DLL_LOCAL InstanceSettings
   {
   public:
 
-    /**
-     * Singleton getter for the instance
-     */
-    static Settings& GetInstance()
-    {
-      static Settings settings;
-      return settings;
-    }
-    ADDON_STATUS ReadBackendSettings();
+    explicit InstanceSettings(kodi::addon::IAddonInstance& instance, const kodi::addon::IInstanceInfo& instanceInfo);
+    ADDON_STATUS ReadBackendSettings(tinyxml2::XMLDocument& settingsDoc);
     bool GetConnection();
     void SetConnection(bool status);
     void SetVersionSpecificSettings();
@@ -82,9 +76,11 @@ namespace NextPVR
 
     //General
     int m_backendVersion = 0;
+    int32_t m_instanceNumber = 0;
 
     //Channel
     bool m_showRadio = true;
+    bool m_useLiveStreams = false;
 
     //EPG
     bool m_showNew = false;
@@ -115,13 +111,21 @@ namespace NextPVR
     int m_prebuffer5 = 0;
     std::string m_resolution = "720";
     bool m_transcodedTimeshift = false;
+    InstanceSettings() = default;
 
   private:
 
-    Settings() = default;
+    kodi::addon::IAddonInstance& m_instance;
+    const kodi::addon::IInstanceInfo& m_instanceInfo;
+    InstanceSettings(InstanceSettings const&) = delete;
+    void operator=(InstanceSettings const&) = delete;
 
-    Settings(Settings const&) = delete;
-    void operator=(Settings const&) = delete;
+    /**
+     * Read/Set values according to definition in settings.xml
+     */
+    std::string ReadStringSetting(const std::string& key, const std::string& def) const;
+    int ReadIntSetting(const std::string& key, int def) const;
+    bool ReadBoolSetting(const std::string& key, bool def) const;
 
     template<typename T, typename V>
     V SetSetting(const std::string& settingName, const kodi::addon::CSettingValue& settingValue, T& currentValue, V returnValueIfChanged, V defaultReturnValue)
@@ -175,6 +179,16 @@ namespace NextPVR
       }
 
       return defaultReturnValue;
+    }
+
+    template<typename T>
+    T ReadEnumSetting(const std::string& key,  T def)
+    {
+      T  value;
+      if (m_instance.CheckInstanceSettingEnum(key, value))
+        return value;
+
+      return def;
     }
   };
 } //namespace NextPVR

@@ -12,14 +12,13 @@
 
 #pragma once
 
-#include "Settings.h"
+#include "InstanceSettings.h"
 
 #include <kodi/AddonBase.h>
 #include <unordered_map>
 
 
 class cPVRClientNextPVR;
-extern cPVRClientNextPVR* g_pvrclient;
 
 class ATTR_DLL_LOCAL CNextPVRAddon : public kodi::addon::CAddonBase
 {
@@ -28,11 +27,11 @@ public:
 
   ADDON_STATUS Create() override;
   ADDON_STATUS SetSetting(const std::string& settingName,
-    const kodi::addon::CSettingValue& settingValue) override;
+  const kodi::addon::CSettingValue& settingValue) override;
   ADDON_STATUS CreateInstance(const kodi::addon::IInstanceInfo& instance,
-    KODI_ADDON_INSTANCE_HDL& hdl) override;
+  KODI_ADDON_INSTANCE_HDL& hdl) override;
   void DestroyInstance(const kodi::addon::IInstanceInfo& instance,
-    const KODI_ADDON_INSTANCE_HDL hdl) override;
+  const KODI_ADDON_INSTANCE_HDL hdl) override;
 
 private:
   std::unordered_map<std::string, cPVRClientNextPVR*> m_usedInstances;

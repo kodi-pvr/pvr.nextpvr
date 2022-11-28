@@ -23,7 +23,7 @@ namespace NextPVR
     auto start = std::chrono::steady_clock::now();
     std::unique_lock<std::mutex> lock(m_mutexRequest);
     // build request string, adding SID if requred
-    const std::string URL = kodi::tools::StringUtils::Format("%s%s&sid=%s", m_settings.m_urlBase, resource.c_str(), GetSID());
+    const std::string URL = kodi::tools::StringUtils::Format("%s%s&sid=%s", m_settings->m_urlBase, resource.c_str(), GetSID());
 
     // ask XBMC to read the URL for us
     int resultCode = HTTP_NOTFOUND;
@@ -70,9 +70,9 @@ namespace NextPVR
     std::string URL;
 
     if (IsActiveSID())
-      URL = kodi::tools::StringUtils::Format("%s/service?method=%s&sid=%s", m_settings.m_urlBase, resource.c_str(), GetSID());
+      URL = kodi::tools::StringUtils::Format("%s/service?method=%s&sid=%s", m_settings->m_urlBase, resource.c_str(), GetSID());
     else if (kodi::tools::StringUtils::StartsWith(resource, "session"))
-      URL = kodi::tools::StringUtils::Format("%s/service?method=%s", m_settings.m_urlBase, resource.c_str());
+      URL = kodi::tools::StringUtils::Format("%s/service?method=%s", m_settings->m_urlBase, resource.c_str());
     else
       return tinyxml2::XML_ERROR_FILE_COULD_NOT_BE_OPENED;
 
@@ -112,7 +112,7 @@ namespace NextPVR
                 {
                   ClearSID();
                   retError = tinyxml2::XML_ERROR_FILE_COULD_NOT_BE_OPENED;
-                  g_pvrclient->ResetConnection();
+                  //m_pvrclient.ResetConnection();
                 }
               }
             }
@@ -140,7 +140,7 @@ namespace NextPVR
       {
         xmlReturn = tinyxml2::XML_NO_TEXT_NODE;
       }
-      last_update = value + m_settings.m_serverTimeOffset;
+      last_update = value + m_settings->m_serverTimeOffset;
     }
     return xmlReturn;
   }
@@ -153,7 +153,7 @@ namespace NextPVR
 
 
     char separator = (strchr(resource, '?') == nullptr) ? '?' : '&';
-    const std::string URL = kodi::tools::StringUtils::Format("%s%s%csid=%s", m_settings.m_urlBase, resource, separator, GetSID());
+    const std::string URL = kodi::tools::StringUtils::Format("%s%s%csid=%s", m_settings->m_urlBase, resource, separator, GetSID());
 
     // ask XBMC to read the URL for us
     int resultCode = HTTP_NOTFOUND;
@@ -185,7 +185,7 @@ namespace NextPVR
   }
   bool Request::PingBackend()
   {
-    const std::string URL = kodi::tools::StringUtils::Format("%s%s|connection-timeout=2", m_settings.m_urlBase, "/service?method=recording.lastupdated");
+    const std::string URL = kodi::tools::StringUtils::Format("%s%s|connection-timeout=2", m_settings->m_urlBase, "/service?method=recording.lastupdated");
     kodi::vfs::CFile backend;
     if (backend.OpenFile(URL, ADDON_READ_NO_CACHE))
     {
@@ -218,12 +218,12 @@ namespace NextPVR
       if (offset >= 0)
       {
         kodi::vfs::CreateDirectory("special://userdata/addon_data/pvr.nextpvr/");
-        m_settings.UpdateServerPort(entries[offset], atoi(foundAddress[offset][1].c_str()));
+        m_settings->UpdateServerPort(entries[offset], atoi(foundAddress[offset][1].c_str()));
         kodi::QueueNotification(QUEUE_INFO, kodi::addon::GetLocalizedString(30189),
-          kodi::tools::StringUtils::Format(kodi::addon::GetLocalizedString(30182).c_str(), m_settings.m_hostname.c_str(), m_settings.m_port));
+          kodi::tools::StringUtils::Format(kodi::addon::GetLocalizedString(30182).c_str(), m_settings->m_hostname.c_str(), m_settings->m_port));
         /* note that these run before the file is created */
-        kodi::addon::SetSettingString("host", m_settings.m_hostname);
-        kodi::addon::SetSettingInt("port", m_settings.m_port);
+        kodi::addon::SetSettingString("host", m_settings->m_hostname);
+        kodi::addon::SetSettingInt("port", m_settings->m_port);
         return true;
       }
     }
@@ -285,5 +285,13 @@ namespace NextPVR
     }
     socket->close();
     return foundAddress;
+  }
+  Request::Request(const std::shared_ptr<InstanceSettings>& settings) :
+    m_settings(settings)
+  {
+  }
+  Request::Request(InstanceSettings* settings) :
+    m_settings(settings)
+  {
   }
 } // namespace NextPVR

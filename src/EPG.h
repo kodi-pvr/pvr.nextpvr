@@ -18,14 +18,7 @@ namespace NextPVR
   class ATTR_DLL_LOCAL EPG
   {
   public:
-    /**
-       * Singleton getter for the instance
-       */
-    static EPG& GetInstance()
-    {
-      static EPG epg;
-      return epg;
-    }
+    EPG(const std::shared_ptr<InstanceSettings>& settings, Request& request, Recordings& recordings, Channels& channels);
     PVR_ERROR GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::addon::PVREPGTagsResultSet& results);
 
   private:
@@ -33,9 +26,9 @@ namespace NextPVR
     EPG(EPG const&) = delete;
     void operator=(EPG const&) = delete;
 
-    Settings& m_settings = Settings::GetInstance();
-    Request& m_request = Request::GetInstance();
-    Recordings& m_recordings = Recordings::GetInstance();
-    Channels& m_channels = Channels::GetInstance();
+    const std::shared_ptr<InstanceSettings> m_settings;
+    Request& m_request;
+    Recordings& m_recordings;
+    Channels& m_channels;
   };
 } // namespace NextPVR

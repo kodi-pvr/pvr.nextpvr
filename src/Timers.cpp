@@ -19,6 +19,14 @@ using namespace NextPVR::utilities;
 /************************************************************/
 /** Timer handling */
 
+Timers::Timers(const std::shared_ptr<InstanceSettings>& settings, Request& request, Channels& channels, cPVRClientNextPVR& pvrclient) :
+  m_settings(settings),
+  m_request(request),
+  m_channels(channels),
+  m_pvrclient(pvrclient)
+{
+}
+
 PVR_ERROR Timers::GetTimersAmount(int& amount)
 {
   if (m_iTimerCount != -1)
@@ -190,9 +198,9 @@ PVR_ERROR Timers::GetTimers(kodi::addon::PVRTimersResultSet& results)
       std::string recordingDirectoryID;
       if (XMLUtils::GetString(pRulesNode, "RecordingDirectoryID", recordingDirectoryID))
       {
-        for (unsigned int i = 0; i < m_settings.m_recordingDirectories.size(); ++i)
+        for (unsigned int i = 0; i < m_settings->m_recordingDirectories.size(); ++i)
         {
-          std::string bracketed = "[" + m_settings.m_recordingDirectories[i] + "]";
+          std::string bracketed = "[" + m_settings->m_recordingDirectories[i] + "]";
           if (bracketed == recordingDirectoryID)
           {
             tag.SetRecordingGroup(i);
@@ -248,9 +256,9 @@ PVR_ERROR Timers::GetTimers(kodi::addon::PVRTimersResultSet& results)
     }
 
     if (isRecordingUpdated) {
-      g_pvrclient->TriggerRecordingUpdate();
+      m_pvrclient.TriggerRecordingUpdate();
       m_lastTimerUpdateTime = time(nullptr);
-    } else if (g_pvrclient->m_nowPlaying == NotPlaying)
+    } else if (m_pvrclient.m_nowPlaying == NotPlaying)
       m_lastTimerUpdateTime = time(nullptr);
     // else unknown recording state during playback
 
@@ -317,7 +325,7 @@ bool Timers::UpdatePvrTimer(tinyxml2::XMLNode* pRecordingNode, kodi::addon::PVRT
   std::string status;
   if (XMLUtils::GetString(pRecordingNode, "status", status))
   {
-    if (status == "Recording" || (status == "Pending" && tag.GetStartTime() < time(nullptr) + m_settings.m_serverTimeOffset))
+    if (status == "Recording" || (status == "Pending" && tag.GetStartTime() < time(nullptr) + m_settings->m_serverTimeOffset))
     {
       tag.SetState(PVR_TIMER_STATE_RECORDING);
     }
@@ -332,9 +340,9 @@ bool Timers::UpdatePvrTimer(tinyxml2::XMLNode* pRecordingNode, kodi::addon::PVRT
     std::string directory;
     if (XMLUtils::GetString(pRecordingNode, "directory", directory))
     {
-        for (unsigned int i = 0; i < m_settings.m_recordingDirectories.size(); ++i)
+        for (unsigned int i = 0; i < m_settings->m_recordingDirectories.size(); ++i)
         {
-          if (directory == m_settings.m_recordingDirectories[i])
+          if (directory == m_settings->m_recordingDirectories[i])
           {
             tag.SetRecordingGroup(i);
             break;
@@ -423,9 +431,9 @@ PVR_ERROR Timers::GetTimerTypes(std::vector<kodi::addon::PVRTimerType>& types)
   static std::vector<kodi::addon::PVRTypeIntValue> recordingGroupValues;
   if (recordingGroupValues.size() == 0)
   {
-    for (unsigned int i = 0; i < m_settings.m_recordingDirectories.size(); ++i)
+    for (unsigned int i = 0; i < m_settings->m_recordingDirectories.size(); ++i)
     {
-      recordingGroupValues.emplace_back(kodi::addon::PVRTypeIntValue(i, m_settings.m_recordingDirectories[i]));
+      recordingGroupValues.emplace_back(kodi::addon::PVRTypeIntValue(i, m_settings->m_recordingDirectories[i]));
     }
   }
 
@@ -651,7 +659,7 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
   const std::string encodedName = UriEncode(timer.GetTitle());
   const std::string encodedKeyword = UriEncode(timer.GetEPGSearchString());
   const std::string days = GetDayString(timer.GetWeekdays());
-  const std::string directory = UriEncode(m_settings.m_recordingDirectories[timer.GetRecordingGroup()]);
+  const std::string directory = UriEncode(m_settings->m_recordingDirectories[timer.GetRecordingGroup()]);
 
   int epgOid = 0;
   if (timer.GetEPGUid() > 0)
@@ -665,17 +673,17 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
 
   int marginStart = timer.GetMarginStart();
   int marginEnd = timer.GetMarginEnd();
-  if (m_settings.m_ignorePadding && timer.GetClientIndex() == PVR_TIMER_NO_CLIENT_INDEX && marginStart == 0 && marginEnd == 0)
+  if (m_settings->m_ignorePadding && timer.GetClientIndex() == PVR_TIMER_NO_CLIENT_INDEX && marginStart == 0 && marginEnd == 0)
   {
-    marginStart = m_settings.m_defaultPrePadding;
-    marginEnd = m_settings.m_defaultPostPadding;
+    marginStart = m_settings->m_defaultPrePadding;
+    marginEnd = m_settings->m_defaultPostPadding;
   }
 
   switch (timer.GetTimerType())
   {
   case TIMER_ONCE_MANUAL:
-    // build one-off recording request
     kodi::Log(ADDON_LOG_DEBUG, "TIMER_ONCE_MANUAL");
+    // build one-off recording request
     request = kodi::tools::StringUtils::Format("recording.save&name=%s&recording_id=%d&channel=%d&time_t=%d&duration=%d&pre_padding=%d&post_padding=%d&directory_id=%s",
       encodedName.c_str(),
       timer.GetClientIndex(),
@@ -685,11 +693,11 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
       marginStart,
       marginEnd,
       directory.c_str()
-    );
+      );
     break;
   case TIMER_ONCE_EPG:
-    // build one-off recording request
     kodi::Log(ADDON_LOG_DEBUG, "TIMER_ONCE_EPG");
+    // build one-off recording request
     request = kodi::tools::StringUtils::Format("recording.save&recording_id=%d&event_id=%d&pre_padding=%d&post_padding=%d&directory_id=%s",
       timer.GetClientIndex(),
       epgOid,
@@ -699,8 +707,8 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
     break;
 
   case TIMER_ONCE_EPG_CHILD:
-    // build one-off recording request
     kodi::Log(ADDON_LOG_DEBUG, "TIMER_ONCE_EPG_CHILD");
+    // build one-off recording request
     request = kodi::tools::StringUtils::Format("recording.save&recording_id=%d&recurring_id=%d&event_id=%d&pre_padding=%d&post_padding=%d&directory_id=%s",
       timer.GetClientIndex(),
       timer.GetParentClientIndex(),
@@ -712,10 +720,10 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
 
   case TIMER_REPEATING_EPG:
     if (timer.GetClientChannelUid() == PVR_TIMER_ANY_CHANNEL)
+    // Fake a manual recording not a specific type in NextPVR
     {
       if (timer.GetEPGSearchString() == TYPE_7_TITLE)
       {
-        // build recurring recording title keyword request
         kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_EPG ANY CHANNEL - TYPE 7");
         request = kodi::tools::StringUtils::Format("recording.recurring.save&type=7&recurring_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s%s",
           timer.GetClientIndex(),
@@ -727,11 +735,10 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
           days.c_str(),
           directory.c_str(),
           enabled.c_str()
-        );
+          );
       }
       else
       {
-        // build recurring recording title keyword request
         kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_EPG ANY CHANNEL");
         std::string title = encodedName + "%";
         request = kodi::tools::StringUtils::Format("recording.recurring.save&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s&keyword=%s%s",
@@ -746,13 +753,13 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
           directory.c_str(),
           title.c_str(),
           enabled.c_str()
-        );
+          );
       }
     }
     else
     {
-      // build recurring recording request
       kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_EPG");
+      // build recurring recording request
       request = kodi::tools::StringUtils::Format("recording.recurring.save&recurring_id=%d&channel_id=%d&event_id=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s&only_new=%s%s",
         timer.GetClientIndex(),
         timer.GetClientChannelUid(),
@@ -764,13 +771,13 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
         directory.c_str(),
         preventDuplicates,
         enabled.c_str()
-      );
+        );
     }
     break;
 
   case TIMER_REPEATING_MANUAL:
-    // build manual recurring request
     kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_MANUAL");
+    // build manual recurring request
     request = kodi::tools::StringUtils::Format("recording.recurring.save&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&day_mask=%s&directory_id=%s%s",
       timer.GetClientIndex(),
       encodedName.c_str(),
@@ -783,12 +790,12 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
       days.c_str(),
       directory.c_str(),
       enabled.c_str()
-    );
+      );
     break;
 
   case TIMER_REPEATING_KEYWORD:
-    // build manual recurring keyword request
     kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_KEYWORD");
+    // build manual recurring request
     request = kodi::tools::StringUtils::Format("recording.recurring.save&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&directory_id=%s&keyword=%s&only_new=%s%s",
       timer.GetClientIndex(),
       encodedName.c_str(),
@@ -802,26 +809,23 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
       encodedKeyword.c_str(),
       preventDuplicates,
       enabled.c_str()
-    );
+      );
     break;
 
   case TIMER_REPEATING_ADVANCED:
-    // build manual advanced recurring request
     kodi::Log(ADDON_LOG_DEBUG, "TIMER_REPEATING_ADVANCED");
-    std::string searchText;
-    if (timer.GetFullTextEpgSearch())
-      searchText = encodedKeyword;
-    else
-      searchText = UriEncode(kodi::tools::StringUtils::Format("title like \"%s\"", timer.GetEPGSearchString().c_str()));
-    request = kodi::tools::StringUtils::Format("recording.recurring.save&recurring_type=advanced&recurring_id=%d&name=%s&channel_id=%d&keep=%d&pre_padding=%d&post_padding=%d&directory_id=%s&advanced=%s&only_new=%s%s",
+    // build manual advanced recurring request
+    request = kodi::tools::StringUtils::Format("recording.recurring.save&recurring_type=advanced&recurring_id=%d&name=%s&channel_id=%d&start_time=%d&end_time=%d&keep=%d&pre_padding=%d&post_padding=%d&directory_id=%s&advanced=%s&only_new=%s%s",
       timer.GetClientIndex(),
       encodedName.c_str(),
       timer.GetClientChannelUid(),
+      static_cast<int>(timer.GetStartTime()),
+      static_cast<int>(timer.GetEndTime()),
       timer.GetMaxRecordings(),
       marginStart,
       marginEnd,
       directory.c_str(),
-      searchText.c_str(),
+      encodedKeyword.c_str(),
       preventDuplicates,
       enabled.c_str()
       );
@@ -833,9 +837,9 @@ PVR_ERROR Timers::AddTimer(const kodi::addon::PVRTimer& timer)
   if (m_request.DoMethodRequest(request, doc) == tinyxml2::XML_SUCCESS)
   {
     if (timer.GetStartTime() <= time(nullptr) && timer.GetEndTime() > time(nullptr))
-      g_pvrclient->TriggerRecordingUpdate();
+      m_pvrclient.TriggerRecordingUpdate();
 
-    g_pvrclient->TriggerTimerUpdate();
+    m_pvrclient.TriggerTimerUpdate();
 
     return PVR_ERROR_NO_ERROR;
   }
@@ -856,9 +860,9 @@ PVR_ERROR Timers::DeleteTimer(const kodi::addon::PVRTimer& timer, bool forceDele
   tinyxml2::XMLDocument doc;
   if (m_request.DoMethodRequest(request, doc) == tinyxml2::XML_SUCCESS)
   {
-    g_pvrclient->TriggerTimerUpdate();
+    m_pvrclient.TriggerTimerUpdate();
     if (timer.GetStartTime() <= time(nullptr) && timer.GetEndTime() > time(nullptr))
-      g_pvrclient->TriggerRecordingUpdate();
+      m_pvrclient.TriggerRecordingUpdate();
     return PVR_ERROR_NO_ERROR;
   }
 

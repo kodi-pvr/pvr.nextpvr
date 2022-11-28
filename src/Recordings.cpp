@@ -22,6 +22,18 @@ using namespace NextPVR::utilities;
 /************************************************************/
 /** Record handling **/
 
+Recordings::Recordings(const std::shared_ptr<InstanceSettings>& settings, Request& request, Timers& timers, Channels& channels, cPVRClientNextPVR& pvrclient) :
+  m_settings(settings),
+  m_request(request),
+  m_timers(timers),
+  m_channels(channels),
+  m_pvrclient(pvrclient)
+{
+
+}
+
+
+
 PVR_ERROR Recordings::GetRecordingsAmount(bool deleted, int& amount)
 {
   // need something more optimal, but this will do for now...
@@ -53,7 +65,7 @@ PVR_ERROR Recordings::GetRecordingsAmount(bool deleted, int& amount)
 
 PVR_ERROR Recordings::GetDriveSpace(uint64_t& total, uint64_t& used)
 {
-  if (m_settings.m_diskSpace != "No" && m_checkedSpace < time(nullptr))
+  if (m_settings->m_diskSpace != "No" && m_checkedSpace < time(nullptr))
   {
     if (m_mutexSpace.try_lock())
     {
@@ -71,7 +83,7 @@ PVR_ERROR Recordings::GetDriveSpace(uint64_t& total, uint64_t& used)
         for (tinyxml2::XMLElement* directoryNode = doc.RootElement()->FirstChildElement("directory"); directoryNode; directoryNode = directoryNode->NextSiblingElement("directory"))
         {
           const std::string name = directoryNode->Attribute("name");
-          if (m_settings.m_diskSpace == "Default")
+          if (m_settings->m_diskSpace == "Default")
           {
             if (name == "Default")
             {
@@ -117,7 +129,7 @@ PVR_ERROR Recordings::GetRecordings(bool deleted, kodi::addon::PVRRecordingsResu
   m_playCount.clear();
   int recordingCount = 0;
   tinyxml2::XMLDocument doc;
-  if (m_settings.m_showRoot)
+  if (m_settings->m_showRoot)
   {
     extraDirectories.clear();
 
@@ -147,7 +159,7 @@ PVR_ERROR Recordings::GetRecordings(bool deleted, kodi::addon::PVRRecordingsResu
     tinyxml2::XMLNode* pRecordingNode;
     std::map<std::string, int> names;
     std::map<std::string, int> seasons;
-    if (m_settings.m_flattenRecording || m_settings.m_separateSeasons)
+    if (m_settings->m_flattenRecording || m_settings->m_separateSeasons)
     {
       kodi::addon::PVRRecording mytag;
       int season;
@@ -159,7 +171,7 @@ PVR_ERROR Recordings::GetRecordings(bool deleted, kodi::addon::PVRRecordingsResu
           continue;
         std::string title;
         XMLUtils::GetString(pRecordingNode, "name", title);
-        if (m_settings.m_flattenRecording)
+        if (m_settings->m_flattenRecording)
           names[title]++;
 
         if (ParseNextPVRSubtitle(pRecordingNode, mytag))
@@ -198,13 +210,13 @@ PVR_ERROR Recordings::GetRecordings(bool deleted, kodi::addon::PVRRecordingsResu
     uint64_t total;
     uint64_t used;
     GetDriveSpace(total, used);
-    kodi::Log(ADDON_LOG_DEBUG, "Updated recordings %lld", g_pvrclient->m_lastRecordingUpdateTime);
+    kodi::Log(ADDON_LOG_DEBUG, "Updated recordings %lld", m_pvrclient.m_lastRecordingUpdateTime);
   }
   else
   {
     returnValue = PVR_ERROR_SERVER_ERROR;
   }
-  g_pvrclient->m_lastRecordingUpdateTime = time(nullptr);
+  m_pvrclient.m_lastRecordingUpdateTime = time(nullptr);
   return returnValue;
 }
 
@@ -237,7 +249,7 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
 
   std::string status;
   XMLUtils::GetString(pRecordingNode, "status", status);
-  if (status == "Pending" && tag.GetRecordingTime() > time(nullptr) + m_settings.m_serverTimeOffset)
+  if (status == "Pending" && tag.GetRecordingTime() > time(nullptr) + m_settings->m_serverTimeOffset)
   {
     // skip timers
     return false;
@@ -314,7 +326,7 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
   {
     if (ParseNextPVRSubtitle(pRecordingNode, tag))
     {
-      if (m_settings.m_separateSeasons && multipleSeasons && tag.GetSeriesNumber() != PVR_RECORDING_INVALID_SERIES_EPISODE)
+      if (m_settings->m_separateSeasons && multipleSeasons && tag.GetSeriesNumber() != PVR_RECORDING_INVALID_SERIES_EPISODE)
       {
         if (status != "Failed")
           tag.SetDirectory(kodi::tools::StringUtils::Format("/%s/%s %d", tag.GetTitle().c_str(), kodi::addon::GetLocalizedString(20373).c_str(), tag.GetSeriesNumber()));
@@ -329,7 +341,7 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
   XMLUtils::GetString(pRecordingNode, "original", original);
   tag.SetFirstAired(original);
 
-  if (m_settings.m_backendResume)
+  if (m_settings->m_backendResume)
   {
     tag.SetPlayCount(0);
     tag.SetLastPlayedPosition(XMLUtils::GetIntValue(pRecordingNode, "playback_position"));
@@ -351,7 +363,7 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
   if (tag.GetChannelUid() == 0)
     tag.SetChannelUid(PVR_CHANNEL_INVALID_UID);
   else
-    tag.SetIconPath(g_pvrclient->m_channels.GetChannelIconFileName(tag.GetChannelUid()));
+    tag.SetIconPath(m_channels.GetChannelIconFileName(tag.GetChannelUid()));
 
   buffer.clear();
   if (XMLUtils::GetString(pRecordingNode, "channel", buffer))
@@ -362,7 +374,7 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
   std::string recordingFile;
   if (XMLUtils::GetString(pRecordingNode, "file", recordingFile))
   {
-    if (m_settings.m_showRoot && status != "Failed")
+    if (m_settings->m_showRoot && status != "Failed")
     {
       const std::string original = tag.GetDirectory();
       std::string root = "Other";
@@ -387,7 +399,7 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
     {
       tag.SetSizeInBytes(filesize);
     }
-    else if (m_settings.m_showRecordingSize)
+    else if (m_settings->m_showRecordingSize)
     {
       kodi::tools::StringUtils::Replace(recordingFile, '\\', '/');
       if (kodi::tools::StringUtils::StartsWith(recordingFile, "//"))
@@ -414,7 +426,7 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
   m_hostFilenames[tag.GetRecordingId()] = recordingFile;
 
   // if we use unknown Kodi logs warning and turns it to TV so save some steps
-  tag.SetChannelType(g_pvrclient->m_channels.GetChannelType(tag.GetChannelUid()));
+  tag.SetChannelType(m_channels.GetChannelType(tag.GetChannelUid()));
   if (tag.GetChannelType() != PVR_RECORDING_CHANNEL_TYPE_RADIO)
   {
     std::string artworkPath;
@@ -425,10 +437,10 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
     else
         name = UriEncode(title);
 
-    if (m_settings.m_sendSidWithMetadata)
-      artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_urlBase, m_request.GetSID(), name.c_str());
+    if (m_settings->m_sendSidWithMetadata)
+      artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&name=%s", m_settings->m_urlBase, m_request.GetSID(), name.c_str());
     else
-      artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&name=%s", m_settings.m_urlBase, name.c_str());
+      artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&name=%s", m_settings->m_urlBase, name.c_str());
     tag.SetFanartPath(artworkPath);
     artworkPath += "&prefer=poster";
     tag.SetThumbnailPath(artworkPath);
@@ -586,7 +598,7 @@ PVR_ERROR Recordings::SetRecordingLastPlayedPosition(const kodi::addon::PVRRecor
 
   if ( m_lastPlayed[std::stoi(recording.GetRecordingId())] != lastplayedposition )
   {
-    g_pvrclient->m_lastRecordingUpdateTime = std::numeric_limits<time_t>::max();
+    m_pvrclient.m_lastRecordingUpdateTime = std::numeric_limits<time_t>::max();
     time_t timerUpdate = m_timers.m_lastTimerUpdateTime;
     if (lastplayedposition == -1)
     {
@@ -618,13 +630,13 @@ PVR_ERROR Recordings::SetRecordingLastPlayedPosition(const kodi::addon::PVRRecor
           m_lastPlayed[std::stoi(recording.GetRecordingId())] = lastplayedposition;
           // reload recording list so Kodi can get new duration
           if (!isWatched)
-            g_pvrclient->TriggerRecordingUpdate();
-          g_pvrclient->m_lastRecordingUpdateTime = lastUpdate;
+            m_pvrclient.TriggerRecordingUpdate();
+          m_pvrclient.m_lastRecordingUpdateTime = lastUpdate;
         }
       }
     }
-    if ( g_pvrclient->m_lastRecordingUpdateTime == std::numeric_limits<time_t>::max())
-      g_pvrclient->m_lastRecordingUpdateTime = 0;
+    if ( m_pvrclient.m_lastRecordingUpdateTime == std::numeric_limits<time_t>::max())
+      m_pvrclient.m_lastRecordingUpdateTime = 0;
   }
   return PVR_ERROR_NO_ERROR;
 }

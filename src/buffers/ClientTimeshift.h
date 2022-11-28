@@ -22,22 +22,21 @@ namespace timeshift {
     bool m_isPaused = false;
     int64_t m_streamPosition;
 
-	/**
-	 * The current live stream url with &seek=
-	 */
-	std::string m_sourceURL;
+    /**
+     * The current live stream url with &seek=
+     */
+    std::string m_sourceURL;
 
-  std::atomic<int64_t> m_stream_length;
-  std::atomic<int64_t> m_stream_duration;
-  std::atomic<int> m_bytesPerSecond;
-  time_t m_lastClose;
-  int m_prebuffer;
-  std::atomic<time_t> m_rollingStartSeconds;
-  time_t m_streamStart;
-
+    std::atomic<int64_t> m_stream_length;
+    std::atomic<int64_t> m_stream_duration;
+    std::atomic<int> m_bytesPerSecond;
+    time_t m_lastClose;
+    int m_prebuffer;
+    std::atomic<time_t> m_rollingStartSeconds;
+    time_t m_streamStart;
 
   public:
-    ClientTimeShift() : RecordingBuffer()
+    ClientTimeShift(const std::shared_ptr<InstanceSettings>& settings, Request& request) : RecordingBuffer(settings, request)
     {
       m_lastClose = 0;
       m_channel_id = 0;

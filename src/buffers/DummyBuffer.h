@@ -20,7 +20,7 @@ namespace timeshift {
   class ATTR_DLL_LOCAL DummyBuffer : public Buffer
   {
   public:
-    DummyBuffer() : Buffer() { kodi::Log(ADDON_LOG_INFO, "DummyBuffer created!"); }
+    DummyBuffer(const std::shared_ptr<InstanceSettings>& settings, Request& request) : Buffer(settings, request) { kodi::Log(ADDON_LOG_INFO, "DummyBuffer created!"); }
     virtual ~DummyBuffer() {}
 
     virtual ssize_t Read(byte *buffer, size_t length) override

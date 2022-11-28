@@ -19,14 +19,8 @@ namespace NextPVR
   {
 
   public:
-    /**
-       * Singleton getter for the instance
-       */
-    static Channels& GetInstance()
-    {
-      static Channels channels;
-      return channels;
-    }
+
+    Channels(const std::shared_ptr<InstanceSettings>& settings, Request& request);
 
     /* Channel handling */
     int GetNumChannels();
@@ -54,7 +48,7 @@ namespace NextPVR
     void operator=(Channels const&) = delete;
 
     std::string GetChannelIcon(int channelID);
-    Settings& m_settings = Settings::GetInstance();
-    Request& m_request = Request::GetInstance();
+    const std::shared_ptr<InstanceSettings> m_settings;
+    Request& m_request;
   };
 } // namespace NextPVR

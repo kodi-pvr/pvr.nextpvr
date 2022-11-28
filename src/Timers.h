@@ -59,16 +59,7 @@ namespace NextPVR
     } nextpvr_recordinglimit_t;
 
   public:
-    //Timers(kodi::addon::CInstancePVRClient& instance) : m_instance(instance) {};
-    /**
-       * Singleton getter for the instance
-    */
-    static Timers& GetInstance()
-    {
-      static Timers timers;
-      return timers;
-    }
-
+    Timers(const std::shared_ptr<InstanceSettings>& settings, Request& request, Channels& channels, cPVRClientNextPVR& pvrclient);
 
     /* Timer handling */
     PVR_ERROR GetTimersAmount(int& amount);
@@ -86,9 +77,10 @@ namespace NextPVR
     Timers(Timers const&) = delete;
     void operator=(Timers const&) = delete;
 
-    Settings& m_settings = Settings::GetInstance();
-    Request& m_request = Request::GetInstance();
-    Channels& m_channels = Channels::GetInstance();
+    const std::shared_ptr<InstanceSettings> m_settings;
+    Request& m_request;
+    Channels& m_channels;
+    cPVRClientNextPVR& m_pvrclient;
 
     int m_defaultLimit = NEXTPVR_LIMIT_ASMANY;
     int m_defaultShowType = NEXTPVR_SHOWTYPE_ANY;

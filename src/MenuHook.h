@@ -10,7 +10,7 @@
 
 #include "Channels.h"
 #include "Recordings.h"
-#include "Settings.h"
+#include "InstanceSettings.h"
 
 namespace NextPVR
 {
@@ -26,14 +26,7 @@ namespace NextPVR
   class ATTR_DLL_LOCAL MenuHook
   {
   public:
-    /**
-       * Singleton getter for the instance
-    */
-    static MenuHook& GetInstance()
-    {
-      static MenuHook menuhook;
-      return menuhook;
-    }
+    MenuHook(const std::shared_ptr<InstanceSettings>& settings, Recordings& recordings, Channels& channels, cPVRClientNextPVR& pvrclient);
 
     PVR_ERROR CallChannelMenuHook(const kodi::addon::PVRMenuhook& menuhook, const kodi::addon::PVRChannel& item);
     PVR_ERROR CallRecordingsMenuHook(const kodi::addon::PVRMenuhook& menuhook, const kodi::addon::PVRRecording& item);
@@ -46,10 +39,10 @@ namespace NextPVR
     MenuHook() = default;
     MenuHook(MenuHook const&) = delete;
     void operator=(MenuHook const&) = delete;
-
-    Channels& m_channels = Channels::GetInstance();
-    Recordings& m_recordings = Recordings::GetInstance();
-    Settings& m_settings = Settings::GetInstance();
+    std::shared_ptr<InstanceSettings> m_settings;
+    Recordings& m_recordings;
+    Channels& m_channels;
+    cPVRClientNextPVR& m_pvrclient;
 
   };
 } // namespace NextPVR

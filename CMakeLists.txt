@@ -18,7 +18,7 @@ set(NEXTPVR_SOURCES src/addon.cpp
                     src/EPG.cpp
                     src/MenuHook.cpp
                     src/Recordings.cpp
-                    src/Settings.cpp
+                    src/InstanceSettings.cpp
                     src/Timers.cpp
                     src/buffers/Buffer.cpp
                     src/buffers/DummyBuffer.cpp
@@ -38,7 +38,7 @@ set(NEXTPVR_HEADERS src/addon.h
                     src/EPG.h
                     src/MenuHook.h
                     src/Recordings.h
-                    src/Settings.h
+                    src/InstanceSettings.h
                     src/Timers.h
                     src/buffers/Buffer.h
                     src/buffers/DummyBuffer.h

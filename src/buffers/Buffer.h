@@ -16,7 +16,7 @@
 #include <string>
 #include <ctime>
 #include <atomic>
-#include "../Settings.h"
+#include "../InstanceSettings.h"
 #include <mutex>
 #include <thread>
 #include  "../BackendRequest.h"
@@ -43,13 +43,16 @@ namespace timeshift {
   class ATTR_DLL_LOCAL Buffer
   {
   public:
-    Buffer() :
+    Buffer(const std::shared_ptr<InstanceSettings>& settings, Request& request) :
       m_active(false), m_startTime(0),
+      m_settings(settings),
+      m_request(request),
       m_readTimeout(DEFAULT_READ_TIMEOUT) { kodi::Log(ADDON_LOG_INFO, "Buffer created!"); };
     virtual ~Buffer();
 
-    NextPVR::Settings& m_settings = NextPVR::Settings::GetInstance();
-    NextPVR::Request& m_request = NextPVR::Request::GetInstance();
+
+    std::shared_ptr<InstanceSettings> m_settings;
+    //Request(const std::shared_ptr<InstanceSettings>& settings);
     /**
      * Opens the input handle
      * @return whether the input was successfully opened
@@ -176,6 +179,7 @@ namespace timeshift {
     virtual bool GetStreamInfo() {return true;}
     bool m_complete;
     mutable std::mutex m_mutex;
+    Request& m_request;
 
 
     const static int DEFAULT_READ_TIMEOUT;

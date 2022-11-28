@@ -16,6 +16,12 @@ using namespace NextPVR::utilities;
 
 /** Channel handling */
 
+Channels::Channels(const std::shared_ptr<InstanceSettings>& settings, Request& request) :
+  m_settings(settings),
+  m_request(request)
+{
+}
+
 int Channels::GetNumChannels()
 {
   // Kodi polls this while recordings are open avoid calls to backend
@@ -80,7 +86,7 @@ void Channels::DeleteChannelIcons()
 
 PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& results)
 {
-  if (radio && !m_settings.m_showRadio)
+  if (radio && !m_settings->m_showRadio)
     return PVR_ERROR_NO_ERROR;
 
   std::string stream;
@@ -176,7 +182,7 @@ PVR_RECORDING_CHANNEL_TYPE Channels::GetChannelType(unsigned int uid)
 
 PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsResultSet& results)
 {
-  if (radio && !m_settings.m_showRadio)
+  if (radio && !m_settings->m_showRadio)
     return PVR_ERROR_NO_ERROR;
 
   std::unordered_set selectedGroups = radio ? m_radioGroups : m_tvGroups;
