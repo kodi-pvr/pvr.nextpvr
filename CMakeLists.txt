@@ -10,7 +10,6 @@ include_directories(${TINYXML2_INCLUDE_DIR}
                     ${KODI_INCLUDE_DIR}/..) # Hack way with "/..", need bigger Kodi cmake rework to match right include ways
 
 set(NEXTPVR_SOURCES src/addon.cpp
-                    src/AddonSettings.cpp
                     src/pvrclient-nextpvr.cpp
                     src/Socket.cpp
                     src/uri.cpp
@@ -31,7 +30,6 @@ set(NEXTPVR_SOURCES src/addon.cpp
                     src/buffers/Seeker.cpp)
 
 set(NEXTPVR_HEADERS src/addon.h
-                    src/AddonSettings.h
                     src/os-dependent.h
                     src/pvrclient-nextpvr.h
                     src/Socket.h

@@ -12,8 +12,6 @@
 #include "kodi/General.h"
 #include "kodi/Filesystem.h"
 
-#include "utilities/XMLUtils.h"
-
 #include <algorithm>
 #include <utility>
 #include <vector>
@@ -65,11 +63,13 @@ bool SettingsMigration::MigrateSettings(kodi::addon::IAddonInstance& target)
     return false;
   }
     // ask XBMC to read settings for us
-  tinyxml2::XMLDocument m_doc;
+  tinyxml2::XMLDocument doc;
 
-  if (m_doc.Parse(kodi::vfs::TranslateSpecialProtocol("special://xbmc/addons/pvr.nextpvr/resources/settings.xml").c_str()) == tinyxml2::XML_SUCCESS)
+  if (doc.LoadFile(kodi::vfs::TranslateSpecialProtocol("special://profile/addon_data/pvr.nextpvr/settings.xml").c_str()) == tinyxml2::XML_SUCCESS)
   {
-
+    tinyxml2::XMLNode* rootNode = doc.FirstChild();
+    if (rootNode == nullptr)
+      return false;
 
     // Read pre-multi-instance settings from settings.xml, transfer to instance settings
     SettingsMigration mig(target);
@@ -77,13 +77,13 @@ bool SettingsMigration::MigrateSettings(kodi::addon::IAddonInstance& target)
     mig.MoveResourceFiles();
 
     for (const auto& setting : stringMap)
-      mig.MigrateStringSetting(setting.first, setting.second);
+      mig.MigrateStringSetting(setting.first, setting.second, rootNode);
 
     for (const auto& setting : intMap)
-      mig.MigrateIntSetting(setting.first, setting.second);
+      mig.MigrateIntSetting(setting.first, setting.second, rootNode);
 
     for (const auto& setting : boolMap)
-      mig.MigrateBoolSetting(setting.first, setting.second);
+      mig.MigrateBoolSetting(setting.first, setting.second, rootNode);
 
     if (mig.Changed())
     {
@@ -132,32 +132,63 @@ bool SettingsMigration::IsMigrationSetting(const std::string& key)
                      [&key](const auto& entry) { return entry.first == key; });
 }
 
-void SettingsMigration::MigrateStringSetting(const char* key, const std::string& defaultValue)
+void SettingsMigration::MigrateStringSetting(const char* key, const std::string& defaultValue, tinyxml2::XMLNode* rootNode)
 {
   std::string value;
-  if (kodi::addon::CheckSettingString(key, value) && value != defaultValue)
+  tinyxml2::XMLElement* child = rootNode->FirstChildElement("setting");
+  while (child != nullptr)
   {
-    m_target.SetInstanceSettingString(key, value);
-    m_changed = true;
+    if (child->Attribute("id", key))
+    {
+      value = child->GetText();
+      if (value != defaultValue)
+      {
+        m_target.SetInstanceSettingString(key, value);
+        m_changed = true;
+      }
+      break;
+    }
+    child = child->NextSiblingElement();
   }
 }
 
-void SettingsMigration::MigrateIntSetting(const char* key, int defaultValue)
+void SettingsMigration::MigrateIntSetting(const char* key, int defaultValue, tinyxml2::XMLNode* rootNode)
 {
-  int value;
-  if (kodi::addon::CheckSettingInt(key, value) && value != defaultValue)
+  int value = defaultValue;
+  tinyxml2::XMLElement* child = rootNode->FirstChildElement("setting");
+  while (child != nullptr)
   {
-    m_target.SetInstanceSettingInt(key, value);
-    m_changed = true;
+    if (child->Attribute("id", key))
+    {
+      child->QueryIntText(&value);
+      if (value != defaultValue)
+      {
+        m_target.SetInstanceSettingInt(key, value);
+        m_changed = true;
+      }
+      break;
+    }
+    child = child->NextSiblingElement();
   }
+
 }
 
-void SettingsMigration::MigrateBoolSetting(const char* key, bool defaultValue)
+void SettingsMigration::MigrateBoolSetting(const char* key, bool defaultValue, tinyxml2::XMLNode* rootNode)
 {
-  bool value;
-  if (kodi::addon::CheckSettingBoolean(key, value) && value != defaultValue)
+  bool value = defaultValue;
+  tinyxml2::XMLElement* child = rootNode->FirstChildElement("setting");
+  while (child != nullptr)
   {
-    m_target.SetInstanceSettingBoolean(key, value);
-    m_changed = true;
+    if (child->Attribute("id", key) != nullptr)
+    {
+      child->QueryBoolText(&value);
+      if (value != defaultValue)
+      {
+        m_target.SetInstanceSettingBoolean(key, value);
+        m_changed = true;
+      }
+      break;
+    }
+    child = child->NextSiblingElement();
   }
 }

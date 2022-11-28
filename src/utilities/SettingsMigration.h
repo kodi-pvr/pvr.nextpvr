@@ -8,6 +8,7 @@
 #pragma once
 
 #include <string>
+#include "tinyxml2.h"
 namespace kodi
 {
 namespace addon
@@ -30,9 +31,9 @@ private:
   SettingsMigration() = delete;
   explicit SettingsMigration(kodi::addon::IAddonInstance& target) : m_target(target) {}
 
-  void MigrateStringSetting(const char* key, const std::string& defaultValue);
-  void MigrateIntSetting(const char* key, int defaultValue);
-  void MigrateBoolSetting(const char* key, bool defaultValue);
+  void MigrateStringSetting(const char* key, const std::string& defaultValue, tinyxml2::XMLNode* rootNode);
+  void MigrateIntSetting(const char* key, int defaultValue, tinyxml2::XMLNode* rootNode);
+  void MigrateBoolSetting(const char* key, bool defaultValue, tinyxml2::XMLNode* rootNode);
   void MoveResourceFiles();
 
   bool Changed() const { return m_changed; }

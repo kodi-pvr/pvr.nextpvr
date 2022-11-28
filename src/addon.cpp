@@ -7,7 +7,6 @@
 
 #include "addon.h"
 #include "pvrclient-nextpvr.h"
-#include "AddonSettings.h"
 #include "utilities/SettingsMigration.h"
 /* User adjustable settings are saved here.
  * Default values are defined inside addon.h
@@ -28,7 +27,6 @@ using namespace NextPVR::utilities;
 
 ADDON_STATUS CNextPVRAddon::Create()
 {
-  m_settings.reset(new AddonSettings());
   kodi::Log(ADDON_LOG_INFO, "Creating NextPVR PVR-Client");
   return ADDON_STATUS_OK;
 }
@@ -78,7 +76,7 @@ void CNextPVRAddon::DestroyInstance(const kodi::addon::IInstanceInfo& instance,
 ADDON_STATUS CNextPVRAddon::SetSetting(const std::string& settingName,
                                    const kodi::addon::CSettingValue& settingValue)
 {
-  return m_settings->SetSetting(settingName, settingValue);
+  return ADDON_STATUS_OK;
 }
 
 
