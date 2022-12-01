@@ -135,6 +135,8 @@ PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& r
 
       buffer.clear();
       XMLUtils::GetString(pChannelNode, "name", buffer);
+      if (m_settings->m_addChannelInstance)
+        buffer += kodi::tools::StringUtils::Format(" (%d)", m_settings->m_instanceNumber);
       tag.SetChannelName(buffer);
 
       // check if we need to download a channel icon
@@ -185,9 +187,10 @@ PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsRe
   if (radio && !m_settings->m_showRadio)
     return PVR_ERROR_NO_ERROR;
 
-  std::unordered_set selectedGroups = radio ? m_radioGroups : m_tvGroups;
+  std::unordered_set<std::string>& selectedGroups = radio ? m_radioGroups : m_tvGroups;
 
   selectedGroups.clear();
+  bool hasAllChannels = false;
   tinyxml2::XMLDocument doc;
   if (m_request.DoMethodRequest("channel.list&extras=true", doc) == tinyxml2::XML_SUCCESS)
   {
@@ -196,19 +199,30 @@ PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsRe
     for( pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode=pChannelNode->NextSiblingElement())
     {
       std::string buffer;
-      if (XMLUtils::GetAdditiveString(pChannelNode->FirstChildElement("groups"), "group", "\t", buffer, true))
+      XMLUtils::GetString(pChannelNode, "type", buffer);
+      bool foundRadio = false;
+      if ( buffer == "0xa")
       {
-        std::vector<std::string> groups = kodi::tools::StringUtils::Split(buffer, '\t');
-        bool foundRadio = false;
-        buffer.clear();
-        XMLUtils::GetString(pChannelNode, "type", buffer);
-        if ( buffer == "0xa")
+        foundRadio = true;
+      }
+      if (radio == foundRadio)
+      {
+        if (m_settings->m_allChannels && !hasAllChannels)
         {
-          foundRadio = true;
+          hasAllChannels = true;
+          std::string allChannels = GetAllChannelsGroupName(radio);
+          kodi::addon::PVRChannelGroup tag;
+          tag.SetIsRadio(radio);
+          tag.SetPosition(0);
+          tag.SetGroupName(allChannels);
+          results.Add(tag);
         }
-        if (radio == foundRadio)
+        buffer.clear();
+        if (XMLUtils::GetAdditiveString(pChannelNode->FirstChildElement("groups"), "group", "\t", buffer, true))
         {
-          for(auto const& group : groups)
+          std::vector<std::string> groups = kodi::tools::StringUtils::Split(buffer, '\t');
+          XMLUtils::GetString(pChannelNode, "type", buffer);
+          for (auto const& group : groups)
           {
             if (selectedGroups.find(group) == selectedGroups.end())
             {
@@ -257,8 +271,18 @@ PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsRe
 
 PVR_ERROR Channels::GetChannelGroupMembers(const kodi::addon::PVRChannelGroup& group, kodi::addon::PVRChannelGroupMembersResultSet& results)
 {
-  std::string encodedGroupName = UriEncode(group.GetGroupName());
-  std::string request = "channel.list&group_id=" + encodedGroupName;
+  std::string request;
+
+  if (group.GetGroupName() == GetAllChannelsGroupName(group.GetIsRadio()))
+  {
+    request = "channel.list";
+  }
+  else
+  {
+    const std::string encodedGroupName = UriEncode(group.GetGroupName());
+    request = "channel.list&group_id=" + encodedGroupName;
+  }
+
   tinyxml2::XMLDocument doc;
   if (m_request.DoMethodRequest(request, doc) == tinyxml2::XML_SUCCESS)
   {
@@ -280,6 +304,22 @@ PVR_ERROR Channels::GetChannelGroupMembers(const kodi::addon::PVRChannelGroup& g
     }
   }
   return PVR_ERROR_NO_ERROR;
+}
+
+const std::string Channels::GetAllChannelsGroupName(bool radio)
+{
+  std::string allChannels;
+  if (radio)
+  {
+    allChannels = kodi::tools::StringUtils::Format("%s %s",
+      kodi::addon::GetLocalizedString(19216).c_str(), m_settings->m_instanceName.c_str());
+  }
+  else
+  {
+    allChannels = kodi::tools::StringUtils::Format("%s %s",
+      kodi::addon::GetLocalizedString(19217).c_str(), m_settings->m_instanceName.c_str());
+  }
+  return allChannels;
 }
 
 bool Channels::IsChannelAPlugin(int uid)

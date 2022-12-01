@@ -165,13 +165,6 @@
           </control>
         </setting>
       </group>
-      <group id="11">
-        <setting help="30688" id="showradio" label="30188" type="boolean">
-          <level>0</level>
-          <default>true</default>
-          <control type="toggle"/>
-        </setting>
-      </group>
     </category>
     <category help="" id="advanced5" label="30175">
       <group id="12">
@@ -250,6 +243,8 @@
           <default>false</default>
           <control type="toggle"/>
         </setting>
+      </group>
+      <group id="13">
         <setting help="30699" id="ignorepadding" label="30199" type="boolean">
           <level>2</level>
           <default>true</default>
@@ -257,6 +252,40 @@
         </setting>
         <setting help="30700" id="backendresume" label="30200" type="boolean">
           <level>3</level>
+          <default>true</default>
+          <control type="toggle"/>
+        </setting>
+      </group>
+    </category>
+    <category help="" id="instanceoptions" label="30205">
+      <group id="14">
+        <setting help="" id="instance" label="30204" type="integer">
+          <level>1</level>
+          <default>0</default>
+          <dependencies>
+            <dependency type="visible" operator="gt" setting="instance">0</dependency>
+          </dependencies>
+		      <enable>false</enable>
+	        <control format="integer" type="edit">
+          </control>
+        </setting>
+        <setting help="30702" id="instancechannel" label="30202" type="boolean">
+          <level>1</level>
+          <default>false</default>
+          <control type="toggle"/>
+        </setting>
+        <setting help="30703" id="instanceallgroup" label="30203" type="boolean">
+          <level>1</level>
+          <default>false</default>
+          <control type="toggle"/>
+        </setting>
+        <setting help="30688" id="showradio" label="30188" type="boolean">
+          <level>0</level>
+          <default>true</default>
+          <control type="toggle"/>
+        </setting>
+        <setting help="30706" id="comskip" label="30206" type="boolean">
+          <level>0</level>
           <default>true</default>
           <control type="toggle"/>
         </setting>

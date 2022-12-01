@@ -78,10 +78,13 @@ namespace NextPVR
     int m_backendVersion = 0;
     int32_t m_instanceNumber = 0;
     std::string m_instanceDirectory;
+    std::string m_instanceName;
 
     //Channel
     bool m_showRadio = true;
     bool m_useLiveStreams = false;
+    bool m_allChannels = true;
+    bool m_addChannelInstance = false;
 
     //EPG
     bool m_showNew = false;
@@ -98,6 +101,7 @@ namespace NextPVR
     bool m_separateSeasons = true;
     bool m_showRoot = false;
     int m_chunkRecording = 32;
+    bool m_comskip = true;
 
     //Timers
     int m_defaultPrePadding = 0;

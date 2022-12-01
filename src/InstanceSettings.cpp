@@ -109,9 +109,21 @@ void InstanceSettings::ReadFromAddon()
 
   m_useLiveStreams = ReadBoolSetting("uselivestreams", false);
 
+  if (m_instanceNumber != ReadIntSetting("instance", 0))
+  {
+    m_instance.SetInstanceSettingInt("instance", m_instanceNumber);
+  }
+
+  m_instanceName = ReadStringSetting("kodi_addon_instance_name",  "Unknown");
+
+  m_allChannels = ReadBoolSetting("instanceallgroup", false);
+
+  m_addChannelInstance = ReadBoolSetting("instancechannel", false);
+
+  m_comskip = ReadBoolSetting("comskip", true);
 
   /* Log the current settings for debugging purposes */
-  kodi::Log(ADDON_LOG_DEBUG, "settings: host='%s', port=%i, mac=%4.4s...", m_hostname.c_str(), m_port, m_hostMACAddress.c_str());
+  kodi::Log(ADDON_LOG_DEBUG, "settings: host='%s', port=%i, instance=%d, mac=%4.4s...", m_hostname.c_str(), m_port, m_instanceNumber, m_hostMACAddress.c_str());
 
 }
 
@@ -282,5 +294,9 @@ ADDON_STATUS InstanceSettings::SetValue(const std::string& settingName, const ko
     return SetStringSetting<ADDON_STATUS>(settingName, settingValue, m_resolution, ADDON_STATUS_OK, ADDON_STATUS_OK);
   else if (settingName == "ffmpegdirect")
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_transcodedTimeshift, ADDON_STATUS_OK, ADDON_STATUS_OK);
+  else if (settingName == "instancechannel")
+    return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_addChannelInstance, ADDON_STATUS_OK, ADDON_STATUS_OK);
+  else if (settingName == "instancegroup")
+    return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_allChannels, ADDON_STATUS_OK, ADDON_STATUS_OK);
   return ADDON_STATUS_OK;
 }

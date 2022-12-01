@@ -30,6 +30,7 @@ namespace NextPVR
     PVR_ERROR GetChannelGroupsAmount(int& amount);
     PVR_ERROR GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsResultSet& results);
     PVR_ERROR GetChannelGroupMembers(const kodi::addon::PVRChannelGroup& group, kodi::addon::PVRChannelGroupMembersResultSet& results);
+    const std::string GetAllChannelsGroupName(bool radio);
     bool IsChannelAPlugin(int uid);
     void LoadLiveStreams();
     std::map<int, std::string> m_liveStreams;

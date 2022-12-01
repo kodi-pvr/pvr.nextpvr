@@ -71,11 +71,6 @@ PVR_ERROR MenuHook::CallChannelMenuHook(const kodi::addon::PVRMenuhook& menuhook
 void MenuHook::ConfigureMenuHook()
 {
   kodi::addon::PVRMenuhook menuHook;
-  menuHook.SetCategory(PVR_MENUHOOK_CHANNEL);
-  menuHook.SetHookId(PVR_MENUHOOK_CHANNEL_DELETE_SINGLE_CHANNEL_ICON);
-  menuHook.SetLocalizedStringId(30183);
-  m_pvrclient.AddMenuHook(menuHook);
-
 
   menuHook.SetCategory(PVR_MENUHOOK_SETTING);
   menuHook.SetHookId(PVR_MENUHOOK_SETTING_DELETE_ALL_CHANNNEL_ICONS);
@@ -105,10 +100,15 @@ void MenuHook::ConfigureMenuHook()
     menuHook.SetHookId(PVR_MENUHOOK_SETTING_OPEN_SETTINGS);
     menuHook.SetLocalizedStringId(30196);
     m_pvrclient.AddMenuHook(menuHook);
-  }
 
-  menuHook.SetCategory(PVR_MENUHOOK_RECORDING);
-  menuHook.SetHookId(PVR_MENUHOOK_RECORDING_FORGET_RECORDING);
-  menuHook.SetLocalizedStringId(30184);
-  m_pvrclient.AddMenuHook(menuHook);
+    menuHook.SetCategory(PVR_MENUHOOK_RECORDING);
+    menuHook.SetHookId(PVR_MENUHOOK_RECORDING_FORGET_RECORDING);
+    menuHook.SetLocalizedStringId(30184);
+    m_pvrclient.AddMenuHook(menuHook);
+
+    menuHook.SetCategory(PVR_MENUHOOK_CHANNEL);
+    menuHook.SetHookId(PVR_MENUHOOK_CHANNEL_DELETE_SINGLE_CHANNEL_ICON);
+    menuHook.SetLocalizedStringId(30183);
+    m_pvrclient.AddMenuHook(menuHook);
+  }
 }

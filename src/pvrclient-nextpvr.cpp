@@ -516,7 +516,7 @@ PVR_ERROR cPVRClientNextPVR::GetBackendVersion(std::string& version)
 
 PVR_ERROR cPVRClientNextPVR::GetConnectionString(std::string& connection)
 {
-  connection = m_settings->m_hostname;
+  connection = m_settings->m_instanceName;
   if (!m_bConnected)
     connection += ": " + kodi::addon::GetLocalizedString(15208);
   return PVR_ERROR_NO_ERROR;
@@ -999,7 +999,7 @@ PVR_ERROR cPVRClientNextPVR::GetCapabilities(kodi::addon::PVRCapabilities& capab
   capabilities.SetHandlesDemuxing(false);
   capabilities.SetSupportsChannelScan(false);
   capabilities.SetSupportsLastPlayedPosition(m_settings->m_backendResume);
-  capabilities.SetSupportsRecordingEdl(true);
+  capabilities.SetSupportsRecordingEdl(m_settings->m_comskip);
   capabilities.SetSupportsRecordingsRename(false);
   capabilities.SetSupportsRecordingsLifetimeChange(false);
   capabilities.SetSupportsDescrambleInfo(false);
