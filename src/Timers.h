@@ -87,6 +87,7 @@ namespace NextPVR
     int m_iTimerCount = -1;
 
     std::string GetDayString(int dayMask);
+    std::string GetTimerDescription(int id);
 
     int GetEPGOidForTimer(const kodi::addon::PVRTimer& timer);
   };
