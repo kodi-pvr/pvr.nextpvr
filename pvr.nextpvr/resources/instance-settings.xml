@@ -290,6 +290,23 @@
           <control type="toggle"/>
         </setting>
       </group>
+      <group id="15">
+        <setting id="heartbeat" type="integer" label="30207" help="30707">
+        <level>2</level>
+        <default>0</default>
+        <constraints>
+          <options>
+            <option label="13278">0</option>
+            <option label="30208">1</option>
+            <option label="33036">2</option>
+            <option label="1223">3</option>
+          </options>
+        </constraints>
+        <control type="list" format="string">
+          <heading>32009</heading>
+        </control>
+        </setting>
+      </group>
     </category>
   </section>
 </settings>

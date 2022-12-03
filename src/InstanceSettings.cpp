@@ -123,6 +123,18 @@ void InstanceSettings::ReadFromAddon()
 
   m_comskip = ReadBoolSetting("comskip", true);
 
+  enum eHeartbeat m_heartbeat = ReadEnumSetting<eHeartbeat>("heartbeat", eHeartbeat::Default);
+
+  if (m_heartbeat == eHeartbeat::Default)
+    m_heartbeatInterval = DEFAULT_HEARTBEAT;
+  else if (m_heartbeat == eHeartbeat::FiveMinutes)
+    m_heartbeatInterval = 300;
+  else if (m_heartbeat == eHeartbeat::Hourly)
+    m_heartbeatInterval = 7200;
+  else if (m_heartbeat == eHeartbeat::None)
+    m_heartbeatInterval = std::numeric_limits<time_t>::max();
+
+
   /* Log the current settings for debugging purposes */
   kodi::Log(ADDON_LOG_DEBUG, "settings: host='%s', port=%i, instance=%d, mac=%4.4s...", m_hostname.c_str(), m_port, m_instanceNumber, m_hostMACAddress.c_str());
 
@@ -299,5 +311,7 @@ ADDON_STATUS InstanceSettings::SetValue(const std::string& settingName, const ko
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_addChannelInstance, ADDON_STATUS_OK, ADDON_STATUS_OK);
   else if (settingName == "instancegroup")
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_allChannels, ADDON_STATUS_OK, ADDON_STATUS_OK);
+  else if (settingName == "heartbeat")
+    return SetEnumSetting<eHeartbeat, ADDON_STATUS>(settingName, settingValue, m_heartbeat, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
   return ADDON_STATUS_OK;
 }

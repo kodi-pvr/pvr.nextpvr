@@ -30,6 +30,14 @@ namespace NextPVR
     Landscape = 1
   };
 
+  enum eHeartbeat
+  {
+    Default = 0,
+    FiveMinutes = 1,
+    Hourly = 2,
+    None = 99
+  };
+
   constexpr int NEXTPVRC_MIN_VERSION = 50200;
   constexpr char NEXTPVRC_MIN_VERSION_STRING[] = "5.2.0";
   const static std::string DEFAULT_PROTOCOL = "http";
@@ -40,6 +48,7 @@ namespace NextPVR
   constexpr bool DEFAULT_USE_TIMESHIFT = false;
   constexpr bool DEFAULT_GUIDE_ARTWORK = false;
   constexpr eStreamingMethod DEFAULT_LIVE_STREAM = RealTime;
+  constexpr time_t DEFAULT_HEARTBEAT = 60;
 
   class ATTR_DLL_LOCAL InstanceSettings
   {
@@ -79,6 +88,8 @@ namespace NextPVR
     int32_t m_instanceNumber = 0;
     std::string m_instanceDirectory;
     std::string m_instanceName;
+    enum eHeartbeat m_heartbeat;
+    time_t m_heartbeatInterval;
     bool m_instancePriority = true;
 
     //Channel

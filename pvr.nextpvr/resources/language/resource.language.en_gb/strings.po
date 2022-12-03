@@ -53,7 +53,7 @@ msgid "Download TV guide artwork"
 msgstr ""
 
 msgctxt "#30504"
-msgid "Not enabled for Matrix when remote"
+msgid "Not enabled when remote"
 msgstr ""
 
 #empty strings from id 30005 to 30039
@@ -384,4 +384,17 @@ msgstr ""
 
 msgctxt "#30706"
 msgid "Read comskip EDL files from backend"
+msgstr ""
+
+msgctxt "#30207"
+msgid "Update check"
+msgstr ""
+
+msgctxt "#30707"
+msgid "Interval to check for backend changes made outside this Kodi client"
+msgstr ""
+
+
+msgctxt "#30208"
+msgid "Every 5 minutes"
 msgstr ""

@@ -315,7 +315,7 @@ bool cPVRClientNextPVR::IsUp()
   // check time since last time Recordings were updated, update if it has been awhile
   if (m_bConnected == true)
   {
-    if (m_nowPlaying == NotPlaying && m_lastRecordingUpdateTime != std::numeric_limits<time_t>::max() && time(nullptr) > (m_lastRecordingUpdateTime + 60))
+    if (m_nowPlaying == NotPlaying && m_lastRecordingUpdateTime != std::numeric_limits<time_t>::max() && time(nullptr) > (m_lastRecordingUpdateTime + m_settings->m_heartbeatInterval))
     {
       time_t update_time;
       if (m_request.GetLastUpdate("recording.lastupdated", update_time) == tinyxml2::XML_SUCCESS)
@@ -381,9 +381,18 @@ bool cPVRClientNextPVR::IsUp()
       {
         if (m_connectionState == PVR_CONNECTION_STATE_CONNECTED)
         {
-          // allow a one time retry in 60 seconds
+          // allow a one time retry in 60 seconds for a default check
           m_connectionState = PVR_CONNECTION_STATE_SERVER_UNREACHABLE;
-          m_lastRecordingUpdateTime = time(nullptr);
+          if (m_settings->m_heartbeatInterval == DEFAULT_HEARTBEAT)
+          {
+            m_lastRecordingUpdateTime = time(nullptr);
+          }
+          else
+          {
+            SetConnectionState("Lost connection", PVR_CONNECTION_STATE_SERVER_UNREACHABLE);
+            m_nextServerCheck = time(nullptr) + SLOW_CONNECT_POLL;
+            m_bConnected = false;
+          }
         }
         else if (m_connectionState == PVR_CONNECTION_STATE_SERVER_UNREACHABLE)
         {
@@ -427,7 +436,10 @@ void cPVRClientNextPVR::Process()
   while (m_running)
   {
     IsUp();
-    std::this_thread::sleep_for(std::chrono::milliseconds(2500));
+    if (m_settings->m_heartbeatInterval == DEFAULT_HEARTBEAT)
+      std::this_thread::sleep_for(std::chrono::milliseconds(2500));
+    else
+      std::this_thread::sleep_for(std::chrono::seconds(10));
   }
 }
 
