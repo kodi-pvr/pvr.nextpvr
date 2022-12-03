@@ -36,13 +36,13 @@ ADDON_STATUS CNextPVRAddon::CreateInstance(const kodi::addon::IInstanceInfo& ins
 {
 
   /* Create connection to NextPVR KODI TV client */
-  cPVRClientNextPVR* client = new cPVRClientNextPVR(*this, instance);
+  cPVRClientNextPVR* client = new cPVRClientNextPVR(*this, instance, IsFirstInstance());
 
   if (SettingsMigration::MigrateSettings(*client))
   {
     // Initial client operated on old/incomplete settings
     delete client;
-    client = new cPVRClientNextPVR(*this, instance);
+    client = new cPVRClientNextPVR(*this, instance, IsFirstInstance());
   }
 
   ADDON_STATUS status = client->Connect();
@@ -52,7 +52,6 @@ ADDON_STATUS CNextPVRAddon::CreateInstance(const kodi::addon::IInstanceInfo& ins
     status = ADDON_STATUS_OK;
     hdl = client;
     m_usedInstances.emplace(std::make_pair(instance.GetID(), client));
-    //client->m_menuhook.ConfigureMenuHook();
   }
 
   return status;

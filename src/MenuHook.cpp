@@ -94,7 +94,8 @@ void MenuHook::ConfigureMenuHook()
     menuHook.SetLocalizedStringId(30195);
     m_pvrclient.AddMenuHook(menuHook);
   }
-  if (m_settings->m_instanceNumber == 1)
+
+  if (m_settings->m_instancePriority)
   {
     menuHook.SetCategory(PVR_MENUHOOK_SETTING);
     menuHook.SetHookId(PVR_MENUHOOK_SETTING_OPEN_SETTINGS);

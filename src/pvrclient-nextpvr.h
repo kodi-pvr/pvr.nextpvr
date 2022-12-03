@@ -40,7 +40,7 @@ class ATTR_DLL_LOCAL cPVRClientNextPVR : public kodi::addon::CInstancePVRClient
 {
 public:
   /* Class interface */
-  cPVRClientNextPVR(const CNextPVRAddon& base, const kodi::addon::IInstanceInfo& instance);
+  cPVRClientNextPVR(const CNextPVRAddon& base, const kodi::addon::IInstanceInfo& instance, bool first);
 
   ~cPVRClientNextPVR();
 
@@ -60,6 +60,7 @@ public:
   /* General handling */
   PVR_ERROR GetBackendName(std::string& name) override;
   PVR_ERROR GetBackendVersion(std::string& version) override;
+  PVR_ERROR GetBackendHostname(std::string& version) override;
   PVR_ERROR GetConnectionString(std::string& connection) override;
 
   //PVR_ERROR GetBackendTime(time_t* localTime, int* gmtOffset);

@@ -18,9 +18,10 @@ using namespace NextPVR::utilities;
 
 const std::string connectionFlag = "connection.flag";
 
-InstanceSettings::InstanceSettings(kodi::addon::IAddonInstance& instance, const kodi::addon::IInstanceInfo& instanceInfo) :
+InstanceSettings::InstanceSettings(kodi::addon::IAddonInstance& instance, const kodi::addon::IInstanceInfo& instanceInfo, bool first) :
   m_instance(instance),
-  m_instanceInfo(instanceInfo)
+  m_instanceInfo(instanceInfo),
+  m_instancePriority(first)
 {
   m_instanceNumber = m_instanceInfo.GetNumber();
   m_instanceDirectory = kodi::tools::StringUtils::Format("special://profile/addon_data/pvr.nextpvr/%d/", m_instanceNumber);

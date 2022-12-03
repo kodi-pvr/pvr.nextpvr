@@ -31,6 +31,7 @@ public:
   KODI_ADDON_INSTANCE_HDL& hdl) override;
   void DestroyInstance(const kodi::addon::IInstanceInfo& instance,
   const KODI_ADDON_INSTANCE_HDL hdl) override;
+  bool IsFirstInstance() { return m_usedInstances.empty();}
 
 private:
   std::unordered_map<std::string, cPVRClientNextPVR*> m_usedInstances;

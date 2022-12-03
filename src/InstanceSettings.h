@@ -45,7 +45,7 @@ namespace NextPVR
   {
   public:
 
-    explicit InstanceSettings(kodi::addon::IAddonInstance& instance, const kodi::addon::IInstanceInfo& instanceInfo);
+    explicit InstanceSettings(kodi::addon::IAddonInstance& instance, const kodi::addon::IInstanceInfo& instanceInfo, bool empty);
     ADDON_STATUS ReadBackendSettings(tinyxml2::XMLDocument& settingsDoc);
     bool GetConnection();
     void SetConnection(bool status);
@@ -79,6 +79,7 @@ namespace NextPVR
     int32_t m_instanceNumber = 0;
     std::string m_instanceDirectory;
     std::string m_instanceName;
+    bool m_instancePriority = true;
 
     //Channel
     bool m_showRadio = true;

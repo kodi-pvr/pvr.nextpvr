@@ -84,10 +84,10 @@ std::string UriEncode(const std::string sSrc)
 /************************************************************/
 /** Class interface */
 
-cPVRClientNextPVR::cPVRClientNextPVR(const CNextPVRAddon& base, const kodi::addon::IInstanceInfo& instance) :
+cPVRClientNextPVR::cPVRClientNextPVR(const CNextPVRAddon& base, const kodi::addon::IInstanceInfo& instance, bool first) :
   kodi::addon::CInstancePVRClient(instance),
   m_base(base),
-  m_settings(new InstanceSettings(*this, instance)),
+  m_settings(new InstanceSettings(*this, instance, first)),
   m_request(m_settings),
   m_channels(m_settings, m_request),
   m_timers(m_settings, m_request, m_channels, *this),
@@ -501,7 +501,13 @@ void cPVRClientNextPVR::SetConnectionState(std::string message, PVR_CONNECTION_S
 // Used among others for the server name string in the "Recordings" view
 PVR_ERROR cPVRClientNextPVR::GetBackendName(std::string& name)
 {
-  name = "NextPVR";
+  name = "NextPVR:" + m_settings->m_instanceName;
+  return PVR_ERROR_NO_ERROR;
+}
+
+PVR_ERROR cPVRClientNextPVR::GetBackendHostname(std::string& hostname)
+{
+  hostname = m_settings->m_hostname;
   return PVR_ERROR_NO_ERROR;
 }
 
@@ -516,7 +522,7 @@ PVR_ERROR cPVRClientNextPVR::GetBackendVersion(std::string& version)
 
 PVR_ERROR cPVRClientNextPVR::GetConnectionString(std::string& connection)
 {
-  connection = m_settings->m_instanceName;
+  connection = m_settings->m_hostname;
   if (!m_bConnected)
     connection += ": " + kodi::addon::GetLocalizedString(15208);
   return PVR_ERROR_NO_ERROR;
