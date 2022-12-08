@@ -486,26 +486,26 @@ PVR_ERROR Timers::GetTimerTypes(std::vector<kodi::addon::PVRTimerType>& types)
       PVR_TIMER_TYPE_SUPPORTS_START_END_MARGIN;
 
   /* Timer types definition.*/
-    TimerType* t = t = new TimerType(
+    /* One-shot manual (time and channel based) */
+    TimerType* t = new TimerType(
       /* Type id. */
-      TIMER_ONCE_EPG,
+      TIMER_ONCE_MANUAL,
       /* Attributes. */
-      TIMER_EPG_ATTRIBS,
+      TIMER_MANUAL_ATTRIBS,
       /* Description. */
-      kodi::GetLocalizedString(MSG_ONETIME_GUIDE), // "One time (guide)",
+      kodi::GetLocalizedString(MSG_ONETIME_MANUAL), // "One time (manual)",
       /* Values definitions for attributes. */
       recordingLimitValues, m_defaultLimit, showTypeValues, m_defaultShowType, recordingGroupValues, 0);
     types.emplace_back(*t);
     delete t;
 
-    t =new TimerType(
-    /* One-shot manual (time and channel based) */
+    t = new TimerType(
         /* Type id. */
-        TIMER_ONCE_MANUAL,
+        TIMER_ONCE_EPG,
         /* Attributes. */
-        TIMER_MANUAL_ATTRIBS,
+        TIMER_EPG_ATTRIBS,
         /* Description. */
-        kodi::GetLocalizedString(MSG_ONETIME_MANUAL), // "One time (manual)",
+        kodi::GetLocalizedString(MSG_ONETIME_GUIDE), // "One time (guide)",
         /* Values definitions for attributes. */
         recordingLimitValues, m_defaultLimit, showTypeValues, m_defaultShowType, recordingGroupValues, 0);
     types.emplace_back(*t);
