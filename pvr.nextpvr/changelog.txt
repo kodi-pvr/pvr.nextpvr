@@ -1,3 +1,6 @@
+v19.0.6
+- Reorder timers so valid entry timer is default
+
 v19.0.5
 - Backport advanced recording title search from PR 220
 
