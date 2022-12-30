@@ -158,7 +158,8 @@ private:
   Recordings m_recordings;
   Timers m_timers;
 
-  void SetConnectionState(std::string message, PVR_CONNECTION_STATE state, std::string displayMessage = "");
+  void SetConnectionState(PVR_CONNECTION_STATE state, std::string displayMessage = "");
+  void UpdateServerCheck();
   PVR_CONNECTION_STATE m_connectionState = PVR_CONNECTION_STATE_UNKNOWN;
   PVR_CONNECTION_STATE m_coreState = PVR_CONNECTION_STATE_UNKNOWN;
   time_t m_firstSessionInitiate = 0;

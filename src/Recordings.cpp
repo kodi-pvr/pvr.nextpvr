@@ -304,6 +304,8 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
   if (endEpgTime > time(nullptr) - 24 * 3600)
   {
     tag.SetEPGEventId(endEpgTime);
+    if (status == "Ready" && endEpgTime > time(nullptr))
+      tag.SetEPGEventId(tag.GetRecordingTime() + tag.GetDuration());
   }
   else if (status == "Recording" || status == "Pending")
   {

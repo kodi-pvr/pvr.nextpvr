@@ -152,7 +152,6 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
   m_bConnected = false;
   ADDON_STATUS status = ADDON_STATUS_UNKNOWN;
   // initiate session
-  m_connectionState = PVR_CONNECTION_STATE_CONNECTING;
   if (sendWOL)
     SendWakeOnLan();
 
@@ -194,7 +193,7 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
           if (m_settings->ReadBackendSettings(doc) != ADDON_STATUS_OK)
           {
             m_request.DoActionRequest("session.logout");
-            SetConnectionState("Version failure", PVR_CONNECTION_STATE_VERSION_MISMATCH, kodi::addon::GetLocalizedString(30050));
+            SetConnectionState(PVR_CONNECTION_STATE_VERSION_MISMATCH, kodi::addon::GetLocalizedString(30050));
             status = ADDON_STATUS_PERMANENT_FAILURE;
             return status;
           }
@@ -205,34 +204,30 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
         kodi::Log(ADDON_LOG_DEBUG, "session.login successful");
         status = ADDON_STATUS_OK;
         // don't notify core could be before addon is created
-        m_connectionState = PVR_CONNECTION_STATE_CONNECTED;
         m_bConnected = true;
+        SetConnectionState(PVR_CONNECTION_STATE_CONNECTED);
       }
       else
       {
         kodi::Log(ADDON_LOG_DEBUG, "session.login failed");
-        SetConnectionState("Access denied", PVR_CONNECTION_STATE_ACCESS_DENIED, kodi::addon::GetLocalizedString(30052));
+        SetConnectionState(PVR_CONNECTION_STATE_ACCESS_DENIED, kodi::addon::GetLocalizedString(30052));
         status = ADDON_STATUS_PERMANENT_FAILURE;
       }
     }
   }
   else
   {
-    if (m_settings->m_connectionConfirmed)
+    if (m_settings->m_connectionConfirmed || !m_settings->m_instancePriority)
     {
       status = ADDON_STATUS_OK;
       // backend should continue to connnect and ignore client until reachable
       // avoid event logging in unreachable set so leave it connecting
-      if (m_coreState != PVR_CONNECTION_STATE_CONNECTING)
+      if (m_connectionState != PVR_CONNECTION_STATE_UNKNOWN)
       {
-        SetConnectionState("Fake unknown state", PVR_CONNECTION_STATE_UNKNOWN);
-        SetConnectionState("Connnecting", PVR_CONNECTION_STATE_CONNECTING);
+        SetConnectionState(PVR_CONNECTION_STATE_SERVER_UNREACHABLE);
       }
       m_connectionState = PVR_CONNECTION_STATE_SERVER_UNREACHABLE;
-      if (time(nullptr) > m_firstSessionInitiate + FAST_SLOW_POLL_TRANSITION)
-        m_nextServerCheck = time(nullptr) + SLOW_CONNECT_POLL;
-      else
-        m_nextServerCheck = time(nullptr) + FAST_CONNECT_POLL;
+      UpdateServerCheck();
     }
     else
     {
@@ -241,6 +236,14 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
   }
 
   return status;
+}
+
+void cPVRClientNextPVR::UpdateServerCheck()
+{
+  if (time(nullptr) > m_firstSessionInitiate + FAST_SLOW_POLL_TRANSITION)
+    m_nextServerCheck = time(nullptr) + SLOW_CONNECT_POLL;
+  else
+    m_nextServerCheck = time(nullptr) + FAST_CONNECT_POLL;
 }
 
 
@@ -253,8 +256,9 @@ void cPVRClientNextPVR::ResetConnection()
 
 void cPVRClientNextPVR::Disconnect()
 {
-  m_request.DoActionRequest("session.logout");
-  SetConnectionState("Disconnect", PVR_CONNECTION_STATE_DISCONNECTED);
+  if (m_bConnected)
+    m_request.DoActionRequest("session.logout");
+  SetConnectionState(PVR_CONNECTION_STATE_DISCONNECTED);
   m_bConnected = false;
 }
 
@@ -320,10 +324,11 @@ bool cPVRClientNextPVR::IsUp()
       time_t update_time;
       if (m_request.GetLastUpdate("recording.lastupdated", update_time) == tinyxml2::XML_SUCCESS)
       {
-        if (m_connectionState == PVR_CONNECTION_STATE_DISCONNECTED)
-          // one time failure resolved
+        if (m_connectionState == PVR_CONNECTION_STATE_SERVER_UNREACHABLE)
+        {
+          // one time failure resolved do nothing
           m_connectionState = PVR_CONNECTION_STATE_CONNECTED;
-
+        }
         if (update_time > m_lastRecordingUpdateTime)
         {
           m_lastRecordingUpdateTime = std::numeric_limits<time_t>::max();
@@ -381,23 +386,23 @@ bool cPVRClientNextPVR::IsUp()
       {
         if (m_connectionState == PVR_CONNECTION_STATE_CONNECTED)
         {
-          // allow a one time retry in 60 seconds for a default check
-          m_connectionState = PVR_CONNECTION_STATE_SERVER_UNREACHABLE;
           if (m_settings->m_heartbeatInterval == DEFAULT_HEARTBEAT)
           {
+          // allow a one time retry in 60 seconds for a default check
+            m_connectionState = PVR_CONNECTION_STATE_SERVER_UNREACHABLE;
             m_lastRecordingUpdateTime = time(nullptr);
           }
           else
           {
-            SetConnectionState("Lost connection", PVR_CONNECTION_STATE_SERVER_UNREACHABLE);
-            m_nextServerCheck = time(nullptr) + SLOW_CONNECT_POLL;
+            SetConnectionState(PVR_CONNECTION_STATE_DISCONNECTED);
+            UpdateServerCheck();
             m_bConnected = false;
           }
         }
         else if (m_connectionState == PVR_CONNECTION_STATE_SERVER_UNREACHABLE)
         {
-          SetConnectionState("Lost connection", PVR_CONNECTION_STATE_SERVER_UNREACHABLE);
-          m_nextServerCheck = time(nullptr) + SLOW_CONNECT_POLL;
+          SetConnectionState(PVR_CONNECTION_STATE_DISCONNECTED);
+          UpdateServerCheck();
           m_bConnected = false;
         }
       }
@@ -420,12 +425,10 @@ bool cPVRClientNextPVR::IsUp()
   {
     if (time(nullptr) > m_nextServerCheck)
     {
-      m_nextServerCheck = time(nullptr) + SLOW_CONNECT_POLL;
+      UpdateServerCheck();
       Connect(false);
-      if (m_bConnected)
-      {
-        SetConnectionState("Connected", PVR_CONNECTION_STATE_CONNECTED);
-      }
+      if (m_connectionState == PVR_CONNECTION_STATE_SERVER_UNREACHABLE)
+        SetConnectionState(PVR_CONNECTION_STATE_SERVER_UNREACHABLE);
     }
   }
   return m_bConnected;
@@ -454,23 +457,26 @@ PVR_ERROR cPVRClientNextPVR::OnSystemSleep()
 
 PVR_ERROR cPVRClientNextPVR::OnSystemWake()
 {
+  m_firstSessionInitiate = 0;
   kodi::Log(ADDON_LOG_DEBUG, "NextPVR wake");
   // allow time for core to reset
   m_lastRecordingUpdateTime = time(nullptr) + SLOW_CONNECT_POLL;
-  m_nextServerCheck = 0;
-  // don't trigger updates core does it
-  SetConnectionState("Reconnect", PVR_CONNECTION_STATE_UNKNOWN);
 
-  if (m_request.IsActiveSID())
+  // don't trigger updates core does it
+
+  if (m_request.IsActiveSID() && m_request.PingBackend())
   {
     m_connectionState = PVR_CONNECTION_STATE_CONNECTED;
     m_bConnected = true;
     return PVR_ERROR_NO_ERROR;
   }
+  m_nextServerCheck = 0;
+
+  SetConnectionState(PVR_CONNECTION_STATE_CONNECTING);
 
   if (Connect() != ADDON_STATUS_OK)
   {
-    SetConnectionState("Credentials changed", PVR_CONNECTION_STATE_ACCESS_DENIED);
+    SetConnectionState(PVR_CONNECTION_STATE_ACCESS_DENIED);
     return PVR_ERROR_SERVER_ERROR;
   }
 
@@ -500,9 +506,11 @@ void cPVRClientNextPVR::SendWakeOnLan()
   }
 }
 
-void cPVRClientNextPVR::SetConnectionState(std::string message, PVR_CONNECTION_STATE state, std::string displayMessage)
+void cPVRClientNextPVR::SetConnectionState(PVR_CONNECTION_STATE state, std::string displayMessage)
 {
-  ConnectionStateChange(message, state, displayMessage);
+  ConnectionStateChange("", state, displayMessage);
+  if (state == PVR_CONNECTION_STATE_CONNECTED && m_coreState != PVR_CONNECTION_STATE_UNKNOWN)
+    TriggerChannelGroupsUpdate();
   m_connectionState = state;
   m_coreState = state;
 }
@@ -604,7 +612,7 @@ bool cPVRClientNextPVR::OpenLiveStream(const kodi::addon::PVRChannel& channel)
     Connect(true);
     if (m_bConnected)
     {
-      SetConnectionState("Connected", PVR_CONNECTION_STATE_CONNECTED);
+      SetConnectionState(PVR_CONNECTION_STATE_CONNECTED);
     }
   }
 
@@ -978,6 +986,9 @@ PVR_ERROR cPVRClientNextPVR::GetTimersAmount(int& amount)
 
 PVR_ERROR cPVRClientNextPVR::GetTimers(kodi::addon::PVRTimersResultSet& results)
 {
+  if (m_connectionState == PVR_CONNECTION_STATE_CONNECTING)
+    SetConnectionState(PVR_CONNECTION_STATE_CONNECTED);
+
   return m_timers.GetTimers(results);
 }
 
