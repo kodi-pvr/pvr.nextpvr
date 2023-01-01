@@ -929,6 +929,9 @@ PVR_ERROR cPVRClientNextPVR::GetTimersAmount(int& amount)
 
 PVR_ERROR cPVRClientNextPVR::GetTimers(kodi::addon::PVRTimersResultSet& results)
 {
+  if (m_lastRecordingUpdateTime == std::numeric_limits<time_t>::max())
+    TriggerChannelGroupsUpdate();
+
   return m_timers.GetTimers(results);
 }
 
