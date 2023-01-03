@@ -4,7 +4,7 @@ Source: https://github.com/kodi-pvr/pvr.nextpvr
 
 Files: *
 Copyright: 2012-2013 Graeme Blackley www.nextpvr.com
-           2005-2021 Team Kodi
+           2005-2023 Team Kodi
 License: GPL-2+
  This package is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@ License: GPL-2+
 
 
 Files: debian/*
-Copyright: 2020-2021 Team Kodi
+Copyright: 2020-2023 Team Kodi
            2013 Arne Morten Kvarving <arne.morten.kvarving@sintef.no>
            2013 wsnipex <wsnipex@a1.net>
 License: GPL-2+

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2020-2021 Team Kodi (https://kodi.tv)
+ *  Copyright (C) 2020-2023 Team Kodi (https://kodi.tv)
  *
  *  SPDX-License-Identifier: GPL-2.0-or-later
  *  See LICENSE.md for more information.
@@ -187,6 +187,8 @@ PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsRe
   if (radio && !m_settings->m_showRadio)
     return PVR_ERROR_NO_ERROR;
 
+  int priority = 1;
+
   std::unordered_set<std::string>& selectedGroups = radio ? m_radioGroups : m_tvGroups;
 
   selectedGroups.clear();
@@ -213,7 +215,7 @@ PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsRe
           std::string allChannels = GetAllChannelsGroupName(radio);
           kodi::addon::PVRChannelGroup tag;
           tag.SetIsRadio(radio);
-          tag.SetPosition(0);
+          tag.SetPosition(priority++);
           tag.SetGroupName(allChannels);
           results.Add(tag);
         }
@@ -244,7 +246,6 @@ PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsRe
     tinyxml2::XMLNode* groupsNode = doc.RootElement()->FirstChildElement("groups");
     tinyxml2::XMLNode* pGroupNode;
     std::string group;
-    int priority = 1;
     for (pGroupNode = groupsNode->FirstChildElement("group"); pGroupNode; pGroupNode = pGroupNode->NextSiblingElement())
     {
       if (XMLUtils::GetString(pGroupNode, "name", group))
