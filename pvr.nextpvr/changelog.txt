@@ -1,3 +1,7 @@
+v19.0.7
+- Translations updates from Weblate
+	- fr_fr, hr_hr
+
 v19.0.6
 - Reorder timers so valid entry timer is default
 
