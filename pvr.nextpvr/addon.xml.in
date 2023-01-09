@@ -91,7 +91,7 @@
     <description lang="fr_FR">Interface logicielle pour l&apos;enregistreur vidéo (PVR) NextPVR. Gère la diffusion de la TV en direct et des enregistrements en direct, l&apos;écoute de chaînes de radios et le guide électronique des programmes TV.</description>
     <description lang="gl_ES">Interface de NextPVR. Compatíbel coa transmisión de TV en directo, gravacións, escoita de canles de radio e Guía.</description>
     <description lang="he_IL">לקוח טלוויזיה חיה של NextPVR. תומך בהזרמת שידורים חיים והקלטות, האזנה לרדיו, הצגת לוח שידורים ותזמון הקלטות.</description>
-    <description lang="hr_HR">NextPVR sučelje. Podržava stremanje i snimanje TV programa, slušanje radio programa i elektronski programski vodič (EPG).</description>
+    <description lang="hr_HR">NextPVR sučelje. Podržava strujanje i snimanje TV programa, slušanje radio programa i elektronski programski vodič (EPG).</description>
     <description lang="hu_HU">NextPVR előtét. Élő adások, felvételek és rádiócsatornák támogatása EPG-vel.</description>
     <description lang="id_ID">Frontend NextPVR. Mendukung pengaliran Siaran TV langsung dan perekaman, mendengarkan radio dan EPG.</description>
     <description lang="is_IS">Framendi fyrir NextPVR. Styður streymi á beinum útsendingum og upptökum, hlustun á útvarpsrásir og rafræna sjónvarpsvísa. (EGP).</description>
