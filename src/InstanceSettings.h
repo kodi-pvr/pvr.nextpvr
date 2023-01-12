@@ -56,17 +56,10 @@ namespace NextPVR
 
     explicit InstanceSettings(kodi::addon::IAddonInstance& instance, const kodi::addon::IInstanceInfo& instanceInfo, bool empty);
     ADDON_STATUS ReadBackendSettings(tinyxml2::XMLDocument& settingsDoc);
-    bool GetConnection();
+    bool CheckInstanceSettings();
     void SetConnection(bool status);
     void SetVersionSpecificSettings();
-    void UpdateServerPort(std::string host, int port)
-    {
-      m_hostname = host;
-      m_port = port;
-      //force to http settings.xml don't exist maybe backend can identify https in the future
-      sprintf(m_urlBase, "http://%.255s:%d", m_hostname.c_str(), m_port);
-    };
-
+    void UpdateServerPort(std::string hostname, int port);
     void ReadFromAddon();
     ADDON_STATUS SetValue(const std::string& settingName, const kodi::addon::CSettingValue& settingValue);
 

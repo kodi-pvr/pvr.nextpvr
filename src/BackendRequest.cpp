@@ -217,13 +217,9 @@ namespace NextPVR
       }
       if (offset >= 0)
       {
-        kodi::vfs::CreateDirectory("special://userdata/addon_data/pvr.nextpvr/");
         m_settings->UpdateServerPort(entries[offset], atoi(foundAddress[offset][1].c_str()));
         kodi::QueueNotification(QUEUE_INFO, kodi::addon::GetLocalizedString(30189),
           kodi::tools::StringUtils::Format(kodi::addon::GetLocalizedString(30182).c_str(), m_settings->m_hostname.c_str(), m_settings->m_port));
-        /* note that these run before the file is created */
-        kodi::addon::SetSettingString("host", m_settings->m_hostname);
-        kodi::addon::SetSettingInt("port", m_settings->m_port);
         return true;
       }
     }
@@ -233,7 +229,6 @@ namespace NextPVR
     if (backend.OpenFile(URL, ADDON_READ_NO_CACHE))
     {
       backend.Close();
-      kodi::vfs::CreateDirectory("special://userdata/addon_data/pvr.nextpvr/");
       return true;
     }
     kodi::Log(ADDON_LOG_INFO, "No running server found expect a failed install");

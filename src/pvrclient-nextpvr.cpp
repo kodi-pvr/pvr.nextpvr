@@ -95,18 +95,14 @@ cPVRClientNextPVR::cPVRClientNextPVR(const CNextPVRAddon& base, const kodi::addo
   m_menuhook(m_settings, m_recordings, m_channels, *this),
   m_epg(m_settings, m_request, m_recordings, m_channels)
 {
-  //m_settings->ReadFromAddon();
-  bool isInstanceCreated = true;
   if (!kodi::vfs::DirectoryExists(m_settings->m_instanceDirectory))
   {
-    if (!kodi::vfs::DirectoryExists("special://userdata/addon_data/pvr.nextpvr/"))
+    // check new installation of the first instance, upgrades will migrate
+    if (first && !kodi::vfs::FileExists("special://profile/addon_data/pvr.nextpvr/settings.xml"))
     {
-      isInstanceCreated = m_request.OneTimeSetup();
+      m_request.OneTimeSetup();
     }
-    if (isInstanceCreated)
-    {
-      kodi::vfs::CreateDirectory(m_settings->m_instanceDirectory);
-    }
+    kodi::vfs::CreateDirectory(m_settings->m_instanceDirectory);
   }
 
   m_bConnected = false;
@@ -258,7 +254,10 @@ void cPVRClientNextPVR::Disconnect()
 {
   if (m_bConnected)
     m_request.DoActionRequest("session.logout");
-  SetConnectionState(PVR_CONNECTION_STATE_DISCONNECTED);
+  if (m_settings->CheckInstanceSettings())
+  {
+    SetConnectionState(PVR_CONNECTION_STATE_DISCONNECTED);
+  }
   m_bConnected = false;
 }
 

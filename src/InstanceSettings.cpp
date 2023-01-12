@@ -210,10 +210,36 @@ void InstanceSettings::SetConnection(bool status)
   }
   else
   {
-    kodi::vfs::DeleteFile(m_instanceDirectory + connectionFlag);
+    kodi::vfs::RemoveDirectory(m_instanceDirectory);
     m_connectionConfirmed = false;
   }
 }
+
+bool InstanceSettings::CheckInstanceSettings()
+{
+  const std::string instanceFile = kodi::tools::StringUtils::Format("special://profile/addon_data/pvr.nextpvr/instance-settings-%d.xml", m_instanceNumber);
+  bool instanceExists = kodi::vfs::FileExists(instanceFile);
+  if (!instanceExists)
+  {
+    // instance xml deleted by Addon core remove cache for this instance.
+    kodi::Log(ADDON_LOG_INFO, "Removing instance cache %s", m_instanceDirectory.c_str());
+    SetConnection(false);
+  }
+  return instanceExists;
+}
+
+void InstanceSettings::UpdateServerPort(std::string hostname, int port)
+{
+  if (hostname != DEFAULT_HOST || port != DEFAULT_PORT )
+  {
+    m_instance.SetInstanceSettingString("host", hostname);
+    m_hostname = hostname;
+    m_instance.SetInstanceSettingInt("port", port);
+    m_port = port;
+    // might reset https but not included in discovery anyway
+    sprintf(m_urlBase, "http://%.255s:%d",m_hostname.c_str(), m_port);
+  }
+};
 
 void InstanceSettings::SetVersionSpecificSettings()
 {
