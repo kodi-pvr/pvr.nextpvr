@@ -5,16 +5,17 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: KODI Main\n"
-"Report-Msgid-Bugs-To: https://github.com/xbmc/xbmc/issues/\n"
+"Report-Msgid-Bugs-To: translations@kodi.tv\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Kodi Translation Team\n"
-"Language-Team: French (France) (http://www.transifex.com/projects/p/kodi-main/language/fr_FR/)\n"
-"Language: fr_FR\n"
+"PO-Revision-Date: 2023-01-03 12:15+0000\n"
+"Last-Translator: skypichat <skypichat@hotmail.fr>\n"
+"Language-Team: French (France) <https://kodi.weblate.cloud/projects/kodi-add-ons-pvr-clients/pvr-nextpvr/fr_fr/>\n"
+"Language: fr_fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: Weblate 4.15\n"
 
 msgctxt "Addon Summary"
 msgid "Kodi frontend for the NextPVR"
@@ -30,11 +31,11 @@ msgstr "Logiciel en cours d'élaboration. À utiliser à vos risques et périls.
 
 msgctxt "#30000"
 msgid "NextPVR hostname"
-msgstr ""
+msgstr "Nom d'hôte NextPVR"
 
 msgctxt "#30001"
 msgid "NextPVR port (usually 8866)"
-msgstr ""
+msgstr "Port NextPVR (généralement 8866)"
 
 msgctxt "#30002"
 msgid "NextPVR PinCode"
@@ -42,19 +43,19 @@ msgstr "Code PIN NextPVR"
 
 msgctxt "#30003"
 msgid "Enable timeshift with live TV"
-msgstr ""
+msgstr "Activer le décalage horaire avec la télévision en direct"
 
 msgctxt "#30603"
 msgid "Open settings dialog for inputstream.ffmpegdirect for modification of timeshift settings"
-msgstr ""
+msgstr "Ouvrir la boîte de dialogue des paramètres pour inputstream.ffmpegdirect pour modifier les paramètres de décalage temporel"
 
 msgctxt "#30004"
 msgid "Download TV guide artwork"
-msgstr ""
+msgstr "Télécharger l'illustration du guide TV"
 
 msgctxt "#30504"
 msgid "Not enabled for Matrix when remote"
-msgstr ""
+msgstr "Non activé pour Matrix à distance"
 
 msgctxt "#30040"
 msgid "Connection"
@@ -67,7 +68,7 @@ msgstr "Avancé"
 # empty strings from id 30042 to 30049
 msgctxt "#30050"
 msgid "NextPVR version not supported"
-msgstr ""
+msgstr "Version NextPVR non prise en charge"
 
 msgctxt "#30051"
 msgid "Upgrade to '%s' or higher!"
@@ -79,7 +80,7 @@ msgstr "Connexion échouée. Code Pin incorrect ?"
 
 msgctxt "#30053"
 msgid "Tuner no longer available"
-msgstr "Le tuner n'est plus disponible."
+msgstr "Le tuner n'est plus disponible"
 
 msgctxt "#30140"
 msgid "One time (manual)"
@@ -99,7 +100,7 @@ msgstr "Répétée (guide)"
 
 msgctxt "#30144"
 msgid "Child recording"
-msgstr ""
+msgstr "Enregistrement enfant"
 
 msgctxt "#30145"
 msgid "Repeating (keyword)"
@@ -167,31 +168,31 @@ msgstr "Adresse MAC du serveur NextPVR"
 
 msgctxt "#30166"
 msgid "Failed recordings"
-msgstr ""
+msgstr "Enregistrements ratés"
 
 msgctxt "#30167"
 msgid "Live TV chunk size"
-msgstr ""
+msgstr "Taille du morceau de télévision en direct"
 
 msgctxt "#30567"
 msgid "Change chunk size for LAN performance"
-msgstr ""
+msgstr "Modifier la taille des blocs pour les performances LAN"
 
 msgctxt "#30168"
 msgid "Recording chunk size"
-msgstr ""
+msgstr "Taille de bloc d'enregistrement"
 
 msgctxt "#30169"
 msgid "Kodi skin styled recordings"
-msgstr ""
+msgstr "Enregistrements de style skin Kodi"
 
 msgctxt "#30569"
 msgid "Separate title, season and episode for skin - season and episode numbers will not be shown in lists"
-msgstr ""
+msgstr "Titre, saison et épisode séparés pour le skin - les numéros de saison et d'épisode ne seront pas affichés dans les listes"
 
 msgctxt "#30170"
 msgid "Refresh cache for channel icons"
-msgstr ""
+msgstr "Actualiser le cache d'icônes de chaines"
 
 msgctxt "#30171"
 msgid "Repeating (advanced)"
@@ -199,151 +200,151 @@ msgstr "Répétition (avancée)"
 
 msgctxt "#30172"
 msgid "Live TV method"
-msgstr ""
+msgstr "Méthode de télévision en direct"
 
 msgctxt "#30173"
 msgid "Transcoding profile"
-msgstr ""
+msgstr "Profil de transcodage"
 
 msgctxt "#30174"
 msgid "Streaming options"
-msgstr ""
+msgstr "Options de diffusion"
 
 msgctxt "#30175"
 msgid "Display and recordings"
-msgstr ""
+msgstr "Affichage et enregistrements"
 
 msgctxt "#30176"
 msgid "Enable direct streams"
-msgstr ""
+msgstr "Activer les flux directs"
 
 msgctxt "#30177"
 msgid "Use legacy (V4) setting"
-msgstr ""
+msgstr "Utiliser le paramètre hérité (V4)"
 
 msgctxt "#30178"
 msgid "Include filesize with recordings"
-msgstr ""
+msgstr "Inclure la taille des fichiers avec les enregistrements"
 
 msgctxt "#30678"
 msgid "Use file system to get the recording size if available"
-msgstr ""
+msgstr "Utiliser le système de fichiers pour obtenir la taille d'enregistrement si disponible"
 
 msgctxt "#30179"
 msgid "Remote access"
-msgstr ""
+msgstr "Accès à distance"
 
 msgctxt "#30180"
 msgid "Single recording display"
-msgstr ""
+msgstr "Affichage d'enregistrement unique"
 
 msgctxt "#30680"
 msgid "Movies and single episode TV shows display at top level"
-msgstr ""
+msgstr "Les films et les émissions de télévision à épisode unique s'affichent au niveau supérieur"
 
 msgctxt "#30181"
 msgid "TV guide portrait format"
-msgstr ""
+msgstr "Format portrait du guide TV"
 
 msgctxt "#30182"
 msgid "NextPVR server %s:%d"
-msgstr ""
+msgstr "Serveur NextPVR %s :%d"
 
 msgctxt "#30183"
 msgid "Reset channel icon"
-msgstr ""
+msgstr "Réinitialiser l'icône de la chaîne"
 
 msgctxt "#30184"
 msgid "Forget recording"
-msgstr ""
+msgstr "Oublier l'enregistrement"
 
 msgctxt "#30185"
 msgid "Update all channels"
-msgstr ""
+msgstr "Mettre à jour toutes les chaînes"
 
 msgctxt "#30186"
 msgid "Update all channel groups"
-msgstr ""
+msgstr "Mettre à jour tous les groupes de canaux"
 
 msgctxt "#30187"
 msgid "Select NextPVR IP address"
-msgstr ""
+msgstr "Sélectionner l'adresse IP NextPVR"
 
 msgctxt "#30188"
 msgid "Show radio channels"
-msgstr ""
+msgstr "Afficher les chaînes de radio"
 
 msgctxt "#30688"
 msgid "Also use skin settings to control radio main menu display"
-msgstr ""
+msgstr "Utilisez également les paramètres de skin pour contrôler l'affichage du menu principal de la radio"
 
 msgctxt "#30189"
 msgid "Discovered host"
-msgstr ""
+msgstr "Hôte découvert"
 
 msgctxt "#30190"
 msgid "Timeshifting disabled"
-msgstr ""
+msgstr "Décalage horaire désactivé"
 
 msgctxt "#30191"
 msgid "%s is not enabled"
-msgstr ""
+msgstr "%s n'est pas activé"
 
 msgctxt "#30192"
 msgid "%s is not installed"
-msgstr ""
+msgstr "%s n'est pas installé"
 
 msgctxt "#30193"
 msgid "Show season folders"
-msgstr ""
+msgstr "Afficher les dossiers de saison"
 
 msgctxt "#30693"
 msgid "Create separate folders for multiple seasons of recordings"
-msgstr ""
+msgstr "Créer des dossiers séparés pour plusieurs saisons d'enregistrements"
 
 msgctxt "#30194"
 msgid "Use backend genre text"
-msgstr ""
+msgstr "Utiliser le texte de genre backend"
 
 msgctxt "#30694"
 msgid "Kodi default is DVB genre text. Default required for Kodi genre search and language translation"
-msgstr ""
+msgstr "Kodi par défaut est le texte de genre DVB. Valeur par défaut requise pour la recherche de genre Kodi et la traduction de langue"
 
 msgctxt "#30195"
 msgid "Send Wake On LAN to server"
-msgstr ""
+msgstr "Envoyer Wake On LAN au serveur"
 
 msgctxt "#30196"
 msgid "Open NextPVR settings"
-msgstr ""
+msgstr "Ouvrir les paramètres NextPVR"
 
 msgctxt "#30197"
 msgid "Show guide cast, director and writer"
-msgstr ""
+msgstr "Afficher casting, réalisateur et scénariste"
 
 msgctxt "#30198"
 msgid "Display disk space"
-msgstr ""
+msgstr "Afficher l'espace disque"
 
 msgctxt "#30698"
 msgid "Default: Show the default drive - Span: Sum all drives"
-msgstr ""
+msgstr "Par défaut : afficher le lecteur par défaut – Étendue : additionner tous les lecteurs"
 
 msgctxt "#30199"
 msgid "Override Kodi no timer padding default"
-msgstr ""
+msgstr "Remplacer Kodi sans minuterie de remplissage par défaut"
 
 msgctxt "#30699"
 msgid "Use NextPVR timer padding when no padding is entered"
-msgstr ""
+msgstr "Utiliser le remplissage de la minuterie NextPVR lorsqu'aucun remplissage n'est entré"
 
 msgctxt "#30200"
 msgid "Store recording resume location in NextPVR"
-msgstr ""
+msgstr "Stocker la reprise de l'enregistrement dans NextPVR"
 
 msgctxt "#30700"
 msgid "When disabled resume location and watched status will be managed only in Kodi"
-msgstr ""
+msgstr "Lorsqu'il est désactivé, l'emplacement de reprise et le statut surveillé ne seront gérés que dans Kodi"
 
 #~ msgctxt "#30000"
 #~ msgid "NextPVR Hostname"

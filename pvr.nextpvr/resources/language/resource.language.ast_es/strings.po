@@ -5,29 +5,28 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: KODI Main\n"
-"Report-Msgid-Bugs-To: translations@kodi.tv\n"
+"Report-Msgid-Bugs-To: https://github.com/xbmc/xbmc/issues/\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: 2022-03-06 18:03+0000\n"
-"Last-Translator: Kai Sommerfeld <kai.sommerfeld@gmx.com>\n"
-"Language-Team: German <https://kodi.weblate.cloud/projects/kodi-add-ons-pvr-clients/pvr-nextpvr/de_de/>\n"
-"Language: de_de\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: ast_es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.11.2\n"
 
 msgctxt "Addon Summary"
 msgid "Kodi frontend for the NextPVR"
-msgstr "Kodi Oberfläche für NextPVR"
+msgstr ""
 
 msgctxt "Addon Description"
 msgid "NextPVR frontend. Supports streaming of Live TV & Recordings, listening to Radio channels and EPG."
-msgstr "NextPVR Oberfläche. Unterstützt Live TV & Aufnahmen, Radiokanäle und EPG."
+msgstr ""
 
 msgctxt "Addon Disclaimer"
 msgid "This is a work in progress. Use at your own risk."
-msgstr "Dieses Addon befindet sich noch in der Entwicklung. Benutzung auf eigene Gefahr!"
+msgstr ""
 
 msgctxt "#30000"
 msgid "NextPVR hostname"
@@ -39,7 +38,7 @@ msgstr ""
 
 msgctxt "#30002"
 msgid "NextPVR PinCode"
-msgstr "NextPVR PinCode"
+msgstr ""
 
 msgctxt "#30003"
 msgid "Enable timeshift with live TV"
@@ -57,46 +56,48 @@ msgctxt "#30504"
 msgid "Not enabled for Matrix when remote"
 msgstr ""
 
+#empty strings from id 30005 to 30039
 msgctxt "#30040"
 msgid "Connection"
-msgstr "Verbindung"
+msgstr ""
 
 msgctxt "#30041"
 msgid "Advanced"
-msgstr "Erweitert"
+msgstr ""
 
-# empty strings from id 30042 to 30049
+#empty strings from id 30042 to 30049
 msgctxt "#30050"
 msgid "NextPVR version not supported"
 msgstr ""
 
 msgctxt "#30051"
 msgid "Upgrade to '%s' or higher!"
-msgstr "Upgrade auf '%s' oder höher!"
+msgstr ""
 
 msgctxt "#30052"
 msgid "Connection failed. Incorrect PIN?"
-msgstr "Verbindung fehlgeschlagen. Ist die PIN richtig?"
+msgstr ""
 
 msgctxt "#30053"
 msgid "Tuner no longer available"
-msgstr "Tuner nicht länger verfügbar"
+msgstr ""
 
+#empty strings from id 30054 to 30139
 msgctxt "#30140"
 msgid "One time (manual)"
-msgstr "Einmalig (Manuell)"
+msgstr ""
 
 msgctxt "#30141"
 msgid "One time (guide)"
-msgstr "Einmalig (Guide)"
+msgstr ""
 
 msgctxt "#30142"
 msgid "Repeating (manual)"
-msgstr "Mehrmalig (Manuell)"
+msgstr ""
 
 msgctxt "#30143"
 msgid "Repeating (guide)"
-msgstr "Mehrmalig (Guide)"
+msgstr ""
 
 msgctxt "#30144"
 msgid "Child recording"
@@ -104,51 +105,53 @@ msgstr ""
 
 msgctxt "#30145"
 msgid "Repeating (keyword)"
-msgstr "Mehrmalig (Schlüsselwort)"
+msgstr ""
 
+#empty strings from id 30146 to 30149
 msgctxt "#30150"
 msgid "All Recordings"
-msgstr "Alle Aufnahmen"
+msgstr ""
 
 msgctxt "#30151"
 msgid "1 Recording"
-msgstr "1 Aufnahme"
+msgstr ""
 
 msgctxt "#30152"
 msgid "2 Recordings"
-msgstr "2 Aufnahmen"
+msgstr ""
 
 msgctxt "#30153"
 msgid "3 Recordings"
-msgstr "3 Aufnahmen"
+msgstr ""
 
 msgctxt "#30154"
 msgid "4 Recordings"
-msgstr "4 Aufnahmen"
+msgstr ""
 
 msgctxt "#30155"
 msgid "5 Recordings"
-msgstr "5 Aufnahmen"
+msgstr ""
 
 msgctxt "#30156"
 msgid "6 Recordings"
-msgstr "6 Aufnahmen"
+msgstr ""
 
 msgctxt "#30157"
 msgid "7 Recordings"
-msgstr "7 Aufnahmen"
+msgstr ""
 
 msgctxt "#30158"
 msgid "10 Recordings"
-msgstr "10 Aufnahmen"
+msgstr ""
 
+#empty string with id 30159
 msgctxt "#30160"
 msgid "New Only"
-msgstr "Nur Neue"
+msgstr ""
 
 msgctxt "#30161"
 msgid "All"
-msgstr "Alle"
+msgstr ""
 
 msgctxt "#30162"
 msgid "Pre-buffer time in seconds"
@@ -192,7 +195,7 @@ msgstr ""
 
 msgctxt "#30170"
 msgid "Refresh cache for channel icons"
-msgstr "Cache für Senderlogos aktualisieren"
+msgstr ""
 
 msgctxt "#30171"
 msgid "Repeating (advanced)"
@@ -345,27 +348,3 @@ msgstr ""
 msgctxt "#30700"
 msgid "When disabled resume location and watched status will be managed only in Kodi"
 msgstr ""
-
-#~ msgctxt "#30000"
-#~ msgid "NextPVR Hostname"
-#~ msgstr "NextPVR Hostname"
-
-#~ msgctxt "#30001"
-#~ msgid "NextPVR Port (usually 8866 or 7799)"
-#~ msgstr "NextPVR Port (normalerweise 8866 oder 7799)"
-
-#~ msgctxt "#30003"
-#~ msgid "Enable TimeShift with Live TV"
-#~ msgstr "Timeshift für Live TV aktivieren"
-
-#~ msgctxt "#30004"
-#~ msgid "Download TV Guide Artwork"
-#~ msgstr "TV-Guide Artwork herunterladen"
-
-#~ msgctxt "#30050"
-#~ msgid "NextPVR server is too old."
-#~ msgstr "NextPVR-Server ist zu alt."
-
-#~ msgctxt "#30144"
-#~ msgid "Child Recording"
-#~ msgstr "Untergeordnete Aufnahme"
