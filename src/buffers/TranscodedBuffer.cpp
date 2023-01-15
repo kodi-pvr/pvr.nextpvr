@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2020-2021 Team Kodi (https://kodi.tv)
+ *  Copyright (C) 2020-2023 Team Kodi (https://kodi.tv)
  *
  *  SPDX-License-Identifier: GPL-2.0-or-later
  *  See LICENSE.md for more information.
@@ -23,7 +23,7 @@ bool TranscodedBuffer::Open(const std::string inputUrl)
       Close();
     }
     kodi::Log(ADDON_LOG_DEBUG, "%s:%d:", __FUNCTION__, __LINE__);
-    std::string formattedRequest = "channel.transcode.initiate&force=true&channel_id=" + std::to_string(m_channel_id) + "&profile=" + m_settings.m_resolution + "p";
+    std::string formattedRequest = "channel.transcode.initiate&force=true&channel_id=" + std::to_string(m_channel_id) + "&profile=" + m_settings->m_resolution + "p";
     if (!m_request.DoActionRequest(formattedRequest))
     {
       return false;

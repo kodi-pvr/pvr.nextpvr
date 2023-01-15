@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2020-2021 Team Kodi (https://kodi.tv)
+ *  Copyright (C) 2020-2023 Team Kodi (https://kodi.tv)
  *
  *  SPDX-License-Identifier: GPL-2.0-or-later
  *  See LICENSE.md for more information.
@@ -15,6 +15,12 @@ using namespace NextPVR;
 using namespace NextPVR::utilities;
 
 /** Channel handling */
+
+Channels::Channels(const std::shared_ptr<InstanceSettings>& settings, Request& request) :
+  m_settings(settings),
+  m_request(request)
+{
+}
 
 int Channels::GetNumChannels()
 {
@@ -56,7 +62,7 @@ std::string Channels::GetChannelIcon(int channelID)
 
 std::string Channels::GetChannelIconFileName(int channelID)
 {
-  return kodi::tools::StringUtils::Format("special://userdata/addon_data/pvr.nextpvr/nextpvr-ch%d.png", channelID);
+  return kodi::tools::StringUtils::Format("%snextpvr-ch%d.png",m_settings->m_instanceDirectory.c_str(), channelID);
 }
 
 void  Channels::DeleteChannelIcon(int channelID)
@@ -67,7 +73,7 @@ void  Channels::DeleteChannelIcon(int channelID)
 void Channels::DeleteChannelIcons()
 {
   std::vector<kodi::vfs::CDirEntry> icons;
-  if (kodi::vfs::GetDirectory("special://userdata/addon_data/pvr.nextpvr/", "nextpvr-ch*.png", icons))
+  if (kodi::vfs::GetDirectory(m_settings->m_instanceDirectory, "nextpvr-ch*.png", icons))
   {
     kodi::Log(ADDON_LOG_INFO, "Deleting %d channel icons", icons.size());
     for (auto const& it : icons)
@@ -80,7 +86,7 @@ void Channels::DeleteChannelIcons()
 
 PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& results)
 {
-  if (radio && !m_settings.m_showRadio)
+  if (radio && !m_settings->m_showRadio)
     return PVR_ERROR_NO_ERROR;
 
   std::string stream;
@@ -129,6 +135,8 @@ PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& r
 
       buffer.clear();
       XMLUtils::GetString(pChannelNode, "name", buffer);
+      if (m_settings->m_addChannelInstance)
+        buffer += kodi::tools::StringUtils::Format(" (%d)", m_settings->m_instanceNumber);
       tag.SetChannelName(buffer);
 
       // check if we need to download a channel icon
@@ -176,12 +184,15 @@ PVR_RECORDING_CHANNEL_TYPE Channels::GetChannelType(unsigned int uid)
 
 PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsResultSet& results)
 {
-  if (radio && !m_settings.m_showRadio)
+  if (radio && !m_settings->m_showRadio)
     return PVR_ERROR_NO_ERROR;
 
-  std::unordered_set selectedGroups = radio ? m_radioGroups : m_tvGroups;
+  int priority = 1;
+
+  std::unordered_set<std::string>& selectedGroups = radio ? m_radioGroups : m_tvGroups;
 
   selectedGroups.clear();
+  bool hasAllChannels = false;
   tinyxml2::XMLDocument doc;
   if (m_request.DoMethodRequest("channel.list&extras=true", doc) == tinyxml2::XML_SUCCESS)
   {
@@ -190,19 +201,30 @@ PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsRe
     for( pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode=pChannelNode->NextSiblingElement())
     {
       std::string buffer;
-      if (XMLUtils::GetAdditiveString(pChannelNode->FirstChildElement("groups"), "group", "\t", buffer, true))
+      XMLUtils::GetString(pChannelNode, "type", buffer);
+      bool foundRadio = false;
+      if ( buffer == "0xa")
       {
-        std::vector<std::string> groups = kodi::tools::StringUtils::Split(buffer, '\t');
-        bool foundRadio = false;
-        buffer.clear();
-        XMLUtils::GetString(pChannelNode, "type", buffer);
-        if ( buffer == "0xa")
+        foundRadio = true;
+      }
+      if (radio == foundRadio)
+      {
+        if (m_settings->m_allChannels && !hasAllChannels)
         {
-          foundRadio = true;
+          hasAllChannels = true;
+          std::string allChannels = GetAllChannelsGroupName(radio);
+          kodi::addon::PVRChannelGroup tag;
+          tag.SetIsRadio(radio);
+          tag.SetPosition(priority++);
+          tag.SetGroupName(allChannels);
+          results.Add(tag);
         }
-        if (radio == foundRadio)
+        buffer.clear();
+        if (XMLUtils::GetAdditiveString(pChannelNode->FirstChildElement("groups"), "group", "\t", buffer, true))
         {
-          for(auto const& group : groups)
+          std::vector<std::string> groups = kodi::tools::StringUtils::Split(buffer, '\t');
+          XMLUtils::GetString(pChannelNode, "type", buffer);
+          for (auto const& group : groups)
           {
             if (selectedGroups.find(group) == selectedGroups.end())
             {
@@ -224,7 +246,6 @@ PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsRe
     tinyxml2::XMLNode* groupsNode = doc.RootElement()->FirstChildElement("groups");
     tinyxml2::XMLNode* pGroupNode;
     std::string group;
-    int priority = 1;
     for (pGroupNode = groupsNode->FirstChildElement("group"); pGroupNode; pGroupNode = pGroupNode->NextSiblingElement())
     {
       if (XMLUtils::GetString(pGroupNode, "name", group))
@@ -251,8 +272,18 @@ PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsRe
 
 PVR_ERROR Channels::GetChannelGroupMembers(const kodi::addon::PVRChannelGroup& group, kodi::addon::PVRChannelGroupMembersResultSet& results)
 {
-  std::string encodedGroupName = UriEncode(group.GetGroupName());
-  std::string request = "channel.list&group_id=" + encodedGroupName;
+  std::string request;
+
+  if (group.GetGroupName() == GetAllChannelsGroupName(group.GetIsRadio()))
+  {
+    request = "channel.list";
+  }
+  else
+  {
+    const std::string encodedGroupName = UriEncode(group.GetGroupName());
+    request = "channel.list&group_id=" + encodedGroupName;
+  }
+
   tinyxml2::XMLDocument doc;
   if (m_request.DoMethodRequest(request, doc) == tinyxml2::XML_SUCCESS)
   {
@@ -276,6 +307,22 @@ PVR_ERROR Channels::GetChannelGroupMembers(const kodi::addon::PVRChannelGroup& g
   return PVR_ERROR_NO_ERROR;
 }
 
+const std::string Channels::GetAllChannelsGroupName(bool radio)
+{
+  std::string allChannels;
+  if (radio)
+  {
+    allChannels = kodi::tools::StringUtils::Format("%s %s",
+      kodi::addon::GetLocalizedString(19216).c_str(), m_settings->m_instanceName.c_str());
+  }
+  else
+  {
+    allChannels = kodi::tools::StringUtils::Format("%s %s",
+      kodi::addon::GetLocalizedString(19217).c_str(), m_settings->m_instanceName.c_str());
+  }
+  return allChannels;
+}
+
 bool Channels::IsChannelAPlugin(int uid)
 {
   if (m_liveStreams.count(uid) != 0)
@@ -290,10 +337,10 @@ void Channels::LoadLiveStreams()
 {
   const std::string URL = "/public/LiveStreams.xml";
   m_liveStreams.clear();
-  if (m_request.FileCopy(URL.c_str(), "special://userdata/addon_data/pvr.nextpvr/LiveStreams.xml") == HTTP_OK)
+  if (m_request.FileCopy(URL.c_str(), m_settings->m_instanceDirectory + "LiveStreams.xml") == HTTP_OK)
   {
     tinyxml2::XMLDocument doc;
-    std::string liveStreams = kodi::vfs::TranslateSpecialProtocol("special://userdata/addon_data/pvr.nextpvr/LiveStreams.xml");
+    std::string liveStreams = kodi::vfs::TranslateSpecialProtocol(m_settings->m_instanceDirectory + "LiveStreams.xml");
     kodi::Log(ADDON_LOG_DEBUG, "Loading LiveStreams.xml %s", liveStreams.c_str());
     if (doc.LoadFile(liveStreams.c_str()) == tinyxml2::XML_SUCCESS)
     {

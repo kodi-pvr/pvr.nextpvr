@@ -1,3 +1,12 @@
+v20.4.0
+- Add support for multiple NextPVR instances
+- Adjust for Nexus change in Channel Group order
+- Reorder timers so valid entry timer is default
+- Add configurable heartbeat
+- Improve event logging state messages
+- Optionally disable comskip support by instance
+- Instant recordings can occur at current time
+
 v20.3.1
 - Implement advanced recording title search
 - Adjust for Nexus change in Channel Group order

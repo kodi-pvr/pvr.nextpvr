@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2020-2021 Team Kodi (https://kodi.tv)
+ *  Copyright (C) 2020-2023 Team Kodi (https://kodi.tv)
  *
  *  SPDX-License-Identifier: GPL-2.0-or-later
  *  See LICENSE.md for more information.
@@ -19,6 +19,14 @@ using namespace NextPVR::utilities;
 /************************************************************/
 /** EPG handling */
 
+EPG::EPG(const std::shared_ptr<InstanceSettings>& settings, Request& request, Recordings& recordings, Channels& channels) :
+  m_settings(settings),
+  m_request(request),
+  m_recordings(recordings),
+  m_channels(channels)
+{
+}
+
 PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::addon::PVREPGTagsResultSet& results)
 {
   std::pair<bool, bool> channelDetail;
@@ -35,7 +43,7 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
     return PVR_ERROR_INVALID_PARAMETERS;
   }
   std::string request = kodi::tools::StringUtils::Format("channel.listings&channel_id=%d&start=%d&end=%d&genre=all", channelUid, static_cast<int>(start), static_cast<int>(end));
-  if (m_settings.m_castcrew)
+  if (m_settings->m_castcrew)
     request.append("&extras=true");
 
   tinyxml2::XMLDocument doc;
@@ -80,13 +88,13 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
       broadcast.SetPlot(description);
 
       std::string artworkPath;
-      if (m_settings.m_downloadGuideArtwork)
+      if (m_settings->m_downloadGuideArtwork)
       {
-        if (m_settings.m_sendSidWithMetadata)
-          artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&name=%s", m_settings.m_urlBase, m_request.GetSID(), UriEncode(title).c_str());
+        if (m_settings->m_sendSidWithMetadata)
+          artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&name=%s", m_settings->m_urlBase, m_request.GetSID(), UriEncode(title).c_str());
         else
-          artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&name=%s", m_settings.m_urlBase, UriEncode(title).c_str());
-        if (m_settings.m_guideArtPortrait)
+          artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&name=%s", m_settings->m_urlBase, UriEncode(title).c_str());
+        if (m_settings->m_guideArtPortrait)
           artworkPath += "&prefer=poster";
         broadcast.SetIconPath(artworkPath);
       }
@@ -114,7 +122,7 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
           }
           broadcast.SetGenreDescription(allGenres);
         }
-        else if (m_settings.m_genreString && broadcast.GetGenreSubType() != EPG_GENRE_USE_STRING)
+        else if (m_settings->m_genreString && broadcast.GetGenreSubType() != EPG_GENRE_USE_STRING)
         {
           broadcast.SetGenreDescription(allGenres);
           broadcast.SetGenreSubType(EPG_GENRE_USE_STRING);
@@ -148,13 +156,13 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
           {
             broadcast.SetFlags(EPG_TAG_FLAG_IS_FINALE);
           }
-          else if (m_settings.m_showNew)
+          else if (m_settings->m_showNew)
           {
             broadcast.SetFlags(EPG_TAG_FLAG_IS_NEW);
           }
         }
       }
-      if (m_settings.m_castcrew)
+      if (m_settings->m_castcrew)
       {
         std::string castcrew;
         XMLUtils::GetString(pListingNode, "cast", castcrew);

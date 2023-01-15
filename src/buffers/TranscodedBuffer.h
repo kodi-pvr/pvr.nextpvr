@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2020-2021 Team Kodi (https://kodi.tv)
+ *  Copyright (C) 2020-2023 Team Kodi (https://kodi.tv)
  *
  *  SPDX-License-Identifier: GPL-2.0-or-later
  *  See LICENSE.md for more information.
@@ -17,7 +17,7 @@ namespace timeshift {
   class ATTR_DLL_LOCAL TranscodedBuffer : public DummyBuffer
   {
   public:
-    TranscodedBuffer() : DummyBuffer()
+    TranscodedBuffer(const std::shared_ptr<InstanceSettings>& settings, Request& request) : DummyBuffer(settings, request)
     {
       kodi::Log(ADDON_LOG_INFO, "TranscodedBuffer created");
     }

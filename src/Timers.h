@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2020-2021 Team Kodi (https://kodi.tv)
+ *  Copyright (C) 2020-2023 Team Kodi (https://kodi.tv)
  *
  *  SPDX-License-Identifier: GPL-2.0-or-later
  *  See LICENSE.md for more information.
@@ -59,16 +59,7 @@ namespace NextPVR
     } nextpvr_recordinglimit_t;
 
   public:
-    //Timers(kodi::addon::CInstancePVRClient& instance) : m_instance(instance) {};
-    /**
-       * Singleton getter for the instance
-    */
-    static Timers& GetInstance()
-    {
-      static Timers timers;
-      return timers;
-    }
-
+    Timers(const std::shared_ptr<InstanceSettings>& settings, Request& request, Channels& channels, cPVRClientNextPVR& pvrclient);
 
     /* Timer handling */
     PVR_ERROR GetTimersAmount(int& amount);
@@ -86,15 +77,17 @@ namespace NextPVR
     Timers(Timers const&) = delete;
     void operator=(Timers const&) = delete;
 
-    Settings& m_settings = Settings::GetInstance();
-    Request& m_request = Request::GetInstance();
-    Channels& m_channels = Channels::GetInstance();
+    const std::shared_ptr<InstanceSettings> m_settings;
+    Request& m_request;
+    Channels& m_channels;
+    cPVRClientNextPVR& m_pvrclient;
 
     int m_defaultLimit = NEXTPVR_LIMIT_ASMANY;
     int m_defaultShowType = NEXTPVR_SHOWTYPE_ANY;
     int m_iTimerCount = -1;
 
     std::string GetDayString(int dayMask);
+    std::string GetTimerDescription(int id);
 
     int GetEPGOidForTimer(const kodi::addon::PVRTimer& timer);
   };

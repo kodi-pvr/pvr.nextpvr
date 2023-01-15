@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2020-2021 Team Kodi (https://kodi.tv)
+ *  Copyright (C) 2020-2023 Team Kodi (https://kodi.tv)
  *
  *  SPDX-License-Identifier: GPL-2.0-or-later
  *  See LICENSE.md for more information.
@@ -19,14 +19,8 @@ namespace NextPVR
   {
 
   public:
-    /**
-       * Singleton getter for the instance
-       */
-    static Channels& GetInstance()
-    {
-      static Channels channels;
-      return channels;
-    }
+
+    Channels(const std::shared_ptr<InstanceSettings>& settings, Request& request);
 
     /* Channel handling */
     int GetNumChannels();
@@ -36,6 +30,7 @@ namespace NextPVR
     PVR_ERROR GetChannelGroupsAmount(int& amount);
     PVR_ERROR GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsResultSet& results);
     PVR_ERROR GetChannelGroupMembers(const kodi::addon::PVRChannelGroup& group, kodi::addon::PVRChannelGroupMembersResultSet& results);
+    const std::string GetAllChannelsGroupName(bool radio);
     bool IsChannelAPlugin(int uid);
     void LoadLiveStreams();
     std::map<int, std::string> m_liveStreams;
@@ -54,7 +49,7 @@ namespace NextPVR
     void operator=(Channels const&) = delete;
 
     std::string GetChannelIcon(int channelID);
-    Settings& m_settings = Settings::GetInstance();
-    Request& m_request = Request::GetInstance();
+    const std::shared_ptr<InstanceSettings> m_settings;
+    Request& m_request;
   };
 } // namespace NextPVR

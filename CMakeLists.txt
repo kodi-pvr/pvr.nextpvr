@@ -18,7 +18,7 @@ set(NEXTPVR_SOURCES src/addon.cpp
                     src/EPG.cpp
                     src/MenuHook.cpp
                     src/Recordings.cpp
-                    src/Settings.cpp
+                    src/InstanceSettings.cpp
                     src/Timers.cpp
                     src/buffers/Buffer.cpp
                     src/buffers/DummyBuffer.cpp
@@ -26,6 +26,7 @@ set(NEXTPVR_SOURCES src/addon.cpp
                     src/buffers/ClientTimeshift.cpp
                     src/buffers/RecordingBuffer.cpp
                     src/buffers/CircularBuffer.cpp
+                    src/utilities/SettingsMigration.cpp
                     src/buffers/Seeker.cpp)
 
 set(NEXTPVR_HEADERS src/addon.h
@@ -38,7 +39,7 @@ set(NEXTPVR_HEADERS src/addon.h
                     src/EPG.h
                     src/MenuHook.h
                     src/Recordings.h
-                    src/Settings.h
+                    src/InstanceSettings.h
                     src/Timers.h
                     src/buffers/Buffer.h
                     src/buffers/DummyBuffer.h
@@ -47,6 +48,7 @@ set(NEXTPVR_HEADERS src/addon.h
                     src/buffers/RecordingBuffer.h
                     src/buffers/CircularBuffer.h
                     src/buffers/Seeker.h
+                    src/utilities/SettingsMigration.h
                     src/utilities/XMLUtils.h)
 
 SET(DEPLIBS ${TINYXML2_LIBRARIES})

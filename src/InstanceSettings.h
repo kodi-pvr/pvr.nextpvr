@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2020-2021 Team Kodi (https://kodi.tv)
+ *  Copyright (C) 2020-2023 Team Kodi (https://kodi.tv)
  *
  *  SPDX-License-Identifier: GPL-2.0-or-later
  *  See LICENSE.md for more information.
@@ -12,6 +12,7 @@
 #include <string>
 #include <kodi/AddonBase.h>
 #include <kodi/tools/StringUtils.h>
+#include "utilities/XMLUtils.h"
 
 namespace NextPVR
 {
@@ -29,6 +30,14 @@ namespace NextPVR
     Landscape = 1
   };
 
+  enum eHeartbeat
+  {
+    Default = 0,
+    FiveMinutes = 1,
+    Hourly = 2,
+    None = 99
+  };
+
   constexpr int NEXTPVRC_MIN_VERSION = 50200;
   constexpr char NEXTPVRC_MIN_VERSION_STRING[] = "5.2.0";
   const static std::string DEFAULT_PROTOCOL = "http";
@@ -39,31 +48,18 @@ namespace NextPVR
   constexpr bool DEFAULT_USE_TIMESHIFT = false;
   constexpr bool DEFAULT_GUIDE_ARTWORK = false;
   constexpr eStreamingMethod DEFAULT_LIVE_STREAM = RealTime;
+  constexpr time_t DEFAULT_HEARTBEAT = 60;
 
-  class ATTR_DLL_LOCAL Settings
+  class ATTR_DLL_LOCAL InstanceSettings
   {
   public:
 
-    /**
-     * Singleton getter for the instance
-     */
-    static Settings& GetInstance()
-    {
-      static Settings settings;
-      return settings;
-    }
-    ADDON_STATUS ReadBackendSettings();
-    bool GetConnection();
+    explicit InstanceSettings(kodi::addon::IAddonInstance& instance, const kodi::addon::IInstanceInfo& instanceInfo, bool empty);
+    ADDON_STATUS ReadBackendSettings(tinyxml2::XMLDocument& settingsDoc);
+    bool CheckInstanceSettings();
     void SetConnection(bool status);
     void SetVersionSpecificSettings();
-    void UpdateServerPort(std::string host, int port)
-    {
-      m_hostname = host;
-      m_port = port;
-      //force to http settings.xml don't exist maybe backend can identify https in the future
-      sprintf(m_urlBase, "http://%.255s:%d", m_hostname.c_str(), m_port);
-    };
-
+    void UpdateServerPort(std::string hostname, int port);
     void ReadFromAddon();
     ADDON_STATUS SetValue(const std::string& settingName, const kodi::addon::CSettingValue& settingValue);
 
@@ -82,9 +78,18 @@ namespace NextPVR
 
     //General
     int m_backendVersion = 0;
+    int32_t m_instanceNumber = 0;
+    std::string m_instanceDirectory;
+    std::string m_instanceName;
+    enum eHeartbeat m_heartbeat;
+    time_t m_heartbeatInterval;
+    bool m_instancePriority = true;
 
     //Channel
     bool m_showRadio = true;
+    bool m_useLiveStreams = false;
+    bool m_allChannels = true;
+    bool m_addChannelInstance = false;
 
     //EPG
     bool m_showNew = false;
@@ -101,6 +106,7 @@ namespace NextPVR
     bool m_separateSeasons = true;
     bool m_showRoot = false;
     int m_chunkRecording = 32;
+    bool m_comskip = true;
 
     //Timers
     int m_defaultPrePadding = 0;
@@ -115,13 +121,21 @@ namespace NextPVR
     int m_prebuffer5 = 0;
     std::string m_resolution = "720";
     bool m_transcodedTimeshift = false;
+    InstanceSettings() = default;
 
   private:
 
-    Settings() = default;
+    kodi::addon::IAddonInstance& m_instance;
+    const kodi::addon::IInstanceInfo& m_instanceInfo;
+    InstanceSettings(InstanceSettings const&) = delete;
+    void operator=(InstanceSettings const&) = delete;
 
-    Settings(Settings const&) = delete;
-    void operator=(Settings const&) = delete;
+    /**
+     * Read/Set values according to definition in settings.xml
+     */
+    std::string ReadStringSetting(const std::string& key, const std::string& def) const;
+    int ReadIntSetting(const std::string& key, int def) const;
+    bool ReadBoolSetting(const std::string& key, bool def) const;
 
     template<typename T, typename V>
     V SetSetting(const std::string& settingName, const kodi::addon::CSettingValue& settingValue, T& currentValue, V returnValueIfChanged, V defaultReturnValue)
@@ -175,6 +189,16 @@ namespace NextPVR
       }
 
       return defaultReturnValue;
+    }
+
+    template<typename T>
+    T ReadEnumSetting(const std::string& key,  T def)
+    {
+      T  value;
+      if (m_instance.CheckInstanceSettingEnum(key, value))
+        return value;
+
+      return def;
     }
   };
 } //namespace NextPVR

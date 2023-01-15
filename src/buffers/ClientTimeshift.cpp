@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2015-2021 Team Kodi (https://kodi.tv)
+ *  Copyright (C) 2015-2023 Team Kodi (https://kodi.tv)
  *  Copyright (C) 2015 Sam Stenvall
  *
  *  SPDX-License-Identifier: GPL-2.0-or-later
@@ -27,7 +27,7 @@ bool ClientTimeShift::Open(const std::string inputUrl)
   m_bytesPerSecond = 0;
   m_complete = false;
 
-  m_prebuffer = m_settings.m_prebuffer5;
+  m_prebuffer = m_settings->m_prebuffer5;
 
   if (m_channel_id != 0)
   {
@@ -116,9 +116,9 @@ void ClientTimeShift::Close()
 void ClientTimeShift::Resume()
 {
   ClientTimeShift::GetStreamInfo();
-  if (m_stream_duration > m_settings.m_timeshiftBufferSeconds)
+  if (m_stream_duration > m_settings->m_timeshiftBufferSeconds)
   {
-    int64_t startSlipBuffer = m_stream_length - (m_settings.m_timeshiftBufferSeconds * m_stream_length / m_stream_duration);
+    int64_t startSlipBuffer = m_stream_length - (m_settings->m_timeshiftBufferSeconds * m_stream_length / m_stream_duration);
     kodi::Log(ADDON_LOG_DEBUG, "%s:%d: %lld %lld %lld", __FUNCTION__, __LINE__, startSlipBuffer, m_streamPosition, m_stream_length.load());
     if (m_streamPosition < startSlipBuffer)
     {
@@ -146,9 +146,9 @@ int64_t ClientTimeShift::Seek(int64_t position, int whence)
     Buffer::Close();
   ClientTimeShift::GetStreamInfo();
 
-  if (m_stream_duration > m_settings.m_timeshiftBufferSeconds)
+  if (m_stream_duration > m_settings->m_timeshiftBufferSeconds)
   {
-    int64_t startSlipBuffer = m_stream_length - (m_settings.m_timeshiftBufferSeconds * m_stream_length/m_stream_duration);
+    int64_t startSlipBuffer = m_stream_length - (m_settings->m_timeshiftBufferSeconds * m_stream_length/m_stream_duration);
     kodi::Log(ADDON_LOG_DEBUG, "%s:%d: %lld %lld %lld", __FUNCTION__, __LINE__, startSlipBuffer, position, m_stream_length.load());
     if (position < startSlipBuffer)
       position = startSlipBuffer;
@@ -200,16 +200,16 @@ bool ClientTimeShift::GetStreamInfo()
         {
           m_stream_length = strtoll(filesNode->FirstChildElement("stream_length")->GetText(), nullptr, 10);
           m_stream_duration = stream_duration / 1000;
-          if (m_stream_duration > m_settings.m_timeshiftBufferSeconds)
+          if (m_stream_duration > m_settings->m_timeshiftBufferSeconds)
           {
-              m_rollingStartSeconds = m_streamStart + m_stream_duration - m_settings.m_timeshiftBufferSeconds;
+              m_rollingStartSeconds = m_streamStart + m_stream_duration - m_settings->m_timeshiftBufferSeconds;
           }
           XMLUtils::GetBoolean(filesNode, "complete", m_complete);
           if (m_complete == false)
           {
             if (m_nextRoll < time(nullptr))
             {
-              m_nextRoll = time(nullptr) + m_settings.m_timeshiftBufferSeconds/3 + m_settings.m_serverTimeOffset;
+              m_nextRoll = time(nullptr) + m_settings->m_timeshiftBufferSeconds/3 + m_settings->m_serverTimeOffset;
             }
           }
           else

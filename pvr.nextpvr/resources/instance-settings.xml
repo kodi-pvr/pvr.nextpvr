@@ -165,13 +165,6 @@
           </control>
         </setting>
       </group>
-      <group id="11">
-        <setting help="30688" id="showradio" label="30188" type="boolean">
-          <level>0</level>
-          <default>true</default>
-          <control type="toggle"/>
-        </setting>
-      </group>
     </category>
     <category help="" id="advanced5" label="30175">
       <group id="12">
@@ -250,6 +243,8 @@
           <default>false</default>
           <control type="toggle"/>
         </setting>
+      </group>
+      <group id="13">
         <setting help="30699" id="ignorepadding" label="30199" type="boolean">
           <level>2</level>
           <default>true</default>
@@ -262,31 +257,54 @@
         </setting>
       </group>
     </category>
-    <category help="" id="deadsettings" label="">
-      <!-- Avoid Kodi creating debug log messages for obsolete user settings -->>
-      <group id="13">
-        <setting help="" id="kodilook" label="" type="boolean">
-          <level>4</level>
+    <category help="" id="instanceoptions" label="30205">
+      <group id="14">
+        <setting help="" id="instance" label="30204" type="integer">
+          <level>1</level>
+          <default>0</default>
+          <dependencies>
+            <dependency type="visible" operator="gt" setting="instance">0</dependency>
+          </dependencies>
+		      <enable>false</enable>
+	        <control format="integer" type="edit">
+          </control>
+        </setting>
+        <setting help="30702" id="instancechannel" label="30202" type="boolean">
+          <level>1</level>
           <default>false</default>
           <control type="toggle"/>
         </setting>
-        <setting help="" id="usetimeshift" label="" type="boolean" option="hidden">
-          <level>4</level>
+        <setting help="30703" id="instanceallgroup" label="30203" type="boolean">
+          <level>1</level>
           <default>false</default>
           <control type="toggle"/>
         </setting>
-        <setting help="" id="legacy" label="30177" type="boolean" option="hidden">
-          <level>4</level>
-          <default>false</default>
+        <setting help="30688" id="showradio" label="30188" type="boolean">
+          <level>0</level>
+          <default>true</default>
           <control type="toggle"/>
         </setting>
-        <setting help="" id="prebuffer" label="30162" type="integer" option="hidden">
-          <level>4</level>
-          <default>8</default>
+        <setting help="30706" id="comskip" label="30206" type="boolean">
+          <level>0</level>
+          <default>true</default>
+          <control type="toggle"/>
         </setting>
-        <setting help="Timeshift" id="livestreamingmethod" label="30172" type="integer" option="hidden">
-          <level>4</level>
-          <default>2</default>
+      </group>
+      <group id="15">
+        <setting id="heartbeat" type="integer" label="30207" help="30707">
+        <level>2</level>
+        <default>0</default>
+        <constraints>
+          <options>
+            <option label="13278">0</option>
+            <option label="30208">1</option>
+            <option label="33036">2</option>
+            <option label="1223">3</option>
+          </options>
+        </constraints>
+        <control type="list" format="string">
+          <heading>32009</heading>
+        </control>
         </setting>
       </group>
     </category>

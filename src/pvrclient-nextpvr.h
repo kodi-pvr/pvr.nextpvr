@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2005-2021 Team Kodi (https://kodi.tv)
+ *  Copyright (C) 2005-2023 Team Kodi (https://kodi.tv)
  *
  *  SPDX-License-Identifier: GPL-2.0-or-later
  *  See LICENSE.md for more information.
@@ -19,7 +19,7 @@
 #include "EPG.h"
 #include "MenuHook.h"
 #include "Recordings.h"
-#include "Settings.h"
+#include "InstanceSettings.h"
 #include "Timers.h"
 #include "buffers/ClientTimeshift.h"
 #include "buffers/DummyBuffer.h"
@@ -40,10 +40,13 @@ class ATTR_DLL_LOCAL cPVRClientNextPVR : public kodi::addon::CInstancePVRClient
 {
 public:
   /* Class interface */
-   cPVRClientNextPVR(const CNextPVRAddon& base, const kodi::addon::IInstanceInfo& instance);
+  cPVRClientNextPVR(const CNextPVRAddon& base, const kodi::addon::IInstanceInfo& instance, bool first);
 
   ~cPVRClientNextPVR();
 
+  // kodi::addon::CInstancePVRClient -> kodi::addon::IAddonInstance overrides
+  ADDON_STATUS SetInstanceSetting(const std::string& settingName,
+    const kodi::addon::CSettingValue& settingValue) override;
 
   /* Server handling */
   ADDON_STATUS Connect(bool sendWOL = true);
@@ -57,6 +60,7 @@ public:
   /* General handling */
   PVR_ERROR GetBackendName(std::string& name) override;
   PVR_ERROR GetBackendVersion(std::string& version) override;
+  PVR_ERROR GetBackendHostname(std::string& version) override;
   PVR_ERROR GetConnectionString(std::string& connection) override;
 
   //PVR_ERROR GetBackendTime(time_t* localTime, int* gmtOffset);
@@ -94,11 +98,6 @@ public:
   /* background connection monitoring */
   void Process();
 
-  Channels& m_channels = Channels::GetInstance();
-  EPG& m_epg = EPG::GetInstance();
-  MenuHook& m_menuhook = MenuHook::GetInstance();
-  Recordings& m_recordings = Recordings::GetInstance();
-  Timers& m_timers = Timers::GetInstance();
   time_t m_lastRecordingUpdateTime;
   time_t m_lastEPGUpdateTime = 0;
   eNowPlaying m_nowPlaying = NotPlaying;
@@ -140,7 +139,7 @@ private:
   const CNextPVRAddon& m_base;
 
   bool m_bConnected;
-  std::atomic<bool> m_running = {false};
+  std::atomic<bool> m_running = { false };
   std::thread m_thread;
   bool m_supportsLiveTimeshift;
 
@@ -151,10 +150,16 @@ private:
   timeshift::RecordingBuffer* m_recordingBuffer;
 
   //Matrix changes
-  NextPVR::Settings& m_settings = NextPVR::Settings::GetInstance();
-  NextPVR::Request& m_request = NextPVR::Request::GetInstance();
+  std::shared_ptr<InstanceSettings> m_settings;
+  Request m_request;
+  Channels m_channels;
+  EPG m_epg;
+  MenuHook m_menuhook;
+  Recordings m_recordings;
+  Timers m_timers;
 
-  void SetConnectionState(std::string message, PVR_CONNECTION_STATE state, std::string displayMessage = "");
+  void SetConnectionState(PVR_CONNECTION_STATE state, std::string displayMessage = "");
+  void UpdateServerCheck();
   PVR_CONNECTION_STATE m_connectionState = PVR_CONNECTION_STATE_UNKNOWN;
   PVR_CONNECTION_STATE m_coreState = PVR_CONNECTION_STATE_UNKNOWN;
   time_t m_firstSessionInitiate = 0;

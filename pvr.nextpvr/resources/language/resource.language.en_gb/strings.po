@@ -53,7 +53,7 @@ msgid "Download TV guide artwork"
 msgstr ""
 
 msgctxt "#30504"
-msgid "Not enabled for Matrix when remote"
+msgid "Not enabled when remote"
 msgstr ""
 
 #empty strings from id 30005 to 30039
@@ -352,4 +352,49 @@ msgstr ""
 
 msgctxt "#30701"
 msgid "Seperate recordings by the NextPVR recording folder"
+msgstr ""
+
+msgctxt "#30202"
+msgid "Channel instance number"
+msgstr ""
+
+msgctxt "#30702"
+msgid "Add instance indicators (#) to channel names"
+msgstr ""
+
+msgctxt "#30203"
+msgid "All channels group"
+msgstr ""
+
+msgctxt "#30703"
+msgid "Create an All channels group for this instance"
+msgstr ""
+
+msgctxt "#30204"
+msgid "Instance number"
+msgstr ""
+
+msgctxt "#30205"
+msgid "Instance options"
+msgstr ""
+
+msgctxt "#30206"
+msgid "Load comskip"
+msgstr ""
+
+msgctxt "#30706"
+msgid "Read comskip EDL files from backend"
+msgstr ""
+
+msgctxt "#30207"
+msgid "Update check"
+msgstr ""
+
+msgctxt "#30707"
+msgid "Interval to check for backend changes made outside this Kodi client"
+msgstr ""
+
+
+msgctxt "#30208"
+msgid "Every 5 minutes"
 msgstr ""
