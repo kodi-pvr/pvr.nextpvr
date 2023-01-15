@@ -53,7 +53,7 @@ msgid "Download TV guide artwork"
 msgstr ""
 
 msgctxt "#30504"
-msgid "Not enabled for Matrix when remote"
+msgid "Not enabled when remote"
 msgstr ""
 
 #empty strings from id 30005 to 30039
