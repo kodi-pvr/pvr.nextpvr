@@ -1,3 +1,6 @@
+v21.0.0
+- Connection change, start in connnecting state, defer unreachable state.
+
 v20.4.0
 - Add support for multiple NextPVR instances
 - Adjust for Nexus change in Channel Group order
