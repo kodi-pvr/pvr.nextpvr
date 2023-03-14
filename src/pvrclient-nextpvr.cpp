@@ -151,6 +151,9 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
   if (sendWOL)
     SendWakeOnLan();
 
+  if (m_connectionState == PVR_CONNECTION_STATE_UNKNOWN)
+    SetConnectionState(PVR_CONNECTION_STATE_CONNECTING);
+
   m_request.ClearSID();
   tinyxml2::XMLDocument doc;
   if (m_firstSessionInitiate == 0)
@@ -217,13 +220,8 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
     {
       status = ADDON_STATUS_OK;
       // backend should continue to connnect and ignore client until reachable
-      // avoid event logging in unreachable set so leave it connecting
-      if (m_connectionState != PVR_CONNECTION_STATE_UNKNOWN)
-      {
-        SetConnectionState(PVR_CONNECTION_STATE_SERVER_UNREACHABLE);
-      }
-      m_connectionState = PVR_CONNECTION_STATE_SERVER_UNREACHABLE;
       UpdateServerCheck();
+      m_connectionState = PVR_CONNECTION_STATE_SERVER_UNREACHABLE;
     }
     else
     {
@@ -426,7 +424,7 @@ bool cPVRClientNextPVR::IsUp()
     {
       UpdateServerCheck();
       Connect(false);
-      if (m_connectionState == PVR_CONNECTION_STATE_SERVER_UNREACHABLE)
+      if (m_coreState == PVR_CONNECTION_STATE_CONNECTING && (time(nullptr) > m_firstSessionInitiate + FAST_SLOW_POLL_TRANSITION))
         SetConnectionState(PVR_CONNECTION_STATE_SERVER_UNREACHABLE);
     }
   }
@@ -985,9 +983,6 @@ PVR_ERROR cPVRClientNextPVR::GetTimersAmount(int& amount)
 
 PVR_ERROR cPVRClientNextPVR::GetTimers(kodi::addon::PVRTimersResultSet& results)
 {
-  if (m_connectionState == PVR_CONNECTION_STATE_CONNECTING)
-    SetConnectionState(PVR_CONNECTION_STATE_CONNECTED);
-
   return m_timers.GetTimers(results);
 }
 
