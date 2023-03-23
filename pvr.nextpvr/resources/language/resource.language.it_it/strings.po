@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: KODI Main\n"
 "Report-Msgid-Bugs-To: translations@kodi.tv\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: 2022-08-18 05:14+0000\n"
+"PO-Revision-Date: 2023-03-23 00:16+0000\n"
 "Last-Translator: Massimo Pissarello <mapi68@gmail.com>\n"
 "Language-Team: Italian <https://kodi.weblate.cloud/projects/kodi-add-ons-pvr-clients/pvr-nextpvr/it_it/>\n"
 "Language: it_it\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.13\n"
+"X-Generator: Weblate 4.15.2\n"
 
 msgctxt "Addon Summary"
 msgid "Kodi frontend for the NextPVR"
@@ -63,7 +63,7 @@ msgstr "Connessione"
 
 msgctxt "#30041"
 msgid "Advanced"
-msgstr "Avanzato"
+msgstr "Avanzate"
 
 # empty strings from id 30042 to 30049
 msgctxt "#30050"
@@ -192,7 +192,7 @@ msgstr "Titolo, stagione ed episodio separati per la skin: i numeri di stagione 
 
 msgctxt "#30170"
 msgid "Refresh cache for channel icons"
-msgstr "Ricarica la cache per le icone dei canali"
+msgstr "Aggiorna la cache per le icone dei canali"
 
 msgctxt "#30171"
 msgid "Repeating (advanced)"

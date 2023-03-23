@@ -7,15 +7,15 @@ msgstr ""
 "Project-Id-Version: KODI Main\n"
 "Report-Msgid-Bugs-To: translations@kodi.tv\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: 2022-03-06 18:03+0000\n"
-"Last-Translator: Kai Sommerfeld <kai.sommerfeld@gmx.com>\n"
+"PO-Revision-Date: 2023-02-01 15:54+0000\n"
+"Last-Translator: Demian <Demian@gmx.co.uk>\n"
 "Language-Team: German <https://kodi.weblate.cloud/projects/kodi-add-ons-pvr-clients/pvr-nextpvr/de_de/>\n"
 "Language: de_de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.11.2\n"
+"X-Generator: Weblate 4.15.2\n"
 
 msgctxt "Addon Summary"
 msgid "Kodi frontend for the NextPVR"
@@ -31,11 +31,11 @@ msgstr "Dieses Addon befindet sich noch in der Entwicklung. Benutzung auf eigene
 
 msgctxt "#30000"
 msgid "NextPVR hostname"
-msgstr ""
+msgstr "NextPVR-Hostname"
 
 msgctxt "#30001"
 msgid "NextPVR port (usually 8866)"
-msgstr ""
+msgstr "NextPVR-Port (normalerweise 8866)"
 
 msgctxt "#30002"
 msgid "NextPVR PinCode"
@@ -43,7 +43,7 @@ msgstr "NextPVR PinCode"
 
 msgctxt "#30003"
 msgid "Enable timeshift with live TV"
-msgstr ""
+msgstr "Timeshift mit Live-TV aktivieren"
 
 msgctxt "#30603"
 msgid "Open settings dialog for inputstream.ffmpegdirect for modification of timeshift settings"
@@ -68,7 +68,7 @@ msgstr "Erweitert"
 # empty strings from id 30042 to 30049
 msgctxt "#30050"
 msgid "NextPVR version not supported"
-msgstr ""
+msgstr "NextPVR-Version wird nicht unterstützt"
 
 msgctxt "#30051"
 msgid "Upgrade to '%s' or higher!"
@@ -156,19 +156,19 @@ msgstr ""
 
 msgctxt "#30163"
 msgid "Enable Wake On LAN"
-msgstr ""
+msgstr "Wake-On-LAN aktivieren"
 
 msgctxt "#30164"
 msgid "Wait for server after wake in seconds"
-msgstr ""
+msgstr "Auf Server nach Wecken warten in Sekunden"
 
 msgctxt "#30165"
 msgid "NextPVR server MAC address"
-msgstr ""
+msgstr "MAC-Adresse von NextPVR-Server"
 
 msgctxt "#30166"
 msgid "Failed recordings"
-msgstr ""
+msgstr "Fehlgeschlagene Aufnahmen"
 
 msgctxt "#30167"
 msgid "Live TV chunk size"
@@ -196,27 +196,27 @@ msgstr "Cache für Senderlogos aktualisieren"
 
 msgctxt "#30171"
 msgid "Repeating (advanced)"
-msgstr ""
+msgstr "Wiederholend (erweitert)"
 
 msgctxt "#30172"
 msgid "Live TV method"
-msgstr ""
+msgstr "Live-TV-Methode"
 
 msgctxt "#30173"
 msgid "Transcoding profile"
-msgstr ""
+msgstr "Transcodingprofile"
 
 msgctxt "#30174"
 msgid "Streaming options"
-msgstr ""
+msgstr "Streaming-Optionen"
 
 msgctxt "#30175"
 msgid "Display and recordings"
-msgstr ""
+msgstr "Anzeige und Aufnahmen"
 
 msgctxt "#30176"
 msgid "Enable direct streams"
-msgstr ""
+msgstr "Direkte Streams aktivieren"
 
 msgctxt "#30177"
 msgid "Use legacy (V4) setting"
@@ -224,7 +224,7 @@ msgstr ""
 
 msgctxt "#30178"
 msgid "Include filesize with recordings"
-msgstr ""
+msgstr "Dateigröße bei Aufnahmen einbeziehen"
 
 msgctxt "#30678"
 msgid "Use file system to get the recording size if available"
@@ -248,31 +248,31 @@ msgstr ""
 
 msgctxt "#30182"
 msgid "NextPVR server %s:%d"
-msgstr ""
+msgstr "NextPVR-Server %s:%d"
 
 msgctxt "#30183"
 msgid "Reset channel icon"
-msgstr ""
+msgstr "Sendersymbol zurücksetzen"
 
 msgctxt "#30184"
 msgid "Forget recording"
-msgstr ""
+msgstr "Aufnahme vergessen"
 
 msgctxt "#30185"
 msgid "Update all channels"
-msgstr ""
+msgstr "Alle Sender aktualisieren"
 
 msgctxt "#30186"
 msgid "Update all channel groups"
-msgstr ""
+msgstr "Alle Sendergruppen aktualisieren"
 
 msgctxt "#30187"
 msgid "Select NextPVR IP address"
-msgstr ""
+msgstr "NextPVR-IP-Adresse wählen"
 
 msgctxt "#30188"
 msgid "Show radio channels"
-msgstr ""
+msgstr "Radiosender anzeigen"
 
 msgctxt "#30688"
 msgid "Also use skin settings to control radio main menu display"
@@ -284,19 +284,19 @@ msgstr ""
 
 msgctxt "#30190"
 msgid "Timeshifting disabled"
-msgstr ""
+msgstr "Timeshifting deaktiviert"
 
 msgctxt "#30191"
 msgid "%s is not enabled"
-msgstr ""
+msgstr "%s ist nicht aktiviert"
 
 msgctxt "#30192"
 msgid "%s is not installed"
-msgstr ""
+msgstr "%s ist nicht installiert"
 
 msgctxt "#30193"
 msgid "Show season folders"
-msgstr ""
+msgstr "Staffelordner anzeigen"
 
 msgctxt "#30693"
 msgid "Create separate folders for multiple seasons of recordings"
@@ -312,11 +312,11 @@ msgstr ""
 
 msgctxt "#30195"
 msgid "Send Wake On LAN to server"
-msgstr ""
+msgstr "Wake-On-LAN an Server senden"
 
 msgctxt "#30196"
 msgid "Open NextPVR settings"
-msgstr ""
+msgstr "NextPVR-Einstellungen öffnen"
 
 msgctxt "#30197"
 msgid "Show guide cast, director and writer"
@@ -324,7 +324,7 @@ msgstr ""
 
 msgctxt "#30198"
 msgid "Display disk space"
-msgstr ""
+msgstr "Speicherplatz anzeigen"
 
 msgctxt "#30698"
 msgid "Default: Show the default drive - Span: Sum all drives"
