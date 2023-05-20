@@ -66,7 +66,7 @@ namespace NextPVR
     // return is same on timeout or http return ie 404, 500.
     tinyxml2::XMLError retError = tinyxml2::XML_ERROR_FILE_NOT_FOUND;
     std::unique_lock<std::mutex> lock(m_mutexRequest);
-    // build request string, adding SID if requred
+    // build request string, adding SID if required
     std::string URL;
 
     if (IsActiveSID())
@@ -74,7 +74,10 @@ namespace NextPVR
     else if (kodi::tools::StringUtils::StartsWith(resource, "session"))
       URL = kodi::tools::StringUtils::Format("%s/service?method=%s", m_settings->m_urlBase, resource.c_str());
     else
+    {
+      kodi::Log(ADDON_LOG_ERROR, "%s called before session.login", resource.c_str());
       return tinyxml2::XML_ERROR_FILE_COULD_NOT_BE_OPENED;
+    }
 
     if (!compressed)
       URL += "|Accept-Encoding=identity";
