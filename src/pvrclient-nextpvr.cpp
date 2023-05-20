@@ -895,6 +895,12 @@ PVR_ERROR cPVRClientNextPVR::GetEPGForChannel(int channelUid, time_t start, time
 /** PVR Channel Functions                 **/
 PVR_ERROR cPVRClientNextPVR::GetChannelsAmount(int& amount)
 {
+  if (m_connectionState != PVR_CONNECTION_STATE_CONNECTED)
+  {
+    kodi::Log(ADDON_LOG_ERROR, "GetChannelsAmount called while disconnected");
+    return PVR_ERROR_SERVER_ERROR;
+  }
+
   amount = m_channels.GetNumChannels();
   return PVR_ERROR_NO_ERROR;
 }
@@ -910,6 +916,12 @@ PVR_ERROR cPVRClientNextPVR::GetChannels(bool radio, kodi::addon::PVRChannelsRes
 
 PVR_ERROR cPVRClientNextPVR::GetChannelGroupsAmount(int& amount)
 {
+  if (m_connectionState != PVR_CONNECTION_STATE_CONNECTED)
+  {
+    kodi::Log(ADDON_LOG_ERROR, "GetChannelGroupsAmount called while disconnected");
+    return PVR_ERROR_SERVER_ERROR;
+  }
+
   m_channels.GetChannelGroupsAmount(amount);
   return PVR_ERROR_NO_ERROR;
 }
