@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: KODI Main\n"
 "Report-Msgid-Bugs-To: translations@kodi.tv\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: 2023-03-23 00:16+0000\n"
+"PO-Revision-Date: 2023-05-22 03:42+0000\n"
 "Last-Translator: Massimo Pissarello <mapi68@gmail.com>\n"
 "Language-Team: Italian <https://kodi.weblate.cloud/projects/kodi-add-ons-pvr-clients/pvr-nextpvr/it_it/>\n"
 "Language: it_it\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.15.2\n"
+"X-Generator: Weblate 4.17\n"
 
 msgctxt "Addon Summary"
 msgid "Kodi frontend for the NextPVR"
@@ -43,11 +43,11 @@ msgstr "Codice PIN NextPVR"
 
 msgctxt "#30003"
 msgid "Enable timeshift with live TV"
-msgstr "Abilita il timeshift con la TV in diretta"
+msgstr "Abilita timeshift con Live TV"
 
 msgctxt "#30603"
 msgid "Open settings dialog for inputstream.ffmpegdirect for modification of timeshift settings"
-msgstr "Apri la finestra di dialogo delle impostazioni per inputstream.ffmpegdirect per modificare le impostazioni di timeshift"
+msgstr "Apri la finestra di dialogo delle impostazioni per inputstream.ffmpegdirect per la modifica delle impostazioni di timeshift"
 
 msgctxt "#30004"
 msgid "Download TV guide artwork"
@@ -55,7 +55,7 @@ msgstr "Scarica l'artwork della guida TV"
 
 msgctxt "#30504"
 msgid "Not enabled for Matrix when remote"
-msgstr "Non abilitato per Matrix quando è remoto"
+msgstr "Non abilitato per Matrix se da remoto"
 
 msgctxt "#30040"
 msgid "Connection"
@@ -72,7 +72,7 @@ msgstr "Versione non supportata di NextPVR"
 
 msgctxt "#30051"
 msgid "Upgrade to '%s' or higher!"
-msgstr "Esegui l'upgrade a '%s' o superiore!"
+msgstr "Aggiorna a '%s' o superiore!"
 
 msgctxt "#30052"
 msgid "Connection failed. Incorrect PIN?"
@@ -80,7 +80,7 @@ msgstr "Connessione fallita. PIN errato?"
 
 msgctxt "#30053"
 msgid "Tuner no longer available"
-msgstr "Il tuner non è più disponibile"
+msgstr "Sintonizzatore non più disponibile"
 
 msgctxt "#30140"
 msgid "One time (manual)"
@@ -144,11 +144,11 @@ msgstr "10 registrazioni"
 
 msgctxt "#30160"
 msgid "New Only"
-msgstr "Solo nuovo"
+msgstr "Solo nuove"
 
 msgctxt "#30161"
 msgid "All"
-msgstr "Tutte"
+msgstr "Tutto"
 
 msgctxt "#30162"
 msgid "Pre-buffer time in seconds"
@@ -172,11 +172,11 @@ msgstr "Registrazioni fallite"
 
 msgctxt "#30167"
 msgid "Live TV chunk size"
-msgstr "Dimensione blocco TV in diretta"
+msgstr "Dimensione blocco Live TV"
 
 msgctxt "#30567"
 msgid "Change chunk size for LAN performance"
-msgstr "Modifica dimensione del blocco per prestazioni LAN"
+msgstr "Ottimizza dimensione del blocco per LAN"
 
 msgctxt "#30168"
 msgid "Recording chunk size"
@@ -184,11 +184,11 @@ msgstr "Dimensione blocco di registrazione"
 
 msgctxt "#30169"
 msgid "Kodi skin styled recordings"
-msgstr "Registrazioni stile skin Kodi"
+msgstr "Registrazioni con stile skin Kodi"
 
 msgctxt "#30569"
 msgid "Separate title, season and episode for skin - season and episode numbers will not be shown in lists"
-msgstr "Titolo, stagione ed episodio separati per la skin: i numeri di stagione ed episodio non verranno mostrati negli elenchi"
+msgstr "Titolo, stagione ed episodio separati per skin: i numeri di stagione ed episodio non verranno visualizzati negli elenchi"
 
 msgctxt "#30170"
 msgid "Refresh cache for channel icons"
@@ -200,7 +200,7 @@ msgstr "Ripetizione (avanzata)"
 
 msgctxt "#30172"
 msgid "Live TV method"
-msgstr "Metodo TV in diretta"
+msgstr "Metodo Live TV"
 
 msgctxt "#30173"
 msgid "Transcoding profile"
@@ -236,11 +236,11 @@ msgstr "Accesso remoto"
 
 msgctxt "#30180"
 msgid "Single recording display"
-msgstr "Visualizzazione registrazione singola"
+msgstr "Visualizzazione singola registrazione"
 
 msgctxt "#30680"
 msgid "Movies and single episode TV shows display at top level"
-msgstr "I film e i programmi TV a episodio singolo vengono visualizzati al livello più alto"
+msgstr "I film e le serie TV a episodio singolo vengono visualizzati al livello più alto"
 
 msgctxt "#30181"
 msgid "TV guide portrait format"
@@ -252,7 +252,7 @@ msgstr "Server NextPVR %s:%d"
 
 msgctxt "#30183"
 msgid "Reset channel icon"
-msgstr "Ripristina icona canale"
+msgstr "Reimposta icona canale"
 
 msgctxt "#30184"
 msgid "Forget recording"
@@ -280,7 +280,7 @@ msgstr "Usa le impostazioni della skin per controllare la visualizzazione del me
 
 msgctxt "#30189"
 msgid "Discovered host"
-msgstr "Host scoperti"
+msgstr "Host conosciuti"
 
 msgctxt "#30190"
 msgid "Timeshifting disabled"
@@ -304,11 +304,11 @@ msgstr "Crea cartelle separate per più stagioni di registrazioni"
 
 msgctxt "#30194"
 msgid "Use backend genre text"
-msgstr "Usa testo del genere backend"
+msgstr "Usa testo del genere dal backend"
 
 msgctxt "#30694"
 msgid "Kodi default is DVB genre text. Default required for Kodi genre search and language translation"
-msgstr "L'impostazione predefinita di Kodi è il testo di genere DVB. È richiesta la ricerca di genere Kodi e la traduzione della lingua"
+msgstr "L'impostazione predefinita di Kodi è il testo del genere dal DVB. È richiesta la ricerca di genere Kodi e la traduzione della lingua"
 
 msgctxt "#30195"
 msgid "Send Wake On LAN to server"
