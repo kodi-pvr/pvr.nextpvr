@@ -422,9 +422,8 @@ bool cPVRClientNextPVR::IsUp()
   {
     if (time(nullptr) > m_nextServerCheck)
     {
-      UpdateServerCheck();
       Connect(false);
-      if (m_coreState == PVR_CONNECTION_STATE_CONNECTING && (time(nullptr) > m_firstSessionInitiate + FAST_SLOW_POLL_TRANSITION))
+      if (m_coreState == PVR_CONNECTION_STATE_CONNECTING || m_coreState == PVR_CONNECTION_STATE_DISCONNECTED && (time(nullptr) > m_firstSessionInitiate + FAST_SLOW_POLL_TRANSITION))
         SetConnectionState(PVR_CONNECTION_STATE_SERVER_UNREACHABLE);
     }
   }
@@ -454,12 +453,11 @@ PVR_ERROR cPVRClientNextPVR::OnSystemSleep()
 
 PVR_ERROR cPVRClientNextPVR::OnSystemWake()
 {
-  m_firstSessionInitiate = 0;
+  m_firstSessionInitiate = time(nullptr);
+  m_nextServerCheck = m_firstSessionInitiate + FAST_SLOW_POLL_TRANSITION;
   kodi::Log(ADDON_LOG_DEBUG, "NextPVR wake");
   // allow time for core to reset
   m_lastRecordingUpdateTime = time(nullptr) + SLOW_CONNECT_POLL;
-
-  // don't trigger updates core does it
 
   if (m_request.IsActiveSID() && m_request.PingBackend())
   {
@@ -467,9 +465,9 @@ PVR_ERROR cPVRClientNextPVR::OnSystemWake()
     m_bConnected = true;
     return PVR_ERROR_NO_ERROR;
   }
-  m_nextServerCheck = 0;
-
-  SetConnectionState(PVR_CONNECTION_STATE_CONNECTING);
+  // Core only allows PVR_CONNECTION_STATE_CONNECTING once
+  SetConnectionState(PVR_CONNECTION_STATE_DISCONNECTED);
+  m_connectionState = PVR_CONNECTION_STATE_CONNECTING;
 
   if (Connect() != ADDON_STATUS_OK)
   {
@@ -477,7 +475,7 @@ PVR_ERROR cPVRClientNextPVR::OnSystemWake()
     return PVR_ERROR_SERVER_ERROR;
   }
 
-  kodi::Log(ADDON_LOG_INFO, "On NextPVR Wake %d", m_bConnected, m_connectionState);
+  kodi::Log(ADDON_LOG_INFO, "On NextPVR Wake %d %d", m_bConnected, m_connectionState);
   return PVR_ERROR_NO_ERROR;
 }
 
