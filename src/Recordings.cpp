@@ -443,9 +443,8 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
       artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&name=%s", m_settings->m_urlBase, m_request.GetSID(), name.c_str());
     else
       artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&name=%s", m_settings->m_urlBase, name.c_str());
-    tag.SetFanartPath(artworkPath);
-    artworkPath += "&prefer=poster";
-    tag.SetThumbnailPath(artworkPath);
+    tag.SetFanartPath(artworkPath + "&prefer=fanart");
+    tag.SetThumbnailPath(artworkPath + "&prefer=poster");
   }
   if (XMLUtils::GetAdditiveString(pRecordingNode->FirstChildElement("genres"), "genre", EPG_STRING_TOKEN_SEPARATOR, buffer, true))
   {
