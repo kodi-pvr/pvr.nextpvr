@@ -1,3 +1,8 @@
+v20.4.2
+- Return error if channel calls are made when not connected
+- Fast poll for servers after returning from sleep
+- Changes to backend art delivery, request fanart if possible
+
 v20.4.1
 - Connection change, start in connecting state, defer unreachable state.
 
