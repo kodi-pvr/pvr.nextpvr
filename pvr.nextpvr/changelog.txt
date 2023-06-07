@@ -1,3 +1,7 @@
+v20.4.2
+- Translations updates from Weblate
+	- es_es, it_it
+
 v20.4.1
 - Connection change, start in connecting state, defer unreachable state.
 
