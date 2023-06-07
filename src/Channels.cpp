@@ -88,7 +88,7 @@ PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& r
 {
   if (radio && !m_settings->m_showRadio)
     return PVR_ERROR_NO_ERROR;
-
+  PVR_ERROR returnValue = PVR_ERROR_NO_ERROR;
   std::string stream;
   std::map<int, std::pair<bool, bool>>::iterator  itr = m_channelDetails.begin();
   while (itr != m_channelDetails.end())
@@ -160,8 +160,13 @@ PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& r
       results.Add(tag);
     }
   }
-  return PVR_ERROR_NO_ERROR;
+  else
+  {
+    returnValue = PVR_ERROR_SERVER_ERROR;
+  }
+  return returnValue;
 }
+
 
 /************************************************************/
 /** Channel group handling **/
@@ -187,6 +192,7 @@ PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsRe
   if (radio && !m_settings->m_showRadio)
     return PVR_ERROR_NO_ERROR;
 
+  PVR_ERROR returnValue = PVR_ERROR_NO_ERROR;
   int priority = 1;
 
   std::unordered_set<std::string>& selectedGroups = radio ? m_radioGroups : m_tvGroups;
@@ -235,6 +241,10 @@ PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsRe
       }
     }
   }
+  else
+  {
+    return PVR_ERROR_SERVER_ERROR;
+  }
 
   // Many users won't have radio groups
   if (selectedGroups.size() == 0)
@@ -265,14 +275,15 @@ PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsRe
   else
   {
     kodi::Log(ADDON_LOG_DEBUG, "No Channel Group");
+    returnValue =  PVR_ERROR_SERVER_ERROR;
   }
-
-  return PVR_ERROR_NO_ERROR;
+  return returnValue;
 }
 
 PVR_ERROR Channels::GetChannelGroupMembers(const kodi::addon::PVRChannelGroup& group, kodi::addon::PVRChannelGroupMembersResultSet& results)
 {
   std::string request;
+  PVR_ERROR returnValue = PVR_ERROR_SERVER_ERROR;
 
   if (group.GetGroupName() == GetAllChannelsGroupName(group.GetIsRadio()))
   {
@@ -304,7 +315,11 @@ PVR_ERROR Channels::GetChannelGroupMembers(const kodi::addon::PVRChannelGroup& g
       }
     }
   }
-  return PVR_ERROR_NO_ERROR;
+  else
+  {
+    returnValue = PVR_ERROR_SERVER_ERROR;
+  }
+  return returnValue;
 }
 
 const std::string Channels::GetAllChannelsGroupName(bool radio)
