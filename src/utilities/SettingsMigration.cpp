@@ -11,6 +11,7 @@
 
 #include "kodi/General.h"
 #include "kodi/Filesystem.h"
+#include <sys/stat.h>
 
 #include <algorithm>
 #include <utility>
@@ -56,12 +57,66 @@ bool SettingsMigration::MigrateSettings(kodi::addon::IAddonInstance& target)
   bool boolValue{false};
   int intValue{0};
 
-  if (target.CheckInstanceSettingString("kodi_addon_instance_name", stringValue) &&
-      !stringValue.empty())
+  #if defined(TARGET_DARWIN_EMBEDDED)
+  struct stat sb;
+  kodi::vfs::CFile setting;
+  std::string instanceFile = kodi::tools::StringUtils::Format("special://profile/addon_data/pvr.nextpvr/instance-settings-1.xml");
+  if (setting.OpenFile(instanceFile, ADDON_READ_NO_CACHE))
+  {
+    kodi::Log(ADDON_LOG_INFO, "Instance vfs xml opened for read");
+  }
+  else
+  {
+    kodi::Log(ADDON_LOG_INFO, "Instance vfs xml did not open");
+  }
+  setting.Close();
+  bool instanceExists = kodi::vfs::FileExists(instanceFile);
+  std::string original = kodi::vfs::TranslateSpecialProtocol(instanceFile);
+  kodi::Log(ADDON_LOG_INFO, "Instance xml check %d %s", instanceExists, instanceFile.c_str());
+  kodi::Log(ADDON_LOG_INFO, "Instance xml check stat  %d %s %d", stat(original.c_str(), &sb), original.c_str(), errno);
+  std::string response;
+  if (setting.OpenFile(original, ADDON_READ_NO_CACHE))
+  {
+    kodi::Log(ADDON_LOG_INFO, "Instance xml opened %d %s", setting.GetLength(), original.c_str());
+    char buffer[1025] = { 0 };
+    int count;
+    while ((count = setting.Read(buffer, 1024)))
+    {
+      response.append(buffer, count);
+    }
+    kodi::Log(ADDON_LOG_INFO, "Instance xml read %s", response.c_str());
+  }
+  else
+  {
+    kodi::Log(ADDON_LOG_INFO, "Instance xml read error %d", errno);
+  }
+  setting.Close();
+  #endif
+  target.CheckInstanceSettingString("kodi_addon_instance_name", stringValue);
+  if (!stringValue.empty())
   {
     // Instance already has valid instance settings
+    kodi::Log(ADDON_LOG_INFO, "Using saved instance file %s", stringValue.c_str());
     return false;
   }
+
+  #if defined(TARGET_DARWIN_EMBEDDED)
+  kodi::Log(ADDON_LOG_INFO, "Empty instance name tvOS %d %s", target.IsInstanceSettingUsingDefault("kodi_addon_instance_name"), stringValue.c_str());
+  std::string title;
+  target.CheckInstanceSettingString("host", title);
+  kodi::Log(ADDON_LOG_INFO, "Use tvOS hostname  %d %s", target.IsInstanceSettingUsingDefault("host"), title.c_str());
+  target.SetInstanceSettingString("kodi_addon_instance_name", title);
+  instanceFile = kodi::tools::StringUtils::Format("special://profile/addon_data/pvr.nextpvr/1/");
+  instanceExists = kodi::vfs::DirectoryExists(instanceFile);
+  original = kodi::vfs::TranslateSpecialProtocol(instanceFile);
+  kodi::Log(ADDON_LOG_INFO, "Instance folder check %d %s", instanceExists, instanceFile.c_str());
+  kodi::Log(ADDON_LOG_INFO, "Instance folder check stat %d %s %d", stat(original.c_str(), &sb), original.c_str(), errno);
+  if (instanceExists || stat(original.c_str(), &sb) == 0)
+  {
+    return false;
+  }
+  #endif
+
     // ask XBMC to read settings for us
   tinyxml2::XMLDocument doc;
 
@@ -102,7 +157,8 @@ bool SettingsMigration::MigrateSettings(kodi::addon::IAddonInstance& target)
 
 void SettingsMigration::MoveResourceFiles()
 {
-  std::string marti = kodi::vfs::TranslateSpecialProtocol("special://profile/addon_data/pvr.nextpvr/");
+  std::string original = kodi::vfs::TranslateSpecialProtocol("special://profile/addon_data/pvr.nextpvr/");
+
   std::vector<kodi::vfs::CDirEntry> icons;
   if (kodi::vfs::GetDirectory("special://profile/addon_data/pvr.nextpvr/", "nextpvr-ch*.png", icons))
   {

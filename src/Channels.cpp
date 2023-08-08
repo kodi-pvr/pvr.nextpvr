@@ -314,6 +314,7 @@ PVR_ERROR Channels::GetChannelGroupMembers(const kodi::addon::PVRChannelGroup& g
         results.Add(tag);
       }
     }
+    returnValue = PVR_ERROR_NO_ERROR;
   }
   else
   {
@@ -350,13 +351,12 @@ bool Channels::IsChannelAPlugin(int uid)
 /************************************************************/
 void Channels::LoadLiveStreams()
 {
-  const std::string URL = "/public/LiveStreams.xml";
   m_liveStreams.clear();
-  if (m_request.FileCopy(URL.c_str(), m_settings->m_instanceDirectory + "LiveStreams.xml") == HTTP_OK)
+  if (m_request.FileCopy("/public/LiveStreams.xml", m_settings->m_instanceDirectory + "LiveStreams.cache") == HTTP_OK)
   {
     tinyxml2::XMLDocument doc;
-    std::string liveStreams = kodi::vfs::TranslateSpecialProtocol(m_settings->m_instanceDirectory + "LiveStreams.xml");
-    kodi::Log(ADDON_LOG_DEBUG, "Loading LiveStreams.xml %s", liveStreams.c_str());
+    std::string liveStreams = kodi::vfs::TranslateSpecialProtocol(m_settings->m_instanceDirectory + "LiveStreams.cache");
+    kodi::Log(ADDON_LOG_DEBUG, "Loading LiveStreams.cache %s", liveStreams.c_str());
     if (doc.LoadFile(liveStreams.c_str()) == tinyxml2::XML_SUCCESS)
     {
       tinyxml2::XMLNode* streamsNode = doc.FirstChildElement("streams");

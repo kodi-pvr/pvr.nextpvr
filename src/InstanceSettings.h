@@ -60,7 +60,6 @@ namespace NextPVR
     void SetConnection(bool status);
     void SetVersionSpecificSettings();
     void UpdateServerPort(std::string hostname, int port);
-    void ReadFromAddon();
     ADDON_STATUS SetValue(const std::string& settingName, const kodi::addon::CSettingValue& settingValue);
 
     //Connection
@@ -137,6 +136,12 @@ namespace NextPVR
     int ReadIntSetting(const std::string& key, int def) const;
     bool ReadBoolSetting(const std::string& key, bool def) const;
 
+    void ReadFromAddon();
+    void ReadFromSavedSettings(std::string savedSettings);
+    std::string ReadSavedSetting(const char* key, tinyxml2::XMLNode* rootNode);
+    std::string ReadSavedStringSetting(const char* key, const std::string& defaultValue, tinyxml2::XMLNode* rootNode);
+    int ReadSavedIntSetting(const char* key, int defaultValue, tinyxml2::XMLNode* rootNode);
+    bool ReadSavedBoolSetting(const char* key, bool defaultValue, tinyxml2::XMLNode* rootNode);
     template<typename T, typename V>
     V SetSetting(const std::string& settingName, const kodi::addon::CSettingValue& settingValue, T& currentValue, V returnValueIfChanged, V defaultReturnValue)
     {

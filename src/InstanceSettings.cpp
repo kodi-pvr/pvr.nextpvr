@@ -9,6 +9,8 @@
 #include "InstanceSettings.h"
 #include <kodi/Filesystem.h>
 #include "uri.h"
+#include <sys/stat.h>
+
 
 #include <kodi/General.h>
 #include <kodi/tools/StringUtils.h>
@@ -25,7 +27,12 @@ InstanceSettings::InstanceSettings(kodi::addon::IAddonInstance& instance, const 
 {
   m_instanceNumber = m_instanceInfo.GetNumber();
   m_instanceDirectory = kodi::tools::StringUtils::Format("special://profile/addon_data/pvr.nextpvr/%d/", m_instanceNumber);
+  std::string savedSettings = kodi::tools::StringUtils::Format("%sinstance-settings-%d.cache", m_instanceDirectory.c_str(), m_instanceNumber);
   ReadFromAddon();
+  if (kodi::vfs::FileExists(savedSettings))
+  {
+    ReadFromSavedSettings(savedSettings);
+  }
 }
 
 /***************************************************************************
@@ -115,7 +122,14 @@ void InstanceSettings::ReadFromAddon()
     m_instance.SetInstanceSettingInt("instance", m_instanceNumber);
   }
 
-  m_instanceName = ReadStringSetting("kodi_addon_instance_name",  "Unknown");
+  m_instanceName = ReadStringSetting("kodi_addon_instance_name",  "");
+
+  if (m_instanceName.empty())
+  {
+    kodi::Log(ADDON_LOG_WARNING, "Instance name not valid using hostname");
+    m_instanceName = m_hostname;
+    m_instance.SetInstanceSettingString("kodi_addon_instance_name", m_instanceName);
+  }
 
   m_allChannels = ReadBoolSetting("instanceallgroup", false);
 
@@ -136,8 +150,186 @@ void InstanceSettings::ReadFromAddon()
 
 
   /* Log the current settings for debugging purposes */
-  kodi::Log(ADDON_LOG_DEBUG, "settings: host='%s', port=%i, instance=%d, mac=%4.4s...", m_hostname.c_str(), m_port, m_instanceNumber, m_hostMACAddress.c_str());
+  kodi::Log(ADDON_LOG_INFO, "settings: host='%s', port=%i, instance=%d, mac=%4.4s...", m_hostname.c_str(), m_port, m_instanceNumber, m_hostMACAddress.c_str());
 
+}
+
+void InstanceSettings::ReadFromSavedSettings(std::string savedSettings)
+{
+  const std::string filename = kodi::vfs::TranslateSpecialProtocol(savedSettings);
+  tinyxml2::XMLError errorLoad = tinyxml2::XML_NO_TEXT_NODE;
+  kodi::vfs::CFile setting;
+  tinyxml2::XMLDocument doc;
+  if (setting.OpenFile(filename, ADDON_READ_NO_CACHE))
+  {
+    std::string response;
+    char buffer[1025] = { 0 };
+    int count;
+    while ((count = setting.Read(buffer, 1024)))
+    {
+      response.append(buffer, count);
+    }
+    setting.Close();
+    errorLoad = doc.Parse(response.c_str());
+  }
+  kodi::Log(ADDON_LOG_INFO, "Saved settings open: %d %s", errorLoad, filename.c_str());
+  if (errorLoad)
+    return;
+
+  /* Connection settings */
+  /***********************/
+
+  std::string protocol = ReadSavedStringSetting("hostprotocol", protocol, doc.FirstChild());
+
+  m_hostname = ReadSavedStringSetting("host", m_hostname, doc.FirstChild());
+  m_instance.SetInstanceSettingString("host", m_hostname);
+
+  uri::decode(m_hostname);
+
+  m_port = ReadSavedIntSetting("port", m_port, doc.FirstChildElement());
+  m_instance.SetInstanceSettingInt("port", m_port);
+
+  m_PIN = ReadSavedStringSetting("pin", m_PIN, doc.FirstChild());
+  m_instance.SetInstanceSettingString("pin", m_PIN);
+
+
+  sprintf(m_urlBase, "%s://%.255s:%d", protocol.c_str(), m_hostname.c_str(), m_port);
+
+  m_enableWOL = ReadSavedBoolSetting("wolenable", false, doc.FirstChild());
+  m_hostMACAddress = ReadSavedStringSetting("host_mac", "", doc.FirstChild());
+  kodi::Log(ADDON_LOG_DEBUG, "settings: @1");
+  if (m_enableWOL)
+  {
+    if (m_hostMACAddress.empty())
+      m_enableWOL = false;
+    else if (m_hostname == "127.0.0.1" || m_hostname == "localhost" || m_hostname == "::1")
+      m_enableWOL = false;
+  }
+
+  m_timeoutWOL = ReadSavedIntSetting("woltimeout", 20, doc.FirstChild());
+
+  m_remoteAccess = ReadSavedBoolSetting("remoteaccess", false, doc.FirstChild());
+
+  m_liveStreamingMethod = static_cast<eStreamingMethod>(ReadSavedIntSetting("livestreamingmethod5", DEFAULT_LIVE_STREAM, doc.FirstChild()));
+
+  m_flattenRecording = ReadSavedBoolSetting("flattenrecording", false, doc.FirstChild());
+
+  m_separateSeasons = ReadSavedBoolSetting("separateseasons", false, doc.FirstChild());
+
+  m_showRoot = ReadSavedBoolSetting("showroot", false, doc.FirstChild());
+
+  kodi::Log(ADDON_LOG_DEBUG, "settings: @1");
+
+  m_prebuffer5 = ReadSavedIntSetting("prebuffer5", 0, doc.FirstChild());
+
+  m_liveChunkSize = ReadSavedIntSetting("chunklivetv", 64, doc.FirstChild());
+
+  m_chunkRecording = ReadSavedIntSetting("chunkrecording", 32, doc.FirstChild());
+
+  m_ignorePadding = ReadSavedBoolSetting("ignorepadding", true, doc.FirstChild());
+
+  m_resolution = ReadSavedStringSetting("resolution", "720", doc.FirstChild());
+
+  m_showRadio = ReadSavedBoolSetting("showradio", true, doc.FirstChild());
+
+  m_backendResume = ReadSavedBoolSetting("backendresume", true, doc.FirstChild());
+
+  m_connectionConfirmed = kodi::vfs::FileExists(m_instanceDirectory + connectionFlag);
+
+  if (m_PIN != "0000" && m_remoteAccess)
+  {
+    m_downloadGuideArtwork = false;
+    m_sendSidWithMetadata = true;
+  }
+  else {
+    m_downloadGuideArtwork = ReadSavedBoolSetting("guideartwork", DEFAULT_GUIDE_ARTWORK, doc.FirstChild());
+    m_sendSidWithMetadata = false;
+  }
+
+  m_guideArtPortrait = ReadSavedBoolSetting("guideartworkportrait", false, doc.FirstChild());
+
+  m_genreString = ReadSavedBoolSetting("genrestring", false, doc.FirstChild());
+
+  m_showRecordingSize = ReadSavedBoolSetting("recordingsize", false, doc.FirstChild());
+
+  m_diskSpace = ReadSavedStringSetting("diskspace", "Default", doc.FirstChild());
+
+  m_transcodedTimeshift = ReadSavedBoolSetting("ffmpegdirect", false, doc.FirstChild());
+
+  m_castcrew = ReadSavedBoolSetting("castcrew", false, doc.FirstChild());
+
+  m_useLiveStreams = ReadSavedBoolSetting("uselivestreams", false, doc.FirstChild());
+
+  m_instanceName = ReadSavedStringSetting("kodi_addon_instance_name", "", doc.FirstChild());
+
+  if (m_instanceName.empty() || m_instanceName == "127.0.0.1")
+  {
+    kodi::Log(ADDON_LOG_WARNING, "Instance name not set in cache using hostname %s", m_hostname.c_str());
+    m_instanceName = m_hostname;
+    m_instance.SetInstanceSettingString("kodi_addon_instance_name", m_instanceName);
+  }
+
+
+  m_allChannels = ReadSavedBoolSetting("instanceallgroup", false, doc.FirstChild());
+
+  m_addChannelInstance = ReadSavedBoolSetting("instancechannel", false, doc.FirstChild());
+
+  m_comskip = ReadSavedBoolSetting("comskip", true, doc.FirstChild());
+
+  enum eHeartbeat m_heartbeat = static_cast<eHeartbeat> (ReadSavedIntSetting("heartbeat", eHeartbeat::Default, doc.FirstChild()));
+
+  if (m_heartbeat == eHeartbeat::Default)
+    m_heartbeatInterval = DEFAULT_HEARTBEAT;
+  else if (m_heartbeat == eHeartbeat::FiveMinutes)
+    m_heartbeatInterval = 300;
+  else if (m_heartbeat == eHeartbeat::Hourly)
+    m_heartbeatInterval = 7200;
+  else if (m_heartbeat == eHeartbeat::None)
+    m_heartbeatInterval = std::numeric_limits<time_t>::max();
+
+
+  /* Log the current settings for debugging purposes */
+  kodi::Log(ADDON_LOG_INFO, "saved settings: host='%s', port=%i, instance=%d, mac=%4.4s...", m_hostname.c_str(), m_port, m_instanceNumber, m_hostMACAddress.c_str());
+
+}
+
+std::string InstanceSettings::ReadSavedSetting(const char* key, tinyxml2::XMLNode* rootNode)
+{
+  std::string value;
+  tinyxml2::XMLElement* child = rootNode->FirstChildElement("setting");
+  while (child != nullptr)
+  {
+    if (child->Attribute("id", key))
+    {
+      value = child->GetText();
+      break;
+    }
+    child = child->NextSiblingElement();
+  }
+  return value;
+}
+
+std::string InstanceSettings::ReadSavedStringSetting(const char* key, const std::string& defaultValue, tinyxml2::XMLNode* rootNode)
+{
+  std::string value = ReadSavedSetting(key, rootNode);
+  if (value.empty())
+    return defaultValue;
+  return value;
+}
+int InstanceSettings::ReadSavedIntSetting(const char* key, int defaultValue, tinyxml2::XMLNode* rootNode)
+{
+  std::string value = ReadSavedSetting(key, rootNode);
+  if (value.empty())
+    return defaultValue;
+  return stoi(value);
+}
+
+bool InstanceSettings::ReadSavedBoolSetting(const char* key, bool defaultValue, tinyxml2::XMLNode* rootNode)
+{
+  std::string value = ReadSavedSetting(key, rootNode);
+  if (value.empty())
+    return defaultValue;
+  return value == "true";
 }
 
 ADDON_STATUS InstanceSettings::ReadBackendSettings(tinyxml2::XMLDocument& settingsDoc)
@@ -204,9 +396,40 @@ void InstanceSettings::SetConnection(bool status)
 {
   if (status == true)
   {
-      kodi::vfs::CFile outputFile;
-      outputFile.OpenFileForWrite(m_instanceDirectory + connectionFlag);
-      m_connectionConfirmed = true;
+    const std::string filename = m_instanceDirectory + connectionFlag;
+    kodi::vfs::CFile outputFile;
+    if (!kodi::vfs::FileExists(filename))
+    {
+      outputFile.OpenFileForWrite(filename);
+      outputFile.Close();
+    }
+    const std::string cachedSettings = kodi::tools::StringUtils::Format("%sinstance-settings-%d.cache", kodi::vfs::TranslateSpecialProtocol(m_instanceDirectory).c_str(), m_instanceNumber);
+    if (!kodi::vfs::FileExists(cachedSettings))
+    {
+      kodi::Log(ADDON_LOG_INFO, "Creating cache %s", cachedSettings.c_str());
+      kodi::vfs::CFile inputFile;
+      const std::string addonSettings = kodi::tools::StringUtils::Format("special://profile/addon_data/pvr.nextpvr/instance-settings-%d.xml", m_instanceNumber);
+      if (inputFile.OpenFile(kodi::vfs::TranslateSpecialProtocol(addonSettings), ADDON_READ_NO_CACHE))
+      {
+        ssize_t written = 0;
+        if (outputFile.OpenFileForWrite(cachedSettings))
+        {
+          char buffer[1024] = {0};
+          int datalen;
+          std::string response;
+          while ((datalen = inputFile.Read(buffer, sizeof(buffer))))
+          {
+            outputFile.Write(buffer, datalen);
+            written += datalen;
+            response.append(buffer, datalen);
+          }
+          outputFile.Close();
+          kodi::Log(ADDON_LOG_INFO, "Save cache %d %s",written, response.c_str());
+        }
+        inputFile.Close();
+      }
+    }
+    m_connectionConfirmed = true;
   }
   else
   {
@@ -219,6 +442,24 @@ bool InstanceSettings::CheckInstanceSettings()
 {
   const std::string instanceFile = kodi::tools::StringUtils::Format("special://profile/addon_data/pvr.nextpvr/instance-settings-%d.xml", m_instanceNumber);
   bool instanceExists = kodi::vfs::FileExists(instanceFile);
+
+  #if defined(TARGET_DARWIN_EMBEDDED)
+  struct stat sb;
+  std::string original = kodi::vfs::TranslateSpecialProtocol(instanceFile);
+  kodi::Log(ADDON_LOG_INFO, "Instance xml exit check %d %s", instanceExists, instanceFile.c_str());
+  kodi::Log(ADDON_LOG_INFO, "Instance xml exit stat check  %d %s %d", stat(original.c_str(), &sb), original.c_str(), errno);
+  if (!m_instance.CheckInstanceSettingString("host", original))
+  {
+    kodi::Log(ADDON_LOG_INFO, "Removing tvOS instance cache %s", m_instanceDirectory.c_str());
+    instanceExists = false;
+  }
+  else
+  {
+    kodi::Log(ADDON_LOG_INFO, "Instance tvOS returned host %s", original.c_str());
+    instanceExists = true;
+  }
+  #endif
+
   if (!instanceExists)
   {
     // instance xml deleted by Addon core remove cache for this instance.
