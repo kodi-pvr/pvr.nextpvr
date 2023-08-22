@@ -314,6 +314,7 @@ PVR_ERROR Channels::GetChannelGroupMembers(const kodi::addon::PVRChannelGroup& g
         results.Add(tag);
       }
     }
+    returnValue = PVR_ERROR_NO_ERROR;
   }
   else
   {
