@@ -21,9 +21,11 @@ namespace NextPVR
   int Request::DoRequest(std::string resource, std::string& response)
   {
     auto start = std::chrono::steady_clock::now();
+    char separator = resource.find("?") == std::string::npos ? '?' : '&';
     std::unique_lock<std::mutex> lock(m_mutexRequest);
-    // build request string, adding SID if requred
-    const std::string URL = kodi::tools::StringUtils::Format("%s%s&sid=%s", m_settings->m_urlBase, resource.c_str(), GetSID());
+    // build request string, adding SID
+    const std::string URL = kodi::tools::StringUtils::Format("%s%s%csid=%s", m_settings->m_urlBase,
+      resource.c_str(), separator, GetSID());
 
     // ask XBMC to read the URL for us
     int resultCode = HTTP_NOTFOUND;
@@ -38,7 +40,7 @@ namespace NextPVR
       }
       stream.Close();
       resultCode = HTTP_OK;
-      if ((response.empty() || strstr(response.c_str(), "<rsp stat=\"ok\">") == nullptr) && resource.find("channel.stream.info") == std::string::npos)
+      if (response.empty())
       {
         kodi::Log(ADDON_LOG_ERROR, "DoRequest failed, response=%s", response.c_str());
         resultCode = HTTP_BADREQUEST;
