@@ -1,3 +1,7 @@
+v20.4.3
+- Translations updates from Weblate
+	- fi_fi
+
 v20.4.2
 - Return error if channel calls are made when not connected
 - Fast poll for servers after returning from sleep
