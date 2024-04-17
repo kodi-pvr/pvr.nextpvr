@@ -31,7 +31,7 @@
     <summary lang="en_NZ">Kodi frontend for the NextPVR</summary>
     <summary lang="en_US">Kodi frontend for the NextPVR</summary>
     <summary lang="es_AR">Front-end de Kodi para NextPVR</summary>
-    <summary lang="es_ES">Front-end de Kodi para NextPVR</summary>
+    <summary lang="es_ES">Interfaz Kodi para NextPVR</summary>
     <summary lang="es_MX">Kodi frontend para el NextPVR</summary>
     <summary lang="et_EE">Kodi liides NextPVR&apos;ile</summary>
     <summary lang="fi_FI">NextPVR-käyttöliittymä Kodille</summary>
@@ -83,7 +83,7 @@
     <description lang="en_NZ">NextPVR frontend. Supports streaming of Live TV &amp; Recordings, listening to Radio channels and EPG.</description>
     <description lang="en_US">NextPVR frontend. Supports streaming of Live TV &amp; Recordings, listening to Radio channels and EPG.</description>
     <description lang="es_AR">Front-end de NextPVR. Soporta transmisiones de TV en Vivo y Grabaciones, escuchar canales de Radio y Guía Electrónica de Programas (GEP).</description>
-    <description lang="es_ES">Front-end de NextPVR. Soporta transmisiones de TV en Vivo y Grabaciones, escuchar canales de Radio y Guía Electrónica de Programas (EPG).</description>
+    <description lang="es_ES">Interfaz NextPVR. Soporta transmisión de TV y grabaciones en directo, escucha de canales de radio y EPG.</description>
     <description lang="es_MX">NextPVR frontend. Soporta transmisión de TV en directo y Grabaciones, escuchando canales de Radio y EPG.</description>
     <description lang="et_EE">NextPVR&apos;i liides. Toetab telekanalite striimimist ja salvestamist, raadio kuulamist ja elektroonilist saatekava.</description>
     <description lang="fi_FI">NextPVR-käyttöliittymä, joka tukee televisiolähetysten ja tallenteiden suoratoistoa, radiokanavien kuuntelua ja ohjelmaopasta.</description>
@@ -95,7 +95,7 @@
     <description lang="hu_HU">NextPVR előtét. Élő adások, felvételek és rádiócsatornák támogatása EPG-vel.</description>
     <description lang="id_ID">Frontend NextPVR. Mendukung pengaliran Siaran TV langsung dan perekaman, mendengarkan radio dan EPG.</description>
     <description lang="is_IS">Framendi fyrir NextPVR. Styður streymi á beinum útsendingum og upptökum, hlustun á útvarpsrásir og rafræna sjónvarpsvísa. (EGP).</description>
-    <description lang="it_IT">Frontend NextPVR. Supporta lo streaming di Live TV, le Registrazioni, l&apos;ascolto dei Canali Radio e l&apos;EPG.</description>
+    <description lang="it_IT">Frontend NextPVR. Supporta lo stream e la registrazione di Live TV, l&apos;ascolto dei canali radio, EPG e timer.</description>
     <description lang="ja_JP">NextPVR フロントエンドです。Live TV や録画番組のストリーミング、ラジオチャンネルの視聴、EPG をサポートしています。</description>
     <description lang="ko_KR">NextPVR 프론트엔드. 라이브 TV 스트리밍과 녹화, 라디오 청취, EPG를 지원합니다.</description>
     <description lang="lt_LT">NextPVR sąsaja remia transliacijos Live TV &amp; Įrašus, klausytis radijo kanalus per EPG</description>
@@ -138,7 +138,7 @@
     <disclaimer lang="es_ES">Este es un trabajo en desarrollo. Úsalo bajo tu responsabilidad.</disclaimer>
     <disclaimer lang="es_MX">Este es un trabajo en curso. Úsalo bajo tu propio riesgo.</disclaimer>
     <disclaimer lang="et_EE">See on pooleliolev töö. Kasutada omal vastutusel.</disclaimer>
-    <disclaimer lang="fi_FI">Tämä on epävakaa ohjelma! Sen tekijät eivät ole millään muotoa vastuussa epäonnistuneista tallennuksista, virheellisistä ajastuksista, haaskatusta ajasta, verenpaineen noususta tai mistään muusta epäsuotuisasta vaikutuksesta.</disclaimer>
+    <disclaimer lang="fi_FI">Lisäosan kehitys on vielä kesken ja käytät sitä omalla vastuullasi.</disclaimer>
     <disclaimer lang="fr_CA">Cela est un travail en cours. À utiliser à vos propres risques.</disclaimer>
     <disclaimer lang="fr_FR">Logiciel en cours d&apos;élaboration. À utiliser à vos risques et périls.</disclaimer>
     <disclaimer lang="gl_ES">Aínda está en desenvolvemento. Usar baixo o seu propio risco.</disclaimer>
@@ -147,7 +147,7 @@
     <disclaimer lang="hu_HU">Fejlesztés alatt! A saját felelősségére használja!</disclaimer>
     <disclaimer lang="id_ID">Ini adalah proyek yang masih berjalan. Resiko ditanggung sendiri.</disclaimer>
     <disclaimer lang="is_IS">Þetta er í vinnslu. Notist á eigin ábyrgð.</disclaimer>
-    <disclaimer lang="it_IT">Questo è un lavoro in corso d&apos;opera. Usalo a tuo rischio e pericolo.</disclaimer>
+    <disclaimer lang="it_IT">Questo è un lavoro in corso. Utilizzare a proprio rischio.</disclaimer>
     <disclaimer lang="ja_JP">これは現在開発中のプログラムです。利用は自己責任でお願いします。</disclaimer>
     <disclaimer lang="ko_KR">아직 개발 진행중입니다. 부족한 부분이 있을 수 있습니다.</disclaimer>
     <disclaimer lang="lt_LT">Tai yra nestabili programinė įranga! Autorius jokiu būdu neatsakingas už nepavykusius įrašus, neteisingus laikmačius, iššvaistytas valandas, ar nutikus kitiems nepageidaujamiems poveikiams ...[COLOR=red](Kodi.lt siūlo/rekomenduoja testuojant šį priedą persijungti į Anglų [orinali] kalbą)[/COLOR]</disclaimer>
