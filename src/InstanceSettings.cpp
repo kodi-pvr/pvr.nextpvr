@@ -79,7 +79,9 @@ void InstanceSettings::ReadFromAddon()
 
   m_ignorePadding = ReadBoolSetting("ignorepadding", true);
 
-  m_resolution = ReadStringSetting("resolution",  "720");
+  m_resolution = ReadStringSetting("resolution", "720");
+
+  m_accessLevel = ReadIntSetting("accesscontrol", ACCESS_RECORDINGS | ACCESS_RECORDINGS_DELETE | ACCESS_RECORDINGS_DELETE);
 
   m_showRadio = ReadBoolSetting("showradio", true);
 
@@ -134,6 +136,8 @@ void InstanceSettings::ReadFromAddon()
   else if (m_heartbeat == eHeartbeat::None)
     m_heartbeatInterval = std::numeric_limits<time_t>::max();
 
+  if (m_accessLevel == ACCESS_NONE)
+    m_heartbeatInterval = std::numeric_limits<time_t>::max();
 
   /* Log the current settings for debugging purposes */
   kodi::Log(ADDON_LOG_DEBUG, "settings: host='%s', port=%i, instance=%d, mac=%4.4s...", m_hostname.c_str(), m_port, m_instanceNumber, m_hostMACAddress.c_str());
@@ -295,6 +299,8 @@ ADDON_STATUS InstanceSettings::SetValue(const std::string& settingName, const ko
     return SetStringSetting<ADDON_STATUS>(settingName, settingValue, m_PIN, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
   else if (settingName == "remoteaccess")
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_remoteAccess, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
+  else if (settingName == "accesscontrol")
+    return SetSetting<int, ADDON_STATUS>(settingName, settingValue, m_accessLevel, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
   else if (settingName == "showradio")
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_showRadio, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
   else if (settingName == "backendresume")

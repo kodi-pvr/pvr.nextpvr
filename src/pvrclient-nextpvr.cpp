@@ -337,7 +337,7 @@ bool cPVRClientNextPVR::IsUp()
               // trigger EPG updates for all channels with a guide source
               kodi::Log(ADDON_LOG_DEBUG, "Trigger EPG update start");
               int channels = 0;
-              for (const auto &updateChannel : m_channels.m_channelDetails)
+              for (const auto& updateChannel : m_channels.m_channelDetails)
               {
                 if (updateChannel.second.first == false)
                 {
@@ -352,27 +352,35 @@ bool cPVRClientNextPVR::IsUp()
               return m_bConnected;
             }
           }
-          if (update_time <= m_timers.m_lastTimerUpdateTime + 1)
+          if (m_settings->m_accessLevel | ACCESS_NONE)
           {
-            // we already updated this one in Kodi
-            m_lastRecordingUpdateTime = time(nullptr);
-            return m_bConnected;
-          }
-          if (m_request.GetLastUpdate("recording.lastupdated&ignore_resume=true", lastUpdate) == tinyxml2::XML_SUCCESS)
-          {
-            if (lastUpdate <= m_timers.m_lastTimerUpdateTime)
+            if (update_time <= m_timers.m_lastTimerUpdateTime + 1)
             {
-              if (m_settings->m_backendResume)
-              {
-                // only resume position changed
-                m_recordings.GetRecordingsLastPlayedPosition();
-                m_lastRecordingUpdateTime = update_time;
-              }
+              // we already updated this one in Kodi
+              m_lastRecordingUpdateTime = time(nullptr);
               return m_bConnected;
             }
+            if (m_request.GetLastUpdate("recording.lastupdated&ignore_resume=true", lastUpdate) == tinyxml2::XML_SUCCESS)
+            {
+              if (lastUpdate <= m_timers.m_lastTimerUpdateTime)
+              {
+                if (m_settings->m_backendResume)
+                {
+                  // only resume position changed
+                  m_recordings.GetRecordingsLastPlayedPosition();
+                  m_lastRecordingUpdateTime = update_time;
+                }
+                return m_bConnected;
+              }
+            }
+            TriggerRecordingUpdate();
+            if (m_settings->m_accessLevel & ACCESS_TIMERS)
+              TriggerTimerUpdate();
           }
-          TriggerRecordingUpdate();
-          TriggerTimerUpdate();
+          else
+          {
+            m_lastRecordingUpdateTime = time(nullptr);
+          }
         }
         else
         {
@@ -1020,11 +1028,11 @@ PVR_ERROR cPVRClientNextPVR::GetCapabilities(kodi::addon::PVRCapabilities& capab
   kodi::Log(ADDON_LOG_DEBUG, "->GetCapabilities()");
 
   capabilities.SetSupportsEPG(true);
-  capabilities.SetSupportsRecordings(true);
-  capabilities.SetSupportsRecordingsDelete(true);
+  capabilities.SetSupportsRecordings(m_settings->m_accessLevel & ACCESS_RECORDINGS);
+  capabilities.SetSupportsRecordingsDelete(m_settings->m_accessLevel & ACCESS_RECORDINGS_DELETE);
   capabilities.SetSupportsRecordingsUndelete(false);
   capabilities.SetSupportsRecordingSize(m_settings->m_showRecordingSize);
-  capabilities.SetSupportsTimers(true);
+  capabilities.SetSupportsTimers(m_settings->m_accessLevel & ACCESS_TIMERS);
   capabilities.SetSupportsTV(true);
   capabilities.SetSupportsRadio(m_settings->m_showRadio);
   capabilities.SetSupportsChannelGroups(true);

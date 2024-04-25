@@ -1,3 +1,6 @@
+v21.0.4
+- Allow control of recording and timers access
+
 v21.0.3
 - Translations updates from Weblate
 	- de_de, es_es, fi_fi, it_it, ru_ru
