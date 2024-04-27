@@ -1,5 +1,7 @@
 v21.0.4
 - Allow control of recording and timers access
+- Support all episode single channel recordings
+- Force Daily recordings to daily timeslot recordings
 
 v21.0.3
 - Translations updates from Weblate

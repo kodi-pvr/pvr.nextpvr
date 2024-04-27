@@ -437,3 +437,7 @@ msgstr ""
 msgctxt "#30217"
 msgid "Live TV only"
 msgstr ""
+
+msgctxt "#30218"
+msgid "Repeating (all episodes)"
+msgstr ""

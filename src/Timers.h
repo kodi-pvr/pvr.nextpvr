@@ -33,9 +33,10 @@ namespace NextPVR
   constexpr unsigned int TIMER_REPEATING_MIN = TIMER_MANUAL_MAX + 1;
   constexpr unsigned int TIMER_REPEATING_MANUAL = TIMER_REPEATING_MIN;
   constexpr unsigned int TIMER_REPEATING_EPG = TIMER_REPEATING_MIN + 1;
-  constexpr unsigned int TIMER_REPEATING_KEYWORD = TIMER_REPEATING_MIN + 2;
-  constexpr unsigned int TIMER_REPEATING_ADVANCED = TIMER_REPEATING_MIN + 3;
-  constexpr unsigned int TIMER_REPEATING_MAX = TIMER_REPEATING_MIN + 3;
+  constexpr unsigned int TIMER_REPEATING_EPG_ALL_EPISODES = TIMER_REPEATING_MIN + 2;
+  constexpr unsigned int TIMER_REPEATING_KEYWORD = TIMER_REPEATING_MIN + 3;
+  constexpr unsigned int TIMER_REPEATING_ADVANCED = TIMER_REPEATING_MIN + 4;
+  constexpr unsigned int TIMER_REPEATING_MAX = TIMER_REPEATING_MIN + 4;
 
   class ATTR_DLL_LOCAL Timers
   {
