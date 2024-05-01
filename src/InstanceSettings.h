@@ -50,6 +50,11 @@ namespace NextPVR
   constexpr eStreamingMethod DEFAULT_LIVE_STREAM = RealTime;
   constexpr time_t DEFAULT_HEARTBEAT = 60;
 
+  const int ACCESS_NONE = 0;
+  const int ACCESS_RECORDINGS = (1 << 0);
+  const int ACCESS_RECORDINGS_DELETE = (1 << 1);
+  const int ACCESS_TIMERS = (1 << 2);
+
   class ATTR_DLL_LOCAL InstanceSettings
   {
   public:
@@ -84,6 +89,7 @@ namespace NextPVR
     enum eHeartbeat m_heartbeat;
     time_t m_heartbeatInterval;
     bool m_instancePriority = true;
+    int m_accessLevel = ACCESS_RECORDINGS | ACCESS_RECORDINGS_DELETE | ACCESS_RECORDINGS_DELETE;
 
     //Channel
     bool m_showRadio = true;

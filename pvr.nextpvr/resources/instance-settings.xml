@@ -82,9 +82,9 @@
           <default>2</default>
           <constraints>
             <options>
-              <option label="Real Time">2</option>
-              <option label="Timeshift">4</option>
-              <option label="Transcoded">3</option>
+              <option label="30210">2</option>
+              <option label="30211">4</option>
+              <option label="30212">3</option>
             </options>
           </constraints>
           <control format="string" type="spinner"/>
@@ -203,6 +203,13 @@
           <default>false</default>
           <control type="toggle"/>
         </setting>
+        <setting help="30694" id="genrestring" label="30194" type="boolean">
+          <level>1</level>
+          <default>false</default>
+          <control type="toggle"/>
+        </setting>
+      </group>
+      <group id="13">
         <setting help="30680" id="flattenrecording" label="30180" type="boolean">
           <level>2</level>
           <default>false</default>
@@ -228,9 +235,9 @@
           <default>Default</default>
           <constraints>
             <options>
-              <option>No</option>
-              <option>Default</option>
-              <option>Span</option>
+              <option label="106">No</option>
+              <option label="571">Default</option>
+              <option label="30213">Span</option>
             </options>
             <allowempty>false</allowempty>
           </constraints>
@@ -238,13 +245,6 @@
             <heading>30198</heading>
           </control>
         </setting>
-        <setting help="30694" id="genrestring" label="30194" type="boolean">
-          <level>1</level>
-          <default>false</default>
-          <control type="toggle"/>
-        </setting>
-      </group>
-      <group id="13">
         <setting help="30699" id="ignorepadding" label="30199" type="boolean">
           <level>2</level>
           <default>true</default>
@@ -279,6 +279,21 @@
           <default>false</default>
           <control type="toggle"/>
         </setting>
+        <setting id="accesscontrol" type="integer" label="30209" help="30709">
+          <level>3</level>
+          <default>7</default>
+          <constraints>
+            <options>
+              <option label="30214">7</option>
+              <option label="30215">3</option>
+              <option label="30216">1</option>
+              <option label="30217">0</option>
+            </options>
+          </constraints>
+          <control type="list" format="string">
+            <heading>30709</heading>
+          </control>
+        </setting>
         <setting help="30688" id="showradio" label="30188" type="boolean">
           <level>0</level>
           <default>true</default>
@@ -292,19 +307,19 @@
       </group>
       <group id="15">
         <setting id="heartbeat" type="integer" label="30207" help="30707">
-        <level>2</level>
-        <default>0</default>
-        <constraints>
-          <options>
-            <option label="13278">0</option>
-            <option label="30208">1</option>
-            <option label="33036">2</option>
-            <option label="1223">3</option>
-          </options>
-        </constraints>
-        <control type="list" format="string">
-          <heading>32009</heading>
-        </control>
+          <level>2</level>
+          <default>0</default>
+          <constraints>
+            <options>
+              <option label="13278">0</option>
+              <option label="30208">1</option>
+              <option label="33036">2</option>
+              <option label="1223">3</option>
+            </options>
+          </constraints>
+          <control type="list" format="string">
+            <heading>32009</heading>
+          </control>
         </setting>
       </group>
     </category>

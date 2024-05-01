@@ -394,7 +394,50 @@ msgctxt "#30707"
 msgid "Interval to check for backend changes made outside this Kodi client"
 msgstr ""
 
-
 msgctxt "#30208"
 msgid "Every 5 minutes"
+msgstr ""
+
+msgctxt "#30209"
+msgid "Recording and timer control"
+msgstr ""
+
+msgctxt "#30709"
+msgid "Manage user rights for recordings and timers"
+msgstr ""
+
+msgctxt "#30210"
+msgid "Real Time"
+msgstr ""
+
+msgctxt "#30211"
+msgid "Timeshift"
+msgstr ""
+
+msgctxt "#30212"
+msgid "Transcoded"
+msgstr ""
+
+msgctxt "#30213"
+msgid "Spann"
+msgstr ""
+
+msgctxt "#30214"
+msgid "Full access to recordings and timers"
+msgstr ""
+
+msgctxt "#30215"
+msgid "Play and delete recordings with no timers"
+msgstr ""
+
+msgctxt "#30216"
+msgid "Play recordings with no timers"
+msgstr ""
+
+msgctxt "#30217"
+msgid "Live TV only"
+msgstr ""
+
+msgctxt "#30218"
+msgid "Repeating (all episodes)"
 msgstr ""
