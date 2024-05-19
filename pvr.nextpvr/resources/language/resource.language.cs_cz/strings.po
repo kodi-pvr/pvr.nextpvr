@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: KODI Main\n"
-"Report-Msgid-Bugs-To: translations@kodi.tv\n"
+"Report-Msgid-Bugs-To: https://github.com/xbmc/xbmc/issues/\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "PO-Revision-Date: 2022-03-06 18:03+0000\n"
 "Last-Translator: Christian Gade <gade@kodi.tv>\n"
@@ -54,7 +54,7 @@ msgid "Download TV guide artwork"
 msgstr ""
 
 msgctxt "#30504"
-msgid "Not enabled for Matrix when remote"
+msgid "Not enabled when remote"
 msgstr ""
 
 msgctxt "#30040"
@@ -180,14 +180,6 @@ msgstr ""
 
 msgctxt "#30168"
 msgid "Recording chunk size"
-msgstr ""
-
-msgctxt "#30169"
-msgid "Kodi skin styled recordings"
-msgstr ""
-
-msgctxt "#30569"
-msgid "Separate title, season and episode for skin - season and episode numbers will not be shown in lists"
 msgstr ""
 
 msgctxt "#30170"
@@ -344,6 +336,102 @@ msgstr ""
 
 msgctxt "#30700"
 msgid "When disabled resume location and watched status will be managed only in Kodi"
+msgstr ""
+
+msgctxt "#30201"
+msgid "Show root directory"
+msgstr ""
+
+msgctxt "#30701"
+msgid "Seperate recordings by the NextPVR recording folder"
+msgstr ""
+
+msgctxt "#30202"
+msgid "Channel instance number"
+msgstr ""
+
+msgctxt "#30702"
+msgid "Add instance indicators (#) to channel names"
+msgstr ""
+
+msgctxt "#30203"
+msgid "All channels group"
+msgstr ""
+
+msgctxt "#30703"
+msgid "Create an All channels group for this instance"
+msgstr ""
+
+msgctxt "#30204"
+msgid "Instance number"
+msgstr ""
+
+msgctxt "#30205"
+msgid "Instance options"
+msgstr ""
+
+msgctxt "#30206"
+msgid "Load comskip"
+msgstr ""
+
+msgctxt "#30706"
+msgid "Read comskip EDL files from backend"
+msgstr ""
+
+msgctxt "#30207"
+msgid "Update check"
+msgstr ""
+
+msgctxt "#30707"
+msgid "Interval to check for backend changes made outside this Kodi client"
+msgstr ""
+
+msgctxt "#30208"
+msgid "Every 5 minutes"
+msgstr ""
+
+msgctxt "#30209"
+msgid "Recording and timer control"
+msgstr ""
+
+msgctxt "#30709"
+msgid "Manage user rights for recordings and timers"
+msgstr ""
+
+msgctxt "#30210"
+msgid "Real Time"
+msgstr ""
+
+msgctxt "#30211"
+msgid "Timeshift"
+msgstr ""
+
+msgctxt "#30212"
+msgid "Transcoded"
+msgstr ""
+
+msgctxt "#30213"
+msgid "Spann"
+msgstr ""
+
+msgctxt "#30214"
+msgid "Full access to recordings and timers"
+msgstr ""
+
+msgctxt "#30215"
+msgid "Play and delete recordings with no timers"
+msgstr ""
+
+msgctxt "#30216"
+msgid "Play recordings with no timers"
+msgstr ""
+
+msgctxt "#30217"
+msgid "Live TV only"
+msgstr ""
+
+msgctxt "#30218"
+msgid "Repeating (all episodes)"
 msgstr ""
 
 #~ msgctxt "#30000"
