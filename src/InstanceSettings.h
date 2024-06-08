@@ -104,6 +104,7 @@ namespace NextPVR
     bool m_guideArtPortrait = false;
     bool m_genreString = false;
     bool m_castcrew = false;
+    std::string m_priorityRegion{"US"};
 
     //Recordings
     bool m_showRecordingSize = false;

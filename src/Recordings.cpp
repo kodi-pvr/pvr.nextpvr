@@ -350,7 +350,7 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
     bool played = false;
     if (XMLUtils::GetBoolean(pRecordingNode, "played", played))
     {
-      if (tag.GetLastPlayedPosition() >= tag.GetDuration() - 60)
+      if (tag.GetLastPlayedPosition() >= (tag.GetDuration() * 0.95))
       {
         tag.SetPlayCount(1);
         tag.SetLastPlayedPosition(0);
