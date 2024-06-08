@@ -441,3 +441,11 @@ msgstr ""
 msgctxt "#30218"
 msgid "Repeating (all episodes)"
 msgstr ""
+
+msgctxt "#30219"
+msgid "Recording and timer control"
+msgstr ""
+
+msgctxt "#30220"
+msgid "Default country for rating icons.  To disable icons select NONE"
+msgstr ""

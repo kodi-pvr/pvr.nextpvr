@@ -125,6 +125,8 @@ void InstanceSettings::ReadFromAddon()
 
   m_comskip = ReadBoolSetting("comskip", true);
 
+  m_priorityRegion = ReadStringSetting("certcountry", "US");
+
   enum eHeartbeat m_heartbeat = ReadEnumSetting<eHeartbeat>("heartbeat", eHeartbeat::Default);
 
   if (m_heartbeat == eHeartbeat::Default)
@@ -345,5 +347,7 @@ ADDON_STATUS InstanceSettings::SetValue(const std::string& settingName, const ko
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_allChannels, ADDON_STATUS_OK, ADDON_STATUS_OK);
   else if (settingName == "heartbeat")
     return SetEnumSetting<eHeartbeat, ADDON_STATUS>(settingName, settingValue, m_heartbeat, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
+  else if (settingName == "certcountry")
+    return SetStringSetting<ADDON_STATUS>(settingName, settingValue, m_priorityRegion, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
   return ADDON_STATUS_OK;
 }

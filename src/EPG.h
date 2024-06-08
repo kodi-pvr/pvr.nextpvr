@@ -26,9 +26,27 @@ namespace NextPVR
     EPG(EPG const&) = delete;
     void operator=(EPG const&) = delete;
 
+    const std::string PARENTALHOME = "/pvr.nextpvr/resources/parentalrating.xml";
     const std::shared_ptr<InstanceSettings> m_settings;
     Request& m_request;
     Recordings& m_recordings;
     Channels& m_channels;
+    void SetContentRating(kodi::addon::PVREPGTag& broadcast, std::string rating);
+
+  //==============================================================================
+  /// m_contentRatings 
+  // @brief std::map looaded from XML but updated with variations found in the EPG data
+  ///
+  /// @params the key is a std::pair RatingCode and TV system flag 
+  /// value is m_contentRatingValue (icon, system and minimum age for viewing).
+  ///
+  /// ----------------------------------------------------------------------------
+  ///
+  ///@{
+  /// 
+
+    struct m_contentRatingValue { std::string icon; std::string system; int minAge; };
+
+    std::map<std::pair<std::string, bool>, m_contentRatingValue> m_contentRatings;
   };
 } // namespace NextPVR
