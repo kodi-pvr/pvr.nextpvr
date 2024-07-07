@@ -68,8 +68,6 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
         }
       }
 
-      broadcast.SetYear(XMLUtils::GetIntValue(pListingNode, "year"));
-
       std::string startTime;
       std::string endTime;
       XMLUtils::GetString(pListingNode, "start", startTime);
@@ -80,7 +78,6 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
       const std::string oidLookup(endTime + ":" + std::to_string(channelUid));
 
       broadcast.SetTitle(title);
-      broadcast.SetEpisodeName(subtitle);
       broadcast.SetUniqueChannelId(channelUid);
       broadcast.SetStartTime(stol(startTime));
       broadcast.SetUniqueBroadcastId(stoi(endTime));
@@ -132,13 +129,67 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
         }
 
       }
-      broadcast.SetSeriesNumber(XMLUtils::GetIntValue(pListingNode, "season", EPG_TAG_INVALID_SERIES_EPISODE));
-      broadcast.SetEpisodeNumber(XMLUtils::GetIntValue(pListingNode, "episode", EPG_TAG_INVALID_SERIES_EPISODE));
+
+      int season{EPG_TAG_INVALID_SERIES_EPISODE};
+      int episode{EPG_TAG_INVALID_SERIES_EPISODE};
+      XMLUtils::GetInt(pListingNode, "season", season);
+      XMLUtils::GetInt(pListingNode, "episode", episode);
+      broadcast.SetEpisodeNumber(episode);
       broadcast.SetEpisodePartNumber(EPG_TAG_INVALID_SERIES_EPISODE);
+      // Backend could send episode only as S00 and parts are not supported
+      if (season <= 0 || episode == EPG_TAG_INVALID_SERIES_EPISODE)
+      {
+        static std::regex base_regex("^.*\\([eE][pP](\\d+)(?:/?(\\d+))?\\)");
+        std::smatch base_match;
+        if (std::regex_search(description, base_match, base_regex))
+        {
+          broadcast.SetEpisodeNumber(std::atoi(base_match[1].str().c_str()));
+          if (base_match[2].matched)
+            broadcast.SetEpisodePartNumber(std::atoi(base_match[2].str().c_str()));
+        }
+        else if (std::regex_search(description, base_match, std::regex("^([1-9]\\d*)/([1-9]\\d*)\\.")))
+        {
+          broadcast.SetEpisodeNumber(std::atoi(base_match[1].str().c_str()));
+          broadcast.SetEpisodePartNumber(std::atoi(base_match[2].str().c_str()));
+        }
+      }
+      if (season != EPG_TAG_INVALID_SERIES_EPISODE)
+      {
+        // clear out NextPVR formatted data, Kodi supports S/E display
+        if (subtitle == kodi::tools::StringUtils::Format("S%02dE%02d", season, episode))
+        {
+          subtitle.clear();
+        }
+        if (season == 0)
+          season = EPG_TAG_INVALID_SERIES_EPISODE;
+      }
+      broadcast.SetSeriesNumber(season);
+      broadcast.SetEpisodeName(subtitle);
+
+      int year{YEAR_NOT_SET};
+      if (XMLUtils::GetInt(pListingNode, "year", year))
+      {
+        broadcast.SetYear(year);
+      }
 
       std::string original;
-      XMLUtils::GetString(pListingNode, "original", original);
-      broadcast.SetFirstAired(original);
+      if (XMLUtils::GetString(pListingNode, "original", original))
+      {
+        // For movies with YYYY-MM-DD use only YYYY
+        if (broadcast.GetGenreType() == EPG_EVENT_CONTENTMASK_MOVIEDRAMA && broadcast.GetGenreSubType() == EPG_EVENT_CONTENTSUBMASK_MOVIEDRAMA_GENERAL
+          && year == YEAR_NOT_SET && original.length() > 4)
+        {
+          const std::string originalYear = kodi::tools::StringUtils::Mid(original, 0, 4);
+          year = std::atoi(originalYear.c_str());
+          if (year != 0)
+            broadcast.SetYear(year);
+        }
+        else
+        {
+          broadcast.SetFirstAired(original);
+        }
+      }
+
 
       bool firstrun;
       if (XMLUtils::GetBoolean(pListingNode, "firstrun", firstrun))

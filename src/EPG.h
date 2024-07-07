@@ -15,6 +15,7 @@
 
 namespace NextPVR
 {
+  const int YEAR_NOT_SET = -1;
   class ATTR_DLL_LOCAL EPG
   {
   public:

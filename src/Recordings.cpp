@@ -323,20 +323,17 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
 
   tag.SetSeriesNumber(PVR_RECORDING_INVALID_SERIES_EPISODE);
   tag.SetEpisodeNumber(PVR_RECORDING_INVALID_SERIES_EPISODE);
-
-  if (XMLUtils::GetString(pRecordingNode, "subtitle", buffer))
+  if (ParseNextPVRSubtitle(pRecordingNode, tag))
   {
-    if (ParseNextPVRSubtitle(pRecordingNode, tag))
+    if (m_settings->m_separateSeasons && multipleSeasons && tag.GetSeriesNumber() != PVR_RECORDING_INVALID_SERIES_EPISODE)
     {
-      if (m_settings->m_separateSeasons && multipleSeasons && tag.GetSeriesNumber() != PVR_RECORDING_INVALID_SERIES_EPISODE)
-      {
-        if (status != "Failed")
-          tag.SetDirectory(kodi::tools::StringUtils::Format("/%s/%s %d", tag.GetTitle().c_str(), kodi::addon::GetLocalizedString(20373).c_str(), tag.GetSeriesNumber()));
-        else
-          tag.SetDirectory(kodi::tools::StringUtils::Format("/%s/%s/%s %d", kodi::addon::GetLocalizedString(30166).c_str(),tag.GetTitle().c_str(), kodi::addon::GetLocalizedString(20373).c_str(), tag.GetSeriesNumber()));
-      }
+      if (status != "Failed")
+        tag.SetDirectory(kodi::tools::StringUtils::Format("/%s/%s %d", tag.GetTitle().c_str(), kodi::addon::GetLocalizedString(20373).c_str(), tag.GetSeriesNumber()));
+      else
+        tag.SetDirectory(kodi::tools::StringUtils::Format("/%s/%s/%s %d", kodi::addon::GetLocalizedString(30166).c_str(),tag.GetTitle().c_str(), kodi::addon::GetLocalizedString(20373).c_str(), tag.GetSeriesNumber()));
     }
   }
+
   tag.SetYear(XMLUtils::GetIntValue(pRecordingNode, "year"));
 
   std::string original;
@@ -473,24 +470,27 @@ bool Recordings::ParseNextPVRSubtitle(const tinyxml2::XMLNode *pRecordingNode, k
   bool hasSeasonEpisode = false;
   if (XMLUtils::GetString(pRecordingNode, "subtitle", buffer))
   {
-    std::regex base_regex("S(\\d{2,4})E(\\d+) - ?(.+)?");
+    static std::regex base_regex("S(\\d{2,4})E(\\d+)(?: - ?(.+)$)?");
     std::smatch base_match;
     // note NextPVR does not support S0 for specials
-    if (std::regex_match(buffer, base_match, base_regex))
+    if (std::regex_search(buffer, base_match, base_regex))
     {
       if (base_match.size() == 3 || base_match.size() == 4)
       {
-
         std::ssub_match base_sub_match = base_match[1];
-        tag.SetSeriesNumber(std::stoi(base_sub_match.str()));
+        int season = std::stoi(base_sub_match.str());
+        if (season != 0)
+        {
+          tag.SetSeriesNumber(season);
+          hasSeasonEpisode = true;
+        }
         base_sub_match = base_match[2];
         tag.SetEpisodeNumber(std::stoi(base_sub_match.str()));
-        if (base_match.size() == 4)
+        if (base_match[3].matched)
         {
           base_sub_match = base_match[3];
           tag.SetEpisodeName(base_sub_match.str());
         }
-        hasSeasonEpisode = true;
       }
     }
     else
@@ -504,7 +504,7 @@ bool Recordings::ParseNextPVRSubtitle(const tinyxml2::XMLNode *pRecordingNode, k
     std::string recordingFile;
     if (XMLUtils::GetString(pRecordingNode, "file", recordingFile))
     {
-      std::regex base_regex("S(\\d{2,4})E(\\d+)");
+      static std::regex base_regex("S(\\d{2,4})E(\\d+)");
       std::smatch base_match;
       if (std::regex_search(recordingFile, base_match, base_regex))
       {
@@ -516,6 +516,21 @@ bool Recordings::ParseNextPVRSubtitle(const tinyxml2::XMLNode *pRecordingNode, k
           tag.SetEpisodeNumber(std::stoi(base_sub_match.str()));
           hasSeasonEpisode = true;
         }
+      }
+    }
+    const std::string plot = tag.GetPlot();
+    if (tag.GetEpisodeNumber() == PVR_RECORDING_INVALID_SERIES_EPISODE && !plot.empty());
+    {
+      // Kodi doesn't support episode parts on recordings
+      static std::regex base_regex("^.*\\([eE][pP](\\d+)(?:/?(\\d+))?\\)");
+      std::smatch base_match;
+      if (std::regex_search(plot, base_match, base_regex))
+      {
+        tag.SetEpisodeNumber(std::atoi(base_match[1].str().c_str()));
+      }
+      else if (std::regex_search(plot, base_match, std::regex("^([1-9]\\d*)/([1-9]\\d*)\\.")))
+      {
+        tag.SetEpisodeNumber(std::atoi(base_match[1].str().c_str()));
       }
     }
   }
