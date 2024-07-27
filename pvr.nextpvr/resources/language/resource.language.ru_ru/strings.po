@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: KODI Main\n"
 "Report-Msgid-Bugs-To: translations@kodi.tv\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: 2024-04-09 20:13+0000\n"
+"PO-Revision-Date: 2024-05-05 07:45+0000\n"
 "Last-Translator: Andrei Stepanov <adem4ik@gmail.com>\n"
 "Language-Team: Russian <https://kodi.weblate.cloud/projects/kodi-add-ons-pvr-clients/pvr-nextpvr/ru_ru/>\n"
 "Language: ru_ru\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 5.4.3\n"
+"X-Generator: Weblate 5.5.3\n"
 
 msgctxt "Addon Summary"
 msgid "Kodi frontend for the NextPVR"
@@ -54,8 +54,8 @@ msgid "Download TV guide artwork"
 msgstr "Скачать рисунки для телегида"
 
 msgctxt "#30504"
-msgid "Not enabled for Matrix when remote"
-msgstr "Не включено для Matrix при удаленном управлении"
+msgid "Not enabled when remote"
+msgstr "Не включено при удалённом доступе"
 
 msgctxt "#30040"
 msgid "Connection"
@@ -181,14 +181,6 @@ msgstr "Изменение размера блока для повышения �
 msgctxt "#30168"
 msgid "Recording chunk size"
 msgstr "Размер блока записи"
-
-msgctxt "#30169"
-msgid "Kodi skin styled recordings"
-msgstr "Записи, стилизованные под обложку Kodi"
-
-msgctxt "#30569"
-msgid "Separate title, season and episode for skin - season and episode numbers will not be shown in lists"
-msgstr "Разделите название, сезон и эпизод для обложки - номера сезонов и эпизодов не будут отображаться в списках"
 
 msgctxt "#30170"
 msgid "Refresh cache for channel icons"
@@ -345,6 +337,114 @@ msgstr "Хранить место возобновления записи в Nex
 msgctxt "#30700"
 msgid "When disabled resume location and watched status will be managed only in Kodi"
 msgstr "При отключении место возобновления и состояние просмотра будут управляться только в Kodi"
+
+msgctxt "#30201"
+msgid "Show root directory"
+msgstr ""
+
+msgctxt "#30701"
+msgid "Seperate recordings by the NextPVR recording folder"
+msgstr ""
+
+msgctxt "#30202"
+msgid "Channel instance number"
+msgstr ""
+
+msgctxt "#30702"
+msgid "Add instance indicators (#) to channel names"
+msgstr ""
+
+msgctxt "#30203"
+msgid "All channels group"
+msgstr ""
+
+msgctxt "#30703"
+msgid "Create an All channels group for this instance"
+msgstr ""
+
+msgctxt "#30204"
+msgid "Instance number"
+msgstr ""
+
+msgctxt "#30205"
+msgid "Instance options"
+msgstr ""
+
+msgctxt "#30206"
+msgid "Load comskip"
+msgstr ""
+
+msgctxt "#30706"
+msgid "Read comskip EDL files from backend"
+msgstr ""
+
+msgctxt "#30207"
+msgid "Update check"
+msgstr ""
+
+msgctxt "#30707"
+msgid "Interval to check for backend changes made outside this Kodi client"
+msgstr ""
+
+msgctxt "#30208"
+msgid "Every 5 minutes"
+msgstr ""
+
+msgctxt "#30209"
+msgid "Recording and timer control"
+msgstr ""
+
+msgctxt "#30709"
+msgid "Manage user rights for recordings and timers"
+msgstr ""
+
+msgctxt "#30210"
+msgid "Real Time"
+msgstr ""
+
+msgctxt "#30211"
+msgid "Timeshift"
+msgstr ""
+
+msgctxt "#30212"
+msgid "Transcoded"
+msgstr ""
+
+msgctxt "#30213"
+msgid "Spann"
+msgstr ""
+
+msgctxt "#30214"
+msgid "Full access to recordings and timers"
+msgstr ""
+
+msgctxt "#30215"
+msgid "Play and delete recordings with no timers"
+msgstr ""
+
+msgctxt "#30216"
+msgid "Play recordings with no timers"
+msgstr ""
+
+msgctxt "#30217"
+msgid "Live TV only"
+msgstr ""
+
+msgctxt "#30218"
+msgid "Repeating (all episodes)"
+msgstr ""
+
+#~ msgctxt "#30504"
+#~ msgid "Not enabled for Matrix when remote"
+#~ msgstr "Не включено для Matrix при удаленном управлении"
+
+#~ msgctxt "#30169"
+#~ msgid "Kodi skin styled recordings"
+#~ msgstr "Записи, стилизованные под обложку Kodi"
+
+#~ msgctxt "#30569"
+#~ msgid "Separate title, season and episode for skin - season and episode numbers will not be shown in lists"
+#~ msgstr "Разделите название, сезон и эпизод для обложки - номера сезонов и эпизодов не будут отображаться в списках"
 
 #~ msgctxt "#30000"
 #~ msgid "NextPVR Hostname"
