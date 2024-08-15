@@ -562,7 +562,7 @@ PVR_ERROR cPVRClientNextPVR::GetDriveSpace(uint64_t& total, uint64_t& used)
   return m_recordings.GetDriveSpace(total, used);
 }
 
-PVR_ERROR cPVRClientNextPVR::GetChannelStreamProperties(const kodi::addon::PVRChannel& channel, std::vector<kodi::addon::PVRStreamProperty>& properties)
+PVR_ERROR cPVRClientNextPVR::GetChannelStreamProperties(const kodi::addon::PVRChannel& channel, PVR_SOURCE source, std::vector<kodi::addon::PVRStreamProperty>& properties)
 {
   bool liveStream = m_channels.IsChannelAPlugin(channel.GetUniqueId());
   if (liveStream)
