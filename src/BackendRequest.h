@@ -53,7 +53,7 @@ namespace NextPVR
   private:
     Request(Request const&) = delete;
     void operator=(Request const&) = delete;
-
+    tinyxml2::XMLError ParseMethodRequest(tinyxml2::XMLDocument& doc, const std::string& xml);
     std::shared_ptr<InstanceSettings> m_settings;
     mutable std::mutex m_mutexRequest;
     time_t m_start = 0;

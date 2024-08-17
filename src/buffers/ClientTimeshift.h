@@ -96,6 +96,5 @@ namespace timeshift {
     {
       return std::time(nullptr) - m_streamStart < 10 + m_prebuffer;
     }
-
   };
 }

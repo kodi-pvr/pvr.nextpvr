@@ -13,6 +13,7 @@
 #include <kodi/Network.h>
 #include <kodi/gui/dialogs/Select.h>
 #include <kodi/tools/StringUtils.h>
+#include <zlib.h>
 
 using namespace NextPVR::utilities;
 
@@ -96,41 +97,46 @@ namespace NextPVR
         response.append(buffer, count);
       }
       stream.Close();
-      retError = doc.Parse(response.c_str());
-      if (retError == tinyxml2::XML_SUCCESS)
+      retError = ParseMethodRequest(doc, response);
+    }
+    int milliseconds = static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count());
+    kodi::Log(ADDON_LOG_DEBUG, "DoMethodRequest %s %d %d %d", resource.c_str(), retError, response.length(), milliseconds);
+    return retError;
+  }
+
+  tinyxml2::XMLError Request::ParseMethodRequest(tinyxml2::XMLDocument& doc, const std::string& xml)
+  {
+    tinyxml2::XMLError retError = doc.Parse(xml.c_str());;
+    if (retError == tinyxml2::XML_SUCCESS)
+    {
+      const char* attrib = doc.RootElement()->Attribute("stat");
+      if (attrib == nullptr || strcmp(attrib, "ok"))
       {
-        const char* attrib = doc.RootElement()->Attribute("stat");
-        if ( attrib == nullptr || strcmp(attrib, "ok"))
+        kodi::Log(ADDON_LOG_DEBUG, "DoMethodRequest bad return %s", attrib);
+        retError = tinyxml2::XML_NO_ATTRIBUTE;
+        if (!strcmp(attrib, "fail"))
         {
-          kodi::Log(ADDON_LOG_DEBUG, "DoMethodRequest bad return %s", attrib);
-          retError = tinyxml2::XML_NO_ATTRIBUTE;
-          if (!strcmp(attrib, "fail"))
+          const tinyxml2::XMLElement* err = doc.RootElement()->FirstChildElement("err");
+          if (err)
           {
-            const tinyxml2::XMLElement* err = doc.RootElement()->FirstChildElement("err");
-            if (err)
+            const char* code = err->Attribute("code");
+            if (code)
             {
-              const char* code = err->Attribute("code");
-              if (code)
+              kodi::Log(ADDON_LOG_DEBUG, "DoMethodRequest error code %s", code);
+              if (atoi(code) == 8)
               {
-                kodi::Log(ADDON_LOG_DEBUG, "DoMethodRequest error code %s", code);
-                if (atoi(code) == 8)
-                {
-                  ClearSID();
-                  retError = tinyxml2::XML_ERROR_FILE_COULD_NOT_BE_OPENED;
-                  //m_pvrclient.ResetConnection();
-                }
+                ClearSID();
+                retError = tinyxml2::XML_ERROR_FILE_COULD_NOT_BE_OPENED;
               }
             }
           }
         }
-        else
-        {
-          RenewSID();
-        }
+      }
+      else
+      {
+        RenewSID();
       }
     }
-    int milliseconds = static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count());
-    kodi::Log(ADDON_LOG_DEBUG, "DoMethodRequest %s %d %d %d", resource.c_str(), retError, response.length(), milliseconds);
     return retError;
   }
 

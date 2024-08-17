@@ -25,6 +25,8 @@ namespace NextPVR
     /* Channel handling */
     int GetNumChannels();
 
+    bool CacheAllChannels(time_t updateTime);
+
     PVR_ERROR GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& results);
     /* Channel group handling */
     PVR_ERROR GetChannelGroupsAmount(int& amount);
@@ -51,5 +53,6 @@ namespace NextPVR
     std::string GetChannelIcon(int channelID);
     const std::shared_ptr<InstanceSettings> m_settings;
     Request& m_request;
+    tinyxml2::XMLError ReadCachedChannelList(tinyxml2::XMLDocument& doc);
   };
 } // namespace NextPVR

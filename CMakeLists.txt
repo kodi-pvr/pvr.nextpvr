@@ -4,9 +4,11 @@ project(pvr.nextpvr)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
 
 find_package(Kodi REQUIRED)
+find_package(ZLIB REQUIRED)
 find_package(TinyXML2 REQUIRED)
 
 include_directories(${TINYXML2_INCLUDE_DIR}
+                    ${ZLIB_INCLUDE_DIRS}
                     ${KODI_INCLUDE_DIR}/..) # Hack way with "/..", need bigger Kodi cmake rework to match right include ways
 
 set(NEXTPVR_SOURCES src/addon.cpp
@@ -51,7 +53,11 @@ set(NEXTPVR_HEADERS src/addon.h
                     src/utilities/SettingsMigration.h
                     src/utilities/XMLUtils.h)
 
-SET(DEPLIBS ${TINYXML2_LIBRARIES})
+SET(DEPLIBS ${TINYXML2_LIBRARIES}
+            ${ZLIB_LIBRARIES})
+
+message(STATUS "ZLIB_LIBRARIES: ${ZLIB_LIBRARIES}")
+
 if(WIN32)
   list(APPEND DEPLIBS ws2_32)
   add_definitions(-D_WINSOCKAPI_ -D_WINSOCK_DEPRECATED_NO_WARNINGS)

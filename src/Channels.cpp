@@ -10,6 +10,7 @@
 #include "pvrclient-nextpvr.h"
 
 #include <kodi/tools/StringUtils.h>
+#include "zlib.h"
 
 using namespace NextPVR;
 using namespace NextPVR::utilities;
@@ -29,7 +30,7 @@ int Channels::GetNumChannels()
   if (channelCount == 0)
   {
     tinyxml2::XMLDocument doc;
-    if (m_request.DoMethodRequest("channel.list", doc) == tinyxml2::XML_SUCCESS)
+    if (ReadCachedChannelList(doc) == tinyxml2::XML_SUCCESS)
     {
       tinyxml2::XMLNode* channelsNode = doc.RootElement()->FirstChildElement("channels");
       tinyxml2::XMLNode* pChannelNode;
@@ -100,7 +101,7 @@ PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& r
   }
 
   tinyxml2::XMLDocument doc;
-  if (m_request.DoMethodRequest("channel.list&extras=true", doc) == tinyxml2::XML_SUCCESS)
+  if (ReadCachedChannelList(doc) == tinyxml2::XML_SUCCESS)
   {
     tinyxml2::XMLNode* channelsNode = doc.RootElement()->FirstChildElement("channels");
     tinyxml2::XMLNode* pChannelNode;
@@ -200,7 +201,7 @@ PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsRe
   selectedGroups.clear();
   bool hasAllChannels = false;
   tinyxml2::XMLDocument doc;
-  if (m_request.DoMethodRequest("channel.list&extras=true", doc) == tinyxml2::XML_SUCCESS)
+  if (ReadCachedChannelList(doc) == tinyxml2::XML_SUCCESS)
   {
     tinyxml2::XMLNode* channelsNode = doc.RootElement()->FirstChildElement("channels");
     tinyxml2::XMLNode* pChannelNode;
@@ -282,21 +283,21 @@ PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsRe
 
 PVR_ERROR Channels::GetChannelGroupMembers(const kodi::addon::PVRChannelGroup& group, kodi::addon::PVRChannelGroupMembersResultSet& results)
 {
-  std::string request;
   PVR_ERROR returnValue = PVR_ERROR_SERVER_ERROR;
 
+  tinyxml2::XMLDocument doc;
+  tinyxml2::XMLError retCode;
   if (group.GetGroupName() == GetAllChannelsGroupName(group.GetIsRadio()))
   {
-    request = "channel.list";
+    retCode = ReadCachedChannelList(doc);
   }
   else
   {
     const std::string encodedGroupName = UriEncode(group.GetGroupName());
-    request = "channel.list&group_id=" + encodedGroupName;
+    retCode = m_request.DoMethodRequest("channel.list&group_id=" + encodedGroupName, doc);
   }
 
-  tinyxml2::XMLDocument doc;
-  if (m_request.DoMethodRequest(request, doc) == tinyxml2::XML_SUCCESS)
+  if (retCode == tinyxml2::XML_SUCCESS)
   {
     tinyxml2::XMLNode* channelsNode = doc.RootElement()->FirstChildElement("channels");
     tinyxml2::XMLNode* pChannelNode;
@@ -352,7 +353,7 @@ bool Channels::IsChannelAPlugin(int uid)
 void Channels::LoadLiveStreams()
 {
   std::string response;
-  const std::string URL = "/public/LiveStreams.xml";
+  const std::string URL = "/public/service.xml";
   m_liveStreams.clear();
   if (m_request.DoRequest(URL, response) == HTTP_OK)
   {
@@ -387,4 +388,51 @@ void Channels::LoadLiveStreams()
       kodi::Log(ADDON_LOG_ERROR, "LiveStreams invalid xml");
     }
   }
+}
+bool Channels::CacheAllChannels(time_t updateTime)
+{
+  std::string response;
+  const std::string filename = kodi::tools::StringUtils::Format("%s%s", m_settings->m_instanceDirectory.c_str(), "channel.cache");
+  gzFile gz_file;
+  struct { time_t update; unsigned long size; } header{0,0};
+  if (kodi::vfs::FileExists(filename))
+  {
+    gz_file = gzopen(kodi::vfs::TranslateSpecialProtocol(filename).c_str(), "rb");
+    gzread(gz_file, (void*)&header, sizeof(header));
+    gzclose(gz_file);
+    if (updateTime == header.update)
+    {
+      return true;
+    }
+  }
+  if (m_request.DoRequest("/service?method=channel.list&extras=true", response) == HTTP_OK)
+  {
+    gz_file = gzopen(kodi::vfs::TranslateSpecialProtocol(filename).c_str(), "wb");
+    header.size = sizeof(char) * response.size();
+    header.update = updateTime - m_settings->m_serverTimeOffset;
+    gzwrite(gz_file, (void*)&header, sizeof(header));
+    gzwrite(gz_file, (void*)(response.c_str()), header.size);
+    gzclose(gz_file);
+    return true;
+  }
+  return false;
+}
+
+tinyxml2::XMLError Channels::ReadCachedChannelList(tinyxml2::XMLDocument& doc)
+{
+  auto start = std::chrono::steady_clock::now();
+  std::string response;
+  const std::string filename = kodi::tools::StringUtils::Format("%s%s", m_settings->m_instanceDirectory.c_str(), "channel.cache");
+  struct { time_t update; unsigned long size; } header{0,0};
+  gzFile gz_file = gzopen(kodi::vfs::TranslateSpecialProtocol(filename).c_str(), "rb");
+  gzread(gz_file, (void*)&header, sizeof(header));
+  response.resize(header.size / sizeof(char));
+  gzread(gz_file, (void*)response.data(), header.size);
+  gzclose(gz_file);
+  tinyxml2::XMLError xmlCheck = doc.Parse(response.c_str());
+  if (doc.Parse(response.c_str()) != tinyxml2::XML_SUCCESS)
+    return m_request.DoMethodRequest("channel.list&extras=true", doc);
+  int milliseconds = static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count());
+  kodi::Log(ADDON_LOG_DEBUG, "ReadCachedChannelList %d %d %d %d", m_settings->m_instanceNumber, xmlCheck, response.length(), milliseconds);
+  return xmlCheck;
 }
