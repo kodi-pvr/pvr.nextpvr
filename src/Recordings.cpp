@@ -321,8 +321,6 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
   XMLUtils::GetString(pRecordingNode, "id", buffer);
   tag.SetRecordingId(buffer);
 
-  tag.SetSeriesNumber(PVR_RECORDING_INVALID_SERIES_EPISODE);
-  tag.SetEpisodeNumber(PVR_RECORDING_INVALID_SERIES_EPISODE);
   if (ParseNextPVRSubtitle(pRecordingNode, tag))
   {
     if (m_settings->m_separateSeasons && multipleSeasons && tag.GetSeriesNumber() != PVR_RECORDING_INVALID_SERIES_EPISODE)
@@ -521,16 +519,18 @@ bool Recordings::ParseNextPVRSubtitle(const tinyxml2::XMLNode *pRecordingNode, k
     const std::string plot = tag.GetPlot();
     if (tag.GetEpisodeNumber() == PVR_RECORDING_INVALID_SERIES_EPISODE && !plot.empty());
     {
-      // Kodi doesn't support episode parts on recordings
       static std::regex base_regex("^.*\\([eE][pP](\\d+)(?:/?(\\d+))?\\)");
       std::smatch base_match;
       if (std::regex_search(plot, base_match, base_regex))
       {
         tag.SetEpisodeNumber(std::atoi(base_match[1].str().c_str()));
+        if (base_match[2].matched)
+          tag.SetEpisodePartNumber(std::atoi(base_match[2].str().c_str()));
       }
       else if (std::regex_search(plot, base_match, std::regex("^([1-9]\\d*)/([1-9]\\d*)\\.")))
       {
         tag.SetEpisodeNumber(std::atoi(base_match[1].str().c_str()));
+        tag.SetEpisodePartNumber(std::atoi(base_match[2].str().c_str()));
       }
     }
   }
