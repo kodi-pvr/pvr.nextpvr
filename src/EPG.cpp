@@ -108,7 +108,7 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
       {
         // genre type
         broadcast.SetGenreType(XMLUtils::GetIntValue(pListingNode, "genre_type"));
-        broadcast.SetGenreSubType(XMLUtils::GetIntValue(pListingNode, "genre_sub_type"));
+        broadcast.SetGenreSubType(XMLUtils::GetIntValue(pListingNode, "genre_subtype"));
 
       }
       std::string allGenres;
