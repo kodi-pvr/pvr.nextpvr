@@ -1,3 +1,12 @@
+
+v22.2.0
+- Start timeshift in realtime for radio playback
+- Add support for episode and episode part parsing
+- Clean up duplicated S/E information sent from NextPVR in the subtitle when no subtitle is present.
+- Cache channel list updates, compress with zlib
+- Upgrade tinyxml2
+- Add EpisodePart to recordings
+
 v22.1.0
 - PVR Add-on API v9.0.0
 

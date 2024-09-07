@@ -1,0 +1,1 @@
+-Dtinyxml2_BUILD_TESTING=0
