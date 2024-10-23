@@ -76,15 +76,18 @@ public:
   int64_t LengthLiveStream() override;
   bool CanPauseStream() override;
   void PauseStream(bool paused) override;
+  PVR_ERROR  PauseRecordedStream(int64_t streamId, bool paused) override;
   bool CanSeekStream() override;
   bool IsTimeshifting();
   bool IsRealTimeStream() override;
   PVR_ERROR GetStreamTimes(kodi::addon::PVRStreamTimes& times) override;
+  PVR_ERROR IsRecordedStreamRealTime(int64_t streamId, bool& isRealTime) override;
+  PVR_ERROR GetRecordedStreamTimes(int64_t streamId, kodi::addon::PVRStreamTimes& times) override;
   PVR_ERROR GetStreamReadChunkSize(int& chunksize) override;
   bool IsRadio() { return m_nowPlaying == Radio; };
   bool IsServerStreaming();
   bool IsServerStreamingLive(bool log = true);
-  bool IsServerStreamingRecording(bool log = true);
+  bool IsServerStreamingRecording(int64_t streamId, bool log = true);
 
   /* Record stream handling */
   bool OpenRecordedStream(const kodi::addon::PVRRecording& recinfo, int64_t& streamId) override;
@@ -147,7 +150,9 @@ private:
   timeshift::Buffer* m_timeshiftBuffer;
   timeshift::Buffer* m_livePlayer;
   timeshift::Buffer* m_realTimeBuffer;
-  timeshift::RecordingBuffer* m_recordingBuffer;
+  std::map<int64_t, timeshift::RecordingBuffer*> m_multistreamRecording;
+  mutable std::recursive_mutex m_mutexMulti;
+  int64_t m_streamCount = -1;
 
   //Matrix changes
   std::shared_ptr<InstanceSettings> m_settings;

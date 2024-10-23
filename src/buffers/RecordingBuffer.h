@@ -74,11 +74,13 @@ namespace timeshift {
       return PVR_ERROR_NO_ERROR;
     }
 
-    bool Open(const std::string inputUrl, const kodi::addon::PVRRecording& recording);
+    bool Open(const std::string inputUrl, const kodi::addon::PVRRecording& recording, int64_t streamId);
 
     std::atomic<bool> m_isLive;
 
     // recording start time
     time_t m_recordingTime;
+
+    int m_streamId;
   };
 }

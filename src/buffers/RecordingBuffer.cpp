@@ -70,11 +70,11 @@ int RecordingBuffer::Duration(void)
   }
 }
 
-bool RecordingBuffer::Open(const std::string inputUrl, const kodi::addon::PVRRecording& recording)
+bool RecordingBuffer::Open(const std::string inputUrl, const kodi::addon::PVRRecording& recording, int64_t streamId)
 {
   m_Duration = recording.GetDuration();
 
-  kodi::Log(ADDON_LOG_DEBUG, "RecordingBuffer::Open %d %lld", recording.GetDuration(), recording.GetRecordingTime());
+  kodi::Log(ADDON_LOG_DEBUG, "RecordingBuffer::Open %d %lld  streamId %d", recording.GetDuration(), recording.GetRecordingTime(), streamId);
   if (recording.GetDuration() + recording.GetRecordingTime() > time(nullptr))
   {
     m_recordingTime = recording.GetRecordingTime() + m_settings->m_serverTimeOffset;
