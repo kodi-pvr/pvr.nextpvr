@@ -113,6 +113,7 @@ namespace NextPVR
     bool m_showRoot = false;
     int m_chunkRecording = 32;
     bool m_comskip = true;
+    bool m_recordingPoster = true;
 
     //Timers
     int m_defaultPrePadding = 0;

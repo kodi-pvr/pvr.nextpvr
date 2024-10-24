@@ -109,7 +109,6 @@ cPVRClientNextPVR::cPVRClientNextPVR(const CNextPVRAddon& base, const kodi::addo
   m_supportsLiveTimeshift = false;
   m_lastRecordingUpdateTime = std::numeric_limits<time_t>::max(); // time of last recording check - force forever
   m_timeshiftBuffer = new timeshift::DummyBuffer(m_settings, m_request);
-  m_recordingBuffer = new timeshift::RecordingBuffer(m_settings, m_request);
   m_realTimeBuffer = new timeshift::DummyBuffer(m_settings, m_request);
   m_livePlayer = nullptr;
   m_nowPlaying = NotPlaying;
@@ -123,7 +122,14 @@ cPVRClientNextPVR::~cPVRClientNextPVR()
   {
     // this is likley only needed for transcoding but include all cases
     if (m_nowPlaying == Recording)
-      CloseRecordedStream(-1);
+    {
+      std::map<int64_t, timeshift::RecordingBuffer*>::iterator  itr = m_multistreamRecording.begin();
+      while (itr != m_multistreamRecording.end())
+      {
+        CloseRecordedStream(itr->first);
+        itr = m_multistreamRecording.begin();
+      }
+    }
     else
       CloseLiveStream();
   }
@@ -136,7 +142,6 @@ cPVRClientNextPVR::~cPVRClientNextPVR()
   if (m_bConnected)
     Disconnect();
   delete m_timeshiftBuffer;
-  delete m_recordingBuffer;
   delete m_realTimeBuffer;
   m_recordings.m_hostFilenames.clear();
   m_channels.m_channelDetails.clear();
@@ -705,6 +710,7 @@ PVR_ERROR cPVRClientNextPVR::GetSignalStatus(int channelUid, kodi::addon::PVRSig
 
 bool cPVRClientNextPVR::CanPauseStream(void)
 {
+  // not called for recordings
   if (IsServerStreaming())
   {
     if (m_nowPlaying == Recording)
@@ -720,10 +726,23 @@ void cPVRClientNextPVR::PauseStream(bool bPaused)
   if (IsServerStreaming())
   {
     if (m_nowPlaying == Recording)
-      m_recordingBuffer->PauseStream(bPaused);
+      m_multistreamRecording[m_streamCount]->PauseStream(bPaused);
     else
       m_livePlayer->PauseStream(bPaused);
   }
+}
+
+
+PVR_ERROR cPVRClientNextPVR::PauseRecordedStream(int64_t streamId, bool bPaused)
+{
+  if (IsServerStreaming())
+  {
+    if (m_nowPlaying == Recording)
+      m_multistreamRecording[streamId]->PauseStream(bPaused);
+    else
+      m_livePlayer->PauseStream(bPaused);
+  }
+  return PVR_ERROR_NO_ERROR;
 }
 
 bool cPVRClientNextPVR::CanSeekStream(void)
@@ -743,45 +762,58 @@ bool cPVRClientNextPVR::CanSeekStream(void)
 bool cPVRClientNextPVR::OpenRecordedStream(const kodi::addon::PVRRecording& recording, int64_t& streamId)
 {
   kodi::addon::PVRRecording copyRecording = recording;
-  m_nowPlaying = Recording;
   copyRecording.SetDirectory(m_recordings.m_hostFilenames[recording.GetRecordingId()]);
   const std::string line = kodi::tools::StringUtils::Format("%s/live?recording=%s&client=XBMC-%s", m_settings->m_urlBase, recording.GetRecordingId().c_str(), m_request.GetSID());
-  return m_recordingBuffer->Open(line, copyRecording);
+  m_mutexMulti.lock();
+  m_nowPlaying = Recording;
+  m_multistreamRecording.emplace(++m_streamCount, new timeshift::RecordingBuffer(m_settings, m_request));
+  streamId = m_streamCount;
+  bool ret = m_multistreamRecording[streamId]->Open(line, copyRecording, streamId);
+  if (!ret)
+  {
+    CloseRecordedStream(streamId);
+  }
+  m_mutexMulti.unlock();
+  return ret;
 }
 
 void cPVRClientNextPVR::CloseRecordedStream(int64_t streamId)
 {
-  if (IsServerStreamingRecording())
+  if (IsServerStreamingRecording(streamId))
   {
-    m_recordingBuffer->Close();
-    m_recordingBuffer->SetDuration(0);
+    m_mutexMulti.lock();
+    m_multistreamRecording[streamId]->Close();
+    m_multistreamRecording.erase(streamId);
+    m_mutexMulti.unlock();
   }
-  m_nowPlaying = NotPlaying;
+  if (m_multistreamRecording.size() == 0)
+    m_nowPlaying = NotPlaying;
+  kodi::Log(ADDON_LOG_DEBUG, "Closed streamId %d remaining %d", streamId, m_multistreamRecording.size());
 }
 
 int cPVRClientNextPVR::ReadRecordedStream(int64_t streamId, unsigned char* pBuffer, unsigned int iBufferSize)
 {
-  if (IsServerStreamingRecording())
+  if (IsServerStreamingRecording(streamId))
   {
-    return m_recordingBuffer->Read(pBuffer, iBufferSize);
+    return m_multistreamRecording[streamId]->Read(pBuffer, iBufferSize);
   }
   return -1;
 }
 
 int64_t cPVRClientNextPVR::SeekRecordedStream(int64_t streamId, int64_t iPosition, int iWhence)
 {
-  if (IsServerStreamingRecording())
+  if (IsServerStreamingRecording(streamId))
   {
-    return m_recordingBuffer->Seek(iPosition, iWhence);
+    return m_multistreamRecording[streamId]->Seek(iPosition, iWhence);
   }
   return -1;
 }
 
 int64_t cPVRClientNextPVR::LengthRecordedStream(int64_t streamId)
 {
-  if (IsServerStreamingRecording())
+  if (IsServerStreamingRecording(streamId))
   {
-    return m_recordingBuffer->Length();
+    return m_multistreamRecording[streamId]->Length();
   }
   return -1;
 }
@@ -800,19 +832,45 @@ bool cPVRClientNextPVR::IsRealTimeStream()
   if (IsServerStreaming())
   {
     if (m_nowPlaying == Recording)
-      return m_recordingBuffer->IsRealTimeStream();
+      return m_multistreamRecording[m_streamCount]->IsRealTimeStream();
     else
       return m_livePlayer->IsRealTimeStream();
   }
   return false;
 }
-
 PVR_ERROR cPVRClientNextPVR::GetStreamTimes(kodi::addon::PVRStreamTimes& stimes)
 {
   if (IsServerStreaming())
   {
     if (m_nowPlaying == Recording)
-      return m_recordingBuffer->GetStreamTimes(stimes);
+      return m_multistreamRecording[m_streamCount]->GetStreamTimes(stimes);
+    else
+      return m_livePlayer->GetStreamTimes(stimes);
+  }
+  return PVR_ERROR_UNKNOWN;
+}
+
+
+PVR_ERROR cPVRClientNextPVR::IsRecordedStreamRealTime(int64_t streamId, bool& isRealTime)
+{
+  if (IsServerStreaming())
+  {
+    if (m_nowPlaying == Recording)
+    {
+      isRealTime = m_multistreamRecording[streamId]->IsRealTimeStream();
+    }
+    else
+      return PVR_ERROR_INVALID_PARAMETERS;
+  }
+  return PVR_ERROR_NO_ERROR;
+}
+
+PVR_ERROR cPVRClientNextPVR::GetRecordedStreamTimes(int64_t streamId, kodi::addon::PVRStreamTimes& stimes)
+{
+  if (IsServerStreaming())
+  {
+    if (m_nowPlaying == Recording)
+      return m_multistreamRecording[streamId]->GetStreamTimes(stimes);
     else
       return m_livePlayer->GetStreamTimes(stimes);
   }
@@ -836,11 +894,11 @@ PVR_ERROR cPVRClientNextPVR::GetStreamReadChunkSize(int& chunksize)
 
 bool cPVRClientNextPVR::IsServerStreaming()
 {
-  if (IsServerStreamingLive(false) || IsServerStreamingRecording(false))
+  if (IsServerStreamingLive(false) || m_multistreamRecording.size() > 0)
   {
     return true;
   }
-  kodi::Log(ADDON_LOG_ERROR, "Unknown streaming state %d %d %d", m_nowPlaying, m_recordingBuffer->GetDuration(), !m_livePlayer);
+  kodi::Log(ADDON_LOG_ERROR, "Unknown streaming state %d %d %d", m_nowPlaying, m_multistreamRecording.size(), !m_livePlayer);
   return false;
 }
 
@@ -851,28 +909,20 @@ bool cPVRClientNextPVR::IsServerStreamingLive(bool log)
     return true;
   }
   if (log)
-    kodi::Log(ADDON_LOG_ERROR, "Unknown live streaming state %d %d %d", m_nowPlaying, m_recordingBuffer->GetDuration(), !m_livePlayer);
+    kodi::Log(ADDON_LOG_ERROR, "Unknown live streaming state %d %d %d", m_nowPlaying, m_multistreamRecording.size(), !m_livePlayer);
   return false;
 }
 
-bool cPVRClientNextPVR::IsServerStreamingRecording(bool log)
+bool cPVRClientNextPVR::IsServerStreamingRecording(int64_t streamId, bool log)
 {
-  if (m_nowPlaying == Recording && m_recordingBuffer->GetDuration() > 0)
+  if (m_nowPlaying == Recording && m_multistreamRecording.size() > 0)
   {
-    return true;
+    return m_multistreamRecording.find(streamId) != m_multistreamRecording.end();
   }
   if (log)
-    kodi::Log(ADDON_LOG_ERROR, "Unknown recording streaming state %d %d %d", m_nowPlaying, m_recordingBuffer->GetDuration(), !m_livePlayer);
+    kodi::Log(ADDON_LOG_ERROR, "Unknown recording streaming state %d %d %d", m_nowPlaying, m_multistreamRecording.size(), !m_livePlayer);
   return false;
 }
-
-/*
-PVR_ERROR cPVRClientNextPVR::GetBackendName(std::string& name)
-{
-  name = m_settings->m_hostname;
-  return PVR_ERROR_NO_ERROR;
-}
-*/
 
 PVR_ERROR cPVRClientNextPVR::CallChannelMenuHook(const kodi::addon::PVRMenuhook& menuhook, const kodi::addon::PVRChannel& item)
 {
@@ -1047,5 +1097,6 @@ PVR_ERROR cPVRClientNextPVR::GetCapabilities(kodi::addon::PVRCapabilities& capab
   capabilities.SetSupportsDescrambleInfo(false);
   capabilities.SetSupportsRecordingPlayCount(m_settings->m_backendResume);
   capabilities.SetSupportsProviders(false);
+  capabilities.SetSupportsMultipleRecordedStreams(!m_settings->m_recordingPoster);
   return PVR_ERROR_NO_ERROR;
 }

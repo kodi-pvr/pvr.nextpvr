@@ -220,6 +220,11 @@
           <default>false</default>
           <control type="toggle"/>
         </setting>
+        <setting help="30719" id="poster" label="30219" type="boolean">
+          <level>1</level>
+          <default>true</default>
+          <control type="toggle"/>
+        </setting>
         <setting help="30693" id="separateseasons" label="30193" type="boolean">
           <level>2</level>
           <default>false</default>

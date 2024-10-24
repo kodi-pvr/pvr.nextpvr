@@ -1,3 +1,7 @@
+v22.4.0
+- Implement multi-stream recording
+- Allow optional Kodi thumbnail extraction
+
 v22.3.0
 - PVR Add-on API v9.2.0
 

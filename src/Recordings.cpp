@@ -320,8 +320,9 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
   buffer.clear();
   XMLUtils::GetString(pRecordingNode, "id", buffer);
   tag.SetRecordingId(buffer);
+  bool series = ParseNextPVRSubtitle(pRecordingNode, tag);
 
-  if (ParseNextPVRSubtitle(pRecordingNode, tag))
+  if (series)
   {
     if (m_settings->m_separateSeasons && multipleSeasons && tag.GetSeriesNumber() != PVR_RECORDING_INVALID_SERIES_EPISODE)
     {
@@ -439,7 +440,8 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
     else
       artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&name=%s", m_settings->m_urlBase, name.c_str());
     tag.SetFanartPath(artworkPath + "&prefer=fanart");
-    tag.SetThumbnailPath(artworkPath + "&prefer=poster");
+    if (m_settings->m_recordingPoster || status == "Failed" || tag.GetSizeInBytes() == 0)
+      tag.SetThumbnailPath(artworkPath + "&prefer=poster");
   }
   if (XMLUtils::GetAdditiveString(pRecordingNode->FirstChildElement("genres"), "genre", EPG_STRING_TOKEN_SEPARATOR, buffer, true))
   {

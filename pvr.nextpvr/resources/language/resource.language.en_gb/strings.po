@@ -441,3 +441,11 @@ msgstr ""
 msgctxt "#30218"
 msgid "Repeating (all episodes)"
 msgstr ""
+
+msgctxt "#30219"
+msgid "Download recording poster"
+msgstr ""
+
+msgctxt "#30719"
+msgid "Download backend poster or extract thumbnail from recording"
+msgstr ""
