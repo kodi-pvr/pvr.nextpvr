@@ -123,7 +123,7 @@ cPVRClientNextPVR::~cPVRClientNextPVR()
   {
     // this is likley only needed for transcoding but include all cases
     if (m_nowPlaying == Recording)
-      CloseRecordedStream();
+      CloseRecordedStream(-1);
     else
       CloseLiveStream();
   }
@@ -740,7 +740,7 @@ bool cPVRClientNextPVR::CanSeekStream(void)
 /** Record stream handling */
 
 
-bool cPVRClientNextPVR::OpenRecordedStream(const kodi::addon::PVRRecording& recording)
+bool cPVRClientNextPVR::OpenRecordedStream(const kodi::addon::PVRRecording& recording, int64_t& streamId)
 {
   kodi::addon::PVRRecording copyRecording = recording;
   m_nowPlaying = Recording;
@@ -749,7 +749,7 @@ bool cPVRClientNextPVR::OpenRecordedStream(const kodi::addon::PVRRecording& reco
   return m_recordingBuffer->Open(line, copyRecording);
 }
 
-void cPVRClientNextPVR::CloseRecordedStream(void)
+void cPVRClientNextPVR::CloseRecordedStream(int64_t streamId)
 {
   if (IsServerStreamingRecording())
   {
@@ -759,7 +759,7 @@ void cPVRClientNextPVR::CloseRecordedStream(void)
   m_nowPlaying = NotPlaying;
 }
 
-int cPVRClientNextPVR::ReadRecordedStream(unsigned char* pBuffer, unsigned int iBufferSize)
+int cPVRClientNextPVR::ReadRecordedStream(int64_t streamId, unsigned char* pBuffer, unsigned int iBufferSize)
 {
   if (IsServerStreamingRecording())
   {
@@ -768,7 +768,7 @@ int cPVRClientNextPVR::ReadRecordedStream(unsigned char* pBuffer, unsigned int i
   return -1;
 }
 
-int64_t cPVRClientNextPVR::SeekRecordedStream(int64_t iPosition, int iWhence)
+int64_t cPVRClientNextPVR::SeekRecordedStream(int64_t streamId, int64_t iPosition, int iWhence)
 {
   if (IsServerStreamingRecording())
   {
@@ -777,7 +777,7 @@ int64_t cPVRClientNextPVR::SeekRecordedStream(int64_t iPosition, int iWhence)
   return -1;
 }
 
-int64_t cPVRClientNextPVR::LengthRecordedStream(void)
+int64_t cPVRClientNextPVR::LengthRecordedStream(int64_t streamId)
 {
   if (IsServerStreamingRecording())
   {
