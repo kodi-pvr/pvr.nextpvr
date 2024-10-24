@@ -25,6 +25,81 @@ EPG::EPG(const std::shared_ptr<InstanceSettings>& settings, Request& request, Re
   m_recordings(recordings),
   m_channels(channels)
 {
+  if (m_settings->m_priorityRegion != "NONE")
+  {
+    // allow user XML
+    m_contentRatings.clear();
+    tinyxml2::XMLDocument m_parentalDoc;
+
+    std::string parentalXml = kodi::tools::StringUtils::Format("%sparentalratings.xml", m_settings->m_instanceDirectory.c_str());
+    if (!kodi::vfs::FileExists(parentalXml))
+    {
+      // see if the best resource for Kodi icons exist.
+      if (kodi::vfs::DirectoryExists("special://home/addons/resource.images.classificationicons.colour/resources"))
+      {
+        parentalXml = "special://home/addons/pvr.nextpvr/resources/resource.images.classificationicons.colour.xml";
+      }
+      if (!kodi::vfs::FileExists(parentalXml))
+      {
+        parentalXml = "special://home/addons" + PARENTALHOME;
+      }
+    }
+    if (kodi::vfs::FileExists(parentalXml) && m_parentalDoc.LoadFile(kodi::vfs::TranslateSpecialProtocol(parentalXml).c_str()) == tinyxml2::XML_SUCCESS)
+    {
+      tinyxml2::XMLNode* m_regionsNode = m_parentalDoc.RootElement()->FirstChildElement("regions");
+      if (m_regionsNode != nullptr)
+      {
+        for (tinyxml2::XMLElement* regionNode = m_regionsNode->FirstChildElement("region"); regionNode; regionNode = regionNode->NextSiblingElement("region"))
+        {
+          std::string country;
+          if (XMLUtils::GetString(regionNode, "country", country) && (country == m_settings->m_priorityRegion || country == "US"))
+          {
+            tinyxml2::XMLNode* usagesNode = regionNode->FirstChildElement("usages");
+            for (tinyxml2::XMLElement* usageNode = usagesNode->FirstChildElement("usage"); usageNode; usageNode = usageNode->NextSiblingElement("usage"))
+            {
+              std::string rating;
+              std::string system;
+              if (XMLUtils::GetString(usageNode, "rating", rating) && XMLUtils::GetString(usageNode, "system", system))
+              {
+                std::string icon;
+                if (XMLUtils::GetString(usageNode, "icon", icon))
+                {
+                  if (kodi::tools::StringUtils::StartsWith(icon, "resource://"))
+                  {
+                    std::string m = "special://home/addons/" + icon.substr(11);
+                    if (!kodi::vfs::FileExists(m))
+                      icon.clear();
+                    else
+                      kodi::tools::StringUtils::Replace(icon, "/resources/", "/");
+
+                  }
+                }
+                bool isTVSystem{ true };
+                XMLUtils::GetBoolean(usageNode, "tv", isTVSystem);
+                int age{-1};
+                XMLUtils::GetInt(usageNode, "age", age);
+                std::pair<std::string, bool> key = { rating, isTVSystem };
+                auto lookupRating = m_contentRatings.find(key);
+                if (lookupRating != m_contentRatings.end())
+                {
+                  // don't let US override priority
+                  if (country == m_settings->m_priorityRegion)
+                    m_contentRatings.erase(key);
+                  else
+                  {
+                    kodi::Log(ADDON_LOG_DEBUG, "Skipping logo information %s %s %d %d %s", rating.c_str(), system.c_str(), isTVSystem, age, icon.c_str());
+                    continue;
+                  }
+                }
+                kodi::Log(ADDON_LOG_DEBUG, "Locale logo information %s %s %d %d %s", rating.c_str(), system.c_str(), isTVSystem, age, icon.c_str());
+                m_contentRatings.emplace(key, m_contentRatingValue{ icon, system, age });
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::addon::PVREPGTagsResultSet& results)
@@ -271,10 +346,76 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
           }
         }
       }
+      rating.clear();
+      XMLUtils::GetString(pListingNode, "rating", rating);
+      SetContentRating(broadcast, rating);
       results.Add(broadcast);
     }
     return PVR_ERROR_NO_ERROR;
   }
 
   return PVR_ERROR_NO_ERROR;
+}
+
+void EPG::SetContentRating(kodi::addon::PVREPGTag& broadcast, std::string contentRating)
+{
+  if (!contentRating.empty() && m_settings->m_priorityRegion != "NONE")
+  {
+    broadcast.SetParentalRatingCode(contentRating);
+    static constexpr int AGE_UNASSIGNED{-1};
+    int parentalCode = AGE_UNASSIGNED;
+    int age = AGE_UNASSIGNED;
+    std::regex base_regex("(\\d+)");
+    std::smatch base_match;
+    if (std::regex_search(contentRating, base_match, base_regex))
+    {
+      // regex will strip negative numbers and ensure digits;
+      int code = std::stoi(base_match[1].str());
+
+      if (code < 22) // after 21 it is probably an EPG data error
+      {
+        parentalCode = code;
+        broadcast.SetParentalRating(code);
+      }
+    }
+    bool isTV = broadcast.GetGenreType() != 16; // 16 should default to film based rating systems
+    std::pair<std::string, bool> sourceKey = { contentRating, isTV };
+    auto lookupRating = m_contentRatings.find(sourceKey);
+    if (lookupRating == m_contentRatings.end())
+    {
+      // Normalize ratings to match XML file
+      std::string parsedRating = contentRating;
+      kodi::tools::StringUtils::Trim(parsedRating);
+      kodi::tools::StringUtils::ToUpper(parsedRating);
+      if (parsedRating[0] != '-')
+        kodi::tools::StringUtils::Replace(parsedRating, "-", "");
+      kodi::tools::StringUtils::Replace(parsedRating, " ", "");
+      std::pair<std::string, bool> key = { parsedRating, isTV };
+      lookupRating = m_contentRatings.find(key);
+      if (lookupRating == m_contentRatings.end())
+      {
+        // country might support different Film and TV systems but genre is incomplete
+        key = { parsedRating, !isTV };
+        lookupRating = m_contentRatings.find(key);
+      }
+      // speed up future calls on this key
+      if (lookupRating != m_contentRatings.end())
+        m_contentRatings.emplace(sourceKey, lookupRating->second);
+      else
+      {
+        m_contentRatings.emplace(sourceKey, m_contentRatingValue{ "", "", 0 });
+        return;
+      }
+    }
+    if (lookupRating != m_contentRatings.end())
+    {
+      if (lookupRating->second.icon != "")
+      {
+        broadcast.SetParentalRatingIcon(lookupRating->second.icon);
+      }
+      broadcast.SetParentalRatingSource(lookupRating->second.system);
+      if (parentalCode == AGE_UNASSIGNED && lookupRating->second.minAge != AGE_UNASSIGNED)
+        broadcast.SetParentalRating(lookupRating->second.minAge);
+    }
+  }
 }
