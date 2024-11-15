@@ -28,6 +28,7 @@ namespace NextPVR
     bool CacheAllChannels(time_t updateTime);
 
     PVR_ERROR GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& results);
+    bool ResetChannelList(time_t updateTime);
     /* Channel group handling */
     PVR_ERROR GetChannelGroupsAmount(int& amount);
     PVR_ERROR GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsResultSet& results);
@@ -43,6 +44,7 @@ namespace NextPVR
     std::map<int, std::pair<bool, bool>> m_channelDetails;
     std::unordered_set<std::string> m_tvGroups;
     std::unordered_set<std::string> m_radioGroups;
+    mutable std::recursive_mutex m_channelMutex;
 
   private:
     Channels() = default;
@@ -54,5 +56,6 @@ namespace NextPVR
     const std::shared_ptr<InstanceSettings> m_settings;
     Request& m_request;
     tinyxml2::XMLError ReadCachedChannelList(tinyxml2::XMLDocument& doc);
+    std::string m_checksumChannelList;
   };
 } // namespace NextPVR

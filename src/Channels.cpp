@@ -9,6 +9,7 @@
 #include "utilities/XMLUtils.h"
 #include "pvrclient-nextpvr.h"
 
+#include <kodi/General.h>
 #include <kodi/tools/StringUtils.h>
 #include "zlib.h"
 
@@ -26,6 +27,7 @@ Channels::Channels(const std::shared_ptr<InstanceSettings>& settings, Request& r
 int Channels::GetNumChannels()
 {
   // Kodi polls this while recordings are open avoid calls to backend
+  std::lock_guard<std::recursive_mutex> lock(m_channelMutex);
   int channelCount = m_channelDetails.size();
   if (channelCount == 0)
   {
@@ -91,6 +93,7 @@ PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& r
     return PVR_ERROR_NO_ERROR;
   PVR_ERROR returnValue = PVR_ERROR_NO_ERROR;
   std::string stream;
+  std::lock_guard<std::recursive_mutex> lock(m_channelMutex);
   std::map<int, std::pair<bool, bool>>::iterator  itr = m_channelDetails.begin();
   while (itr != m_channelDetails.end())
   {
@@ -168,6 +171,44 @@ PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& r
   return returnValue;
 }
 
+bool Channels::ResetChannelList(time_t updateTime)
+{
+  // normally GetChannels loads the internal channel list;
+  // force update in case GetChannels is not called before EPG triggers
+  std::string checksum = m_checksumChannelList;
+  CacheAllChannels(updateTime);
+  if (checksum != m_checksumChannelList)
+  {
+    std::lock_guard<std::recursive_mutex> lock(m_channelMutex);
+    m_channelDetails.clear();
+    tinyxml2::XMLDocument doc;
+    if (ReadCachedChannelList(doc) == tinyxml2::XML_SUCCESS)
+    {
+      tinyxml2::XMLNode* channelsNode = doc.RootElement()->FirstChildElement("channels");
+      tinyxml2::XMLNode* pChannelNode;
+      for (pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode = pChannelNode->NextSiblingElement())
+      {
+        std::string buffer;
+        bool isRadio = false;
+        XMLUtils::GetString(pChannelNode, "type", buffer);
+        if (buffer == "0xa")
+        {
+          if (!m_settings->m_showRadio)
+            continue;
+          isRadio = true;
+        }
+        std::string epg;
+        if (XMLUtils::GetString(pChannelNode, "epg", epg))
+          m_channelDetails[XMLUtils::GetUIntValue(pChannelNode, "id")] = std::make_pair(epg == "None", isRadio);
+        else
+          m_channelDetails[XMLUtils::GetUIntValue(pChannelNode, "id")] = std::make_pair(false, isRadio);
+      }
+      return true;
+    }
+  }
+  return false;
+}
+
 
 /************************************************************/
 /** Channel group handling **/
@@ -182,6 +223,7 @@ PVR_ERROR Channels::GetChannelGroupsAmount(int& amount)
 PVR_RECORDING_CHANNEL_TYPE Channels::GetChannelType(unsigned int uid)
 {
   // when uid is invalid we assume TV because Kodi will
+  std::lock_guard<std::recursive_mutex> lock(m_channelMutex);
   if (m_channelDetails.count(uid) > 0 && m_channelDetails[uid].second == true)
     return PVR_RECORDING_CHANNEL_TYPE_RADIO;
 
@@ -192,7 +234,7 @@ PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsRe
 {
   if (radio && !m_settings->m_showRadio)
     return PVR_ERROR_NO_ERROR;
-
+  std::lock_guard<std::recursive_mutex> lock(m_channelMutex);
   PVR_ERROR returnValue = PVR_ERROR_NO_ERROR;
   int priority = 1;
 
@@ -299,6 +341,7 @@ PVR_ERROR Channels::GetChannelGroupMembers(const kodi::addon::PVRChannelGroup& g
 
   if (retCode == tinyxml2::XML_SUCCESS)
   {
+    std::lock_guard<std::recursive_mutex> lock(m_channelMutex);
     tinyxml2::XMLNode* channelsNode = doc.RootElement()->FirstChildElement("channels");
     tinyxml2::XMLNode* pChannelNode;
     for (pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode = pChannelNode->NextSiblingElement())
@@ -399,6 +442,12 @@ bool Channels::CacheAllChannels(time_t updateTime)
   {
     gz_file = gzopen(kodi::vfs::TranslateSpecialProtocol(filename).c_str(), "rb");
     gzread(gz_file, (void*)&header, sizeof(header));
+    if (m_checksumChannelList.empty())
+    {
+      response.resize(header.size / sizeof(char));
+      gzread(gz_file, (void*)response.data(), header.size);
+      m_checksumChannelList = kodi::GetMD5(response);
+    }
     gzclose(gz_file);
     if (updateTime == header.update)
     {
@@ -407,6 +456,7 @@ bool Channels::CacheAllChannels(time_t updateTime)
   }
   if (m_request.DoRequest("/service?method=channel.list&extras=true", response) == HTTP_OK)
   {
+    m_checksumChannelList = kodi::GetMD5(response);
     gz_file = gzopen(kodi::vfs::TranslateSpecialProtocol(filename).c_str(), "wb");
     header.size = sizeof(char) * response.size();
     header.update = updateTime - m_settings->m_serverTimeOffset;
