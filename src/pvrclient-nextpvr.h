@@ -21,6 +21,7 @@
 #include "Recordings.h"
 #include "InstanceSettings.h"
 #include "Timers.h"
+#include "utilities/GenreMapper.h"
 #include "buffers/ClientTimeshift.h"
 #include "buffers/DummyBuffer.h"
 #include "buffers/RecordingBuffer.h"
@@ -156,6 +157,7 @@ private:
   EPG m_epg;
   MenuHook m_menuhook;
   Recordings m_recordings;
+  GenreMapper m_genreMapper;
   Timers m_timers;
 
   void SetConnectionState(PVR_CONNECTION_STATE state, std::string displayMessage = "");

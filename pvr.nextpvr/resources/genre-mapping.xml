@@ -1,0 +1,83 @@
+<translations>
+    <!-- standard DVB mappings -->
+    <genre name="Movie / Drama" type="16" subtype="0"/>
+    <genre name="Detective / Thriller" type="16" subtype="1"/>
+    <genre name="Adventure / Western / War" type="16" subtype="2"/>
+    <genre name="Science fiction / Fantasy / Horror" type="16" subtype="3"/>
+    <genre name="Comedy" type="16" subtype="4"/>
+    <genre name="Soap / Melodrama / Folkloric" type="16" subtype="5"/>
+    <genre name="Romance" type="16" subtype="6"/>
+    <genre name="Serious / Classical /Religious / Historical movie / Drama" type="16" subtype="7"/>
+    <genre name="Adult movie / Drama" type="16" subtype="8"/>
+    <genre name="News / Current affairs" type="32" subtype="0"/>
+    <genre name="News / Weather report" type="32" subtype="1"/>
+    <genre name="News magazine" type="32" subtype="2"/>
+    <genre name="Documentary" type="32" subtype="3"/>
+    <genre name="Discussion / Interview / Debate" type="32" subtype="4"/>
+    <genre name="Show / Game show" type="48" subtype="0"/>
+    <genre name="Game show / Quiz / Contest" type="48" subtype="1"/>
+    <genre name="Variety show" type="48" subtype="2"/>
+    <genre name="Talk show" type="48" subtype="3"/>
+    <genre name="Sports" type="64" subtype="0"/>
+    <genre name="Special event" type="64" subtype="1"/>
+    <genre name="Sports magazine" type="64" subtype="2"/>
+    <genre name="Football / Soccer" type="64" subtype="3"/>
+    <genre name="Tennis / Squash" type="64" subtype="4"/>
+    <genre name="Team sports" type="64" subtype="5"/>
+    <genre name="Athletics" type="64" subtype="6"/>
+    <genre name="Motor sport" type="64" subtype="7"/>
+    <genre name="Water sport" type="64" subtype="8"/>
+    <genre name="Winter sports" type="64" subtype="9"/>
+    <genre name="Equestrian" type="64" subtype="10"/>
+    <genre name="Martial sports" type="64" subtype="11"/>
+    <genre name="Childrens / Youth" type="80" subtype="0"/>
+    <genre name="Pre-school children&apos;s programmes" type="80" subtype="1"/>
+    <genre name="Entertainment programmes for 6 To14" type="80" subtype="2"/>
+    <genre name="Entertainment programmes for 10 to 16" type="80" subtype="3"/>
+    <genre name="Informational / Educational / School programmes" type="80" subtype="4"/>
+    <genre name="Cartoons / Puppets" type="80" subtype="5"/>
+    <genre name="Music / Ballet / Dance" type="96" subtype="0"/>
+    <genre name="Rock / Pop" type="96" subtype="1"/>
+    <genre name="Serious music / Classical music" type="96" subtype="2"/>
+    <genre name="Folk / Traditional music" type="96" subtype="3"/>
+    <genre name="Jazz" type="96" subtype="4"/>
+    <genre name="Musical / Opera" type="96" subtype="5"/>
+    <genre name="Ballet" type="96" subtype="6"/>
+    <genre name="Arts / Culture" type="112" subtype="0"/>
+    <genre name="Performing srts" type="112" subtype="1"/>
+    <genre name="Fine arts" type="112" subtype="2"/>
+    <genre name="Religion" type="112" subtype="3"/>
+    <genre name="Popular culture / Traditional arts" type="112" subtype="4"/>
+    <genre name="Literature" type="112" subtype="5"/>
+    <genre name="Film / Cinema" type="112" subtype="6"/>
+    <genre name="Experimental film / video" type="112" subtype="7"/>
+    <genre name="Broadcasting / Press" type="112" subtype="8"/>
+    <genre name="New media" type="112" subtype="9"/>
+    <genre name="Arts / Culture magazines" type="112" subtype="10"/>
+    <genre name="Fashion" type="112" subtype="11"/>
+    <genre name="Social / Political / Economics" type="128" subtype="0"/>
+    <genre name="Magazines / Reports / Documentary" type="128" subtype="1"/>
+    <genre name="Economics / Social advisory" type="128" subtype="2"/>
+    <genre name="Remarkable people" type="128" subtype="3"/>
+    <genre name="Education / Science / Factual" type="144" subtype="0"/>
+    <genre name="Nature / Animals / Environment" type="144" subtype="1"/>
+    <genre name="Technology / Natural sciences" type="144" subtype="2"/>
+    <genre name="Medicine / Physiology / Psychology" type="144" subtype="3"/>
+    <genre name="Foreign countries / Expeditions" type="144" subtype="4"/>
+    <genre name="Social / Spiritual sciences" type="144" subtype="5"/>
+    <genre name="Further education" type="144" subtype="6"/>
+    <genre name="Languages" type="144" subtype="7"/>
+    <genre name="Leisure / Hobbies" type="160" subtype="0"/>
+    <genre name="Tourism / Travel" type="160" subtype="1"/>
+    <genre name="Handicraft" type="160" subtype="2"/>
+    <genre name="Motoring" type="160" subtype="3"/>
+    <genre name="Fitness &amp; Health" type="160" subtype="4"/>
+    <genre name="Cooking" type="160" subtype="5"/>
+    <genre name="Advertisement / Shopping" type="160" subtype="6"/>
+    <genre name="Gardening" type="160" subtype="7"/>
+    <genre name="Original language" type="176" subtype="0"/>
+    <genre name="Black &amp; white" type="176" subtype="1"/>
+    <genre name="Unpublished" type="176" subtype="2"/>
+    <genre name="Live broadcast" type="176" subtype="3"/>
+    <genre name="Drama" type="240" subtype="0"/>
+</translations>
