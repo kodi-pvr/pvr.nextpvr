@@ -80,6 +80,7 @@ namespace NextPVR
     int m_timeoutWOL = 0;
     bool m_connectionConfirmed = false;
     bool m_backendResume = true;
+    bool m_multiStream = false;
 
     //General
     int m_backendVersion = 0;
@@ -113,6 +114,7 @@ namespace NextPVR
     bool m_showRoot = false;
     int m_chunkRecording = 32;
     bool m_comskip = true;
+    bool m_recordingPoster = true;
 
     //Timers
     int m_defaultPrePadding = 0;

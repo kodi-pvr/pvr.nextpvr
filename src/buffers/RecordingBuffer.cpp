@@ -30,8 +30,8 @@ int RecordingBuffer::Duration(void)
   if (m_recordingTime)
   {
     std::unique_lock<std::mutex> lock(m_mutex);
-    int diff = static_cast<int>(time(nullptr) - m_recordingTime) - 15;
-    if (diff > m_Duration)
+    int currentDuration = static_cast<int>(time(nullptr) - m_recordingTime) - 15;
+    if (currentDuration > m_Duration)
     {
       tinyxml2::XMLDocument doc;
       if (m_request.DoMethodRequest("recording.list&recording_id=" + m_recordingID, doc) == tinyxml2::XML_SUCCESS)
@@ -43,26 +43,28 @@ int RecordingBuffer::Duration(void)
 
         if (status != "Recording")
         {
-          diff = m_Duration;
+          currentDuration = m_Duration;
           m_recordingTime = 0;
         }
         else
         {
+          // see what happens in one minute;
           m_Duration += 60;
         }
       }
     }
-    else if (diff > 0)
+    else if (currentDuration > 0)
     {
       m_isLive = true;
-      diff += 15;
+      currentDuration += 15;
     }
     else
     {
+      // no longer in-progress
       m_isLive = false;
-      diff = 0;
+      currentDuration = 0;
     }
-    return diff;
+    return currentDuration;
   }
   else
   {
@@ -70,11 +72,11 @@ int RecordingBuffer::Duration(void)
   }
 }
 
-bool RecordingBuffer::Open(const std::string inputUrl, const kodi::addon::PVRRecording& recording)
+bool RecordingBuffer::Open(const std::string inputUrl, const kodi::addon::PVRRecording& recording, int64_t streamId)
 {
   m_Duration = recording.GetDuration();
 
-  kodi::Log(ADDON_LOG_DEBUG, "RecordingBuffer::Open %d %lld", recording.GetDuration(), recording.GetRecordingTime());
+  kodi::Log(ADDON_LOG_DEBUG, "RecordingBuffer::Open %d %lld  streamId %d", recording.GetDuration(), recording.GetRecordingTime(), streamId);
   if (recording.GetDuration() + recording.GetRecordingTime() > time(nullptr))
   {
     m_recordingTime = recording.GetRecordingTime() + m_settings->m_serverTimeOffset;

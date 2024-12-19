@@ -32,8 +32,6 @@ Recordings::Recordings(const std::shared_ptr<InstanceSettings>& settings, Reques
 
 }
 
-
-
 PVR_ERROR Recordings::GetRecordingsAmount(bool deleted, int& amount)
 {
   // need something more optimal, but this will do for now...
@@ -320,8 +318,9 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
   buffer.clear();
   XMLUtils::GetString(pRecordingNode, "id", buffer);
   tag.SetRecordingId(buffer);
+  bool series = ParseNextPVRSubtitle(pRecordingNode, tag);
 
-  if (ParseNextPVRSubtitle(pRecordingNode, tag))
+  if (series)
   {
     if (m_settings->m_separateSeasons && multipleSeasons && tag.GetSeriesNumber() != PVR_RECORDING_INVALID_SERIES_EPISODE)
     {
@@ -439,7 +438,8 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
     else
       artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&name=%s", m_settings->m_urlBase, name.c_str());
     tag.SetFanartPath(artworkPath + "&prefer=fanart");
-    tag.SetThumbnailPath(artworkPath + "&prefer=poster");
+    if (m_settings->m_recordingPoster || status == "Failed" || tag.GetSizeInBytes() == 0 || tag.GetChannelType() == PVR_RECORDING_CHANNEL_TYPE_RADIO)
+      tag.SetThumbnailPath(artworkPath + "&prefer=poster");
   }
   if (XMLUtils::GetAdditiveString(pRecordingNode->FirstChildElement("genres"), "genre", EPG_STRING_TOKEN_SEPARATOR, buffer, true))
   {
@@ -539,7 +539,7 @@ bool Recordings::ParseNextPVRSubtitle(const tinyxml2::XMLNode *pRecordingNode, k
 
 PVR_ERROR Recordings::DeleteRecording(const kodi::addon::PVRRecording& recording)
 {
-  if (recording.GetRecordingTime() < time(nullptr) && recording.GetRecordingTime() + recording.GetDuration() > time(nullptr))
+  if (recording.GetRecordingTime() < time(nullptr) && recording.GetDuration() > 0 && recording.GetRecordingTime() + recording.GetDuration() > time(nullptr))
     return PVR_ERROR_RECORDING_RUNNING;
 
   const std::string request = "recording.delete&recording_id=" + recording.GetRecordingId();

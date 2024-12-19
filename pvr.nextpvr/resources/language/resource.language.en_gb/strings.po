@@ -441,3 +441,19 @@ msgstr ""
 msgctxt "#30218"
 msgid "Repeating (all episodes)"
 msgstr ""
+
+msgctxt "#30219"
+msgid "Download recording poster"
+msgstr ""
+
+msgctxt "#30719"
+msgid "Download backend poster or extract thumbnail from recording"
+msgstr ""
+
+msgctxt "#30220"
+msgid "Enable multi-stream recordings"
+msgstr ""
+
+msgctxt "#30720"
+msgid "Extract extra recording metadata from backend"
+msgstr ""

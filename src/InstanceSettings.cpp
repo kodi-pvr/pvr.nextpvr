@@ -125,7 +125,11 @@ void InstanceSettings::ReadFromAddon()
 
   m_comskip = ReadBoolSetting("comskip", true);
 
-  enum eHeartbeat m_heartbeat = ReadEnumSetting<eHeartbeat>("heartbeat", eHeartbeat::Default);
+  m_multiStream = ReadBoolSetting("multistream", false);
+  if (m_multiStream)
+    m_recordingPoster = ReadBoolSetting("poster", true);
+
+c:  enum eHeartbeat m_heartbeat = ReadEnumSetting<eHeartbeat>("heartbeat", eHeartbeat::Default);
 
   if (m_heartbeat == eHeartbeat::Default)
     m_heartbeatInterval = DEFAULT_HEARTBEAT;
@@ -323,6 +327,12 @@ ADDON_STATUS InstanceSettings::SetValue(const std::string& settingName, const ko
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_separateSeasons, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
   else if (settingName == "showroot")
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_showRoot, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
+  else if (settingName == "comskip")
+    return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_comskip, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
+  else if (settingName == "poster")
+    return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_recordingPoster, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
+  else if (settingName == "multistream")
+    return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_multiStream, ADDON_STATUS_NEED_RESTART, ADDON_STATUS_OK);
   else if (settingName == "genrestring")
     return SetSetting<bool, ADDON_STATUS>(settingName, settingValue, m_genreString, ADDON_STATUS_NEED_SETTINGS, ADDON_STATUS_OK);
   else if (settingName == "host_mac")
