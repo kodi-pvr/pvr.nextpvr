@@ -22,11 +22,13 @@ using namespace NextPVR::utilities;
 /************************************************************/
 /** Record handling **/
 
-Recordings::Recordings(const std::shared_ptr<InstanceSettings>& settings, Request& request, Timers& timers, Channels& channels, cPVRClientNextPVR& pvrclient) :
+Recordings::Recordings(const std::shared_ptr<InstanceSettings>& settings, Request& request, Timers& timers, Channels& channels, 
+    GenreMapper& genreMapper, cPVRClientNextPVR& pvrclient) :
   m_settings(settings),
   m_request(request),
   m_timers(timers),
   m_channels(channels),
+  m_genreMapper(genreMapper),
   m_pvrclient(pvrclient)
 {
 
@@ -441,11 +443,13 @@ bool Recordings::UpdatePvrRecording(const tinyxml2::XMLNode* pRecordingNode, kod
     tag.SetFanartPath(artworkPath + "&prefer=fanart");
     tag.SetThumbnailPath(artworkPath + "&prefer=poster");
   }
-  if (XMLUtils::GetAdditiveString(pRecordingNode->FirstChildElement("genres"), "genre", EPG_STRING_TOKEN_SEPARATOR, buffer, true))
+
+  NextPVR::GenreBlock genreBlock = { "", EPG_EVENT_CONTENTMASK_UNDEFINED, EPG_EVENT_CONTENTMASK_UNDEFINED };
+  if (m_genreMapper.ParseAllGenres(pRecordingNode, genreBlock))
   {
-    tag.SetGenreType(EPG_GENRE_USE_STRING);
-    tag.SetGenreSubType(0);
-    tag.SetGenreDescription(buffer);
+    tag.SetGenreDescription(genreBlock.description);
+    tag.SetGenreType(genreBlock.genreType);
+    tag.SetGenreSubType(genreBlock.genreSubType);
   }
 
   std::string significance;

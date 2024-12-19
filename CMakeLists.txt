@@ -28,6 +28,7 @@ set(NEXTPVR_SOURCES src/addon.cpp
                     src/buffers/ClientTimeshift.cpp
                     src/buffers/RecordingBuffer.cpp
                     src/buffers/CircularBuffer.cpp
+                    src/utilities/GenreMapper.cpp
                     src/utilities/SettingsMigration.cpp
                     src/buffers/Seeker.cpp)
 
@@ -50,6 +51,7 @@ set(NEXTPVR_HEADERS src/addon.h
                     src/buffers/RecordingBuffer.h
                     src/buffers/CircularBuffer.h
                     src/buffers/Seeker.h
+                    src/utilities/GenreMapper.h
                     src/utilities/SettingsMigration.h
                     src/utilities/XMLUtils.h)
 

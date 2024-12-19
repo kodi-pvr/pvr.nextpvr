@@ -19,10 +19,11 @@ using namespace NextPVR::utilities;
 /************************************************************/
 /** EPG handling */
 
-EPG::EPG(const std::shared_ptr<InstanceSettings>& settings, Request& request, Recordings& recordings, Channels& channels) :
+EPG::EPG(const std::shared_ptr<InstanceSettings>& settings, Request& request, Recordings& recordings, Channels& channels,GenreMapper& genreMapper) :
   m_settings(settings),
   m_request(request),
   m_recordings(recordings),
+  m_genreMapper(genreMapper),
   m_channels(channels)
 {
 }
@@ -51,7 +52,7 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
   if (m_request.DoMethodRequest(request, doc) == tinyxml2::XML_SUCCESS)
   {
     tinyxml2::XMLNode* listingsNode = doc.RootElement()->FirstChildElement("listings");
-    for (tinyxml2::XMLNode* pListingNode = listingsNode->FirstChildElement("l"); pListingNode; pListingNode = pListingNode->NextSiblingElement())
+    for (const tinyxml2::XMLNode* pListingNode = listingsNode->FirstChildElement("l"); pListingNode; pListingNode = pListingNode->NextSiblingElement())
     {
       kodi::addon::PVREPGTag broadcast;
       std::string title;
@@ -82,6 +83,14 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
       broadcast.SetStartTime(stol(startTime));
       broadcast.SetUniqueBroadcastId(stoi(endTime));
       broadcast.SetEndTime(stol(endTime));
+
+      static std::regex yearRegex("^(.+[12]\\d{3})\\n");
+      std::smatch base_match;
+      if (std::regex_search(description, base_match, yearRegex))
+      {
+        kodi::tools::StringUtils::Replace(description, base_match[0].str(), base_match[1].str() + " ");
+      }
+
       broadcast.SetPlot(description);
 
       std::string artworkPath;
@@ -111,23 +120,13 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
         broadcast.SetGenreSubType(XMLUtils::GetIntValue(pListingNode, "genre_subtype"));
 
       }
-      std::string allGenres;
-      if (XMLUtils::GetAdditiveString(pListingNode->FirstChildElement("genres"), "genre", EPG_STRING_TOKEN_SEPARATOR, allGenres, true))
-      {
-        if (allGenres.find(EPG_STRING_TOKEN_SEPARATOR) != std::string::npos)
-        {
-          if (broadcast.GetGenreType() != EPG_GENRE_USE_STRING)
-          {
-            broadcast.SetGenreSubType(EPG_GENRE_USE_STRING);
-          }
-          broadcast.SetGenreDescription(allGenres);
-        }
-        else if (m_settings->m_genreString && broadcast.GetGenreSubType() != EPG_GENRE_USE_STRING)
-        {
-          broadcast.SetGenreDescription(allGenres);
-          broadcast.SetGenreSubType(EPG_GENRE_USE_STRING);
-        }
 
+      NextPVR::GenreBlock genreBlock = { sGenre, broadcast.GetGenreType(), EPG_EVENT_CONTENTMASK_UNDEFINED };
+      if (m_genreMapper.ParseAllGenres(pListingNode, genreBlock))
+      {
+        broadcast.SetGenreDescription(genreBlock.description);
+        broadcast.SetGenreType(genreBlock.genreType);
+        broadcast.SetGenreSubType(genreBlock.genreSubType);
       }
 
       int season{EPG_TAG_INVALID_SERIES_EPISODE};

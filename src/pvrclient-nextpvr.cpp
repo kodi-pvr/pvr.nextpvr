@@ -91,9 +91,10 @@ cPVRClientNextPVR::cPVRClientNextPVR(const CNextPVRAddon& base, const kodi::addo
   m_request(m_settings),
   m_channels(m_settings, m_request),
   m_timers(m_settings, m_request, m_channels, *this),
-  m_recordings(m_settings, m_request, m_timers, m_channels, *this),
+  m_recordings(m_settings, m_request, m_timers, m_channels,m_genreMapper, *this),
   m_menuhook(m_settings, m_recordings, m_channels, *this),
-  m_epg(m_settings, m_request, m_recordings, m_channels)
+  m_genreMapper(m_settings),
+  m_epg(m_settings, m_request, m_recordings, m_channels, m_genreMapper)
 {
   if (!kodi::vfs::DirectoryExists(m_settings->m_instanceDirectory))
   {
