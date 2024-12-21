@@ -10,6 +10,7 @@
 
 #include "BackendRequest.h"
 #include "Timers.h"
+#include "utilities/GenreMapper.h"
 #include <kodi/addon-instance/PVR.h>
 
 
@@ -21,7 +22,8 @@ namespace NextPVR
   {
 
   public:
-    Recordings(const std::shared_ptr<InstanceSettings>& settings, Request& request, Timers& timers, Channels& channels, cPVRClientNextPVR& pvrclent);
+    Recordings(const std::shared_ptr<InstanceSettings>& settings, Request& request, Timers& timers, Channels& channels, 
+      GenreMapper& genreMapper, cPVRClientNextPVR& pvrclent);
     /* Recording handling **/
     PVR_ERROR GetRecordingsAmount(bool deleted, int& amount);
     PVR_ERROR GetDriveSpace(uint64_t& total, uint64_t& used);
@@ -48,6 +50,7 @@ namespace NextPVR
     Request& m_request;
     Timers& m_timers;
     Channels& m_channels;
+    GenreMapper& m_genreMapper;
     cPVRClientNextPVR& m_pvrclient;
 
     // update these at end of counting loop can be called during action

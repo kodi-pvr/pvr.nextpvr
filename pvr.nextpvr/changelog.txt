@@ -1,3 +1,7 @@
+v21.3.0
+- Support EPG genre sub type for better genre display
+- Add genre type and subtype to recordings
+
 v21.2.0
 - Start timeshift in realtime for radio playback
 - Add support for episode and episode part parsing
