@@ -14,6 +14,7 @@
 
 namespace NextPVR
 {
+  typedef struct { time_t updateTime; size_t size; } CacheHeader;
 
   class ATTR_DLL_LOCAL Channels
   {
@@ -25,9 +26,10 @@ namespace NextPVR
     /* Channel handling */
     int GetNumChannels();
 
-    bool CacheAllChannels(time_t updateTime);
+    bool ChannelCacheChanged(time_t updateTime);
 
     PVR_ERROR GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& results);
+    bool ResetChannelCache(time_t updateTime);
     /* Channel group handling */
     PVR_ERROR GetChannelGroupsAmount(int& amount);
     PVR_ERROR GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsResultSet& results);
@@ -43,6 +45,7 @@ namespace NextPVR
     std::map<int, std::pair<bool, bool>> m_channelDetails;
     std::unordered_set<std::string> m_tvGroups;
     std::unordered_set<std::string> m_radioGroups;
+    mutable std::recursive_mutex m_channelMutex;
 
   private:
     Channels() = default;
@@ -53,6 +56,11 @@ namespace NextPVR
     std::string GetChannelIcon(int channelID);
     const std::shared_ptr<InstanceSettings> m_settings;
     Request& m_request;
-    tinyxml2::XMLError ReadCachedChannelList(tinyxml2::XMLDocument& doc);
+    tinyxml2::XMLError GetChannelList(tinyxml2::XMLDocument& doc);
+    time_t ReadChannelListCache(std::string& response);
+    bool ReloadChannelListCache(std::string& response, time_t updateTime);
+    bool LoadChannelDetails();
+    std::string m_checksumChannelList;
+    const std::string m_channelCacheFile;
   };
 } // namespace NextPVR

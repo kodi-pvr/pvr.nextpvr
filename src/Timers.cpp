@@ -78,6 +78,7 @@ PVR_ERROR Timers::GetTimers(kodi::addon::PVRTimersResultSet& results)
   int timerCount = 0;
   // first add the recurring recordings
   tinyxml2::XMLDocument doc;
+  std::lock_guard<std::recursive_mutex> lock(m_channels.m_channelMutex);
   if (m_request.DoMethodRequest("recording.recurring.list", doc) == tinyxml2::XML_SUCCESS)
   {
     tinyxml2::XMLNode* recurringsNode = doc.RootElement()->FirstChildElement("recurrings");

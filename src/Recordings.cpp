@@ -22,7 +22,7 @@ using namespace NextPVR::utilities;
 /************************************************************/
 /** Record handling **/
 
-Recordings::Recordings(const std::shared_ptr<InstanceSettings>& settings, Request& request, Timers& timers, Channels& channels, 
+Recordings::Recordings(const std::shared_ptr<InstanceSettings>& settings, Request& request, Timers& timers, Channels& channels,
     GenreMapper& genreMapper, cPVRClientNextPVR& pvrclient) :
   m_settings(settings),
   m_request(request),
@@ -521,7 +521,7 @@ bool Recordings::ParseNextPVRSubtitle(const tinyxml2::XMLNode *pRecordingNode, k
       }
     }
     const std::string plot = tag.GetPlot();
-    if (tag.GetEpisodeNumber() == PVR_RECORDING_INVALID_SERIES_EPISODE && !plot.empty());
+    if (tag.GetEpisodeNumber() == PVR_RECORDING_INVALID_SERIES_EPISODE && !plot.empty())
     {
       static std::regex base_regex("^.*\\([eE][pP](\\d+)(?:/?(\\d+))?\\)");
       std::smatch base_match;

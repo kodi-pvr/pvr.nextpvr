@@ -9,6 +9,7 @@
 #include "utilities/XMLUtils.h"
 #include "pvrclient-nextpvr.h"
 
+#include <kodi/General.h>
 #include <kodi/tools/StringUtils.h>
 #include "zlib.h"
 
@@ -19,18 +20,20 @@ using namespace NextPVR::utilities;
 
 Channels::Channels(const std::shared_ptr<InstanceSettings>& settings, Request& request) :
   m_settings(settings),
-  m_request(request)
+  m_request(request),
+  m_channelCacheFile(kodi::vfs::TranslateSpecialProtocol(kodi::tools::StringUtils::Format("%s%s", settings->m_instanceDirectory.c_str(), "channel.cache")))
 {
 }
 
 int Channels::GetNumChannels()
 {
   // Kodi polls this while recordings are open avoid calls to backend
+  std::lock_guard<std::recursive_mutex> lock(m_channelMutex);
   int channelCount = m_channelDetails.size();
   if (channelCount == 0)
   {
     tinyxml2::XMLDocument doc;
-    if (ReadCachedChannelList(doc) == tinyxml2::XML_SUCCESS)
+    if (GetChannelList(doc) == tinyxml2::XML_SUCCESS)
     {
       tinyxml2::XMLNode* channelsNode = doc.RootElement()->FirstChildElement("channels");
       tinyxml2::XMLNode* pChannelNode;
@@ -91,17 +94,9 @@ PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& r
     return PVR_ERROR_NO_ERROR;
   PVR_ERROR returnValue = PVR_ERROR_NO_ERROR;
   std::string stream;
-  std::map<int, std::pair<bool, bool>>::iterator  itr = m_channelDetails.begin();
-  while (itr != m_channelDetails.end())
-  {
-    if (itr->second.second == (radio == true))
-      itr = m_channelDetails.erase(itr);
-    else
-      ++itr;
-  }
 
   tinyxml2::XMLDocument doc;
-  if (ReadCachedChannelList(doc) == tinyxml2::XML_SUCCESS)
+  if (GetChannelList(doc) == tinyxml2::XML_SUCCESS)
   {
     tinyxml2::XMLNode* channelsNode = doc.RootElement()->FirstChildElement("channels");
     tinyxml2::XMLNode* pChannelNode;
@@ -149,14 +144,6 @@ PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& r
         if (iconFile.length() > 0)
           tag.SetIconPath(iconFile);
       }
-
-      // V5 has the EPG source type info.
-      std::string epg;
-      if (XMLUtils::GetString(pChannelNode, "epg", epg))
-        m_channelDetails[tag.GetUniqueId()] = std::make_pair(epg == "None", tag.GetIsRadio());
-      else
-        m_channelDetails[tag.GetUniqueId()] = std::make_pair(false, tag.GetIsRadio());
-
       // transfer channel to XBMC
       results.Add(tag);
     }
@@ -167,7 +154,6 @@ PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& r
   }
   return returnValue;
 }
-
 
 /************************************************************/
 /** Channel group handling **/
@@ -182,6 +168,7 @@ PVR_ERROR Channels::GetChannelGroupsAmount(int& amount)
 PVR_RECORDING_CHANNEL_TYPE Channels::GetChannelType(unsigned int uid)
 {
   // when uid is invalid we assume TV because Kodi will
+  std::lock_guard<std::recursive_mutex> lock(m_channelMutex);
   if (m_channelDetails.count(uid) > 0 && m_channelDetails[uid].second == true)
     return PVR_RECORDING_CHANNEL_TYPE_RADIO;
 
@@ -192,7 +179,7 @@ PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsRe
 {
   if (radio && !m_settings->m_showRadio)
     return PVR_ERROR_NO_ERROR;
-
+  std::lock_guard<std::recursive_mutex> lock(m_channelMutex);
   PVR_ERROR returnValue = PVR_ERROR_NO_ERROR;
   int priority = 1;
 
@@ -201,7 +188,7 @@ PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsRe
   selectedGroups.clear();
   bool hasAllChannels = false;
   tinyxml2::XMLDocument doc;
-  if (ReadCachedChannelList(doc) == tinyxml2::XML_SUCCESS)
+  if (GetChannelList(doc) == tinyxml2::XML_SUCCESS)
   {
     tinyxml2::XMLNode* channelsNode = doc.RootElement()->FirstChildElement("channels");
     tinyxml2::XMLNode* pChannelNode;
@@ -289,7 +276,7 @@ PVR_ERROR Channels::GetChannelGroupMembers(const kodi::addon::PVRChannelGroup& g
   tinyxml2::XMLError retCode;
   if (group.GetGroupName() == GetAllChannelsGroupName(group.GetIsRadio()))
   {
-    retCode = ReadCachedChannelList(doc);
+    retCode = GetChannelList(doc);
   }
   else
   {
@@ -299,6 +286,7 @@ PVR_ERROR Channels::GetChannelGroupMembers(const kodi::addon::PVRChannelGroup& g
 
   if (retCode == tinyxml2::XML_SUCCESS)
   {
+    std::lock_guard<std::recursive_mutex> lock(m_channelMutex);
     tinyxml2::XMLNode* channelsNode = doc.RootElement()->FirstChildElement("channels");
     tinyxml2::XMLNode* pChannelNode;
     for (pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode = pChannelNode->NextSiblingElement())
@@ -389,50 +377,152 @@ void Channels::LoadLiveStreams()
     }
   }
 }
-bool Channels::CacheAllChannels(time_t updateTime)
+bool Channels::ChannelCacheChanged(time_t updateTime)
 {
+  std::string checksum = m_checksumChannelList;
   std::string response;
-  const std::string filename = kodi::tools::StringUtils::Format("%s%s", m_settings->m_instanceDirectory.c_str(), "channel.cache");
-  gzFile gz_file;
-  struct { time_t update; unsigned long size; } header{0,0};
-  if (kodi::vfs::FileExists(filename))
+  const time_t cacheTime = ReadChannelListCache(response);
+  // on first load need to cache details
+  if (cacheTime != 0 && m_channelDetails.empty())
+    LoadChannelDetails();
+
+  if (updateTime == cacheTime)
+    return false;
+  else 
   {
-    gz_file = gzopen(kodi::vfs::TranslateSpecialProtocol(filename).c_str(), "rb");
-    gzread(gz_file, (void*)&header, sizeof(header));
-    gzclose(gz_file);
-    if (updateTime == header.update)
+    // change EPG updateTime
+    response.clear();
+    // Get new channel list but return on error
+    if (!ReloadChannelListCache(response, updateTime))
+      return false;
+  }
+  // checksum will be empty on first call
+  return checksum != m_checksumChannelList;
+}
+
+time_t Channels::ReadChannelListCache(std::string& response)
+{
+  time_t updateTime = 0;
+  if (kodi::vfs::FileExists(m_channelCacheFile))
+  {
+    gzFile gz_file = gzopen(m_channelCacheFile.c_str(), "rb");
+    if (gz_file != NULL)
     {
-      return true;
+      CacheHeader header{ 0,0 };
+      if (gzread(gz_file, (void*)&header, sizeof(CacheHeader)) == sizeof(CacheHeader))
+      {
+        response.resize(header.size);
+        if (gzread(gz_file, (void*)response.data(), header.size) == header.size)
+        {
+          m_checksumChannelList = kodi::GetMD5(response);
+          updateTime = header.updateTime;
+        }
+      }
+    }
+    gzclose(gz_file);
+    if (updateTime == 0)
+    {
+      kodi::Log(ADDON_LOG_WARNING, "Remove invalid cache file.");
+      kodi::vfs::DeleteFile(m_channelCacheFile);
     }
   }
+  return updateTime;
+}
+
+bool Channels::ReloadChannelListCache(std::string& response, time_t updateTime)
+{
+  bool rc = false;
+  gzFile gz_file;
+  m_checksumChannelList.clear();
   if (m_request.DoRequest("/service?method=channel.list&extras=true", response) == HTTP_OK)
   {
-    gz_file = gzopen(kodi::vfs::TranslateSpecialProtocol(filename).c_str(), "wb");
-    header.size = sizeof(char) * response.size();
-    header.update = updateTime - m_settings->m_serverTimeOffset;
-    gzwrite(gz_file, (void*)&header, sizeof(header));
-    gzwrite(gz_file, (void*)(response.c_str()), header.size);
+    gz_file = gzopen(m_channelCacheFile.c_str(), "wb");
+    if (gz_file != NULL)
+    {
+      CacheHeader header{ 0,0 };
+      header.size = response.size();
+      header.updateTime = updateTime;
+      if (gzwrite(gz_file, (void*)&header, sizeof(CacheHeader)) == sizeof(CacheHeader))
+      {
+        if (gzwrite(gz_file, (void*)(response.c_str()), header.size) == header.size)
+        {
+          m_checksumChannelList = kodi::GetMD5(response);
+          rc = true;
+        }
+      }
+    }
     gzclose(gz_file);
+  }
+  if (!rc)
+    kodi::Log(ADDON_LOG_ERROR, "Could not write channel cache");
+
+  return rc;
+}
+
+tinyxml2::XMLError Channels::GetChannelList(tinyxml2::XMLDocument& doc)
+{
+  auto start = std::chrono::steady_clock::now();
+  std::string response;
+  if (ReadChannelListCache(response) != 0)
+  {
+    tinyxml2::XMLError xmlCheck = doc.Parse(response.c_str());
+    if (xmlCheck == tinyxml2::XML_SUCCESS)
+    {
+      int milliseconds = static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count());
+      kodi::Log(ADDON_LOG_DEBUG, "GetChannelList %d %d %d %d", m_settings->m_instanceNumber, xmlCheck, response.length(), milliseconds);
+      return xmlCheck;
+    }
+  }
+  kodi::Log(ADDON_LOG_ERROR, "Cannot read channel cache");
+  return m_request.DoMethodRequest("channel.list&extras=true", doc);
+}
+
+bool Channels::ResetChannelCache(time_t updateTime)
+{
+  if (ChannelCacheChanged(updateTime) && !m_checksumChannelList.empty())
+  {
+    // m_checksumChannelList will be empty on error
+    std::lock_guard<std::recursive_mutex> lock(m_channelMutex);
+    auto oldDetails = m_channelDetails;
+    m_channelDetails.clear();
+    LoadChannelDetails();
+    for( const auto &details : oldDetails)
+    {
+      if (m_channelDetails.find(details.first) == m_channelDetails.end())
+      {
+        DeleteChannelIcon(details.first);
+      }
+    }
     return true;
   }
   return false;
 }
 
-tinyxml2::XMLError Channels::ReadCachedChannelList(tinyxml2::XMLDocument& doc)
+bool Channels::LoadChannelDetails()
 {
-  auto start = std::chrono::steady_clock::now();
-  std::string response;
-  const std::string filename = kodi::tools::StringUtils::Format("%s%s", m_settings->m_instanceDirectory.c_str(), "channel.cache");
-  struct { time_t update; unsigned long size; } header{0,0};
-  gzFile gz_file = gzopen(kodi::vfs::TranslateSpecialProtocol(filename).c_str(), "rb");
-  gzread(gz_file, (void*)&header, sizeof(header));
-  response.resize(header.size / sizeof(char));
-  gzread(gz_file, (void*)response.data(), header.size);
-  gzclose(gz_file);
-  tinyxml2::XMLError xmlCheck = doc.Parse(response.c_str());
-  if (doc.Parse(response.c_str()) != tinyxml2::XML_SUCCESS)
-    return m_request.DoMethodRequest("channel.list&extras=true", doc);
-  int milliseconds = static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count());
-  kodi::Log(ADDON_LOG_DEBUG, "ReadCachedChannelList %d %d %d %d", m_settings->m_instanceNumber, xmlCheck, response.length(), milliseconds);
-  return xmlCheck;
+  tinyxml2::XMLDocument doc;
+  if (GetChannelList(doc) == tinyxml2::XML_SUCCESS)
+  {
+    tinyxml2::XMLNode* channelsNode = doc.RootElement()->FirstChildElement("channels");
+    tinyxml2::XMLNode* pChannelNode;
+    for (pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode = pChannelNode->NextSiblingElement())
+    {
+      std::string buffer;
+      bool isRadio = false;
+      XMLUtils::GetString(pChannelNode, "type", buffer);
+      if (buffer == "0xa")
+      {
+        if (!m_settings->m_showRadio)
+          continue;
+        isRadio = true;
+      }
+      std::string epg;
+      if (XMLUtils::GetString(pChannelNode, "epg", epg))
+        m_channelDetails[XMLUtils::GetUIntValue(pChannelNode, "id")] = std::make_pair(epg == "None", isRadio);
+      else
+        m_channelDetails[XMLUtils::GetUIntValue(pChannelNode, "id")] = std::make_pair(false, isRadio);
+    }
+    return true;
+  }
+  return false;
 }

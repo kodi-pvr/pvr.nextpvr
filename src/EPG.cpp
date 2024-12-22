@@ -31,7 +31,10 @@ EPG::EPG(const std::shared_ptr<InstanceSettings>& settings, Request& request, Re
 PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::addon::PVREPGTagsResultSet& results)
 {
   std::pair<bool, bool> channelDetail;
-  channelDetail = m_channels.m_channelDetails[channelUid];
+  {
+    std::lock_guard<std::recursive_mutex> lock(m_channels.m_channelMutex);
+    channelDetail = m_channels.m_channelDetails[channelUid];
+  }
   if (channelDetail.first == true)
   {
     kodi::Log(ADDON_LOG_DEBUG, "Skipping %d", channelUid);
