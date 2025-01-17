@@ -5,9 +5,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: KODI Main\n"
-"Report-Msgid-Bugs-To: https://github.com/xbmc/xbmc/issues/\n"
+"Report-Msgid-Bugs-To: translations@kodi.tv\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: 2022-03-08 08:26+0000\n"
+"PO-Revision-Date: 2025-01-17 23:47+0000\n"
 "Last-Translator: Christian Gade <gade@kodi.tv>\n"
 "Language-Team: Portuguese (Brazil) <https://kodi.weblate.cloud/projects/kodi-add-ons-pvr-clients/pvr-nextpvr/pt_br/>\n"
 "Language: pt_br\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.11.2\n"
+"X-Generator: Weblate 5.9.2\n"
 
 msgctxt "Addon Summary"
 msgid "Kodi frontend for the NextPVR"
@@ -53,6 +53,7 @@ msgctxt "#30004"
 msgid "Download TV guide artwork"
 msgstr ""
 
+#, fuzzy
 msgctxt "#30504"
 msgid "Not enabled when remote"
 msgstr ""
@@ -338,98 +339,122 @@ msgctxt "#30700"
 msgid "When disabled resume location and watched status will be managed only in Kodi"
 msgstr ""
 
+#, fuzzy
 msgctxt "#30201"
 msgid "Show root directory"
 msgstr ""
 
+#, fuzzy
 msgctxt "#30701"
 msgid "Seperate recordings by the NextPVR recording folder"
 msgstr ""
 
+#, fuzzy
 msgctxt "#30202"
 msgid "Channel instance number"
 msgstr ""
 
+#, fuzzy
 msgctxt "#30702"
 msgid "Add instance indicators (#) to channel names"
 msgstr ""
 
+#, fuzzy
 msgctxt "#30203"
 msgid "All channels group"
 msgstr ""
 
+#, fuzzy
 msgctxt "#30703"
 msgid "Create an All channels group for this instance"
 msgstr ""
 
+#, fuzzy
 msgctxt "#30204"
 msgid "Instance number"
 msgstr ""
 
+#, fuzzy
 msgctxt "#30205"
 msgid "Instance options"
 msgstr ""
 
+#, fuzzy
 msgctxt "#30206"
 msgid "Load comskip"
 msgstr ""
 
+#, fuzzy
 msgctxt "#30706"
 msgid "Read comskip EDL files from backend"
 msgstr ""
 
+#, fuzzy
 msgctxt "#30207"
 msgid "Update check"
 msgstr ""
 
+#, fuzzy
 msgctxt "#30707"
 msgid "Interval to check for backend changes made outside this Kodi client"
 msgstr ""
 
+#, fuzzy
 msgctxt "#30208"
 msgid "Every 5 minutes"
 msgstr ""
 
+#, fuzzy
 msgctxt "#30209"
 msgid "Recording and timer control"
 msgstr ""
 
+#, fuzzy
 msgctxt "#30709"
 msgid "Manage user rights for recordings and timers"
 msgstr ""
 
+#, fuzzy
 msgctxt "#30210"
 msgid "Real Time"
 msgstr ""
 
+#, fuzzy
 msgctxt "#30211"
 msgid "Timeshift"
 msgstr ""
 
+#, fuzzy
 msgctxt "#30212"
 msgid "Transcoded"
 msgstr ""
 
+#, fuzzy
 msgctxt "#30213"
 msgid "Spann"
 msgstr ""
 
+#, fuzzy
 msgctxt "#30214"
 msgid "Full access to recordings and timers"
 msgstr ""
 
+#, fuzzy
 msgctxt "#30215"
 msgid "Play and delete recordings with no timers"
 msgstr ""
 
+#, fuzzy
 msgctxt "#30216"
 msgid "Play recordings with no timers"
 msgstr ""
 
+#, fuzzy
 msgctxt "#30217"
 msgid "Live TV only"
 msgstr ""
 
+#, fuzzy
 msgctxt "#30218"
 msgid "Repeating (all episodes)"
 msgstr ""
