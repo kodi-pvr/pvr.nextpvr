@@ -1,4 +1,11 @@
-v22.3.0
+v22.4.0
+- Enable API changes for multiple recording stream
+- Allow optional Kodi extraction of thumbnails
+- Add genre sub type code (previously English only)
+- Extend genre type and sub type matching to recordings
+- Improve channel list cache logic
+- Trigger channel list updates if backend changes detected
+
 - PVR Add-on API v9.2.0
 
 v22.2.0
