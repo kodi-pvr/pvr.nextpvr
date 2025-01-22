@@ -118,7 +118,6 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
         // genre type
         broadcast.SetGenreType(XMLUtils::GetIntValue(pListingNode, "genre_type"));
         broadcast.SetGenreSubType(XMLUtils::GetIntValue(pListingNode, "genre_sub_type"));
-
       }
 
       NextPVR::GenreBlock genreBlock = { sGenre, broadcast.GetGenreType(), EPG_EVENT_CONTENTMASK_UNDEFINED };
@@ -137,7 +136,7 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
       broadcast.SetEpisodePartNumber(EPG_TAG_INVALID_SERIES_EPISODE);
       // Backend could send epidode only as S00 and parts are not support
       if (season <= 0 || episode == EPG_TAG_INVALID_SERIES_EPISODE)
-      {        
+      {
         std::regex base_regex("^.*\\([eE][pP](\\d+)(?:/?(\\d+))?\\)");
         std::smatch base_match;
         if (std::regex_search(description, base_match, base_regex))
