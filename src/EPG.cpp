@@ -121,7 +121,6 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
         // genre type
         broadcast.SetGenreType(XMLUtils::GetIntValue(pListingNode, "genre_type"));
         broadcast.SetGenreSubType(XMLUtils::GetIntValue(pListingNode, "genre_subtype"));
-
       }
 
       NextPVR::GenreBlock genreBlock = { sGenre, broadcast.GetGenreType(), EPG_EVENT_CONTENTMASK_UNDEFINED };
