@@ -28,7 +28,7 @@ namespace NextPVR
     int GetGenreType(std::string code);
     int GetGenreSubType(std::string code);
     bool ParseAllGenres(const tinyxml2::XMLNode* node, GenreBlock& genreBlock);
-    bool IsEnabled();
+    bool UseDvbGenre();
 
   private:
     GenreMapper() = default;

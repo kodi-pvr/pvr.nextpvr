@@ -54,16 +54,16 @@ msgid "Download TV guide artwork"
 msgstr ""
 
 msgctxt "#30504"
-msgid "Not enabled for Matrix when remote"
+msgid "Not enabled when remote"
 msgstr ""
 
 msgctxt "#30040"
 msgid "Connection"
-msgstr "Konneksie"
+msgstr "Verbinding"
 
 msgctxt "#30041"
 msgid "Advanced"
-msgstr "Gevorderde"
+msgstr "Gevorderd"
 
 # empty strings from id 30042 to 30049
 msgctxt "#30050"
@@ -345,6 +345,10 @@ msgstr ""
 msgctxt "#30700"
 msgid "When disabled resume location and watched status will be managed only in Kodi"
 msgstr ""
+
+msgctxt "#30211"
+msgid "Timeshift"
+msgstr "Tydskuif"
 
 #~ msgctxt "#30000"
 #~ msgid "NextPVR Hostname"

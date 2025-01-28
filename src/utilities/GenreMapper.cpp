@@ -24,7 +24,7 @@ GenreMapper::GenreMapper(const std::shared_ptr<InstanceSettings>& settings) : m_
 GenreMapper::~GenreMapper() {}
 
 
-bool GenreMapper::IsEnabled()
+bool GenreMapper::UseDvbGenre()
 {
   return !m_settings->m_genreString;
 }
@@ -66,7 +66,7 @@ bool GenreMapper::ParseAllGenres(const tinyxml2::XMLNode* node, GenreBlock& genr
   {
     if (allGenres.find(EPG_STRING_TOKEN_SEPARATOR) != std::string::npos)
     {
-      if (IsEnabled())
+      if (UseDvbGenre())
       {
         std::vector<std::string> genreCodes = kodi::tools::StringUtils::Split(allGenres, EPG_STRING_TOKEN_SEPARATOR);
         if (genreCodes.size() == 2)
@@ -86,17 +86,14 @@ bool GenreMapper::ParseAllGenres(const tinyxml2::XMLNode* node, GenreBlock& genr
       }
       if (genreBlock.genreSubType == EPG_EVENT_CONTENTMASK_UNDEFINED)
       {
-        if (genreBlock.genreType != EPG_GENRE_USE_STRING)
-        {
-          genreBlock.genreType = EPG_GENRE_USE_STRING;
-        }
+        genreBlock.genreSubType = EPG_GENRE_USE_STRING;
         genreBlock.description = allGenres;
       }
     }
-    else if (!IsEnabled() && genreBlock.genreSubType != EPG_GENRE_USE_STRING)
+    else if (!UseDvbGenre() && genreBlock.genreSubType != EPG_EVENT_CONTENTMASK_UNDEFINED)
     {
       genreBlock.description = allGenres;
-      genreBlock.genreType = EPG_GENRE_USE_STRING;
+      genreBlock.genreSubType = EPG_GENRE_USE_STRING;
     }
 
     return true;

@@ -223,7 +223,7 @@ msgid "Use legacy (V4) setting"
 msgstr ""
 
 msgctxt "#30178"
-msgid "Include filesize with recordings"
+msgid "Include file size with recordings"
 msgstr ""
 
 msgctxt "#30678"
@@ -351,7 +351,7 @@ msgid "Show root directory"
 msgstr ""
 
 msgctxt "#30701"
-msgid "Seperate recordings by the NextPVR recording folder"
+msgid "Separate recordings by the NextPVR recording folder"
 msgstr ""
 
 msgctxt "#30202"
@@ -419,7 +419,7 @@ msgid "Transcoded"
 msgstr ""
 
 msgctxt "#30213"
-msgid "Spann"
+msgid "Span"
 msgstr ""
 
 msgctxt "#30214"
