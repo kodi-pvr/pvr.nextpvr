@@ -1,3 +1,7 @@
+v22.4.1
+- Fix genre colouring
+- Update translations
+
 v22.4.0
 - Enable API changes for multiple recording stream
 - Allow optional Kodi extraction of thumbnails
