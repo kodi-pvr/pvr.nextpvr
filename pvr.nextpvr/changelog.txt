@@ -1,3 +1,6 @@
+v22.4.2
+- Update translations from PR #294
+
 v22.4.1
 - Fix genre colouring
 - Update translations
