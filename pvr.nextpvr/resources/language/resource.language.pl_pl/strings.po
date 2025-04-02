@@ -5,10 +5,10 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: KODI Main\n"
-"Report-Msgid-Bugs-To: translations@kodi.tv\n"
+"Report-Msgid-Bugs-To: https://github.com/xbmc/xbmc/issues/\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: 2025-01-18 21:27+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"PO-Revision-Date: 2025-02-06 11:06+0000\n"
+"Last-Translator: Marek Adamski <fevbew@wp.pl>\n"
 "Language-Team: Polish <https://kodi.weblate.cloud/projects/kodi-add-ons-pvr-clients/pvr-nextpvr/pl_pl/>\n"
 "Language: pl_pl\n"
 "MIME-Version: 1.0\n"
@@ -54,8 +54,8 @@ msgid "Download TV guide artwork"
 msgstr "Pobieraj grafiki dla pozycji przewodnika"
 
 msgctxt "#30504"
-msgid "Not enabled for Matrix when remote"
-msgstr "Niedostępne dla Matrix, gdy jest zdalny"
+msgid "Not enabled when remote"
+msgstr "Niewłączone, gdy zdalne"
 
 msgctxt "#30040"
 msgid "Connection"
@@ -182,14 +182,6 @@ msgctxt "#30168"
 msgid "Recording chunk size"
 msgstr "Rozmiar bloku nagrywania"
 
-msgctxt "#30169"
-msgid "Kodi skin styled recordings"
-msgstr "Nagrania stylizowane na skórę Kodi"
-
-msgctxt "#30569"
-msgid "Separate title, season and episode for skin - season and episode numbers will not be shown in lists"
-msgstr "Oddzielny tytuł, sezon i odcinek dla skóry - numery sezonów i odcinków nie będą pokazywane na listach"
-
 msgctxt "#30170"
 msgid "Refresh cache for channel icons"
 msgstr "Odśwież bufor ikon kanałów"
@@ -223,7 +215,7 @@ msgid "Use legacy (V4) setting"
 msgstr "Użyj starszego ustawienia (V4)"
 
 msgctxt "#30178"
-msgid "Include filesize with recordings"
+msgid "Include file size with recordings"
 msgstr "Dołącz rozmiar pliku do nagrań"
 
 msgctxt "#30678"
@@ -304,7 +296,7 @@ msgstr "Twórz osobne foldery dla wielu sezonów nagrań"
 
 msgctxt "#30194"
 msgid "Use backend genre text"
-msgstr "Użyj tekstu gatunku z backendu"
+msgstr "Użyj tekstu gatunku z serwera"
 
 msgctxt "#30694"
 msgid "Kodi default is DVB genre text. Default required for Kodi genre search and language translation"
@@ -345,6 +337,134 @@ msgstr "Przechowuj lokalizację wznowienia nagrywania w NextPVR"
 msgctxt "#30700"
 msgid "When disabled resume location and watched status will be managed only in Kodi"
 msgstr "Po wyłączeniu lokalizacja wznawiania i obserwowany status będą zarządzane tylko w Kodi"
+
+msgctxt "#30201"
+msgid "Show root directory"
+msgstr "Pokaż katalog główny"
+
+msgctxt "#30701"
+msgid "Separate recordings by the NextPVR recording folder"
+msgstr "Oddziel nagrania według folderu nagrań NextPVR"
+
+msgctxt "#30202"
+msgid "Channel instance number"
+msgstr "Numer instancji kanału"
+
+msgctxt "#30702"
+msgid "Add instance indicators (#) to channel names"
+msgstr "Dodaj wskaźniki instancji (#) do nazw kanałów"
+
+msgctxt "#30203"
+msgid "All channels group"
+msgstr "Grupa Wszystkie kanały"
+
+msgctxt "#30703"
+msgid "Create an All channels group for this instance"
+msgstr "Utwórz grupę Wszystkie kanały dla tej instancji"
+
+msgctxt "#30204"
+msgid "Instance number"
+msgstr "Numer instancji"
+
+msgctxt "#30205"
+msgid "Instance options"
+msgstr "Opcje instancji"
+
+msgctxt "#30206"
+msgid "Load comskip"
+msgstr "Załaduj comskip"
+
+msgctxt "#30706"
+msgid "Read comskip EDL files from backend"
+msgstr "Odczytuj pliki comskip EDL z serwera"
+
+msgctxt "#30207"
+msgid "Update check"
+msgstr "Sprawdzenie aktualizacji"
+
+msgctxt "#30707"
+msgid "Interval to check for backend changes made outside this Kodi client"
+msgstr "Interwał sprawdzania zmian na serwerze wprowadzonych poza tym klientem Kodi"
+
+msgctxt "#30208"
+msgid "Every 5 minutes"
+msgstr "Co 5 minut"
+
+msgctxt "#30209"
+msgid "Recording and timer control"
+msgstr "Nagrywanie i sterowanie harmonogramem"
+
+msgctxt "#30709"
+msgid "Manage user rights for recordings and timers"
+msgstr "Zarządzaj uprawnieniami użytkowników do nagrań i harmonogramów"
+
+msgctxt "#30210"
+msgid "Real Time"
+msgstr "Czas rzeczywisty"
+
+msgctxt "#30211"
+msgid "Timeshift"
+msgstr "Przesunięcie czasowe"
+
+msgctxt "#30212"
+msgid "Transcoded"
+msgstr "Transkodowane"
+
+msgctxt "#30213"
+msgid "Span"
+msgstr "Rozpiętość"
+
+msgctxt "#30214"
+msgid "Full access to recordings and timers"
+msgstr "Pełny dostęp do nagrań i harmonogramów"
+
+msgctxt "#30215"
+msgid "Play and delete recordings with no timers"
+msgstr "Odtwarzaj i usuwaj nagrania bez harmonogramów"
+
+msgctxt "#30216"
+msgid "Play recordings with no timers"
+msgstr "Odtwarzaj nagrania bez harmonogramów"
+
+msgctxt "#30217"
+msgid "Live TV only"
+msgstr "Tylko telewizja"
+
+msgctxt "#30218"
+msgid "Repeating (all episodes)"
+msgstr "Powtarzanie (wszystkie odcinki)"
+
+msgctxt "#30219"
+msgid "Download recording poster"
+msgstr "Pobierz plakat nagrania"
+
+msgctxt "#30719"
+msgid "Download backend poster or extract thumbnail from recording"
+msgstr "Pobierz plakat z serwera lub wyodrębnij miniaturę z nagrania"
+
+msgctxt "#30220"
+msgid "Enable multi-stream recordings"
+msgstr "Włącz nagrywanie wielostrumieniowe"
+
+msgctxt "#30720"
+msgid "Extract extra recording metadata from backend"
+msgstr "Wyodrębnij dodatkowe metadane nagrania z serwera"
+
+#~ msgctxt "#30504"
+#~ msgid "Not enabled for Matrix when remote"
+#~ msgstr "Niedostępne dla Matrix, gdy jest zdalny"
+
+#~ msgctxt "#30169"
+#~ msgid "Kodi skin styled recordings"
+#~ msgstr "Nagrania stylizowane na skórę Kodi"
+
+#~ msgctxt "#30569"
+#~ msgid "Separate title, season and episode for skin - season and episode numbers will not be shown in lists"
+#~ msgstr "Oddzielny tytuł, sezon i odcinek dla skóry - numery sezonów i odcinków nie będą pokazywane na listach"
+
+#~ msgctxt "#30178"
+#~ msgid "Include filesize with recordings"
+#~ msgstr "Dołącz rozmiar pliku do nagrań"
 
 #~ msgctxt "#30000"
 #~ msgid "NextPVR Hostname"
