@@ -5,17 +5,17 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: KODI Main\n"
-"Report-Msgid-Bugs-To: https://github.com/xbmc/xbmc/issues/\n"
+"Report-Msgid-Bugs-To: translations@kodi.tv\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: 2025-01-18 21:27+0000\n"
-"Last-Translator: Christian Gade <gade@kodi.tv>\n"
+"PO-Revision-Date: 2025-08-02 12:29+0000\n"
+"Last-Translator: Daniel Nylander <daniel@danielnylander.se>\n"
 "Language-Team: Swedish <https://kodi.weblate.cloud/projects/kodi-add-ons-pvr-clients/pvr-nextpvr/sv_se/>\n"
 "Language: sv_se\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.9.2\n"
+"X-Generator: Weblate 5.12.2\n"
 
 msgctxt "Addon Summary"
 msgid "Kodi frontend for the NextPVR"
@@ -31,11 +31,11 @@ msgstr "Detta är ett pågående arbete. Använd på egen risk."
 
 msgctxt "#30000"
 msgid "NextPVR hostname"
-msgstr ""
+msgstr "Värdnamn för NextPVR"
 
 msgctxt "#30001"
 msgid "NextPVR port (usually 8866)"
-msgstr ""
+msgstr "Port för NextPVR (vanligtvis 8866)"
 
 msgctxt "#30002"
 msgid "NextPVR PinCode"
@@ -43,19 +43,19 @@ msgstr "NextPVR pinkod"
 
 msgctxt "#30003"
 msgid "Enable timeshift with live TV"
-msgstr ""
+msgstr "Aktivera tidsförskjutning med direktsänd TV"
 
 msgctxt "#30603"
 msgid "Open settings dialog for inputstream.ffmpegdirect for modification of timeshift settings"
-msgstr ""
+msgstr "Öppna inställningsdialog för inputstream.ffmpegdirect för ändring av tidsförskjutningsinställningar"
 
 msgctxt "#30004"
 msgid "Download TV guide artwork"
-msgstr ""
+msgstr "Hämta ner TV-guidesbilder"
 
 msgctxt "#30504"
 msgid "Not enabled when remote"
-msgstr ""
+msgstr "Inte aktiverad vid fjärrstyrning"
 
 msgctxt "#30040"
 msgid "Connection"
@@ -63,12 +63,12 @@ msgstr "Anslutning"
 
 msgctxt "#30041"
 msgid "Advanced"
-msgstr "Avancerad"
+msgstr "Avancerat"
 
 # empty strings from id 30042 to 30049
 msgctxt "#30050"
 msgid "NextPVR version not supported"
-msgstr ""
+msgstr "NextPVR-versionen stöds inte"
 
 msgctxt "#30051"
 msgid "Upgrade to '%s' or higher!"
@@ -88,7 +88,7 @@ msgstr "En gång (manuell)"
 
 msgctxt "#30141"
 msgid "One time (guide)"
-msgstr "En gång (guide)"
+msgstr "En gång (tablå)"
 
 msgctxt "#30142"
 msgid "Repeating (manual)"
@@ -96,11 +96,11 @@ msgstr "Upprepande (manuell)"
 
 msgctxt "#30143"
 msgid "Repeating (guide)"
-msgstr "Upprepande (guide)"
+msgstr "Upprepande (tablå)"
 
 msgctxt "#30144"
 msgid "Child recording"
-msgstr ""
+msgstr "Underliggande inspelning"
 
 msgctxt "#30145"
 msgid "Repeating (keyword)"
@@ -144,7 +144,7 @@ msgstr "10 Inspelningar"
 
 msgctxt "#30160"
 msgid "New Only"
-msgstr "Endast Nya"
+msgstr "Endast nya"
 
 msgctxt "#30161"
 msgid "All"
@@ -152,35 +152,35 @@ msgstr "Alla"
 
 msgctxt "#30162"
 msgid "Pre-buffer time in seconds"
-msgstr ""
+msgstr "Förbufferttid i sekunder"
 
 msgctxt "#30163"
 msgid "Enable Wake On LAN"
-msgstr ""
+msgstr "Aktivera Wake On LAN"
 
 msgctxt "#30164"
 msgid "Wait for server after wake in seconds"
-msgstr ""
+msgstr "Vänta på server efter väckning i sekunder"
 
 msgctxt "#30165"
 msgid "NextPVR server MAC address"
-msgstr ""
+msgstr "MAC-adress för NextPVR-server"
 
 msgctxt "#30166"
 msgid "Failed recordings"
-msgstr ""
+msgstr "Misslyckade inspelningar"
 
 msgctxt "#30167"
 msgid "Live TV chunk size"
-msgstr ""
+msgstr "Storlek på live-TV-data"
 
 msgctxt "#30567"
 msgid "Change chunk size for LAN performance"
-msgstr ""
+msgstr "Ändra datastorlek för LAN-prestanda"
 
 msgctxt "#30168"
 msgid "Recording chunk size"
-msgstr ""
+msgstr "Storlek på inspelningsbit"
 
 msgctxt "#30170"
 msgid "Refresh cache for channel icons"
@@ -188,267 +188,267 @@ msgstr "Förnya cache för kanalikoner"
 
 msgctxt "#30171"
 msgid "Repeating (advanced)"
-msgstr ""
+msgstr "Upprepad (avancerat)"
 
 msgctxt "#30172"
 msgid "Live TV method"
-msgstr ""
+msgstr "Metod för direktsänd TV"
 
 msgctxt "#30173"
 msgid "Transcoding profile"
-msgstr ""
+msgstr "Profil för transkodning"
 
 msgctxt "#30174"
 msgid "Streaming options"
-msgstr ""
+msgstr "Strömningsalternativ"
 
 msgctxt "#30175"
 msgid "Display and recordings"
-msgstr ""
+msgstr "Visning och inspelningar"
 
 msgctxt "#30176"
 msgid "Enable direct streams"
-msgstr ""
+msgstr "Aktivera direktströmmar"
 
 msgctxt "#30177"
 msgid "Use legacy (V4) setting"
-msgstr ""
+msgstr "Använd äldre (V4) inställning"
 
 msgctxt "#30178"
 msgid "Include file size with recordings"
-msgstr ""
+msgstr "Inkludera filstorlek med inspelningar"
 
 msgctxt "#30678"
 msgid "Use file system to get the recording size if available"
-msgstr ""
+msgstr "Använd filsystemet för att få fram inspelningsstorleken om det finns tillgängligt"
 
 msgctxt "#30179"
 msgid "Remote access"
-msgstr ""
+msgstr "Fjärråtkomst"
 
 msgctxt "#30180"
 msgid "Single recording display"
-msgstr ""
+msgstr "Visning för enstaka inspelning"
 
 msgctxt "#30680"
 msgid "Movies and single episode TV shows display at top level"
-msgstr ""
+msgstr "Filmer och TV-serier med enstaka avsnitt visas på översta nivån"
 
 msgctxt "#30181"
 msgid "TV guide portrait format"
-msgstr ""
+msgstr "TV-tablå i stående format"
 
 msgctxt "#30182"
 msgid "NextPVR server %s:%d"
-msgstr ""
+msgstr "NextPVR-server %s:%d"
 
 msgctxt "#30183"
 msgid "Reset channel icon"
-msgstr ""
+msgstr "Återställ kanalikon"
 
 msgctxt "#30184"
 msgid "Forget recording"
-msgstr ""
+msgstr "Glöm inspelning"
 
 msgctxt "#30185"
 msgid "Update all channels"
-msgstr ""
+msgstr "Uppdatera alla kanaler"
 
 msgctxt "#30186"
 msgid "Update all channel groups"
-msgstr ""
+msgstr "Uppdatera alla kanalgrupper"
 
 msgctxt "#30187"
 msgid "Select NextPVR IP address"
-msgstr ""
+msgstr "Välj IP-adress för NextPVR"
 
 msgctxt "#30188"
 msgid "Show radio channels"
-msgstr ""
+msgstr "Visa radiokanaler"
 
 msgctxt "#30688"
 msgid "Also use skin settings to control radio main menu display"
-msgstr ""
+msgstr "Använd också skalinställningar för att styra visningen av radions huvudmeny"
 
 msgctxt "#30189"
 msgid "Discovered host"
-msgstr ""
+msgstr "Upptäckt värd"
 
 msgctxt "#30190"
 msgid "Timeshifting disabled"
-msgstr ""
+msgstr "Tidsförskjutning inaktiverad"
 
 msgctxt "#30191"
 msgid "%s is not enabled"
-msgstr ""
+msgstr "%s är inte aktiverad"
 
 msgctxt "#30192"
 msgid "%s is not installed"
-msgstr ""
+msgstr "%s är inte installerad"
 
 msgctxt "#30193"
 msgid "Show season folders"
-msgstr ""
+msgstr "Visa säsongsmappar"
 
 msgctxt "#30693"
 msgid "Create separate folders for multiple seasons of recordings"
-msgstr ""
+msgstr "Skapa separata mappar för flera säsonger av inspelningar"
 
 msgctxt "#30194"
 msgid "Use backend genre text"
-msgstr ""
+msgstr "Använd genretext i bakände"
 
 msgctxt "#30694"
 msgid "Kodi default is DVB genre text. Default required for Kodi genre search and language translation"
-msgstr ""
+msgstr "Kodi-standard är DVB-genretext. Standard krävs för Kodis genresökning och språköversättning"
 
 msgctxt "#30195"
 msgid "Send Wake On LAN to server"
-msgstr ""
+msgstr "Skicka Wake On LAN till servern"
 
 msgctxt "#30196"
 msgid "Open NextPVR settings"
-msgstr ""
+msgstr "Öppna NextPVR-inställningar"
 
 msgctxt "#30197"
 msgid "Show guide cast, director and writer"
-msgstr ""
+msgstr "Visa rollbesättning, regissör och författare i tablå"
 
 msgctxt "#30198"
 msgid "Display disk space"
-msgstr ""
+msgstr "Visa diskutrymme"
 
 msgctxt "#30698"
 msgid "Default: Show the default drive - Span: Sum all drives"
-msgstr ""
+msgstr "Standard: Visa standardenheten - Summera: Summera alla enheter"
 
 msgctxt "#30199"
 msgid "Override Kodi no timer padding default"
-msgstr ""
+msgstr "Åsidosätt Kodis standardutfyllnad utan timer"
 
 msgctxt "#30699"
 msgid "Use NextPVR timer padding when no padding is entered"
-msgstr ""
+msgstr "Använd utfyllnad för NextPVR-timern när ingen utfyllnad anges"
 
 msgctxt "#30200"
 msgid "Store recording resume location in NextPVR"
-msgstr ""
+msgstr "Lagra återupptagningsplats för inspelning i NextPVR"
 
 msgctxt "#30700"
 msgid "When disabled resume location and watched status will be managed only in Kodi"
-msgstr ""
+msgstr "När den är inaktiverad kommer plats för återupptagning och sedd-status endast att hanteras i Kodi"
 
 msgctxt "#30201"
 msgid "Show root directory"
-msgstr ""
+msgstr "Visa rotkatalog"
 
 msgctxt "#30701"
 msgid "Separate recordings by the NextPVR recording folder"
-msgstr ""
+msgstr "Separera inspelningar med NextPVR-inspelningsmappen"
 
 msgctxt "#30202"
 msgid "Channel instance number"
-msgstr ""
+msgstr "Kanalens instansnummer"
 
 msgctxt "#30702"
 msgid "Add instance indicators (#) to channel names"
-msgstr ""
+msgstr "Lägg till instansindikatorer (#) i kanalnamn"
 
 msgctxt "#30203"
 msgid "All channels group"
-msgstr ""
+msgstr "Grupp för alla kanaler"
 
 msgctxt "#30703"
 msgid "Create an All channels group for this instance"
-msgstr ""
+msgstr "Skapa en grupp för alla kanaler för denna instans"
 
 msgctxt "#30204"
 msgid "Instance number"
-msgstr ""
+msgstr "Instansnummer"
 
 msgctxt "#30205"
 msgid "Instance options"
-msgstr ""
+msgstr "Instansalternativ"
 
 msgctxt "#30206"
 msgid "Load comskip"
-msgstr ""
+msgstr "Läs in comskip"
 
 msgctxt "#30706"
 msgid "Read comskip EDL files from backend"
-msgstr ""
+msgstr "Läs comskip EDL-filer från bakände"
 
 msgctxt "#30207"
 msgid "Update check"
-msgstr ""
+msgstr "Uppdateringskontroll"
 
 msgctxt "#30707"
 msgid "Interval to check for backend changes made outside this Kodi client"
-msgstr ""
+msgstr "Intervall för att kontrollera ändringar i bakände som gjorts utanför denna Kodi-klient"
 
 msgctxt "#30208"
 msgid "Every 5 minutes"
-msgstr ""
+msgstr "Var 5:e minut"
 
 msgctxt "#30209"
 msgid "Recording and timer control"
-msgstr ""
+msgstr "Inspelning- och timerstyrning"
 
 msgctxt "#30709"
 msgid "Manage user rights for recordings and timers"
-msgstr ""
+msgstr "Hantera användarbehörighet för inspelningar och timers"
 
 msgctxt "#30210"
 msgid "Real Time"
-msgstr ""
+msgstr "Realtid"
 
 msgctxt "#30211"
 msgid "Timeshift"
-msgstr ""
+msgstr "Tidsförskjutning"
 
 msgctxt "#30212"
 msgid "Transcoded"
-msgstr ""
+msgstr "Transkodad"
 
 msgctxt "#30213"
 msgid "Span"
-msgstr ""
+msgstr "Span"
 
 msgctxt "#30214"
 msgid "Full access to recordings and timers"
-msgstr ""
+msgstr "Full åtkomst till inspelningar och timers"
 
 msgctxt "#30215"
 msgid "Play and delete recordings with no timers"
-msgstr ""
+msgstr "Spela upp och ta bort inspelningar utan timers"
 
 msgctxt "#30216"
 msgid "Play recordings with no timers"
-msgstr ""
+msgstr "Spela upp inspelningar utan timers"
 
 msgctxt "#30217"
 msgid "Live TV only"
-msgstr ""
+msgstr "Endast direktsänd tv"
 
 msgctxt "#30218"
 msgid "Repeating (all episodes)"
-msgstr ""
+msgstr "Upprepande (alla avsnitt)"
 
 msgctxt "#30219"
 msgid "Download recording poster"
-msgstr ""
+msgstr "Hämta ner inspelningsposter"
 
 msgctxt "#30719"
 msgid "Download backend poster or extract thumbnail from recording"
-msgstr ""
+msgstr "Hämta ner poster från bakände eller extrahera miniatyrbild från inspelningen"
 
 msgctxt "#30220"
 msgid "Enable multi-stream recordings"
-msgstr ""
+msgstr "Aktivera inspelningar med flera strömmar"
 
 msgctxt "#30720"
 msgid "Extract extra recording metadata from backend"
-msgstr ""
+msgstr "Extrahera extra inspelningsmetadata från bakände"
 
 #~ msgctxt "#30000"
 #~ msgid "NextPVR Hostname"
