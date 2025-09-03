@@ -1,3 +1,7 @@
+v22.4.6
+- Translations updates from Weblate
+	- bs_ba, fr_fr, pl_pl
+
 v22.4.4
 - Translations updates from Weblate
 	- sv_se
