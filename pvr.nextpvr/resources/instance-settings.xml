@@ -303,6 +303,8 @@
               <option label="30215">3</option>
               <option label="30216">1</option>
               <option label="30217">0</option>
+              <option label="30221">11</option>
+              <option label="30222">9</option>
             </options>
           </constraints>
           <control type="list" format="string">

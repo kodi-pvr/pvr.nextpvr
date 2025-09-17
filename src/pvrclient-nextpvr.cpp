@@ -1105,15 +1105,15 @@ PVR_ERROR cPVRClientNextPVR::GetCapabilities(kodi::addon::PVRCapabilities& capab
 {
   kodi::Log(ADDON_LOG_DEBUG, "->GetCapabilities()");
 
-  capabilities.SetSupportsEPG(true);
+  capabilities.SetSupportsEPG(!(m_settings->m_accessLevel & ACCESS_BLOCKLIVETV));
   capabilities.SetSupportsRecordings(m_settings->m_accessLevel & ACCESS_RECORDINGS);
   capabilities.SetSupportsRecordingsDelete(m_settings->m_accessLevel & ACCESS_RECORDINGS_DELETE);
   capabilities.SetSupportsRecordingsUndelete(false);
   capabilities.SetSupportsRecordingSize(m_settings->m_showRecordingSize);
   capabilities.SetSupportsTimers(m_settings->m_accessLevel & ACCESS_TIMERS);
-  capabilities.SetSupportsTV(true);
+  capabilities.SetSupportsTV(!(m_settings->m_accessLevel & ACCESS_BLOCKLIVETV));
   capabilities.SetSupportsRadio(m_settings->m_showRadio);
-  capabilities.SetSupportsChannelGroups(true);
+  capabilities.SetSupportsChannelGroups(!(m_settings->m_accessLevel & ACCESS_BLOCKLIVETV));
   capabilities.SetHandlesInputStream(true);
   capabilities.SetHandlesDemuxing(false);
   capabilities.SetSupportsChannelScan(false);

@@ -80,7 +80,7 @@ void InstanceSettings::ReadFromAddon()
 
   m_resolution = ReadStringSetting("resolution", "720");
 
-  m_accessLevel = ReadIntSetting("accesscontrol", ACCESS_RECORDINGS | ACCESS_RECORDINGS_DELETE | ACCESS_RECORDINGS_DELETE);
+  m_accessLevel = ReadIntSetting("accesscontrol", ACCESS_RECORDINGS | ACCESS_TIMERS| ACCESS_RECORDINGS_DELETE);
 
   m_showRadio = ReadBoolSetting("showradio", true);
 

@@ -54,6 +54,7 @@ namespace NextPVR
   const int ACCESS_RECORDINGS = (1 << 0);
   const int ACCESS_RECORDINGS_DELETE = (1 << 1);
   const int ACCESS_TIMERS = (1 << 2);
+  const int ACCESS_BLOCKLIVETV = (1 << 3);
 
   class ATTR_DLL_LOCAL InstanceSettings
   {
