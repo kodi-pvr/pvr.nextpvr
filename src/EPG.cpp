@@ -267,7 +267,7 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
             // if single value passed assume base 4
             if (denominator == 0)
               denominator = 4;
-            int starRating = (quotient / denominator * 10.0) + 0.5;
+            int starRating = std::lround(quotient / denominator * 10.0);
             broadcast.SetStarRating(starRating);
           }
         }
