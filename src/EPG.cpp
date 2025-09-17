@@ -46,7 +46,11 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
     kodi::Log(ADDON_LOG_DEBUG, "Skipping expired EPG data %d %ld %lld", channelUid, start, end);
     return PVR_ERROR_INVALID_PARAMETERS;
   }
-  std::string request = kodi::tools::StringUtils::Format("channel.listings&channel_id=%d&start=%d&end=%d&genre=all", channelUid, static_cast<int>(start), static_cast<int>(end));
+  std::string channelListings = "channel.listings&channel_id=%d&start=%d&end=%d&genre=all";
+  if (m_settings->m_backendVersion > 70002)
+    channelListings += "&fastart";
+
+  std::string request = kodi::tools::StringUtils::Format(channelListings.c_str(), channelUid, static_cast<int>(start), static_cast<int>(end));
   if (m_settings->m_castcrew)
     request.append("&extras=true");
 
@@ -93,23 +97,26 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
       {
         kodi::tools::StringUtils::Replace(description, base_match[0].str(), base_match[1].str() + " ");
       }
-
       broadcast.SetPlot(description);
 
       std::string artworkPath;
-      if (m_settings->m_downloadGuideArtwork)
+      if (!XMLUtils::GetString(pListingNode, "deferredartwork", artworkPath))
       {
-        if (m_settings->m_sendSidWithMetadata)
-          artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&name=%s", m_settings->m_urlBase, m_request.GetSID(), UriEncode(title).c_str());
-        else
-          artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&name=%s", m_settings->m_urlBase, UriEncode(title).c_str());
+        if (m_settings->m_downloadGuideArtwork)
+        {
+          if (m_settings->m_sendSidWithMetadata)
+            artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&sid=%s&name=%s", m_settings->m_urlBase, m_request.GetSID(), UriEncode(title).c_str());
+          else
+            artworkPath = kodi::tools::StringUtils::Format("%s/service?method=channel.show.artwork&name=%s", m_settings->m_urlBase, UriEncode(title).c_str());
 
-        if (m_settings->m_guideArtPortrait)
-          artworkPath += "&prefer=poster";
-        else
-          artworkPath += "&prefer=landscape";
-        broadcast.SetIconPath(artworkPath);
+          if (m_settings->m_guideArtPortrait)
+            artworkPath += "&prefer=poster";
+          else
+            artworkPath += "&prefer=landscape";
+        }
       }
+      if (!artworkPath.empty())
+        broadcast.SetIconPath(artworkPath);
       std::string sGenre;
       if (XMLUtils::GetString(pListingNode, "genre", sGenre))
       {
