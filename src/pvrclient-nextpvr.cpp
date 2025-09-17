@@ -84,10 +84,9 @@ std::string UriEncode(const std::string sSrc)
 /************************************************************/
 /** Class interface */
 
-cPVRClientNextPVR::cPVRClientNextPVR(const CNextPVRAddon& base, const kodi::addon::IInstanceInfo& instance, bool first) :
+cPVRClientNextPVR::cPVRClientNextPVR(const kodi::addon::IInstanceInfo& instance) :
   kodi::addon::CInstancePVRClient(instance),
-  m_base(base),
-  m_settings(new InstanceSettings(*this, instance, first)),
+  m_settings(new InstanceSettings(*this, instance)),
   m_request(m_settings),
   m_channels(m_settings, m_request),
   m_timers(m_settings, m_request, m_channels, *this),

@@ -34,24 +34,30 @@ ADDON_STATUS CNextPVRAddon::Create()
 ADDON_STATUS CNextPVRAddon::CreateInstance(const kodi::addon::IInstanceInfo& instance,
                                            KODI_ADDON_INSTANCE_HDL& hdl)
 {
+  std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
-  /* Create connection to NextPVR KODI TV client */
-  cPVRClientNextPVR* client = new cPVRClientNextPVR(*this, instance, IsFirstInstance());
+  ADDON_STATUS status = ADDON_STATUS_UNKNOWN;
 
-  if (SettingsMigration::MigrateSettings(*client))
+  if (instance.IsType(ADDON_INSTANCE_PVR))
   {
-    // Initial client operated on old/incomplete settings
-    delete client;
-    client = new cPVRClientNextPVR(*this, instance, IsFirstInstance());
-  }
+    /* Create connection to NextPVR KODI TV client */
+    cPVRClientNextPVR* client = new cPVRClientNextPVR(instance);
 
-  ADDON_STATUS status = client->Connect();
+    if (SettingsMigration::MigrateSettings(*client))
+    {
+      // Initial client operated on old/incomplete settings
+      delete client;
+      client = new cPVRClientNextPVR(instance);
+    }
 
-  if (status != ADDON_STATUS_PERMANENT_FAILURE)
-  {
-    status = ADDON_STATUS_OK;
-    hdl = client;
-    m_usedInstances.emplace(std::make_pair(instance.GetID(), client));
+    status = client->Connect();
+
+    if (status != ADDON_STATUS_PERMANENT_FAILURE)
+    {
+      status = ADDON_STATUS_OK;
+      hdl = client;
+      m_usedInstances.emplace(std::make_pair(instance.GetID(), client));
+    }
   }
 
   return status;
