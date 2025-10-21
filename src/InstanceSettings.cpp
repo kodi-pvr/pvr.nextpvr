@@ -18,12 +18,11 @@ using namespace NextPVR::utilities;
 
 const std::string connectionFlag = "connection.flag";
 
-InstanceSettings::InstanceSettings(kodi::addon::IAddonInstance& instance, const kodi::addon::IInstanceInfo& instanceInfo, bool first) :
+InstanceSettings::InstanceSettings(kodi::addon::IAddonInstance& instance, const kodi::addon::IInstanceInfo& instanceInfo) :
   m_instance(instance),
-  m_instanceInfo(instanceInfo),
-  m_instancePriority(first)
+  m_instanceNumber (instanceInfo.GetNumber()),
+  m_instancePriority(instanceInfo.FirstInstance())
 {
-  m_instanceNumber = m_instanceInfo.GetNumber();
   m_instanceDirectory = kodi::tools::StringUtils::Format("special://profile/addon_data/pvr.nextpvr/%d/", m_instanceNumber);
   ReadFromAddon();
 }
@@ -81,7 +80,7 @@ void InstanceSettings::ReadFromAddon()
 
   m_resolution = ReadStringSetting("resolution", "720");
 
-  m_accessLevel = ReadIntSetting("accesscontrol", ACCESS_RECORDINGS | ACCESS_RECORDINGS_DELETE | ACCESS_RECORDINGS_DELETE);
+  m_accessLevel = ReadIntSetting("accesscontrol", ACCESS_RECORDINGS | ACCESS_TIMERS| ACCESS_RECORDINGS_DELETE);
 
   m_showRadio = ReadBoolSetting("showradio", true);
 
@@ -129,7 +128,7 @@ void InstanceSettings::ReadFromAddon()
   if (m_multiStream)
     m_recordingPoster = ReadBoolSetting("poster", true);
 
-c:  enum eHeartbeat m_heartbeat = ReadEnumSetting<eHeartbeat>("heartbeat", eHeartbeat::Default);
+  enum eHeartbeat m_heartbeat = ReadEnumSetting<eHeartbeat>("heartbeat", eHeartbeat::Default);
 
   if (m_heartbeat == eHeartbeat::Default)
     m_heartbeatInterval = DEFAULT_HEARTBEAT;

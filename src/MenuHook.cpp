@@ -63,6 +63,7 @@ PVR_ERROR MenuHook::CallChannelMenuHook(const kodi::addon::PVRMenuhook& menuhook
   if (menuhook.GetHookId() == PVR_MENUHOOK_CHANNEL_DELETE_SINGLE_CHANNEL_ICON)
   {
     m_channels.DeleteChannelIcon(item.GetUniqueId());
+    m_pvrclient.TriggerChannelUpdate();
   }
 
   return PVR_ERROR_NO_ERROR;

@@ -47,7 +47,6 @@ namespace NextPVR
     void ClearSID() { m_sid.clear(); m_sidUpdate = 0; };
     void RenewSID() { m_sidUpdate = time(nullptr); };
     bool IsActiveSID() { return !m_sid.empty() && time(nullptr) < m_sidUpdate + 3600; };
-    Request(InstanceSettings* settings);
     Request(const std::shared_ptr<InstanceSettings>& settings);
 
   private:

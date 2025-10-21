@@ -118,7 +118,7 @@ bool GenreMapper::LoadTextToIdGenreFile(const std::string& xmlFile, std::map<std
   if (loadXml.OpenFile(xmlFile, ADDON_READ_NO_CACHE))
   {
     char buffer[1025] = { 0 };
-    int count;
+    ssize_t count;
     while ((count = loadXml.Read(buffer, 1024)))
     {
       fileContents.append(buffer, count);
@@ -162,7 +162,6 @@ bool GenreMapper::LoadTextToIdGenreFile(const std::string& xmlFile, std::map<std
     if (!textMapping.empty())
     {
       map.insert({ textMapping, type | subtype });
-      kodi::Log(ADDON_LOG_DEBUG, "%s Read Text Mapping text=%s, targetId=%#02X", __func__, textMapping.c_str(), type|subtype);
     }
   }
   return true;

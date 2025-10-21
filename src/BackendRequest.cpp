@@ -296,8 +296,4 @@ namespace NextPVR
     m_settings(settings)
   {
   }
-  Request::Request(InstanceSettings* settings) :
-    m_settings(settings)
-  {
-  }
 } // namespace NextPVR

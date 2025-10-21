@@ -54,12 +54,13 @@ namespace NextPVR
   const int ACCESS_RECORDINGS = (1 << 0);
   const int ACCESS_RECORDINGS_DELETE = (1 << 1);
   const int ACCESS_TIMERS = (1 << 2);
+  const int ACCESS_BLOCKLIVETV = (1 << 3);
 
   class ATTR_DLL_LOCAL InstanceSettings
   {
   public:
 
-    explicit InstanceSettings(kodi::addon::IAddonInstance& instance, const kodi::addon::IInstanceInfo& instanceInfo, bool empty);
+    explicit InstanceSettings(kodi::addon::IAddonInstance& instance, const kodi::addon::IInstanceInfo& instanceInfo);
     ADDON_STATUS ReadBackendSettings(tinyxml2::XMLDocument& settingsDoc);
     bool CheckInstanceSettings();
     void SetConnection(bool status);
@@ -84,7 +85,7 @@ namespace NextPVR
 
     //General
     int m_backendVersion = 0;
-    int32_t m_instanceNumber = 0;
+    const int32_t m_instanceNumber = 0;
     std::string m_instanceDirectory;
     std::string m_instanceName;
     enum eHeartbeat m_heartbeat;
@@ -134,7 +135,6 @@ namespace NextPVR
   private:
 
     kodi::addon::IAddonInstance& m_instance;
-    const kodi::addon::IInstanceInfo& m_instanceInfo;
     InstanceSettings(InstanceSettings const&) = delete;
     void operator=(InstanceSettings const&) = delete;
 

@@ -16,6 +16,7 @@
 
 #include <kodi/AddonBase.h>
 #include <unordered_map>
+#include <mutex>
 
 class cPVRClientNextPVR;
 
@@ -26,14 +27,15 @@ public:
 
   ADDON_STATUS Create() override;
   ADDON_STATUS SetSetting(const std::string& settingName,
-  const kodi::addon::CSettingValue& settingValue) override;
+                          const kodi::addon::CSettingValue& settingValue) override;
   ADDON_STATUS CreateInstance(const kodi::addon::IInstanceInfo& instance,
-  KODI_ADDON_INSTANCE_HDL& hdl) override;
+                              KODI_ADDON_INSTANCE_HDL& hdl) override;
   void DestroyInstance(const kodi::addon::IInstanceInfo& instance,
-  const KODI_ADDON_INSTANCE_HDL hdl) override;
+                       const KODI_ADDON_INSTANCE_HDL hdl) override;
   bool IsFirstInstance() { return m_usedInstances.empty();}
 
 private:
+  std::recursive_mutex m_mutex;
   std::unordered_map<std::string, cPVRClientNextPVR*> m_usedInstances;
 };
 

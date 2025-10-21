@@ -41,9 +41,9 @@ class ATTR_DLL_LOCAL cPVRClientNextPVR : public kodi::addon::CInstancePVRClient
 {
 public:
   /* Class interface */
-  cPVRClientNextPVR(const CNextPVRAddon& base, const kodi::addon::IInstanceInfo& instance, bool first);
+  cPVRClientNextPVR(const kodi::addon::IInstanceInfo& instance);
 
-  ~cPVRClientNextPVR();
+  ~cPVRClientNextPVR() override;
 
   // kodi::addon::CInstancePVRClient -> kodi::addon::IAddonInstance overrides
   ADDON_STATUS SetInstanceSetting(const std::string& settingName,
@@ -140,7 +140,6 @@ protected:
 
 private:
   void ConfigurePostConnectionOptions();
-  const CNextPVRAddon& m_base;
 
   bool m_bConnected;
   std::atomic<bool> m_running = { false };

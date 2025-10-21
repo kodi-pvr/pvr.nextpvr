@@ -48,7 +48,7 @@ std::string UriEncode(const std::string sSrc)
 {
   const char DEC2HEX[16 + 1] = "0123456789ABCDEF";
   const unsigned char* pSrc = (const unsigned char*)sSrc.c_str();
-  const int SRC_LEN = sSrc.length();
+  const size_t SRC_LEN = sSrc.length();
   unsigned char* const pStart = new unsigned char[SRC_LEN * 3];
   unsigned char* pEnd = pStart;
   const unsigned char* const SRC_END = pSrc + SRC_LEN;
@@ -84,10 +84,9 @@ std::string UriEncode(const std::string sSrc)
 /************************************************************/
 /** Class interface */
 
-cPVRClientNextPVR::cPVRClientNextPVR(const CNextPVRAddon& base, const kodi::addon::IInstanceInfo& instance, bool first) :
+cPVRClientNextPVR::cPVRClientNextPVR(const kodi::addon::IInstanceInfo& instance) :
   kodi::addon::CInstancePVRClient(instance),
-  m_base(base),
-  m_settings(new InstanceSettings(*this, instance, first)),
+  m_settings(new InstanceSettings(*this, instance)),
   m_request(m_settings),
   m_channels(m_settings, m_request),
   m_timers(m_settings, m_request, m_channels, *this),
@@ -99,7 +98,8 @@ cPVRClientNextPVR::cPVRClientNextPVR(const CNextPVRAddon& base, const kodi::addo
   if (!kodi::vfs::DirectoryExists(m_settings->m_instanceDirectory))
   {
     // check new installation of the first instance, upgrades will migrate
-    if (first && !kodi::vfs::FileExists("special://profile/addon_data/pvr.nextpvr/settings.xml"))
+    if (m_settings->m_instanceNumber == 1 && strcmp(m_settings->m_urlBase,"http://127.0.0.1:8866") == 0 && instance.FirstInstance() &&
+        !kodi::vfs::FileExists("special://profile/addon_data/pvr.nextpvr/settings.xml"))
     {
       m_request.OneTimeSetup();
     }
@@ -529,8 +529,6 @@ void cPVRClientNextPVR::SendWakeOnLan()
 void cPVRClientNextPVR::SetConnectionState(PVR_CONNECTION_STATE state, std::string displayMessage)
 {
   ConnectionStateChange("", state, displayMessage);
-  if (state == PVR_CONNECTION_STATE_CONNECTED && m_coreState != PVR_CONNECTION_STATE_UNKNOWN)
-    TriggerChannelGroupsUpdate();
   m_connectionState = state;
   m_coreState = state;
 }
@@ -1106,15 +1104,15 @@ PVR_ERROR cPVRClientNextPVR::GetCapabilities(kodi::addon::PVRCapabilities& capab
 {
   kodi::Log(ADDON_LOG_DEBUG, "->GetCapabilities()");
 
-  capabilities.SetSupportsEPG(true);
+  capabilities.SetSupportsEPG(!(m_settings->m_accessLevel & ACCESS_BLOCKLIVETV));
   capabilities.SetSupportsRecordings(m_settings->m_accessLevel & ACCESS_RECORDINGS);
   capabilities.SetSupportsRecordingsDelete(m_settings->m_accessLevel & ACCESS_RECORDINGS_DELETE);
   capabilities.SetSupportsRecordingsUndelete(false);
   capabilities.SetSupportsRecordingSize(m_settings->m_showRecordingSize);
   capabilities.SetSupportsTimers(m_settings->m_accessLevel & ACCESS_TIMERS);
-  capabilities.SetSupportsTV(true);
+  capabilities.SetSupportsTV(!(m_settings->m_accessLevel & ACCESS_BLOCKLIVETV));
   capabilities.SetSupportsRadio(m_settings->m_showRadio);
-  capabilities.SetSupportsChannelGroups(true);
+  capabilities.SetSupportsChannelGroups(!(m_settings->m_accessLevel & ACCESS_BLOCKLIVETV));
   capabilities.SetHandlesInputStream(true);
   capabilities.SetHandlesDemuxing(false);
   capabilities.SetSupportsChannelScan(false);

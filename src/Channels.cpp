@@ -29,7 +29,7 @@ int Channels::GetNumChannels()
 {
   // Kodi polls this while recordings are open avoid calls to backend
   std::lock_guard<std::recursive_mutex> lock(m_channelMutex);
-  int channelCount = m_channelDetails.size();
+  size_t channelCount = m_channelDetails.size();
   if (channelCount == 0)
   {
     tinyxml2::XMLDocument doc;
@@ -72,6 +72,7 @@ std::string Channels::GetChannelIconFileName(int channelID)
 void  Channels::DeleteChannelIcon(int channelID)
 {
   kodi::vfs::DeleteFile(GetChannelIconFileName(channelID));
+  ChannelCacheChanged(time(nullptr));
 }
 
 void Channels::DeleteChannelIcons()
@@ -86,6 +87,7 @@ void Channels::DeleteChannelIcons()
       kodi::Log(ADDON_LOG_DEBUG, "DeleteFile %s rc:%d", kodi::vfs::TranslateSpecialProtocol(deleteme).c_str(), kodi::vfs::DeleteFile(deleteme));
     }
   }
+  ChannelCacheChanged(time(nullptr));
 }
 
 PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& results)
@@ -217,7 +219,6 @@ PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsRe
         if (XMLUtils::GetAdditiveString(pChannelNode->FirstChildElement("groups"), "group", "\t", buffer, true))
         {
           std::vector<std::string> groups = kodi::tools::StringUtils::Split(buffer, '\t');
-          XMLUtils::GetString(pChannelNode, "type", buffer);
           for (auto const& group : groups)
           {
             if (selectedGroups.find(group) == selectedGroups.end())
