@@ -450,6 +450,14 @@ msgctxt "#30720"
 msgid "Extract extra recording metadata from backend"
 msgstr "백엔드에서 추가 녹음 메타데이터 추출"
 
+msgctxt "#30221"
+msgid "Play and delete recordings only"
+msgstr ""
+
+msgctxt "#30222"
+msgid "Play recordings only"
+msgstr ""
+
 #~ msgctxt "#30504"
 #~ msgid "Not enabled for Matrix when remote"
 #~ msgstr "원격에서 매트릭스에 사용 안 함"
