@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: KODI Main\n"
-"Report-Msgid-Bugs-To: translations@kodi.tv\n"
+"Report-Msgid-Bugs-To: https://github.com/xbmc/xbmc/issues/\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "PO-Revision-Date: 2025-10-01 07:29+0000\n"
 "Last-Translator: wabisabi926 <liwenliang926@163.com>\n"
@@ -448,6 +448,14 @@ msgstr ""
 
 msgctxt "#30720"
 msgid "Extract extra recording metadata from backend"
+msgstr ""
+
+msgctxt "#30221"
+msgid "Play and delete recordings only"
+msgstr ""
+
+msgctxt "#30222"
+msgid "Play recordings only"
 msgstr ""
 
 #~ msgctxt "#30000"

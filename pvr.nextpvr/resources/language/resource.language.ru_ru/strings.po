@@ -450,6 +450,14 @@ msgctxt "#30720"
 msgid "Extract extra recording metadata from backend"
 msgstr "Извлечь дополнительные метаданные записи из бэкенда"
 
+msgctxt "#30221"
+msgid "Play and delete recordings only"
+msgstr ""
+
+msgctxt "#30222"
+msgid "Play recordings only"
+msgstr ""
+
 #~ msgctxt "#30504"
 #~ msgid "Not enabled for Matrix when remote"
 #~ msgstr "Не включено для Matrix при удаленном управлении"

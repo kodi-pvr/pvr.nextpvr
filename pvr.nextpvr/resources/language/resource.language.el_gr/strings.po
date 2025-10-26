@@ -450,6 +450,14 @@ msgctxt "#30720"
 msgid "Extract extra recording metadata from backend"
 msgstr ""
 
+msgctxt "#30221"
+msgid "Play and delete recordings only"
+msgstr ""
+
+msgctxt "#30222"
+msgid "Play recordings only"
+msgstr ""
+
 #~ msgctxt "#30000"
 #~ msgid "NextPVR Hostname"
 #~ msgstr "Όνομα Υπολογιστή του NextPVR"
