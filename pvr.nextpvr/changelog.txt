@@ -1,3 +1,7 @@
+v22.5.2
+- Translations updates from Weblate
+	- de_de
+
 v22.5.0
 - Add option to disable LiveTV
 - Code initialization and cleanup
