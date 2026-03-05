@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  Copyright (C) 2005-2023 Team Kodi (https://kodi.tv)
  *
  *  SPDX-License-Identifier: GPL-2.0-or-later
@@ -59,8 +59,8 @@ namespace NextPVR
   bool Request::DoActionRequest(std::string resource)
   {
     // caller only wants success/failure
-    tinyxml2::XMLDocument doc;
-    return DoMethodRequest(resource, doc, false) == tinyxml2::XML_SUCCESS;
+    auto doc = std::make_unique<tinyxml2::XMLDocument>();
+    return DoMethodRequest(resource, *doc, false) == tinyxml2::XML_SUCCESS;
   }
 
   tinyxml2::XMLError Request::DoMethodRequest(std::string resource, tinyxml2::XMLDocument& doc, bool compressed)
@@ -106,7 +106,7 @@ namespace NextPVR
 
   tinyxml2::XMLError Request::ParseMethodRequest(tinyxml2::XMLDocument& doc, const std::string& xml)
   {
-    tinyxml2::XMLError retError = doc.Parse(xml.c_str());;
+    tinyxml2::XMLError retError = doc.Parse(xml.c_str());
     if (retError == tinyxml2::XML_SUCCESS)
     {
       const char* attrib = doc.RootElement()->Attribute("stat");
@@ -142,12 +142,12 @@ namespace NextPVR
 
   tinyxml2::XMLError Request::GetLastUpdate(std::string resource, time_t& last_update)
   {
-    tinyxml2::XMLDocument doc;
-    tinyxml2::XMLError xmlReturn = DoMethodRequest(resource, doc, false);
+    auto doc = std::make_unique<tinyxml2::XMLDocument>();
+    tinyxml2::XMLError xmlReturn = DoMethodRequest(resource, *doc, false);
     if ( xmlReturn == tinyxml2::XML_SUCCESS)
     {
       int64_t value{ 0 };
-      if (!XMLUtils::GetLong(doc.RootElement(), "last_update", value))
+      if (!XMLUtils::GetLong(doc->RootElement(), "last_update", value))
       {
         xmlReturn = tinyxml2::XML_NO_TEXT_NODE;
       }

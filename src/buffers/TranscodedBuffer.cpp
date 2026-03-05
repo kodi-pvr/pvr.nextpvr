@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  Copyright (C) 2020-2023 Team Kodi (https://kodi.tv)
  *
  *  SPDX-License-Identifier: GPL-2.0-or-later
@@ -71,18 +71,18 @@ void TranscodedBuffer::Close()
 int TranscodedBuffer::TranscodeStatus()
 {
   int percentage = -1;
-  tinyxml2::XMLDocument doc;
-  if (m_request.DoMethodRequest("channel.transcode.status", doc) == tinyxml2::XML_SUCCESS)
+  auto doc = std::make_unique<tinyxml2::XMLDocument>();
+  if (m_request.DoMethodRequest("channel.transcode.status", *doc) == tinyxml2::XML_SUCCESS)
   {
     bool final;
-    XMLUtils::GetInt(doc.RootElement(), "percentage", percentage);
-    XMLUtils::GetBoolean(doc.RootElement(), "final", final);
+    XMLUtils::GetInt(doc->RootElement(), "percentage", percentage);
+    XMLUtils::GetBoolean(doc->RootElement(), "final", final);
     if (final)
     {
       if (percentage != 100)
       {
         tinyxml2::XMLPrinter printer;
-        doc.Print(&printer);
+        doc->Print(&printer);
         kodi::Log(ADDON_LOG_DEBUG, "%s:%d: %s", __FUNCTION__, __LINE__, printer.CStr());
         percentage = -1;
       }

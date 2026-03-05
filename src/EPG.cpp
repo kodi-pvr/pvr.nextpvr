@@ -54,11 +54,11 @@ PVR_ERROR EPG::GetEPGForChannel(int channelUid, time_t start, time_t end, kodi::
   if (m_settings->m_castcrew)
     request.append("&extras=true");
 
-  tinyxml2::XMLDocument doc;
+  auto doc = std::make_unique<tinyxml2::XMLDocument>();
 
-  if (m_request.DoMethodRequest(request, doc) == tinyxml2::XML_SUCCESS)
+  if (m_request.DoMethodRequest(request, *doc) == tinyxml2::XML_SUCCESS)
   {
-    tinyxml2::XMLNode* listingsNode = doc.RootElement()->FirstChildElement("listings");
+    tinyxml2::XMLNode* listingsNode = doc->RootElement()->FirstChildElement("listings");
     for (const tinyxml2::XMLNode* pListingNode = listingsNode->FirstChildElement("l"); pListingNode; pListingNode = pListingNode->NextSiblingElement())
     {
       kodi::addon::PVREPGTag broadcast;

@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  Copyright (C) 2005-2023 Team Kodi (https://kodi.tv)
  *
  *  SPDX-License-Identifier: GPL-2.0-or-later
@@ -63,11 +63,11 @@ bool SettingsMigration::MigrateSettings(kodi::addon::IAddonInstance& target)
     return false;
   }
     // ask XBMC to read settings for us
-  tinyxml2::XMLDocument doc;
+  auto doc = std::make_unique<tinyxml2::XMLDocument>();
 
-  if (doc.LoadFile(kodi::vfs::TranslateSpecialProtocol("special://profile/addon_data/pvr.nextpvr/settings.xml").c_str()) == tinyxml2::XML_SUCCESS)
+  if (doc->LoadFile(kodi::vfs::TranslateSpecialProtocol("special://profile/addon_data/pvr.nextpvr/settings.xml").c_str()) == tinyxml2::XML_SUCCESS)
   {
-    tinyxml2::XMLNode* rootNode = doc.FirstChild();
+    tinyxml2::XMLNode* rootNode = doc->FirstChild();
     if (rootNode == nullptr)
       return false;
 

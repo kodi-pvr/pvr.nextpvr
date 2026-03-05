@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  Copyright (C) 2015-2023 Team Kodi (https://kodi.tv)
  *  Copyright (C) 2015 Sam Stenvall
  *
@@ -33,10 +33,10 @@ int RecordingBuffer::Duration(void)
     int currentDuration = static_cast<int>(time(nullptr) - m_recordingTime) - 15;
     if (currentDuration > m_Duration)
     {
-      tinyxml2::XMLDocument doc;
-      if (m_request.DoMethodRequest("recording.list&recording_id=" + m_recordingID, doc) == tinyxml2::XML_SUCCESS)
+      auto doc = std::make_unique<tinyxml2::XMLDocument>();
+      if (m_request.DoMethodRequest("recording.list&recording_id=" + m_recordingID, *doc) == tinyxml2::XML_SUCCESS)
       {
-        tinyxml2::XMLElement* recordingNode = doc.RootElement()->FirstChildElement("recordings")->FirstChildElement("recording");
+        tinyxml2::XMLElement* recordingNode = doc->RootElement()->FirstChildElement("recordings")->FirstChildElement("recording");
         std::string status;
 
         XMLUtils::GetString(recordingNode, "status", status);

@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  Copyright (C) 2015-2023 Team Kodi (https://kodi.tv)
  *  Copyright (C) 2015 Sam Stenvall
  *
@@ -100,9 +100,9 @@ void Buffer::LeaseWorker(void)
 
 enum LeaseStatus Buffer::Lease()
 {
-  tinyxml2::XMLDocument doc;
+  auto doc = std::make_unique<tinyxml2::XMLDocument>();
   enum LeaseStatus retval;
-  tinyxml2::XMLError status = m_request.DoMethodRequest("channel.transcode.lease", doc);
+  tinyxml2::XMLError status = m_request.DoMethodRequest("channel.transcode.lease", *doc);
   if (status == tinyxml2::XML_SUCCESS)
     retval = Leased;
   else if (status == tinyxml2::XML_NO_ATTRIBUTE)

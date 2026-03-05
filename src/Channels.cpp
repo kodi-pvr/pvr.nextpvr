@@ -32,10 +32,10 @@ int Channels::GetNumChannels()
   size_t channelCount = m_channelDetails.size();
   if (channelCount == 0)
   {
-    tinyxml2::XMLDocument doc;
-    if (GetChannelList(doc) == tinyxml2::XML_SUCCESS)
+  auto doc = std::make_unique<tinyxml2::XMLDocument>();
+    if (GetChannelList(*doc) == tinyxml2::XML_SUCCESS)
     {
-      tinyxml2::XMLNode* channelsNode = doc.RootElement()->FirstChildElement("channels");
+      tinyxml2::XMLNode* channelsNode = doc->RootElement()->FirstChildElement("channels");
       tinyxml2::XMLNode* pChannelNode;
       for( pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode=pChannelNode->NextSiblingElement())
       {
@@ -97,10 +97,10 @@ PVR_ERROR Channels::GetChannels(bool radio, kodi::addon::PVRChannelsResultSet& r
   PVR_ERROR returnValue = PVR_ERROR_NO_ERROR;
   std::string stream;
 
-  tinyxml2::XMLDocument doc;
-  if (GetChannelList(doc) == tinyxml2::XML_SUCCESS)
+  auto doc = std::make_unique<tinyxml2::XMLDocument>();
+  if (GetChannelList(*doc) == tinyxml2::XML_SUCCESS)
   {
-    tinyxml2::XMLNode* channelsNode = doc.RootElement()->FirstChildElement("channels");
+    tinyxml2::XMLNode* channelsNode = doc->RootElement()->FirstChildElement("channels");
     tinyxml2::XMLNode* pChannelNode;
     for( pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode=pChannelNode->NextSiblingElement())
     {
@@ -189,10 +189,10 @@ PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsRe
 
   selectedGroups.clear();
   bool hasAllChannels = false;
-  tinyxml2::XMLDocument doc;
-  if (GetChannelList(doc) == tinyxml2::XML_SUCCESS)
+  auto doc = std::make_unique<tinyxml2::XMLDocument>();
+  if (GetChannelList(*doc) == tinyxml2::XML_SUCCESS)
   {
-    tinyxml2::XMLNode* channelsNode = doc.RootElement()->FirstChildElement("channels");
+    tinyxml2::XMLNode* channelsNode = doc->RootElement()->FirstChildElement("channels");
     tinyxml2::XMLNode* pChannelNode;
     for( pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode=pChannelNode->NextSiblingElement())
     {
@@ -239,10 +239,10 @@ PVR_ERROR Channels::GetChannelGroups(bool radio, kodi::addon::PVRChannelGroupsRe
   if (selectedGroups.size() == 0)
     return PVR_ERROR_NO_ERROR;
 
-  doc.Clear();
-  if (m_request.DoMethodRequest("channel.groups", doc) == tinyxml2::XML_SUCCESS)
+  doc->Clear();
+  if (m_request.DoMethodRequest("channel.groups", *doc) == tinyxml2::XML_SUCCESS)
   {
-    tinyxml2::XMLNode* groupsNode = doc.RootElement()->FirstChildElement("groups");
+    tinyxml2::XMLNode* groupsNode = doc->RootElement()->FirstChildElement("groups");
     tinyxml2::XMLNode* pGroupNode;
     std::string group;
     for (pGroupNode = groupsNode->FirstChildElement("group"); pGroupNode; pGroupNode = pGroupNode->NextSiblingElement())
@@ -273,22 +273,22 @@ PVR_ERROR Channels::GetChannelGroupMembers(const kodi::addon::PVRChannelGroup& g
 {
   PVR_ERROR returnValue = PVR_ERROR_SERVER_ERROR;
 
-  tinyxml2::XMLDocument doc;
+  auto doc = std::make_unique<tinyxml2::XMLDocument>();
   tinyxml2::XMLError retCode;
   if (group.GetGroupName() == GetAllChannelsGroupName(group.GetIsRadio()))
   {
-    retCode = GetChannelList(doc);
+    retCode = GetChannelList(*doc);
   }
   else
   {
     const std::string encodedGroupName = UriEncode(group.GetGroupName());
-    retCode = m_request.DoMethodRequest("channel.list&group_id=" + encodedGroupName, doc);
+    retCode = m_request.DoMethodRequest("channel.list&group_id=" + encodedGroupName, *doc);
   }
 
   if (retCode == tinyxml2::XML_SUCCESS)
   {
     std::lock_guard<std::recursive_mutex> lock(m_channelMutex);
-    tinyxml2::XMLNode* channelsNode = doc.RootElement()->FirstChildElement("channels");
+    tinyxml2::XMLNode* channelsNode = doc->RootElement()->FirstChildElement("channels");
     tinyxml2::XMLNode* pChannelNode;
     for (pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode = pChannelNode->NextSiblingElement())
     {
@@ -346,10 +346,10 @@ void Channels::LoadLiveStreams()
   m_liveStreams.clear();
   if (m_request.DoRequest(URL, response) == HTTP_OK)
   {
-    tinyxml2::XMLDocument doc;
-    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
+    auto doc = std::make_unique<tinyxml2::XMLDocument>();
+    if (doc->Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
     {
-      tinyxml2::XMLNode* streamsNode = doc.FirstChildElement("streams");
+      tinyxml2::XMLNode* streamsNode = doc->FirstChildElement("streams");
       if (streamsNode)
       {
         tinyxml2::XMLElement* streamNode;
@@ -389,7 +389,7 @@ bool Channels::ChannelCacheChanged(time_t updateTime)
 
   if (updateTime == cacheTime)
     return false;
-  else 
+  else
   {
     // change EPG updateTime
     response.clear();
@@ -501,10 +501,10 @@ bool Channels::ResetChannelCache(time_t updateTime)
 
 bool Channels::LoadChannelDetails()
 {
-  tinyxml2::XMLDocument doc;
-  if (GetChannelList(doc) == tinyxml2::XML_SUCCESS)
+  auto doc = std::make_unique<tinyxml2::XMLDocument>();
+  if (GetChannelList(*doc) == tinyxml2::XML_SUCCESS)
   {
-    tinyxml2::XMLNode* channelsNode = doc.RootElement()->FirstChildElement("channels");
+    tinyxml2::XMLNode* channelsNode = doc->RootElement()->FirstChildElement("channels");
     tinyxml2::XMLNode* pChannelNode;
     for (pChannelNode = channelsNode->FirstChildElement("channel"); pChannelNode; pChannelNode = pChannelNode->NextSiblingElement())
     {
