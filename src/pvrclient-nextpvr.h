@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  Copyright (C) 2005-2023 Team Kodi (https://kodi.tv)
  *
  *  SPDX-License-Identifier: GPL-2.0-or-later
@@ -12,7 +12,7 @@
 /* Master defines for client control */
 #include <kodi/AddonBase.h>
 #include <kodi/addon-instance/PVR.h>
-
+#include "kodi/tools/Thread.h"
 /* Local includes */
 
 #include "Channels.h"
@@ -37,8 +37,8 @@ enum eNowPlaying
   Transcoding
 };
 
-class ATTR_DLL_LOCAL cPVRClientNextPVR : public kodi::addon::CInstancePVRClient
-{
+class ATTR_DLL_LOCAL cPVRClientNextPVR : public kodi::addon::CInstancePVRClient,
+                                         public kodi::tools::CThread {
 public:
   /* Class interface */
   cPVRClientNextPVR(const kodi::addon::IInstanceInfo& instance);
@@ -141,9 +141,8 @@ protected:
 private:
   void ConfigurePostConnectionOptions();
 
-  bool m_bConnected;
+  std::atomic<bool> m_bConnected{ false };
   std::atomic<bool> m_running = { false };
-  std::thread m_thread;
   bool m_supportsLiveTimeshift;
 
   int m_timeShiftBufferSeconds;

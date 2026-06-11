@@ -45,10 +45,10 @@ PVR_ERROR Recordings::GetRecordingsAmount(bool deleted, int& amount)
     return PVR_ERROR_NO_ERROR;
   }
 
-  tinyxml2::XMLDocument doc;
-  if (m_request.DoMethodRequest("recording.list&filter=ready", doc) == tinyxml2::XML_SUCCESS)
+  auto doc = std::make_unique<tinyxml2::XMLDocument>();
+  if (m_request.DoMethodRequest("recording.list&filter=ready", *doc) == tinyxml2::XML_SUCCESS)
   {
-    tinyxml2::XMLNode* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
+    tinyxml2::XMLNode* recordingsNode = doc->RootElement()->FirstChildElement("recordings");
     if (recordingsNode != nullptr)
     {
       tinyxml2::XMLNode* pRecordingNode;
@@ -69,9 +69,9 @@ PVR_ERROR Recordings::GetDriveSpace(uint64_t& total, uint64_t& used)
   {
     if (m_mutexSpace.try_lock())
     {
-      tinyxml2::XMLDocument doc;
+      auto doc = std::make_unique<tinyxml2::XMLDocument>();
       // this call can take 3 seconds or longer.
-      if (m_request.DoMethodRequest("system.space", doc) == tinyxml2::XML_SUCCESS)
+      if (m_request.DoMethodRequest("system.space", *doc) == tinyxml2::XML_SUCCESS)
       {
         m_checkedSpace = time(nullptr) + 10;
         std::string free;
@@ -80,7 +80,7 @@ PVR_ERROR Recordings::GetDriveSpace(uint64_t& total, uint64_t& used)
         m_used = 0;
         m_total = 0;
         char* end;
-        for (tinyxml2::XMLElement* directoryNode = doc.RootElement()->FirstChildElement("directory"); directoryNode; directoryNode = directoryNode->NextSiblingElement("directory"))
+        for (tinyxml2::XMLElement* directoryNode = doc->RootElement()->FirstChildElement("directory"); directoryNode; directoryNode = directoryNode->NextSiblingElement("directory"))
         {
           const std::string name = directoryNode->Attribute("name");
           if (m_settings->m_diskSpace == "Default")
@@ -128,23 +128,23 @@ PVR_ERROR Recordings::GetRecordings(bool deleted, kodi::addon::PVRRecordingsResu
   m_lastPlayed.clear();
   m_playCount.clear();
   int recordingCount = 0;
-  tinyxml2::XMLDocument doc;
+  auto doc = std::make_unique<tinyxml2::XMLDocument>();
   if (m_settings->m_showRoot)
   {
     extraDirectories.clear();
 
-    if (m_request.DoMethodRequest("setting.get&key=/Settings/Recording/ExtraRecordingDirectories", doc) == tinyxml2::XML_SUCCESS)
+    if (m_request.DoMethodRequest("setting.get&key=/Settings/Recording/ExtraRecordingDirectories", *doc) == tinyxml2::XML_SUCCESS)
     {
-      tinyxml2::XMLNode* getKey = doc.RootElement();
+      tinyxml2::XMLNode* getKey = doc->RootElement();
       std::string value;
       XMLUtils::GetString(getKey, "value", value);
       value = kodi::tools::StringUtils::TrimRight(value, "~");
       kodi::Log(ADDON_LOG_DEBUG, value.c_str());
       extraDirectories = kodi::tools::StringUtils::Split(value, "~", 0);
     }
-    if (m_request.DoMethodRequest("setting.get&key=/Settings/Recording/RecordingDirectory", doc) == tinyxml2::XML_SUCCESS)
+    if (m_request.DoMethodRequest("setting.get&key=/Settings/Recording/RecordingDirectory", *doc) == tinyxml2::XML_SUCCESS)
     {
-      tinyxml2::XMLNode* getKey = doc.RootElement();
+      tinyxml2::XMLNode* getKey = doc->RootElement();
       std::string value;
       XMLUtils::GetString(getKey, "value", value);
       if (!value.empty()) {
@@ -153,9 +153,9 @@ PVR_ERROR Recordings::GetRecordings(bool deleted, kodi::addon::PVRRecordingsResu
       }
     }
   }
-  if (m_request.DoMethodRequest("recording.list&filter=all", doc) == tinyxml2::XML_SUCCESS)
+  if (m_request.DoMethodRequest("recording.list&filter=all", *doc) == tinyxml2::XML_SUCCESS)
   {
-    tinyxml2::XMLNode* recordingsNode = doc.RootElement()->FirstChildElement("recordings");
+    tinyxml2::XMLNode* recordingsNode = doc->RootElement()->FirstChildElement("recordings");
     tinyxml2::XMLNode* pRecordingNode;
     std::map<std::string, int> names;
     std::map<std::string, int> seasons;
@@ -224,11 +224,11 @@ PVR_ERROR Recordings::GetRecordingsLastPlayedPosition()
 {
   // include already-completed recordings
   PVR_ERROR returnValue = PVR_ERROR_NO_ERROR;
-  tinyxml2::XMLDocument doc;
-  if (m_request.DoMethodRequest("recording.list&filter=ready", doc) == tinyxml2::XML_SUCCESS)
+  auto doc = std::make_unique<tinyxml2::XMLDocument>();
+  if (m_request.DoMethodRequest("recording.list&filter=ready", *doc) == tinyxml2::XML_SUCCESS)
   {
     m_lastPlayed.clear();
-    for (const tinyxml2::XMLNode*  pRecordingNode = doc.RootElement()->FirstChildElement("recordings")->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
+    for (const tinyxml2::XMLNode*  pRecordingNode = doc->RootElement()->FirstChildElement("recordings")->FirstChildElement("recording"); pRecordingNode; pRecordingNode = pRecordingNode->NextSiblingElement())
       m_lastPlayed[XMLUtils::GetIntValue(pRecordingNode, "id")] =  XMLUtils::GetIntValue(pRecordingNode, "playback_position");
   }
   return returnValue;
@@ -547,8 +547,8 @@ PVR_ERROR Recordings::DeleteRecording(const kodi::addon::PVRRecording& recording
     return PVR_ERROR_RECORDING_RUNNING;
 
   const std::string request = "recording.delete&recording_id=" + recording.GetRecordingId();
-  tinyxml2::XMLDocument doc;
-  if ( m_request.DoMethodRequest(request, doc) == tinyxml2::XML_SUCCESS)
+  auto doc = std::make_unique<tinyxml2::XMLDocument>();
+  if ( m_request.DoMethodRequest(request, *doc) == tinyxml2::XML_SUCCESS)
   {
     return PVR_ERROR_NO_ERROR;
   }
@@ -564,8 +564,8 @@ bool Recordings::ForgetRecording(const kodi::addon::PVRRecording& recording)
   // tell backend to forget recording history so it can re recorded.
   std::string request = "recording.forget&recording_id=";
   request.append(recording.GetRecordingId());
-  tinyxml2::XMLDocument doc;
-  return m_request.DoMethodRequest(request, doc) == tinyxml2::XML_SUCCESS;
+  auto doc = std::make_unique<tinyxml2::XMLDocument>();
+  return m_request.DoMethodRequest(request, *doc) == tinyxml2::XML_SUCCESS;
 }
 
 //==============================================================================
@@ -633,8 +633,8 @@ PVR_ERROR Recordings::SetRecordingLastPlayedPosition(const kodi::addon::PVRRecor
       }
     }
     const std::string request = kodi::tools::StringUtils::Format("recording.watched.set&recording_id=%s&position=%d", recording.GetRecordingId().c_str(), lastplayedposition);
-    tinyxml2::XMLDocument doc;
-    if (m_request.DoMethodRequest(request, doc) != tinyxml2::XML_SUCCESS)
+    auto doc = std::make_unique<tinyxml2::XMLDocument>();
+    if (m_request.DoMethodRequest(request, *doc) != tinyxml2::XML_SUCCESS)
     {
       kodi::Log(ADDON_LOG_DEBUG, "SetRecordingLastPlayedPosition failed");
       return PVR_ERROR_FAILED;
@@ -672,10 +672,10 @@ PVR_ERROR Recordings::GetRecordingLastPlayedPosition(const kodi::addon::PVRRecor
 PVR_ERROR Recordings::GetRecordingEdl(const kodi::addon::PVRRecording& recording, std::vector<kodi::addon::PVREDLEntry>& edl)
 {
   const std::string request = "recording.edl&recording_id=" + recording.GetRecordingId();
-  tinyxml2::XMLDocument doc;
-  if (m_request.DoMethodRequest(request, doc) == tinyxml2::XML_SUCCESS)
+  auto doc = std::make_unique<tinyxml2::XMLDocument>();
+  if (m_request.DoMethodRequest(request, *doc) == tinyxml2::XML_SUCCESS)
   {
-    tinyxml2::XMLNode* commercialsNode = doc.RootElement()->FirstChildElement("commercials");
+    tinyxml2::XMLNode* commercialsNode = doc->RootElement()->FirstChildElement("commercials");
     tinyxml2::XMLNode* pCommercialNode;
     for (pCommercialNode = commercialsNode->FirstChildElement("commercial"); pCommercialNode; pCommercialNode = pCommercialNode->NextSiblingElement())
     {

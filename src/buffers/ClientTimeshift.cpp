@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  Copyright (C) 2015-2023 Team Kodi (https://kodi.tv)
  *  Copyright (C) 2015 Sam Stenvall
  *
@@ -189,10 +189,10 @@ bool ClientTimeShift::GetStreamInfo()
   // this call sends raw xml not a method response
   if (m_request.DoRequest("/service?method=channel.stream.info", response) == HTTP_OK)
   {
-    tinyxml2::XMLDocument doc;
-    if (doc.Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
+    auto doc = std::make_unique<tinyxml2::XMLDocument>();
+    if (doc->Parse(response.c_str()) == tinyxml2::XML_SUCCESS)
     {
-      tinyxml2::XMLNode* filesNode = doc.FirstChildElement("map");
+      tinyxml2::XMLNode* filesNode = doc->FirstChildElement("map");
       if (filesNode != nullptr)
       {
         stream_duration = strtoll(filesNode->FirstChildElement("stream_duration")->GetText(), nullptr, 10);

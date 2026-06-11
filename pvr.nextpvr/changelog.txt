@@ -1,3 +1,8 @@
+v22.6.0
+- Move connection setup and backend settings retrieval to a background thread
+- Tinyxml2 memory improvement
+- Translation updates
+
 v22.5.0
 - Add option to disable LiveTV
 - Code initialization and cleanup

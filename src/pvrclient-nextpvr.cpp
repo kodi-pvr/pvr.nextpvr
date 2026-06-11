@@ -11,6 +11,7 @@
 #include "utilities/XMLUtils.h"
 #include "kodi/General.h"
 #include <kodi/Network.h>
+#include "kodi/tools/Thread.h"
 
 #include <ctime>
 #include <memory>
@@ -84,16 +85,16 @@ std::string UriEncode(const std::string sSrc)
 /************************************************************/
 /** Class interface */
 
-cPVRClientNextPVR::cPVRClientNextPVR(const kodi::addon::IInstanceInfo& instance) :
-  kodi::addon::CInstancePVRClient(instance),
-  m_settings(new InstanceSettings(*this, instance)),
-  m_request(m_settings),
-  m_channels(m_settings, m_request),
-  m_timers(m_settings, m_request, m_channels, *this),
-  m_recordings(m_settings, m_request, m_timers, m_channels,m_genreMapper, *this),
-  m_menuhook(m_settings, m_recordings, m_channels, *this),
-  m_genreMapper(m_settings),
-  m_epg(m_settings, m_request, m_recordings, m_channels, m_genreMapper)
+cPVRClientNextPVR::cPVRClientNextPVR(const kodi::addon::IInstanceInfo &instance)
+  : kodi::addon::CInstancePVRClient(instance),
+    m_settings(new InstanceSettings(*this, instance)),
+    m_request(m_settings),
+    m_channels(m_settings, m_request),
+    m_timers(m_settings, m_request, m_channels, *this),
+    m_recordings(m_settings, m_request, m_timers, m_channels, m_genreMapper, *this),
+    m_menuhook(m_settings, m_recordings, m_channels, *this),
+    m_genreMapper(m_settings),
+    m_epg(m_settings, m_request, m_recordings, m_channels, m_genreMapper)
 {
   if (!kodi::vfs::DirectoryExists(m_settings->m_instanceDirectory))
   {
@@ -105,7 +106,6 @@ cPVRClientNextPVR::cPVRClientNextPVR(const kodi::addon::IInstanceInfo& instance)
     }
     kodi::vfs::CreateDirectory(m_settings->m_instanceDirectory);
   }
-
   m_bConnected = false;
   m_supportsLiveTimeshift = false;
   m_lastRecordingUpdateTime = std::numeric_limits<time_t>::max(); // time of last recording check - force forever
@@ -114,7 +114,6 @@ cPVRClientNextPVR::cPVRClientNextPVR(const kodi::addon::IInstanceInfo& instance)
   m_livePlayer = nullptr;
   m_nowPlaying = NotPlaying;
   m_running = true;
-  m_thread = std::thread([&] { Process(); });
 }
 
 cPVRClientNextPVR::~cPVRClientNextPVR()
@@ -137,9 +136,7 @@ cPVRClientNextPVR::~cPVRClientNextPVR()
   }
 
   m_running = false;
-  if (m_thread.joinable())
-    m_thread.join();
-
+  CThread::StopThread(2000);
   kodi::Log(ADDON_LOG_DEBUG, "->~cPVRClientNextPVR()");
   if (m_bConnected)
     Disconnect();
@@ -162,14 +159,14 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
     SetConnectionState(PVR_CONNECTION_STATE_CONNECTING);
 
   m_request.ClearSID();
-  tinyxml2::XMLDocument doc;
+  auto doc = std::make_unique<tinyxml2::XMLDocument>();
   if (m_firstSessionInitiate == 0)
     m_firstSessionInitiate = time(nullptr);
-  if (m_request.DoMethodRequest("session.initiate&ver=1.0&device=xbmc", doc) == tinyxml2::XML_SUCCESS)
+  if (m_request.DoMethodRequest("session.initiate&ver=1.0&device=xbmc", *doc) == tinyxml2::XML_SUCCESS)
   {
     std::string salt;
     std::string sid;
-    if (XMLUtils::GetString(doc.RootElement(), "salt", salt) && XMLUtils::GetString(doc.RootElement(), "sid", sid))
+    if (XMLUtils::GetString(doc->RootElement(), "salt", salt) && XMLUtils::GetString(doc->RootElement(), "sid", sid))
     {
       // a bit of debug
       kodi::Log(ADDON_LOG_DEBUG, "session.initiate returns: sid=%s salt=%s", sid.c_str(), salt.c_str());
@@ -189,35 +186,12 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
       // login session
       std::string loginResponse;
       std::string request = kodi::tools::StringUtils::Format("session.login&sid=%s&md5=%s", sid.c_str(), md5.c_str());
-      doc.Clear();
-      if (m_request.DoMethodRequest(request, doc) == tinyxml2::XML_SUCCESS)
+      if (m_request.DoMethodRequest(request, *doc) == tinyxml2::XML_SUCCESS)
       {
         m_request.SetSID(sid);
-        doc.Clear();
-        if (m_request.DoMethodRequest("setting.list", doc) == tinyxml2::XML_SUCCESS)
-        {
-          if (m_settings->ReadBackendSettings(doc) != ADDON_STATUS_OK)
-          {
-            m_request.DoActionRequest("session.logout");
-            SetConnectionState(PVR_CONNECTION_STATE_VERSION_MISMATCH, kodi::addon::GetLocalizedString(30050));
-            status = ADDON_STATUS_PERMANENT_FAILURE;
-            return status;
-          }
-        }
-        // set additional options based on the backend
-        ConfigurePostConnectionOptions();
-        m_settings->SetConnection(true);
-        kodi::Log(ADDON_LOG_DEBUG, "session.login successful");
+        CreateThread();
         status = ADDON_STATUS_OK;
-        // don't notify core could be before addon is created
-        m_bConnected = true;
-        SetConnectionState(PVR_CONNECTION_STATE_CONNECTED);
-      }
-      else
-      {
-        kodi::Log(ADDON_LOG_DEBUG, "session.login failed");
-        SetConnectionState(PVR_CONNECTION_STATE_ACCESS_DENIED, kodi::addon::GetLocalizedString(30052));
-        status = ADDON_STATUS_PERMANENT_FAILURE;
+        return status;
       }
     }
   }
@@ -457,6 +431,28 @@ bool cPVRClientNextPVR::IsUp()
 
 void cPVRClientNextPVR::Process()
 {
+  // Launch background thread — all slow post-login work and state
+  kodi::Log(ADDON_LOG_DEBUG, "Post success from CThread started");
+  auto doc = std::make_unique<tinyxml2::XMLDocument>();
+  if (m_request.DoMethodRequest("setting.list", *doc) == tinyxml2::XML_SUCCESS) {
+    if (m_settings->ReadBackendSettings(*doc) != ADDON_STATUS_OK) {
+      m_request.DoActionRequest("session.logout");
+      SetConnectionState(PVR_CONNECTION_STATE_VERSION_MISMATCH,
+                         kodi::addon::GetLocalizedString(30050));
+      return;
+    }
+    ConfigurePostConnectionOptions();
+    m_channels.ResetChannelCache(m_lastEPGUpdateTime);
+    m_settings->SetConnection(true);
+    m_bConnected = true;
+    SetConnectionState(PVR_CONNECTION_STATE_CONNECTED);
+    m_running = true;
+  } else {
+    kodi::Log(ADDON_LOG_DEBUG, "setting.list failed");
+    m_request.DoActionRequest("session.logout");
+    SetConnectionState(PVR_CONNECTION_STATE_UNKNOWN,
+                       kodi::addon::GetLocalizedString(30050));
+  }
   while (m_running)
   {
     IsUp();
@@ -500,7 +496,8 @@ PVR_ERROR cPVRClientNextPVR::OnSystemWake()
     return PVR_ERROR_SERVER_ERROR;
   }
 
-  kodi::Log(ADDON_LOG_INFO, "On NextPVR Wake %d %d", m_bConnected, m_connectionState);
+  kodi::Log(ADDON_LOG_INFO, "On NextPVR Wake %d %d", m_bConnected.load(),
+            m_connectionState);
   return PVR_ERROR_NO_ERROR;
 }
 
