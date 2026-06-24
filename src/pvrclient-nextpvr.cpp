@@ -113,7 +113,6 @@ cPVRClientNextPVR::cPVRClientNextPVR(const kodi::addon::IInstanceInfo &instance)
   m_realTimeBuffer = new timeshift::DummyBuffer(m_settings, m_request);
   m_livePlayer = nullptr;
   m_nowPlaying = NotPlaying;
-  m_running = true;
 }
 
 cPVRClientNextPVR::~cPVRClientNextPVR()
@@ -135,8 +134,7 @@ cPVRClientNextPVR::~cPVRClientNextPVR()
       CloseLiveStream();
   }
 
-  m_running = false;
-  CThread::StopThread(2000);
+  StopThread();
   kodi::Log(ADDON_LOG_DEBUG, "->~cPVRClientNextPVR()");
   if (m_bConnected)
     Disconnect();
@@ -145,6 +143,14 @@ cPVRClientNextPVR::~cPVRClientNextPVR()
   m_recordings.m_hostFilenames.clear();
   m_channels.m_channelDetails.clear();
   m_channels.m_liveStreams.clear();
+}
+
+void cPVRClientNextPVR::Start()
+{
+  // Launch the worker thread, which performs the initial connection and then
+  // keeps polling/reconnecting. The thread is started here rather than in the
+  // constructor so construction has no side effects.
+  CreateThread();
 }
 
 ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
@@ -186,28 +192,57 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
       // login session
       std::string loginResponse;
       std::string request = kodi::tools::StringUtils::Format("session.login&sid=%s&md5=%s", sid.c_str(), md5.c_str());
+      doc->Clear();
       if (m_request.DoMethodRequest(request, *doc) == tinyxml2::XML_SUCCESS)
       {
         m_request.SetSID(sid);
-        CreateThread();
+        doc->Clear();
+        if (m_request.DoMethodRequest("setting.list", *doc) == tinyxml2::XML_SUCCESS)
+        {
+          if (m_settings->ReadBackendSettings(*doc) != ADDON_STATUS_OK)
+          {
+            m_request.DoActionRequest("session.logout");
+            // Not permanent (the backend can be upgraded), but not worth
+            // retrying either: a too-old backend won't fix itself and
+            // ReadBackendSettings re-notifies on every attempt. Leave the
+            // state sticky at VERSION_MISMATCH so IsUp() does not poll it; the
+            // instance stays alive and recovers on the next wake / settings
+            // change / restart.
+            SetConnectionState(PVR_CONNECTION_STATE_VERSION_MISMATCH, kodi::addon::GetLocalizedString(30050));
+            status = ADDON_STATUS_OK;
+            return status;
+          }
+        }
+        // set additional options based on the backend
+        ConfigurePostConnectionOptions();
+        m_channels.ResetChannelCache(m_lastEPGUpdateTime);
+        m_settings->SetConnection(true);
+        kodi::Log(ADDON_LOG_DEBUG, "session.login successful");
         status = ADDON_STATUS_OK;
-        return status;
+        // don't notify core could be before addon is created
+        m_bConnected = true;
+        SetConnectionState(PVR_CONNECTION_STATE_CONNECTED);
+      }
+      else
+      {
+        kodi::Log(ADDON_LOG_DEBUG, "session.login failed");
+        // Not permanent (the PIN can be corrected), but leave the state sticky
+        // at ACCESS_DENIED so IsUp() does not retry a known-bad credential. The
+        // instance stays alive and recovers on the next wake / settings change
+        // / restart.
+        SetConnectionState(PVR_CONNECTION_STATE_ACCESS_DENIED, kodi::addon::GetLocalizedString(30052));
+        status = ADDON_STATUS_OK;
       }
     }
   }
   else
   {
-    if (m_settings->m_connectionConfirmed || !m_settings->m_instancePriority)
-    {
-      status = ADDON_STATUS_OK;
-      // backend should continue to connnect and ignore client until reachable
-      UpdateServerCheck();
-      m_connectionState = PVR_CONNECTION_STATE_SERVER_UNREACHABLE;
-    }
-    else
-    {
-      status = ADDON_STATUS_PERMANENT_FAILURE;
-    }
+    // Backend not reachable. Keep the state retryable so the worker thread
+    // reconnects once the backend becomes available, instead of leaving the
+    // client wedged in CONNECTING.
+    status = ADDON_STATUS_OK;
+    UpdateServerCheck();
+    m_connectionState = PVR_CONNECTION_STATE_SERVER_UNREACHABLE;
   }
 
   return status;
@@ -431,35 +466,19 @@ bool cPVRClientNextPVR::IsUp()
 
 void cPVRClientNextPVR::Process()
 {
-  // Launch background thread — all slow post-login work and state
-  kodi::Log(ADDON_LOG_DEBUG, "Post success from CThread started");
-  auto doc = std::make_unique<tinyxml2::XMLDocument>();
-  if (m_request.DoMethodRequest("setting.list", *doc) == tinyxml2::XML_SUCCESS) {
-    if (m_settings->ReadBackendSettings(*doc) != ADDON_STATUS_OK) {
-      m_request.DoActionRequest("session.logout");
-      SetConnectionState(PVR_CONNECTION_STATE_VERSION_MISMATCH,
-                         kodi::addon::GetLocalizedString(30050));
-      return;
-    }
-    ConfigurePostConnectionOptions();
-    m_channels.ResetChannelCache(m_lastEPGUpdateTime);
-    m_settings->SetConnection(true);
-    m_bConnected = true;
-    SetConnectionState(PVR_CONNECTION_STATE_CONNECTED);
-    m_running = true;
-  } else {
-    kodi::Log(ADDON_LOG_DEBUG, "setting.list failed");
-    m_request.DoActionRequest("session.logout");
-    SetConnectionState(PVR_CONNECTION_STATE_UNKNOWN,
-                       kodi::addon::GetLocalizedString(30050));
-  }
-  while (m_running)
+  // Perform the initial connection on the worker thread so the slow backend
+  // handshake does not block instance creation.
+  Connect();
+
+  // Connection poll/retry loop. IsUp() reconnects after a dropped or initially
+  // failed session, so this must keep running regardless of connection state.
+  while (!m_threadStop)
   {
     IsUp();
     if (m_settings->m_heartbeatInterval == DEFAULT_HEARTBEAT)
-      std::this_thread::sleep_for(std::chrono::milliseconds(2500));
+      Sleep(2500);
     else
-      std::this_thread::sleep_for(std::chrono::seconds(10));
+      Sleep(10000);
   }
 }
 

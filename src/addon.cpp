@@ -50,14 +50,12 @@ ADDON_STATUS CNextPVRAddon::CreateInstance(const kodi::addon::IInstanceInfo& ins
       client = new cPVRClientNextPVR(instance);
     }
 
-    status = client->Connect();
-
-    if (status != ADDON_STATUS_PERMANENT_FAILURE)
-    {
-      status = ADDON_STATUS_OK;
-      hdl = client;
-      m_usedInstances.emplace(std::make_pair(instance.GetID(), client));
-    }
+    // The client connects and maintains the connection on its own worker
+    // thread; connection problems are reported via the PVR connection state.
+    client->Start();
+    hdl = client;
+    m_usedInstances.emplace(std::make_pair(instance.GetID(), client));
+    status = ADDON_STATUS_OK;
   }
 
   return status;

@@ -50,6 +50,7 @@ public:
     const kodi::addon::CSettingValue& settingValue) override;
 
   /* Server handling */
+  void Start();
   ADDON_STATUS Connect(bool sendWOL = true);
   void Disconnect();
   void ResetConnection();
@@ -142,7 +143,6 @@ private:
   void ConfigurePostConnectionOptions();
 
   std::atomic<bool> m_bConnected{ false };
-  std::atomic<bool> m_running = { false };
   bool m_supportsLiveTimeshift;
 
   int m_timeShiftBufferSeconds;
