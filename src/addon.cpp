@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  Copyright (C) 2005-2023 Team Kodi (https://kodi.tv)
  *
  *  SPDX-License-Identifier: GPL-2.0-or-later
@@ -51,9 +51,9 @@ ADDON_STATUS CNextPVRAddon::CreateInstance(const kodi::addon::IInstanceInfo& ins
     }
 
     status = client->Connect();
-
     if (status != ADDON_STATUS_PERMANENT_FAILURE)
     {
+      client->Start();
       status = ADDON_STATUS_OK;
       hdl = client;
       m_usedInstances.emplace(std::make_pair(instance.GetID(), client));
