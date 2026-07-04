@@ -167,6 +167,8 @@ private:
   void UpdateServerCheck();
   PVR_CONNECTION_STATE m_connectionState = PVR_CONNECTION_STATE_UNKNOWN;
   PVR_CONNECTION_STATE m_coreState = PVR_CONNECTION_STATE_UNKNOWN;
+  std::atomic<bool> m_creationInProgress{true};
+  std::vector<std::pair<PVR_CONNECTION_STATE, std::string>> m_queuedConnectionStates;
   time_t m_firstSessionInitiate = 0;
   time_t m_nextServerCheck = 0;
 };

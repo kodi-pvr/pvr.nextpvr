@@ -219,6 +219,12 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
           m_request.DoActionRequest("session.logout");
           SetConnectionState(PVR_CONNECTION_STATE_UNKNOWN,
                             kodi::addon::GetLocalizedString(19111));
+          if (m_creationInProgress)
+          {
+            // Instance creation fails permanently
+            kodi::QueueNotification(QUEUE_ERROR, "NextPVR",
+                                    kodi::addon::GetLocalizedString(19111));
+          }
           status = ADDON_STATUS_PERMANENT_FAILURE;
         }
         return status;
@@ -227,6 +233,11 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
       {
         SetConnectionState(PVR_CONNECTION_STATE_ACCESS_DENIED,
                           kodi::addon::GetLocalizedString(30052));
+        if (m_creationInProgress)
+        {
+          kodi::QueueNotification(QUEUE_ERROR, "NextPVR",
+                                  kodi::addon::GetLocalizedString(30052));
+        }
         status = ADDON_STATUS_PERMANENT_FAILURE;
       }
     }
@@ -469,6 +480,13 @@ bool cPVRClientNextPVR::IsUp()
 void cPVRClientNextPVR::Process()
 {
   kodi::Log(ADDON_LOG_DEBUG, "Post success from CThread started");
+  // no API to tell us when the add is ready,
+  for (int waited = 0; !m_threadStop && waited < 2000; waited += 50)
+    Sleep(50);
+  m_creationInProgress = false;
+  for (const auto& [state, message] : m_queuedConnectionStates)
+    ConnectionStateChange("", state, message);
+  m_queuedConnectionStates.clear();
   while (!m_threadStop)
   {
     IsUp();
@@ -541,7 +559,15 @@ void cPVRClientNextPVR::SendWakeOnLan()
 
 void cPVRClientNextPVR::SetConnectionState(PVR_CONNECTION_STATE state, std::string displayMessage)
 {
-  ConnectionStateChange("", state, displayMessage);
+  // CONNECTING is never queued: core arms its ignore-until-connected flag
+  if (m_creationInProgress && state != PVR_CONNECTION_STATE_CONNECTING)
+  {
+    m_queuedConnectionStates.emplace_back(state, std::move(displayMessage));
+  }
+  else
+  {
+    ConnectionStateChange("", state, displayMessage);
+  }
   m_connectionState = state;
   m_coreState = state;
 }
