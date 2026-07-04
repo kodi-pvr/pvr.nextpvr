@@ -67,4 +67,18 @@ endif()
 
 build_addon(pvr.nextpvr NEXTPVR DEPLIBS)
 
+# Hide all symbols except the Kodi ABI entry points (ADDON_* keep their
+# explicit ATTR_DLL_EXPORT visibility). Without this, inline tinyxml2/zlib
+# code compiled into the addon is exported and can be interposed by a
+# different library version already loaded in Kodi's process.
+if(NOT WIN32)
+  set_target_properties(pvr.nextpvr PROPERTIES
+                        CXX_VISIBILITY_PRESET hidden
+                        VISIBILITY_INLINES_HIDDEN ON)
+  if(NOT APPLE)
+    set_property(TARGET pvr.nextpvr APPEND_STRING PROPERTY
+                 LINK_FLAGS " -Wl,--exclude-libs,ALL")
+  endif()
+endif()
+
 include(CPack)
