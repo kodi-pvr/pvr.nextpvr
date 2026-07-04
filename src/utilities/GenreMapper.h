@@ -17,7 +17,6 @@
 namespace NextPVR
 {
   struct GenreBlock { std::string description; int genreType; int genreSubType; };
-  static const std::string GENRE_KODI_DVB_FILEPATH = "special://home/addons/pvr.nextpvr/resources/genre-mapping.xml";
   class ATTR_DLL_LOCAL GenreMapper
   {
 
