@@ -67,6 +67,8 @@ namespace NextPVR
     void SetVersionSpecificSettings();
     void UpdateServerPort(std::string hostname, int port);
     void ReadFromAddon();
+    void SaveInstanceNumber();
+    void SaveMACAddress();
     ADDON_STATUS SetValue(const std::string& settingName, const kodi::addon::CSettingValue& settingValue);
 
     //Connection
@@ -135,6 +137,8 @@ namespace NextPVR
   private:
 
     kodi::addon::IAddonInstance& m_instance;
+    bool m_instanceNumberUnsaved = false;
+    bool m_macAddressUnsaved = false;
     InstanceSettings(InstanceSettings const&) = delete;
     void operator=(InstanceSettings const&) = delete;
 

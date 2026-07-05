@@ -113,6 +113,8 @@ cPVRClientNextPVR::cPVRClientNextPVR(const kodi::addon::IInstanceInfo &instance)
   m_realTimeBuffer = new timeshift::DummyBuffer(m_settings, m_request);
   m_livePlayer = nullptr;
   m_nowPlaying = NotPlaying;
+  m_settings->SaveInstanceNumber();
+  m_settingsReady = true;
 }
 
 cPVRClientNextPVR::~cPVRClientNextPVR()
@@ -207,6 +209,8 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
                               kodi::addon::GetLocalizedString(30050));
             return status;
           }
+          if (!m_creationInProgress)
+            m_settings->SaveMACAddress();
           ConfigurePostConnectionOptions();
           m_channels.ResetChannelCache(m_lastEPGUpdateTime);
           m_settings->SetConnection(true);
@@ -487,6 +491,7 @@ void cPVRClientNextPVR::Process()
   for (const auto& [state, message] : m_queuedConnectionStates)
     ConnectionStateChange("", state, message);
   m_queuedConnectionStates.clear();
+  m_settings->SaveMACAddress();
   while (!m_threadStop)
   {
     IsUp();
@@ -1106,6 +1111,13 @@ PVR_ERROR cPVRClientNextPVR::GetTimerTypes(std::vector<kodi::addon::PVRTimerType
 ADDON_STATUS cPVRClientNextPVR::SetInstanceSetting(const std::string& settingName,
   const kodi::addon::CSettingValue& settingValue)
 {
+  if (!m_settingsReady)
+  {
+    // Kodi pushes all settings back synchronously when one is written during
+    // instance creation; they hold the values just read, so drop them.
+    kodi::Log(ADDON_LOG_DEBUG, "Ignored setting change '%s' during instance creation", settingName.c_str());
+    return ADDON_STATUS_OK;
+  }
   return m_settings->SetValue(settingName, settingValue);
 }
 

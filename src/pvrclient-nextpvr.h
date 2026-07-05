@@ -153,7 +153,7 @@ private:
   mutable std::recursive_mutex m_multiStreamMutex;
   int64_t m_streamCount = -1;
 
-  //Matrix changes
+  std::atomic<bool> m_settingsReady{false};
   std::shared_ptr<InstanceSettings> m_settings;
   Request m_request;
   Channels m_channels;
