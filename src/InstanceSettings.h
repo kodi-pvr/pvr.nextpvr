@@ -90,8 +90,8 @@ namespace NextPVR
     const int32_t m_instanceNumber = 0;
     std::string m_instanceDirectory;
     std::string m_instanceName;
-    enum eHeartbeat m_heartbeat;
-    time_t m_heartbeatInterval;
+    enum eHeartbeat m_heartbeat = eHeartbeat::Default;
+    time_t m_heartbeatInterval = DEFAULT_HEARTBEAT;
     bool m_instancePriority = true;
     int m_accessLevel = ACCESS_RECORDINGS | ACCESS_RECORDINGS_DELETE | ACCESS_RECORDINGS_DELETE;
 

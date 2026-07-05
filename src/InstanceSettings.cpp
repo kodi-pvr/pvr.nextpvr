@@ -146,7 +146,7 @@ void InstanceSettings::ReadFromAddon()
   if (m_multiStream)
     m_recordingPoster = ReadBoolSetting("poster", true);
 
-  enum eHeartbeat m_heartbeat = ReadEnumSetting<eHeartbeat>("heartbeat", eHeartbeat::Default);
+  m_heartbeat = ReadEnumSetting<eHeartbeat>("heartbeat", eHeartbeat::Default);
 
   if (m_heartbeat == eHeartbeat::Default)
     m_heartbeatInterval = DEFAULT_HEARTBEAT;
