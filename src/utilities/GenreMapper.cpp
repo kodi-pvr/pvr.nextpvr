@@ -54,9 +54,11 @@ int GenreMapper::LookupGenreValueInMaps(const std::string& genreText)
 
 void GenreMapper::LoadGenreTextMappingFiles()
 {
-  if (!LoadTextToIdGenreFile(GENRE_KODI_DVB_FILEPATH, m_genreMap))
-    kodi::Log(ADDON_LOG_ERROR, "%s Could not load text to genre id file: %s", __func__, GENRE_KODI_DVB_FILEPATH.c_str());
-
+  // Resolved by Kodi to the addon's data directory, which differs from the
+  // library directory on split installs (flatpak, distro packages).
+  const std::string genreFile = kodi::addon::GetAddonPath("resources/genre-mapping.xml");
+  if (!LoadTextToIdGenreFile(genreFile, m_genreMap))
+    kodi::Log(ADDON_LOG_ERROR, "%s Could not load text to genre id file: %s", __func__, genreFile.c_str());
 }
 
 bool GenreMapper::ParseAllGenres(const tinyxml2::XMLNode* node, GenreBlock& genreBlock)

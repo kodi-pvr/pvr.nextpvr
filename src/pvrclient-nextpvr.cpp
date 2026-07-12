@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  Copyright (C) 2005-2023 Team Kodi (https://kodi.tv)
  *
  *  SPDX-License-Identifier: GPL-2.0-or-later
@@ -113,7 +113,8 @@ cPVRClientNextPVR::cPVRClientNextPVR(const kodi::addon::IInstanceInfo &instance)
   m_realTimeBuffer = new timeshift::DummyBuffer(m_settings, m_request);
   m_livePlayer = nullptr;
   m_nowPlaying = NotPlaying;
-  m_running = true;
+  m_settings->SaveInstanceNumber();
+  m_settingsReady = true;
 }
 
 cPVRClientNextPVR::~cPVRClientNextPVR()
@@ -135,8 +136,7 @@ cPVRClientNextPVR::~cPVRClientNextPVR()
       CloseLiveStream();
   }
 
-  m_running = false;
-  CThread::StopThread(2000);
+  StopThread();
   kodi::Log(ADDON_LOG_DEBUG, "->~cPVRClientNextPVR()");
   if (m_bConnected)
     Disconnect();
@@ -145,6 +145,15 @@ cPVRClientNextPVR::~cPVRClientNextPVR()
   m_recordings.m_hostFilenames.clear();
   m_channels.m_channelDetails.clear();
   m_channels.m_liveStreams.clear();
+}
+
+
+void cPVRClientNextPVR::Start()
+{
+  // Launch the worker thread that owns the poll/reconnect loop.
+  // Called from CreateInstance() after Connect() succeeds or returns
+  // a recoverable failure, so construction itself has no side effects.
+  CreateThread();
 }
 
 ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
@@ -189,9 +198,51 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
       if (m_request.DoMethodRequest(request, *doc) == tinyxml2::XML_SUCCESS)
       {
         m_request.SetSID(sid);
-        CreateThread();
-        status = ADDON_STATUS_OK;
+        doc = std::make_unique<tinyxml2::XMLDocument>();
+        if (m_request.DoMethodRequest("setting.list", *doc) == tinyxml2::XML_SUCCESS)
+        {
+          status = ADDON_STATUS_OK;
+          if (m_settings->ReadBackendSettings(*doc) != ADDON_STATUS_OK)
+          {
+            m_request.DoActionRequest("session.logout");
+            SetConnectionState(PVR_CONNECTION_STATE_VERSION_MISMATCH,
+                              kodi::addon::GetLocalizedString(30050));
+            return status;
+          }
+          if (!m_creationInProgress)
+            m_settings->SaveMACAddress();
+          ConfigurePostConnectionOptions();
+          m_channels.ResetChannelCache(m_lastEPGUpdateTime);
+          m_settings->SetConnection(true);
+          m_bConnected = true;
+          SetConnectionState(PVR_CONNECTION_STATE_CONNECTED);
+        }
+        else
+        {
+          kodi::Log(ADDON_LOG_ERROR, "setting.list failed");
+          m_request.DoActionRequest("session.logout");
+          SetConnectionState(PVR_CONNECTION_STATE_UNKNOWN,
+                            kodi::addon::GetLocalizedString(19111));
+          if (m_creationInProgress)
+          {
+            // Instance creation fails permanently
+            kodi::QueueNotification(QUEUE_ERROR, "NextPVR",
+                                    kodi::addon::GetLocalizedString(19111));
+          }
+          status = ADDON_STATUS_PERMANENT_FAILURE;
+        }
         return status;
+      }
+      else
+      {
+        SetConnectionState(PVR_CONNECTION_STATE_ACCESS_DENIED,
+                          kodi::addon::GetLocalizedString(30052));
+        if (m_creationInProgress)
+        {
+          kodi::QueueNotification(QUEUE_ERROR, "NextPVR",
+                                  kodi::addon::GetLocalizedString(30052));
+        }
+        status = ADDON_STATUS_PERMANENT_FAILURE;
       }
     }
   }
@@ -208,6 +259,7 @@ ADDON_STATUS cPVRClientNextPVR::Connect(bool sendWOL)
     {
       status = ADDON_STATUS_PERMANENT_FAILURE;
     }
+    SetConnectionState(PVR_CONNECTION_STATE_SERVER_UNREACHABLE);
   }
 
   return status;
@@ -431,35 +483,22 @@ bool cPVRClientNextPVR::IsUp()
 
 void cPVRClientNextPVR::Process()
 {
-  // Launch background thread — all slow post-login work and state
   kodi::Log(ADDON_LOG_DEBUG, "Post success from CThread started");
-  auto doc = std::make_unique<tinyxml2::XMLDocument>();
-  if (m_request.DoMethodRequest("setting.list", *doc) == tinyxml2::XML_SUCCESS) {
-    if (m_settings->ReadBackendSettings(*doc) != ADDON_STATUS_OK) {
-      m_request.DoActionRequest("session.logout");
-      SetConnectionState(PVR_CONNECTION_STATE_VERSION_MISMATCH,
-                         kodi::addon::GetLocalizedString(30050));
-      return;
-    }
-    ConfigurePostConnectionOptions();
-    m_channels.ResetChannelCache(m_lastEPGUpdateTime);
-    m_settings->SetConnection(true);
-    m_bConnected = true;
-    SetConnectionState(PVR_CONNECTION_STATE_CONNECTED);
-    m_running = true;
-  } else {
-    kodi::Log(ADDON_LOG_DEBUG, "setting.list failed");
-    m_request.DoActionRequest("session.logout");
-    SetConnectionState(PVR_CONNECTION_STATE_UNKNOWN,
-                       kodi::addon::GetLocalizedString(30050));
-  }
-  while (m_running)
+  // no API to tell us when the add is ready,
+  for (int waited = 0; !m_threadStop && waited < 2000; waited += 50)
+    Sleep(50);
+  m_creationInProgress = false;
+  for (const auto& [state, message] : m_queuedConnectionStates)
+    ConnectionStateChange("", state, message);
+  m_queuedConnectionStates.clear();
+  m_settings->SaveMACAddress();
+  while (!m_threadStop)
   {
     IsUp();
     if (m_settings->m_heartbeatInterval == DEFAULT_HEARTBEAT)
-      std::this_thread::sleep_for(std::chrono::milliseconds(2500));
+      Sleep(2500);
     else
-      std::this_thread::sleep_for(std::chrono::seconds(10));
+      Sleep(10000);
   }
 }
 
@@ -525,7 +564,15 @@ void cPVRClientNextPVR::SendWakeOnLan()
 
 void cPVRClientNextPVR::SetConnectionState(PVR_CONNECTION_STATE state, std::string displayMessage)
 {
-  ConnectionStateChange("", state, displayMessage);
+  // CONNECTING is never queued: core arms its ignore-until-connected flag
+  if (m_creationInProgress && state != PVR_CONNECTION_STATE_CONNECTING)
+  {
+    m_queuedConnectionStates.emplace_back(state, std::move(displayMessage));
+  }
+  else
+  {
+    ConnectionStateChange("", state, displayMessage);
+  }
   m_connectionState = state;
   m_coreState = state;
 }
@@ -1064,6 +1111,13 @@ PVR_ERROR cPVRClientNextPVR::GetTimerTypes(std::vector<kodi::addon::PVRTimerType
 ADDON_STATUS cPVRClientNextPVR::SetInstanceSetting(const std::string& settingName,
   const kodi::addon::CSettingValue& settingValue)
 {
+  if (!m_settingsReady)
+  {
+    // Kodi pushes all settings back synchronously when one is written during
+    // instance creation; they hold the values just read, so drop them.
+    kodi::Log(ADDON_LOG_DEBUG, "Ignored setting change '%s' during instance creation", settingName.c_str());
+    return ADDON_STATUS_OK;
+  }
   return m_settings->SetValue(settingName, settingValue);
 }
 

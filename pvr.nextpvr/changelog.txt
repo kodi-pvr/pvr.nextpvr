@@ -1,3 +1,10 @@
+v22.6.1
+- Rework conneection to allow reconnects
+- Defer API calls until addon creation
+- Upgrade to tinyxml2 11 and make  library calls hidden
+- Change genre-mapping to use Addon API not special:// protocol
+- Fix eHeartBeat options.
+
 v22.6.0
 - Move connection setup and backend settings retrieval to a background thread
 - Tinyxml2 memory improvement

@@ -67,6 +67,8 @@ namespace NextPVR
     void SetVersionSpecificSettings();
     void UpdateServerPort(std::string hostname, int port);
     void ReadFromAddon();
+    void SaveInstanceNumber();
+    void SaveMACAddress();
     ADDON_STATUS SetValue(const std::string& settingName, const kodi::addon::CSettingValue& settingValue);
 
     //Connection
@@ -88,8 +90,8 @@ namespace NextPVR
     const int32_t m_instanceNumber = 0;
     std::string m_instanceDirectory;
     std::string m_instanceName;
-    enum eHeartbeat m_heartbeat;
-    time_t m_heartbeatInterval;
+    enum eHeartbeat m_heartbeat = eHeartbeat::Default;
+    time_t m_heartbeatInterval = DEFAULT_HEARTBEAT;
     bool m_instancePriority = true;
     int m_accessLevel = ACCESS_RECORDINGS | ACCESS_RECORDINGS_DELETE | ACCESS_RECORDINGS_DELETE;
 
@@ -135,6 +137,8 @@ namespace NextPVR
   private:
 
     kodi::addon::IAddonInstance& m_instance;
+    bool m_instanceNumberUnsaved = false;
+    bool m_macAddressUnsaved = false;
     InstanceSettings(InstanceSettings const&) = delete;
     void operator=(InstanceSettings const&) = delete;
 

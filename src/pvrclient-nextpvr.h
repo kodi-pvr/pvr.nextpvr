@@ -50,6 +50,7 @@ public:
     const kodi::addon::CSettingValue& settingValue) override;
 
   /* Server handling */
+  void Start();
   ADDON_STATUS Connect(bool sendWOL = true);
   void Disconnect();
   void ResetConnection();
@@ -142,10 +143,9 @@ private:
   void ConfigurePostConnectionOptions();
 
   std::atomic<bool> m_bConnected{ false };
-  std::atomic<bool> m_running = { false };
   bool m_supportsLiveTimeshift;
 
-  int m_timeShiftBufferSeconds;
+  int m_timeShiftBufferSeconds{ 1200 };
   timeshift::Buffer* m_timeshiftBuffer;
   timeshift::Buffer* m_livePlayer;
   timeshift::Buffer* m_realTimeBuffer;
@@ -153,7 +153,7 @@ private:
   mutable std::recursive_mutex m_multiStreamMutex;
   int64_t m_streamCount = -1;
 
-  //Matrix changes
+  std::atomic<bool> m_settingsReady{false};
   std::shared_ptr<InstanceSettings> m_settings;
   Request m_request;
   Channels m_channels;
@@ -167,6 +167,8 @@ private:
   void UpdateServerCheck();
   PVR_CONNECTION_STATE m_connectionState = PVR_CONNECTION_STATE_UNKNOWN;
   PVR_CONNECTION_STATE m_coreState = PVR_CONNECTION_STATE_UNKNOWN;
+  std::atomic<bool> m_creationInProgress{true};
+  std::vector<std::pair<PVR_CONNECTION_STATE, std::string>> m_queuedConnectionStates;
   time_t m_firstSessionInitiate = 0;
   time_t m_nextServerCheck = 0;
 };

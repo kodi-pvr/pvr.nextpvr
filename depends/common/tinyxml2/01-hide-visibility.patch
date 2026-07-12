@@ -1,0 +1,8 @@
+--- a/tinyxml2.h
++++ b/tinyxml2.h
+@@ -76,0 +77,5 @@
++
++#if !defined(_MSC_VER) && defined(__GNUC__) && __GNUC__ >= 4
++#undef TINYXML2_LIB
++#define TINYXML2_LIB __attribute__((visibility("hidden")))
++#endif

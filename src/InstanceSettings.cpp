@@ -27,6 +27,24 @@ InstanceSettings::InstanceSettings(kodi::addon::IAddonInstance& instance, const 
   ReadFromAddon();
 }
 
+void InstanceSettings::SaveInstanceNumber()
+{
+  if (m_instanceNumberUnsaved)
+  {
+    m_instanceNumberUnsaved = false;
+    m_instance.SetInstanceSettingInt("instance", m_instanceNumber);
+  }
+}
+
+void InstanceSettings::SaveMACAddress()
+{
+  if (m_macAddressUnsaved)
+  {
+    m_macAddressUnsaved = false;
+    m_instance.SetInstanceSettingString("host_mac", m_hostMACAddress);
+  }
+}
+
 /***************************************************************************
  * PVR settings
  **************************************************************************/
@@ -111,10 +129,10 @@ void InstanceSettings::ReadFromAddon()
 
   m_useLiveStreams = ReadBoolSetting("uselivestreams", false);
 
-  if (m_instanceNumber != ReadIntSetting("instance", 0))
-  {
-    m_instance.SetInstanceSettingInt("instance", m_instanceNumber);
-  }
+  // Writing a setting here makes Kodi synchronously push every setting back
+  // into an instance that is still being constructed; the write is deferred
+  // to SaveInstanceNumber() after construction completes.
+  m_instanceNumberUnsaved = m_instanceNumber != ReadIntSetting("instance", 0);
 
   m_instanceName = ReadStringSetting("kodi_addon_instance_name",  "Unknown");
 
@@ -128,7 +146,7 @@ void InstanceSettings::ReadFromAddon()
   if (m_multiStream)
     m_recordingPoster = ReadBoolSetting("poster", true);
 
-  enum eHeartbeat m_heartbeat = ReadEnumSetting<eHeartbeat>("heartbeat", eHeartbeat::Default);
+  m_heartbeat = ReadEnumSetting<eHeartbeat>("heartbeat", eHeartbeat::Default);
 
   if (m_heartbeat == eHeartbeat::Default)
     m_heartbeatInterval = DEFAULT_HEARTBEAT;
@@ -201,7 +219,8 @@ ADDON_STATUS InstanceSettings::ReadBackendSettings(tinyxml2::XMLDocument& settin
     kodi::Log(ADDON_LOG_DEBUG, "Server MAC address %4.4s...", macAddress.c_str());
     if (m_hostMACAddress != macAddress)
     {
-      m_instance.SetInstanceSettingString("host_mac", macAddress);
+      m_hostMACAddress = macAddress;
+      m_macAddressUnsaved = true;
     }
   }
   return ADDON_STATUS_OK;
