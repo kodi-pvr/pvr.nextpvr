@@ -75,7 +75,7 @@ if(NOT WIN32)
   set_target_properties(pvr.nextpvr PROPERTIES
                         CXX_VISIBILITY_PRESET hidden
                         VISIBILITY_INLINES_HIDDEN ON)
-  if(NOT APPLE)
+  if(NOT APPLE AND NOT CORE_SYSTEM_NAME STREQUAL wasm)
     set_property(TARGET pvr.nextpvr APPEND_STRING PROPERTY
                  LINK_FLAGS " -Wl,--exclude-libs,ALL")
   endif()
